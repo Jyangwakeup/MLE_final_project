@@ -1,0 +1,27 @@
+# Python virtual environments and bytecode
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+
+# Build and packaging artifacts
+build/
+dist/
+*.egg-info/
+
+# Test and tooling caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Local configuration and editor files
+.env
+.env.*
+.idea/
+.vscode/
+.DS_Store
+
+# Jupyter checkpoints
+.ipynb_checkpoints/
