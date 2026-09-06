@@ -1,27 +1,10 @@
-# Python virtual environments and bytecode
-.venv/
-venv/
-__pycache__/
-*.py[cod]
+# Ignore everything in the workspace by default.
+/*
 
-# Build and packaging artifacts
-build/
-dist/
-*.egg-info/
+# Keep the repository rules and the Bomberman project visible to Git.
+!/.gitignore
+!/bomberman_rl/
+!/bomberman_rl/**
 
-# Test and tooling caches
-.pytest_cache/
-.mypy_cache/
-.ruff_cache/
-.coverage
-htmlcov/
-
-# Local configuration and editor files
-.env
-.env.*
-.idea/
-.vscode/
-.DS_Store
-
-# Jupyter checkpoints
-.ipynb_checkpoints/
+# Keep macOS metadata out of the project.
+bomberman_rl/.DS_Store
