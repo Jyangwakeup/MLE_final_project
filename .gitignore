@@ -121,5 +121,9 @@ results/
 MLE_project_bomberman
 notes/
 
+# Local Agent configuration and in-progress Agent artifacts
+/AGENTS.md
+/Agent/
+
 # Local implementation guide
 /IMPLEMENTATION_GUIDE.md
