@@ -6,7 +6,7 @@ import settings as s
 
 
 WALL = -1
-HORIZON = s.BOMB_TIMER + s.EXPLOSION_TIMER + 1
+HORIZON = s.BOMB_TIMER + s.EXPLOSION_TIMER + 2
 
 DangerPrediction = namedtuple('DangerPrediction', ('danger',))
 
@@ -63,6 +63,7 @@ def predict_danger(game_state: dict, hypothetical_bomb=False, horizon=None) -> D
         _mark_bomb_danger(danger, field, position, timer, horizon)
 
     if hypothetical_bomb and game_state['self'][2]:
-        _mark_bomb_danger(danger, field, game_state['self'][3], s.BOMB_TIMER, horizon)
+        _mark_bomb_danger(
+            danger, field, game_state['self'][3], s.BOMB_TIMER, horizon)
 
     return DangerPrediction(danger)
