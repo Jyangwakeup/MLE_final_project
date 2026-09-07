@@ -120,3 +120,6 @@ results/
 
 MLE_project_bomberman
 notes/
+
+# Local implementation guide
+/IMPLEMENTATION_GUIDE.md
