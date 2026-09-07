@@ -1,4 +1,4 @@
-from collections import namedtuple
+from collections import deque, namedtuple
 
 import numpy as np
 
@@ -17,6 +17,7 @@ DIRECTIONS = {
 FREE = 0
 
 SafetyFeatures = namedtuple('SafetyFeatures', ('state_key', 'vector', 'legal_mask'))
+CoinFeatures = namedtuple('CoinFeatures', ('state_key', 'vector'))
 
 
 def _in_bounds(position: tuple, shape: tuple) -> bool:
@@ -90,6 +91,87 @@ def _one_hot(state_key: tuple) -> np.ndarray:
     for index, value in enumerate(state_key):
         vector[index * 3 + value] = 1.0
     return vector
+
+
+def _navigation_blocked(game_state: dict) -> np.ndarray:
+    """Return current static obstacles while allowing the agent's start tile."""
+    blocked = game_state['field'] != FREE
+    blocked = blocked.copy()
+    for position, _ in game_state['bombs']:
+        blocked[position[0], position[1]] = True
+    for _, _, _, position in game_state['others']:
+        blocked[position[0], position[1]] = True
+
+    x, y = game_state['self'][3]
+    blocked[x, y] = False
+    return blocked
+
+
+def _distances(origin: tuple, blocked: np.ndarray) -> dict:
+    """Return static BFS distances from one traversable origin."""
+    if not _in_bounds(origin, blocked.shape) or blocked[origin[0], origin[1]]:
+        return {}
+
+    distances = {origin: 0}
+    frontier = deque([origin])
+    while frontier:
+        x, y = frontier.popleft()
+        for dx, dy in DIRECTIONS.values():
+            position = x + dx, y + dy
+            if (
+                _in_bounds(position, blocked.shape)
+                and not blocked[position[0], position[1]]
+                and position not in distances
+            ):
+                distances[position] = distances[(x, y)] + 1
+                frontier.append(position)
+    return distances
+
+
+def _coin_one_hot(state_key: tuple) -> np.ndarray:
+    """Convert four binary coin fields into a float32[8] vector."""
+    vector = np.zeros(8, dtype=np.float32)
+    for index, value in enumerate(state_key):
+        vector[index * 2 + value] = 1.0
+    return vector
+
+
+def coin_features(game_state: dict):
+    """Return objective static-distance features for the nearest reachable coin."""
+    if game_state is None:
+        return None
+
+    position = game_state['self'][3]
+    blocked = _navigation_blocked(game_state)
+    from_self = _distances(position, blocked)
+    candidates = [
+        (from_self[coin], coin[0], coin[1])
+        for coin in game_state['coins']
+        if coin in from_self
+    ]
+    if not candidates:
+        state_key = (0, 0, 0, 0)
+        return CoinFeatures(state_key, _coin_one_hot(state_key))
+
+    _, target_x, target_y = min(candidates)
+    target = target_x, target_y
+    to_target = _distances(target, blocked)
+    current_distance = to_target[position]
+    legal_mask = _legal_mask(game_state)
+
+    state_key = []
+    for index, action in enumerate(MOVE_ACTIONS):
+        dx, dy = DIRECTIONS[action]
+        candidate = position[0] + dx, position[1] + dy
+        is_closer = (
+            legal_mask[index]
+            and candidate in to_target
+            and to_target[candidate] < current_distance
+        )
+        state_key.append(int(is_closer))
+
+    state_key = tuple(state_key)
+    return CoinFeatures(state_key, _coin_one_hot(state_key))
 
 
 def safety_features(game_state: dict):
