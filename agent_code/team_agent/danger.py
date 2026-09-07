@@ -6,7 +6,7 @@ import settings as s
 
 
 WALL = -1
-HORIZON = s.BOMB_TIMER + s.EXPLOSION_TIMER + 2
+HORIZON = s.BOMB_TIMER + s.EXPLOSION_TIMER + 1
 
 DangerPrediction = namedtuple('DangerPrediction', ('danger',))
 
