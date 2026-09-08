@@ -4,7 +4,12 @@ import unittest
 import numpy as np
 
 import settings as s
-from agent_code.team_agent.temporal_safety_features import ACTIONS, _temporal_maps, temporal_safety_features
+from agent_code.team_agent.temporal_safety_features import (
+    ACTIONS,
+    _advance,
+    _temporal_maps,
+    temporal_safety_features,
+)
 from tests.test_danger import CRATE, WALL, make_game_state
 
 
@@ -42,6 +47,48 @@ class TemporalSafetyFeaturesTestCase(unittest.TestCase):
 
         self.assertTrue(blocked[1, 3, 3])
         self.assertFalse(blocked[2, 3, 3])
+
+    def test_agent_can_wait_on_its_current_bomb_tile(self):
+        state = make_game_state(position=(3, 3), bombs=[((3, 3), 3)])
+        danger, blocked = _temporal_maps(state, horizon=7, hypothetical_bomb=False)
+
+        next_position = _advance((3, 3), 'WAIT', 1, danger, blocked)
+
+        self.assertEqual(next_position, (3, 3))
+        self.assertTrue(blocked[1, 3, 3])
+        features = temporal_safety_features(state).move_features['WAIT']
+        self.assertTrue(features.legal)
+        self.assertTrue(features.safe_next)
+        self.assertTrue(features.escape_exists)
+
+    def test_agent_cannot_reenter_a_bomb_tile_after_leaving(self):
+        state = make_game_state(position=(3, 3), bombs=[((3, 3), 3)])
+        danger, blocked = _temporal_maps(state, horizon=7, hypothetical_bomb=False)
+
+        after_right = _advance((3, 3), 'RIGHT', 1, danger, blocked)
+        reentry = _advance(after_right, 'LEFT', 2, danger, blocked)
+
+        self.assertEqual(after_right, (4, 3))
+        self.assertTrue(blocked[2, 3, 3])
+        self.assertIsNone(reentry)
+
+    def test_agent_can_enter_destroyed_crate_tile_after_explosion_clears(self):
+        state = make_game_state(position=(3, 3), bombs=[((4, 1), 0)])
+        state['field'][4, 3] = CRATE
+        danger, blocked = _temporal_maps(state, horizon=7, hypothetical_bomb=False)
+
+        after_first_wait = _advance((3, 3), 'WAIT', 1, danger, blocked)
+        too_early = _advance(after_first_wait, 'RIGHT', 2, danger, blocked)
+        after_second_wait = _advance(after_first_wait, 'WAIT', 2, danger, blocked)
+        after_clear = _advance(after_second_wait, 'RIGHT', 3, danger, blocked)
+
+        self.assertEqual(after_first_wait, (3, 3))
+        self.assertFalse(blocked[2, 4, 3])
+        self.assertTrue(danger[2, 4, 3])
+        self.assertIsNone(too_early)
+        self.assertEqual(after_second_wait, (3, 3))
+        self.assertFalse(danger[3, 4, 3])
+        self.assertEqual(after_clear, (4, 3))
 
     def test_other_agents_are_fixed_obstacles(self):
         state = make_game_state(position=(3, 3))
