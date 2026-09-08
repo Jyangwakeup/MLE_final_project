@@ -1,8 +1,9 @@
 from collections import deque, namedtuple
 
 import numpy as np
+import settings as s
 
-from .danger import predict_danger
+from .danger import blast_coords, predict_danger
 from .temporal_safety_features import temporal_safety_features
 
 
@@ -16,8 +17,10 @@ DIRECTIONS = {
 }
 FREE = 0
 
+Features = namedtuple('Features', ('state_key', 'vector', 'legal_mask'))
 SafetyFeatures = namedtuple('SafetyFeatures', ('state_key', 'vector', 'legal_mask'))
 CoinFeatures = namedtuple('CoinFeatures', ('state_key', 'vector'))
+OpponentFeatures = namedtuple('OpponentFeatures', ('state_key', 'vector'))
 
 
 def _in_bounds(position: tuple, shape: tuple) -> bool:
@@ -136,6 +139,81 @@ def _coin_one_hot(state_key: tuple) -> np.ndarray:
     return vector
 
 
+def _nearest_opponent(game_state: dict):
+    """Return the nearest opponent using the fixed deterministic ordering."""
+    x, y = game_state['self'][3]
+    if not game_state['others']:
+        return None
+    return min(
+        game_state['others'],
+        key=lambda other: (
+            abs(other[3][0] - x) + abs(other[3][1] - y),
+            other[3],
+            other[0],
+        ),
+    )
+
+
+def _opponent_direction(origin: tuple, target: tuple) -> int:
+    """Encode the dominant displacement axis with fixed tie-breaking."""
+    dx = target[0] - origin[0]
+    dy = target[1] - origin[1]
+    if abs(dx) > abs(dy):
+        return 2 if dx > 0 else 4
+    if abs(dy) > abs(dx):
+        return 3 if dy > 0 else 1
+
+    if dy < 0:
+        return 1
+    if dx > 0:
+        return 2
+    if dy > 0:
+        return 3
+    return 4
+
+
+def _opponent_distance(distance: int) -> int:
+    """Encode an opponent's Manhattan distance into the fixed four classes."""
+    if distance == 1:
+        return 1
+    if distance <= 4:
+        return 2
+    return 3
+
+
+def _opponent_one_hot(state_key: tuple) -> np.ndarray:
+    """Convert direction, distance, and blast coverage into float32[11]."""
+    vector = np.zeros(11, dtype=np.float32)
+    offset = 0
+    for value, size in zip(state_key, (5, 4, 2)):
+        vector[offset + value] = 1.0
+        offset += size
+    return vector
+
+
+def opponent_features(game_state: dict):
+    """Return objective spatial features for the currently visible opponents."""
+    if game_state is None:
+        return None
+
+    nearest = _nearest_opponent(game_state)
+    if nearest is None:
+        state_key = (0, 0, 0)
+        return OpponentFeatures(state_key, _opponent_one_hot(state_key))
+
+    position = game_state['self'][3]
+    target = nearest[3]
+    distance = abs(target[0] - position[0]) + abs(target[1] - position[1])
+    blast = set(blast_coords(game_state['field'], position, s.BOMB_POWER))
+    opponent_covered = any(other[3] in blast for other in game_state['others'])
+    state_key = (
+        _opponent_direction(position, target),
+        _opponent_distance(distance),
+        int(opponent_covered),
+    )
+    return OpponentFeatures(state_key, _opponent_one_hot(state_key))
+
+
 def coin_features(game_state: dict):
     """Return objective static-distance features for the nearest reachable coin."""
     if game_state is None:
@@ -194,3 +272,16 @@ def safety_features(game_state: dict):
     state_key = movement + (current_danger, bomb, crates)
 
     return SafetyFeatures(state_key, _one_hot(state_key), legal_mask)
+
+
+def extract_features(game_state: dict):
+    """Return the formal feature representation composed from all feature groups."""
+    if game_state is None:
+        return None
+
+    safety = safety_features(game_state)
+    coins = coin_features(game_state)
+    opponents = opponent_features(game_state)
+    state_key = safety.state_key + coins.state_key + opponents.state_key
+    vector = np.concatenate((safety.vector, coins.vector, opponents.vector))
+    return Features(state_key, vector, safety.legal_mask)
