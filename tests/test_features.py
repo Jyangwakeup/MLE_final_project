@@ -5,6 +5,10 @@ import numpy as np
 
 from agent_code.team_agent.features import (
     ACTIONS,
+    FEATURE_CATEGORY_COUNTS,
+    FEATURE_DIM,
+    FEATURE_VERSION,
+    STATE_KEY_SIZE,
     coin_features,
     extract_features,
     opponent_features,
@@ -91,6 +95,22 @@ class SafetyFeaturesTestCase(unittest.TestCase):
 
 
 class AggregatedFeaturesTestCase(unittest.TestCase):
+    def test_public_feature_contract_constants_match_extracted_features(self):
+        features = extract_features(make_game_state())
+
+        self.assertEqual(FEATURE_VERSION, 'v1')
+        self.assertEqual(STATE_KEY_SIZE, 14)
+        self.assertEqual(
+            FEATURE_CATEGORY_COUNTS,
+            (3, 3, 3, 3, 3, 3, 3, 2, 2, 2, 2, 5, 4, 2),
+        )
+        self.assertEqual(len(FEATURE_CATEGORY_COUNTS), STATE_KEY_SIZE)
+        self.assertEqual(FEATURE_DIM, 40)
+        self.assertEqual(sum(FEATURE_CATEGORY_COUNTS), FEATURE_DIM)
+        self.assertEqual(len(features.state_key), STATE_KEY_SIZE)
+        self.assertEqual(features.vector.shape, (FEATURE_DIM,))
+        self.assertEqual(len(ACTIONS), features.legal_mask.shape[0])
+
     def test_aggregation_uses_safety_coin_opponent_group_order(self):
         state = make_game_state(position=(3, 3))
         state['field'][4, 3] = CRATE

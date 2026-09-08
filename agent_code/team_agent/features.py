@@ -8,6 +8,14 @@ from .temporal_safety_features import temporal_safety_features
 
 
 ACTIONS = ('UP', 'RIGHT', 'DOWN', 'LEFT', 'WAIT', 'BOMB')
+FEATURE_VERSION = 'v1'
+STATE_KEY_SIZE = 14
+FEATURE_CATEGORY_COUNTS = (
+    3, 3, 3, 3, 3, 3, 3,
+    2, 2, 2, 2,
+    5, 4, 2,
+)
+FEATURE_DIM = sum(FEATURE_CATEGORY_COUNTS)
 MOVE_ACTIONS = ACTIONS[:4]
 DIRECTIONS = {
     'UP': (0, -1),
