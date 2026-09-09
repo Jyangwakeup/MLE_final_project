@@ -122,5 +122,13 @@ MLE_project_bomberman
 notes/
 
 # Local Agent configuration and in-progress Agent artifacts
+<<<<<<< HEAD
 # /AGENTS.md
 # /Agent/
+=======
+/AGENTS.md
+/Agent/
+
+tmp/pdfs/
+output
+>>>>>>> d4057d32 (q learning)
