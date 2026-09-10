@@ -1,0 +1,41 @@
+{
+  "algorithm": null,
+  "feature_version": "v1",
+  "reward_version": "r1",
+  "seed": null,
+  "checkpoint": null,
+  "training": {
+    "total_action_steps": 100000,
+    "stages": [
+      {
+        "name": "coin_navigation",
+        "scenario": "coin-heaven",
+        "budget_fraction": 0.1
+      },
+      {
+        "name": "single_agent_crates",
+        "scenario": "classic",
+        "budget_fraction": 0.3
+      },
+      {
+        "name": "weak_opponents",
+        "scenario": "classic",
+        "budget_fraction": 0.2
+      },
+      {
+        "name": "full_match",
+        "scenario": "classic",
+        "budget_fraction": 0.4
+      }
+    ],
+    "metrics": {}
+  },
+  "rewards": {
+    "coin_collected": 1.0,
+    "killed_opponent": 5.0,
+    "crate_destroyed": 0.2,
+    "death": -10.0,
+    "step": -0.01,
+    "invalid_action": -0.1
+  }
+}
