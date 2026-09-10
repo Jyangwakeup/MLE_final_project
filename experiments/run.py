@@ -35,6 +35,7 @@ DEFAULT_BASELINE_AGENTS = (
     "coin_collector_agent",
 )
 OFFICIAL_BASELINE_AGENTS = frozenset(DEFAULT_BASELINE_AGENTS)
+EPISODE_SCHEMA_VERSION = "episode-v1"
 
 
 def _utc_now() -> str:
@@ -47,6 +48,56 @@ def _write_json(path: Path, value: dict[str, Any]) -> None:
         json.dumps(value, indent=2, sort_keys=True) + "\n", encoding="utf-8"
     )
     temporary_path.replace(path)
+
+
+def _append_json_line(path: Path, value: dict[str, Any]) -> None:
+    with path.open("a", encoding="utf-8") as file:
+        file.write(json.dumps(value, sort_keys=True) + "\n")
+
+
+class ExperimentWorld(BombeRLeWorld):
+    """Official world extension that appends one record after each completed round."""
+
+    def __init__(self, args: WorldArgs, agents, output: Path, run_id: str, seed: int):
+        self._episodes_path = output / "episodes.jsonl"
+        self._episodes_path.touch(exist_ok=False)
+        self._experiment_run_id = run_id
+        self._environment_seed = seed
+        super().__init__(args, agents)
+
+    def end_round(self) -> None:
+        super().end_round()
+        agents = []
+        for agent in self.agents:
+            statistics = agent.statistics
+            agents.append(
+                {
+                    "name": agent.name,
+                    "score": int(agent.score),
+                    "coins": int(statistics.get("coins", 0)),
+                    "kills": int(statistics.get("kills", 0)),
+                    "suicides": int(statistics.get("suicides", 0)),
+                    "crates": int(statistics.get("crates", 0)),
+                    "bombs": int(statistics.get("bombs", 0)),
+                    "invalid": int(statistics.get("invalid", 0)),
+                    "survived": not bool(agent.dead),
+                    "dead": bool(agent.dead),
+                }
+            )
+
+        _append_json_line(
+            self._episodes_path,
+            {
+                "schema_version": EPISODE_SCHEMA_VERSION,
+                "run_id": self._experiment_run_id,
+                "round_index": int(self.round),
+                "seed": self._environment_seed,
+                "scenario": self.args.scenario,
+                "stage": "official_baseline",
+                "round_steps": int(self.step),
+                "agents": agents,
+            },
+        )
 
 
 def _source_commit() -> str | None:
@@ -180,9 +231,12 @@ def run_baseline(config_path: Path, mode: str, seed: int, run_id: str | None, ou
             raise ValueError("Only --mode baseline is supported in C2")
 
         (output_directory / "logs").mkdir()
-        world = BombeRLeWorld(
+        world = ExperimentWorld(
             _world_args(output_directory, scenario, seed, resolved_run_id),
             [(agent, False) for agent in agents],
+            output_directory,
+            resolved_run_id,
+            seed,
         )
         random.seed(opponent_seed)
         np.random.seed(opponent_seed)

@@ -32,11 +32,11 @@ class ExperimentRunCliTest(unittest.TestCase):
         self.run_ids.append(run_id)
         return run_id
 
-    def _baseline_config(self, directory):
+    def _baseline_config(self, directory, n_rounds=1):
         config = json.loads(BASE_CONFIG.read_text(encoding="utf-8"))
         config["baseline"] = {
             "agents": ["random_agent"],
-            "n_rounds": 1,
+            "n_rounds": n_rounds,
             "scenario": "classic",
         }
         path = Path(directory) / "baseline.json"
@@ -114,6 +114,56 @@ class ExperimentRunCliTest(unittest.TestCase):
             self.assertEqual(metadata["status"], "failed")
             self.assertEqual(metadata["mode"], "train")
             self.assertEqual(metadata["error"]["type"], "ValueError")
+
+    def test_each_round_appends_an_episode_consistent_with_official_stats(self):
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            config = self._baseline_config(temporary_directory, n_rounds=3)
+            run_id = self._run_id()
+
+            result = self._invoke(config, run_id)
+
+            self.assertEqual(result.returncode, 0, result.stderr)
+            output = RUNS_ROOT / run_id
+            episode_lines = (output / "episodes.jsonl").read_text(encoding="utf-8").splitlines()
+            self.assertEqual(len(episode_lines), 3)
+
+            episodes = [json.loads(line) for line in episode_lines]
+            self.assertEqual([episode["round_index"] for episode in episodes], [1, 2, 3])
+            for episode in episodes:
+                self.assertEqual(episode["schema_version"], "episode-v1")
+                self.assertEqual(episode["run_id"], run_id)
+                self.assertEqual(episode["seed"], 10001)
+                self.assertEqual(episode["scenario"], "classic")
+                self.assertEqual(episode["stage"], "official_baseline")
+                self.assertGreaterEqual(episode["round_steps"], 1)
+                self.assertEqual(len(episode["agents"]), 1)
+                self.assertEqual(
+                    set(episode["agents"][0]),
+                    {
+                        "name",
+                        "score",
+                        "coins",
+                        "kills",
+                        "suicides",
+                        "crates",
+                        "bombs",
+                        "invalid",
+                        "survived",
+                        "dead",
+                    },
+                )
+
+            official = json.loads((output / "official_stats.json").read_text(encoding="utf-8"))
+            recorded_by_agent = {}
+            for episode in episodes:
+                for agent in episode["agents"]:
+                    totals = recorded_by_agent.setdefault(agent["name"], {})
+                    for metric in ("score", "coins", "kills", "suicides", "crates", "bombs", "invalid"):
+                        totals[metric] = totals.get(metric, 0) + agent[metric]
+
+            for agent_name, recorded in recorded_by_agent.items():
+                for metric, total in recorded.items():
+                    self.assertEqual(total, official["by_agent"][agent_name].get(metric, 0))
 
 
 if __name__ == "__main__":

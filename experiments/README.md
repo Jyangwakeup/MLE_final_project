@@ -74,8 +74,16 @@ runs/<run_id>/
 终态状态。JSONL 文件是追加式原始记录。`official_stats.json` 是用于交叉检查的官方
 框架导出。`checkpoints/` 与 `sandbox/` 只属于对应运行。运行目录不得覆盖已有运行。
 
-本文档只冻结接口。运行器、世界扩展、JSONL schema、分析、计时、训练、checkpoint
-和打包将在后续阶段实现。
+`episodes.jsonl` 当前使用 `episode-v1` schema，每行对应一个已完整结束的 round：
+
+- round 字段：`run_id`、`round_index`、环境 `seed`、`scenario`、`stage` 和
+  `round_steps`；
+- `agents` 中每名 agent 的字段：`name`、`score`、`coins`、`kills`、`suicides`、
+  `crates`、`bombs`、`invalid`、`survived` 和 `dead`。
+
+逐局的 `score`、`coins`、`kills`、`suicides`、`crates`、`bombs` 和 `invalid` 可按
+agent 累加，并与 `official_stats.json` 的 `by_agent` 交叉检查。运行器和逐局记录已在
+C2/C3 实现；分析、计时、训练、checkpoint 和打包将在后续阶段实现。
 
 ## 基础配置
 
