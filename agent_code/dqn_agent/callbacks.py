@@ -1,4 +1,5 @@
 from pathlib import Path
+import os
 import random
 
 import numpy as np
@@ -14,15 +15,41 @@ CHANNELS = 7
 INPUT_SIZE = CHANNELS * BOARD_SIZE * BOARD_SIZE + 1
 MODEL_FILE = Path(__file__).with_name("dqn-model.pt")
 SEED = 0
+TRAINING_TASK_ENV = "BOMBERMAN_TRAINING_TASK"
+
+
+def _training_task():
+    """Return the explicitly selected curriculum task, if any."""
+    value = os.getenv(TRAINING_TASK_ENV)
+    if value is None:
+        return None
+    value = value.strip()
+    if not value:
+        raise ValueError(f"{TRAINING_TASK_ENV} must not be empty")
+    return value
 
 
 def setup(self):
     self.rng = random.Random(SEED)
     self.model = DQN(INPUT_SIZE, len(ACTIONS), seed=SEED)
+    self.training_task = _training_task()
     self.action_steps = 0
     if MODEL_FILE.exists():
         checkpoint = torch.load(MODEL_FILE, map_location="cpu", weights_only=True)
         self.model.load_checkpoint(checkpoint, training=self.train)
+        self.action_steps = int(checkpoint.get("action_steps", 0))
+        previous_task = checkpoint.get("training_task")
+        if (
+            self.train
+            and self.training_task is not None
+            and self.training_task != previous_task
+        ):
+            self.logger.info(
+                "Training task changed from %r to %r; resetting exploration progress",
+                previous_task,
+                self.training_task,
+            )
+            self.action_steps = 0
         self.logger.info("Loaded DQN checkpoint from %s", MODEL_FILE)
     elif not self.train:
         self.logger.warning("No DQN checkpoint found; using an untrained network")

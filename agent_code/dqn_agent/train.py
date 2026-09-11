@@ -43,7 +43,12 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
         _submit(self, self.pending[1])
 
     self.pending = None
-    torch.save(self.model.checkpoint(), MODEL_FILE)
+    checkpoint = self.model.checkpoint()
+    checkpoint.update({
+        "action_steps": self.action_steps,
+        "training_task": self.training_task,
+    })
+    torch.save(checkpoint, MODEL_FILE)
     self.logger.info("Round environment reward: %.2f; last loss: %s",
                      self.round_reward, self.last_loss)
     self.round_reward = 0.0

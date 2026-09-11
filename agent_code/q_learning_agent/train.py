@@ -25,7 +25,8 @@ def game_events_occurred(self, old_game_state: dict, self_action: str,
     reward = reward_from_events(events)
     _q_update(self, state_to_features(old_game_state), ACTIONS.index(self_action),
               reward, state_to_features(new_game_state),
-              legal_actions(new_game_state), terminal=False)
+              legal_actions(new_game_state, allow_bomb=self.allow_bomb),
+              terminal=False)
     self.round_reward += reward
 
 
@@ -36,7 +37,11 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
                   reward, None, None, terminal=True)
         self.round_reward += reward
 
-    payload = {"q_table": self.q_table, "training_steps": self.training_steps}
+    payload = {
+        "q_table": self.q_table,
+        "training_steps": self.training_steps,
+        "training_task": self.training_task,
+    }
     with MODEL_FILE.open("wb") as file:
         pickle.dump(payload, file, protocol=pickle.HIGHEST_PROTOCOL)
     self.logger.info("Round reward %.2f; Q table contains %d states",

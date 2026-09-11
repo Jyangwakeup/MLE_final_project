@@ -21,6 +21,45 @@ WorldArgs = namedtuple("WorldArgs",
                        ["no_gui", "fps", "turn_based", "update_interval", "save_replay", "replay", "make_video", "continue_without_training", "log_dir", "save_stats", "match_name", "seed", "silence_errors", "scenario"])
 
 
+def format_results_table(results: Dict) -> str:
+    """Format per-agent lifetime statistics as a terminal-friendly table."""
+    headers = (
+        "Agent", "Rounds", "Score", "Avg score", "Coins", "Crates",
+        "Kills", "Suicides", "Invalid",
+    )
+    rows = []
+    for agent_name, statistics in results.get("by_agent", {}).items():
+        rounds = int(statistics.get("rounds", 0))
+        score = int(statistics.get("score", 0))
+        average = score / rounds if rounds else 0.0
+        rows.append((
+            str(agent_name),
+            str(rounds),
+            str(score),
+            f"{average:.2f}",
+            str(int(statistics.get("coins", 0))),
+            str(int(statistics.get("crates", 0))),
+            str(int(statistics.get("kills", 0))),
+            str(int(statistics.get("suicides", 0))),
+            str(int(statistics.get("invalid", 0))),
+        ))
+
+    widths = [len(header) for header in headers]
+    for row in rows:
+        widths = [max(width, len(value)) for width, value in zip(widths, row)]
+
+    def render(row):
+        return "| " + " | ".join(
+            value.ljust(width) for value, width in zip(row, widths)
+        ) + " |"
+
+    separator = "+-" + "-+-".join("-" * width for width in widths) + "-+"
+    lines = [separator, render(headers), separator]
+    lines.extend(render(row) for row in rows)
+    lines.append(separator)
+    return "\n".join(lines)
+
+
 class Trophy:
     coin_trophy = pygame.transform.smoothscale(pygame.image.load(s.ASSET_DIR / 'coin.png'), (15, 15))
     suicide_trophy = pygame.transform.smoothscale(pygame.image.load(s.ASSET_DIR / 'explosion_0.png'), (15, 15))
@@ -312,6 +351,9 @@ class GenericWorld:
         for a in self.agents:
             results['by_agent'][a.name]['score'] = a.total_score
         results['by_round'] = self.round_statistics
+
+        print("\nEvaluation summary")
+        print(format_results_table(results))
 
         if self.args.save_stats is not False:
             if self.args.save_stats is not True:
