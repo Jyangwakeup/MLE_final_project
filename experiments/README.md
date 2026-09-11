@@ -96,7 +96,18 @@ runs/<run_id>/
 
 逐局的 `score`、`coins`、`kills`、`suicides`、`crates`、`bombs` 和 `invalid` 可按
 agent 累加，并与 `official_stats.json` 的 `by_agent` 交叉检查。运行器和逐局记录已在
-C2/C3 实现；分析、计时、训练、checkpoint 和打包将在后续阶段实现。
+C2/C3 实现；计时、训练、checkpoint 和打包将在后续阶段实现。
+
+### 分析输出
+
+`experiments/analyze.py` 只读取一个或多个运行目录中的原始
+`episodes.jsonl`，每个 `(run_id, agent_name)` 输出一行可追溯的汇总，写入指定目录的
+`summary.csv`，并生成 `mean_score.png`。它报告平均分、总体标准差、金币/击杀/自杀/
+箱子/无效动作的逐运行累计值、存活率，以及独占第一、并列第一和全体零分平局的次数。
+
+当前 `episode-v1` 未记录死亡智能体的最后存活步数。因此
+`mean_survival_steps` 在 CSV 中为空值；分析器不会以 `round_steps` 猜测该指标。输入
+缺少 `episodes.jsonl`、空文件、非法 JSON 或不符合 schema 时会明确失败。
 
 ## 基础配置
 
