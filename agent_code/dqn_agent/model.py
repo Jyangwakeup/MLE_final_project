@@ -13,11 +13,11 @@ class QNetwork(nn.Module):
     def __init__(self, input_size: int, action_count: int):
         super().__init__()
         self.layers = nn.Sequential(
-            nn.Linear(input_size, 128),
+            nn.Linear(input_size, 64),
             nn.ReLU(),
-            nn.Linear(128, 128),
+            nn.Linear(64, 64),
             nn.ReLU(),
-            nn.Linear(128, action_count),
+            nn.Linear(64, action_count),
         )
 
     def forward(self, x):
@@ -41,8 +41,8 @@ class ReplayBuffer:
 
 class DQN:
     def __init__(self, input_size, action_count, seed=0, gamma=0.95, learning_rate=3e-4,
-                 batch_size=64, replay_capacity=20_000, warmup=1_000,
-                 target_sync_interval=500):
+                 batch_size=64, replay_capacity=20_000, warmup=2_000,
+                 target_sync_interval=1_000):
         torch.manual_seed(seed)
         torch.set_num_threads(1)
         self.device = torch.device("cpu")

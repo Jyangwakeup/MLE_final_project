@@ -9,7 +9,7 @@ import random
 import numpy as np
 
 from .features import ACTIONS, FEATURE_VERSION, features_for_state
-MODEL_FILE = Path(__file__).with_name("q-table.pkl")
+MODEL_FILE = Path(__file__).with_name("final.pkl")
 CHECKPOINT_ENV = "BOMBERMAN_CHECKPOINT"
 SEED = 0
 TRAINING_TASK_ENV = "BOMBERMAN_TRAINING_TASK"
@@ -44,7 +44,13 @@ def _training_task():
 def setup(self):
     """Load a learned Q table, or initialise an empty one."""
     self.rng = random.Random(SEED)
-    self.allow_bomb = _env_flag("Q_LEARNING_ALLOW_BOMB", True)
+    # The experiment runner uses the shared flag for curriculum consistency.
+    # Keep the old agent-specific variable as a backwards-compatible fallback
+    # for direct `main.py` invocations documented by this agent.
+    if "BOMBERMAN_ALLOW_BOMB" in os.environ:
+        self.allow_bomb = _env_flag("BOMBERMAN_ALLOW_BOMB", True)
+    else:
+        self.allow_bomb = _env_flag("Q_LEARNING_ALLOW_BOMB", True)
     self.training_task = _training_task()
     self.q_table = {}
     self.training_steps = 0

@@ -1,19 +1,17 @@
-# Basic DQN agent
+# DQN agent
 
-This agent learns from real game outcomes plus objective reward shaping:
+This agent uses the same versioned representation and objective base reward as
+`agent_code/team_agent`, so comparisons with `q_learning_agent` hold features
+and rewards constant:
 
-- `COIN_COLLECTED`: `settings.REWARD_COIN`
-- `KILLED_OPPONENT`: `settings.REWARD_KILL`
-- `CRATE_DESTROYED`: `+0.2`
-- `KILLED_SELF` or `GOT_KILLED`: `-10` once per transition
-- `INVALID_ACTION`: `-0.1`
-- each transition: `-0.01` time cost
+- feature version: `v1` (40-dimensional one-hot vector)
+- reward version: `base-v1`
+- action order and physical legal-action mask: shared team contract
 
 There are no hand-authored best-action labels, direction recommendations, or
-rewards for following a human-selected action. The shaping above evaluates only
-the observed result of an action. The network observes seven board channels plus
-bomb availability and learns with replay memory, a target network, Huber loss,
-and epsilon-greedy exploration over physically legal actions.
+rewards for following a human-selected action. The 40→64→64→6 network learns
+with replay memory, a target network, Huber loss, and epsilon-greedy exploration
+over physically legal actions.
 
 Train from the repository root:
 
@@ -24,7 +22,8 @@ BOMBERMAN_TRAINING_TASK=task1 python3 main.py play --agents dqn_agent --train 1 
 Set `BOMBERMAN_TRAINING_TASK` to a stable curriculum-stage name. When the saved
 name changes (for example, from `task1` to `task2`), the checkpoint weights and
 optimizer are retained while epsilon exploration progress restarts. Continuing
-with the same name also continues the saved exploration progress.
+with the same name also continues the saved exploration progress. A checkpoint
+with a different or missing feature version is never loaded into this network.
 
 The checkpoint is saved as `agent_code/dqn_agent/dqn-model.pt`.
 
@@ -38,3 +37,17 @@ python3 main.py play \
   --scenario classic \
   --n-rounds 10000 \
   --no-gui
+
+
+python3 experiments/run.py \
+  --config experiments/configs/base.json \
+  --mode train \
+  --task 1 \
+  --agent dqn_agent \
+  --n-rounds 10000 \
+  --seed 11 \
+  --run-id dqn_task1_train
+```
+
+通过实验运行器选择 `--task 1` 时，训练和评估都会自动禁用 `BOMB`；Task 2–4
+则允许放置炸弹。

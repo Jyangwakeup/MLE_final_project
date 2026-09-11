@@ -10,6 +10,9 @@ from typing import Any, Callable, Sequence
 import numpy as np
 
 
+DEFAULT_REPLAY_PROGRESS_PERCENT = 10
+
+
 class TrainingEarlyStopping:
     """Stop training when the rolling mean reward has stopped improving."""
 
@@ -116,12 +119,27 @@ def run_training_mode(
     )
     output, _ = output_directory(args.run_id, args.output)
     checkpoint = output / "checkpoints" / checkpoint_name(args.agent)
+    replay_interval = args.replay_interval or replay_progress_interval(n_rounds)
     return run_session(
         args.config, "train", seed, output, args.agent, opponents, scenario,
         n_rounds, checkpoint, task_name,
         "sampled" if args.replay_policy == "auto" else args.replay_policy,
-        args.replay_interval, early_stopping_config(training),
+        replay_interval, early_stopping_config(training),
     )
+
+
+def replay_progress_interval(
+    n_rounds: int,
+    progress_percent: int = DEFAULT_REPLAY_PROGRESS_PERCENT,
+) -> int:
+    """Return the round interval for fixed percentage progress milestones."""
+    if isinstance(n_rounds, bool) or not isinstance(n_rounds, int) or n_rounds < 1:
+        raise ValueError("n_rounds must be a positive integer")
+    if (isinstance(progress_percent, bool)
+            or not isinstance(progress_percent, int)
+            or not 1 <= progress_percent <= 100):
+        raise ValueError("progress_percent must be an integer from 1 to 100")
+    return max(1, math.ceil(n_rounds * progress_percent / 100))
 
 
 def _positive_int(value: Any, name: str) -> int:

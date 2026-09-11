@@ -11,7 +11,7 @@
   "training": {
     "n_rounds": null,
     "early_stopping": {
-      "enabled": false,
+      "enabled": true,
       "window": 100,
       "patience": 100,
       "min_rounds": 300,

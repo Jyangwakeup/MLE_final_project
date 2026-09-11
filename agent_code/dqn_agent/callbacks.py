@@ -5,18 +5,30 @@ import random
 import numpy as np
 import torch
 
+from .features import ACTIONS, FEATURE_DIM, FEATURE_VERSION, features_for_state
 from .model import DQN
 
 
-ACTIONS = ("UP", "RIGHT", "DOWN", "LEFT", "WAIT", "BOMB")
-DIRECTIONS = ((0, -1), (1, 0), (0, 1), (-1, 0))
-BOARD_SIZE = 17
-CHANNELS = 7
-INPUT_SIZE = CHANNELS * BOARD_SIZE * BOARD_SIZE + 1
-MODEL_FILE = Path(__file__).with_name("dqn-model.pt")
+INPUT_SIZE = FEATURE_DIM
+MODEL_FILE = Path(__file__).with_name("final.pt")
 CHECKPOINT_ENV = "BOMBERMAN_CHECKPOINT"
 SEED = 0
 TRAINING_TASK_ENV = "BOMBERMAN_TRAINING_TASK"
+ALLOW_BOMB_ENV = "BOMBERMAN_ALLOW_BOMB"
+
+
+def _env_flag(name: str, default: bool) -> bool:
+    value = os.getenv(name)
+    if value is None:
+        return default
+    normalized = value.strip().lower()
+    if normalized in {"1", "true", "yes", "on"}:
+        return True
+    if normalized in {"0", "false", "no", "off"}:
+        return False
+    raise ValueError(
+        f"{name} must be one of 1/0, true/false, yes/no, or on/off; got {value!r}"
+    )
 
 
 def _training_task():
@@ -33,8 +45,11 @@ def _training_task():
 def setup(self):
     self.rng = random.Random(SEED)
     self.model = DQN(INPUT_SIZE, len(ACTIONS), seed=SEED)
+    self.allow_bomb = _env_flag(ALLOW_BOMB_ENV, True)
     self.training_task = _training_task()
     self.action_steps = 0
+    self._feature_cache_key = None
+    self._feature_cache_value = None
     configured_checkpoint = os.getenv(CHECKPOINT_ENV)
     self.model_file = (
         Path(configured_checkpoint).expanduser().resolve()
@@ -43,21 +58,31 @@ def setup(self):
     )
     if self.model_file.exists():
         checkpoint = torch.load(self.model_file, map_location="cpu", weights_only=True)
-        self.model.load_checkpoint(checkpoint, training=self.train)
-        self.action_steps = int(checkpoint.get("action_steps", 0))
-        previous_task = checkpoint.get("training_task")
-        if (
-            self.train
-            and self.training_task is not None
-            and self.training_task != previous_task
-        ):
-            self.logger.info(
-                "Training task changed from %r to %r; resetting exploration progress",
-                previous_task,
-                self.training_task,
+        checkpoint_version = checkpoint.get("feature_version")
+        if checkpoint_version != FEATURE_VERSION:
+            message = (
+                f"DQN checkpoint uses feature version {checkpoint_version!r}; "
+                f"expected {FEATURE_VERSION!r}"
             )
-            self.action_steps = 0
-        self.logger.info("Loaded DQN checkpoint from %s", self.model_file)
+            if not self.train:
+                raise ValueError(message)
+            self.logger.warning("%s; starting with a new network", message)
+        else:
+            self.model.load_checkpoint(checkpoint, training=self.train)
+            self.action_steps = int(checkpoint.get("action_steps", 0))
+            previous_task = checkpoint.get("training_task")
+            if (
+                self.train
+                and self.training_task is not None
+                and self.training_task != previous_task
+            ):
+                self.logger.info(
+                    "Training task changed from %r to %r; resetting exploration progress",
+                    previous_task,
+                    self.training_task,
+                )
+                self.action_steps = 0
+            self.logger.info("Loaded DQN checkpoint from %s", self.model_file)
     elif configured_checkpoint and not self.train:
         raise FileNotFoundError(
             f"Evaluation checkpoint does not exist: {self.model_file}"
@@ -67,8 +92,12 @@ def setup(self):
 
 
 def act(self, game_state: dict) -> str:
-    features = state_to_features(game_state)
-    legal = legal_actions(game_state)
+    extracted = _features_for(self, game_state)
+    features = extracted.vector
+    legal = extracted.legal_mask
+    if not self.allow_bomb:
+        legal = legal.copy()
+        legal[ACTIONS.index("BOMB")] = False
     legal_indices = np.flatnonzero(legal).tolist()
 
     if self.train:
@@ -79,44 +108,33 @@ def act(self, game_state: dict) -> str:
 
     q_values = self.model.q_values(features)
     q_values[~legal] = -np.inf
-    return ACTIONS[int(np.argmax(q_values))]
+    best = np.max(q_values[legal_indices])
+    choices = [index for index in legal_indices if q_values[index] == best]
+    if self.train:
+        return ACTIONS[self.rng.choice(choices)]
+    return ACTIONS[choices[0]]
 
 
 def legal_actions(game_state: dict) -> np.ndarray:
-    field = game_state["field"]
-    x, y = game_state["self"][3]
-    blocked = {position for position, _ in game_state["bombs"]}
-    blocked.update(other[3] for other in game_state["others"])
-    legal = []
-    for dx, dy in DIRECTIONS:
-        xx, yy = x + dx, y + dy
-        legal.append(
-            0 <= xx < field.shape[0] and 0 <= yy < field.shape[1]
-            and field[xx, yy] == 0 and (xx, yy) not in blocked
-        )
-    legal.extend((True, bool(game_state["self"][2])))
-    return np.asarray(legal, dtype=bool)
+    """Compatibility API returning the shared physical legality mask."""
+    extracted = features_for_state(game_state)
+    if extracted is None:
+        return np.zeros(len(ACTIONS), dtype=bool)
+    return extracted.legal_mask.copy()
 
 
 def state_to_features(game_state: dict):
-    """Encode observations only; this function never recommends or scores actions."""
+    """Return the shared vector without recommending or scoring actions."""
+    extracted = features_for_state(game_state)
+    return None if extracted is None else extracted.vector
+
+
+def _features_for(self, game_state: dict):
+    """Extract the relatively expensive shared features once per round-step."""
     if game_state is None:
         return None
-    field = game_state["field"]
-    if field.shape != (BOARD_SIZE, BOARD_SIZE):
-        raise ValueError(f"Expected a {BOARD_SIZE}x{BOARD_SIZE} board, got {field.shape}")
-
-    channels = np.zeros((CHANNELS, BOARD_SIZE, BOARD_SIZE), dtype=np.float32)
-    channels[0] = field == -1
-    channels[1] = field == 1
-    for x, y in game_state["coins"]:
-        channels[2, x, y] = 1.0
-    for (x, y), timer in game_state["bombs"]:
-        channels[3, x, y] = (timer + 1) / 5.0
-    channels[4] = np.clip(game_state["explosion_map"], 0, 2) / 2.0
-    x, y = game_state["self"][3]
-    channels[5, x, y] = 1.0
-    for _, _, _, (x, y) in game_state["others"]:
-        channels[6, x, y] = 1.0
-    bomb_available = np.asarray([float(game_state["self"][2])], dtype=np.float32)
-    return np.concatenate((channels.reshape(-1), bomb_available))
+    key = (game_state.get("round"), game_state.get("step"))
+    if key != self._feature_cache_key:
+        self._feature_cache_value = features_for_state(game_state)
+        self._feature_cache_key = key
+    return self._feature_cache_value

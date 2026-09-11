@@ -16,7 +16,11 @@ from experiments.run import (
     run_agent_evaluation,
     run_agent_session,
 )
-from experiments.training import TrainingEarlyStopping, early_stopping_config
+from experiments.training import (
+    TrainingEarlyStopping,
+    early_stopping_config,
+    replay_progress_interval,
+)
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -81,6 +85,7 @@ class ExperimentRunTest(unittest.TestCase):
         metadata = json.loads((output / "metadata.json").read_text())
         self.assertEqual(metadata["expanded_config"]["execution"]["replay_policy"], "sampled")
         self.assertEqual(metadata["expanded_config"]["execution"]["replay_interval"], 500)
+        self.assertFalse(metadata["expanded_config"]["execution"]["allow_bomb"])
         with (output / "training.csv").open(newline="", encoding="utf-8") as file:
             rows = list(csv.DictReader(file))
         self.assertEqual(len(rows), 1)
@@ -114,6 +119,11 @@ class ExperimentRunTest(unittest.TestCase):
         self.assertIsNone(early_stopping_config({}))
         config = {"early_stopping": {"enabled": True, "window": 5}}
         self.assertEqual(early_stopping_config(config), config["early_stopping"])
+
+    def test_training_replay_interval_tracks_progress_milestones(self):
+        self.assertEqual(replay_progress_interval(1), 1)
+        self.assertEqual(replay_progress_interval(1_000), 100)
+        self.assertEqual(replay_progress_interval(10_000), 1_000)
 
     def test_evaluation_checks_checkpoint_before_creating_output(self):
         output = self.output("missing")

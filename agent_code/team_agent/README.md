@@ -124,12 +124,15 @@ HORIZON = settings.BOMB_TIMER + settings.EXPLOSION_TIMER + 1
 
 ## 和其他 agent 的关系
 
-`q_learning_agent` 现在已经通过兼容包装复用本目录的团队特征接口：
+`q_learning_agent` 和 `dqn_agent` 都通过很薄的兼容包装复用本目录的团队特征接口：
 
 - `state_to_features(game_state)` 返回 `extract_features(game_state).state_key`
-- `legal_actions(game_state)` 返回 `extract_features(game_state).legal_mask`
+- DQN 的 `state_to_features(game_state)` 返回 `extract_features(game_state).vector`
+- 两者的 `legal_actions(game_state)` 都来自 `extract_features(game_state).legal_mask`
 
-这样 Q-learning 和后续 DQN 可以在同一套特征语义下比较，避免“算法不同”和“特征不同”混在一起，导致实验结论不清楚。
+兼容包装不复制任何特征计算。以后修改本目录的 `extract_features`（并按约定更新
+`FEATURE_VERSION`），Q-learning 和 DQN 会同时采用新实现。这样两种算法可以在同一套
+特征语义下比较，避免“算法不同”和“特征不同”混在一起，导致实验结论不清楚。
 
 ## 公共基础奖励接口
 
@@ -141,7 +144,8 @@ from agent_code.team_agent.rewards import REWARD_VERSION, reward_from_events
 reward = reward_from_events(events)
 ```
 
-当前版本为 `REWARD_VERSION = 'base-v1'`，奖励规则如下：
+当前版本为 `REWARD_VERSION = 'base-v1'`，Q-learning 与 DQN 的训练模块都直接导入此
+函数，不维护各自的奖励副本。奖励规则如下：
 
 | 条件或事件 | 奖励 |
 |---|---:|

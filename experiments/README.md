@@ -156,6 +156,36 @@ schema 时会明确失败。
 实验运行显示固定 80 列的 `tqdm` 进度条，在同一行原地更新，避免 IDE 误判终端宽度后
 因进度条过长而换行滚屏。训练结果同时持续写入 `training.csv`、`metadata.json` 和日志。
 
+### GUI 与实验回放
+
+`experiments/run.py` 面向批量训练和可复现评估，当前固定使用无 GUI 模式，以减少渲染开销
+并提高训练速度。因此该入口不提供 `--gui` 参数。GUI 功能仍由项目根目录的 `main.py`
+提供，没有被删除。
+
+开发期间如需实时观察 Agent，可以使用官方运行入口：
+
+```bash
+python3 main.py play \
+  --agents q_learning_agent \
+  --scenario coin-heaven \
+  --n-rounds 1
+```
+BOMBERMAN_ALLOW_BOMB=false python3 main.py play \
+  --agents dqn_agent \
+  --scenario coin-heaven \
+  --n-rounds 1
+
+这种方式适合人工检查行为，但不替代 `experiments/run.py --mode evaluate` 产生的固定 seed
+评估结果。若要查看实验保存的某一局，使用 replay：
+
+```bash
+python3 main.py replay \
+  runs/<run_id>/replays/round_00001.pt
+```
+
+只有对应运行的回放策略实际保存了该局时，replay 文件才会存在。训练模式默认使用
+`sampled`，多 seed 评估默认使用 `all`，单 seed 快速评估默认使用 `none`；具体规则见下一节。
+
 ### 回放保存策略
 
 运行器通过 `--replay-policy auto|none|failures|sampled|all` 控制回放。默认的 `auto`
@@ -167,7 +197,10 @@ schema 时会明确失败。
 - `sampled`：保存第一局以及每隔 `--replay-interval` 局；
 - `all`：保存每一局。
 
-默认抽样间隔为 500 局，可用 `--replay-interval` 修改。回放写入每个运行目录的
+训练模式不再使用固定抽样间隔，而是按训练进度里程碑保存。默认在完成计划总局数的
+10%、20%……100% 时保存，即间隔为 `ceil(n_rounds × 10%)`，并额外保留第 1 局。例如
+训练 1,000 局时每 100 局保存一次，训练 10,000 局时每 1,000 局保存一次。可用
+`--replay-interval` 显式覆盖进度比例生成的间隔。回放写入每个运行目录的
 `replays/round_XXXXX.pt`，`replays/manifest.jsonl` 同时记录 round、seed、目标 Agent
 得分以及保存原因。训练不会因此保存全部回放；默认 5 seeds × 20 局的正式评估会保留
 全部 100 局，便于复核高分和失败案例。
@@ -238,10 +271,10 @@ Task 1 和 Task 2 不接受对手；Task 3 的两个官方对手固定；Task 4 
 
 ### 单独训练
 
-例如在 Task 1 训练 Q-learning 10000 局并禁止放炸弹：
+例如在 Task 1 训练 Q-learning 10000 局（实验运行器会自动禁止放炸弹）：
 
 ```bash
-Q_LEARNING_ALLOW_BOMB=false python3 experiments/run.py \
+python3 experiments/run.py \
   --config experiments/configs/base.json \
   --mode train \
   --task 1 \
@@ -311,12 +344,12 @@ python3 experiments/run.py \
 也不会使用随机模型代替。下面评估已有 Q-table 在 Task 1 的表现：
 
 ```bash
-Q_LEARNING_ALLOW_BOMB=false python3 experiments/run.py \
+python3 experiments/run.py \
   --config experiments/configs/base.json \
   --mode evaluate \
   --task 1 \
   --agent q_learning_agent \
-  --checkpoint agent_code/q_learning_agent/q-table.pkl \
+  --checkpoint runs/q_coin_train/checkpoints/final.pkl \
   --run-id q_task1_eval
 ```
 
@@ -334,7 +367,7 @@ runs/q_task1_eval/q_task1_eval_summary/
 评估刚才训练产生的 checkpoint：
 
 ```bash
-Q_LEARNING_ALLOW_BOMB=false python3 experiments/run.py \
+python3 experiments/run.py \
   --config experiments/configs/base.json \
   --mode evaluate \
   --task 1 \
@@ -351,12 +384,12 @@ Q_LEARNING_ALLOW_BOMB=false python3 experiments/run.py \
 开发期间可先运行一局，检查 checkpoint 能否加载和 Agent 是否报错：
 
 ```bash
-Q_LEARNING_ALLOW_BOMB=false python3 experiments/run.py \
+python3 experiments/run.py \
   --config experiments/configs/base.json \
   --mode evaluate \
   --task 1 \
   --agent q_learning_agent \
-  --checkpoint agent_code/q_learning_agent/q-table.pkl \
+  --checkpoint runs/q_coin_train/checkpoints/final.pkl \
   --seed 10001 \
   --n-rounds 1 \
   --run-id q_smoke
@@ -410,8 +443,8 @@ python3 experiments/run.py \
 | `--replay-policy` | 回放策略；默认 `auto` |
 | `--replay-interval` | `sampled` 策略的周期，默认 500 局 |
 
-`Q_LEARNING_ALLOW_BOMB=false` 会同时影响训练和评估。只有模型训练时确实禁用了炸弹，或
-正在执行无炸弹消融实验时才应设置；否则应删掉该环境变量。
+`--task 1` 会在训练和评估中自动设置 `BOMBERMAN_ALLOW_BOMB=false`，当前的
+Q-learning 与 DQN agent 都会据此屏蔽炸弹。Task 2–4 会自动允许炸弹。
 
 ## 基础配置
 

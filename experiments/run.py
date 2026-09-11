@@ -502,6 +502,7 @@ def run_agent_session(
     expanded["seed"] = seed
     expanded["execution"] = {
         "agent": agent,
+        "allow_bomb": task_name != "coin_navigation",
         "checkpoint": str(checkpoint),
         "n_rounds": n_rounds,
         "opponents": list(opponents),
@@ -522,6 +523,7 @@ def run_agent_session(
         for name in (
             "BOMBERMAN_CHECKPOINT", "BOMBERMAN_CONFIG", "BOMBERMAN_RUN_DIR",
             "BOMBERMAN_RUN_ID", "BOMBERMAN_TRAINING_TASK",
+            "BOMBERMAN_ALLOW_BOMB",
         )
     }
     try:
@@ -531,6 +533,12 @@ def run_agent_session(
         os.environ["BOMBERMAN_RUN_DIR"] = str(output.resolve())
         os.environ["BOMBERMAN_RUN_ID"] = output.name
         os.environ["BOMBERMAN_TRAINING_TASK"] = task_name
+        # Task 1 isolates coin navigation. Keep its action space free of bombs
+        # for both training and frozen evaluation so agents are compared under
+        # the same curriculum constraint.
+        os.environ["BOMBERMAN_ALLOW_BOMB"] = (
+            "false" if task_name == "coin_navigation" else "true"
+        )
         _seed_official_rng(seeds["official_opponent_seed"])
         world = ExperimentWorld(
             _world_args(output, scenario, seeds["environment_seed"], output.name),
@@ -617,7 +625,11 @@ def _parser() -> argparse.ArgumentParser:
         "--replay-policy", choices=("auto", *REPLAY_POLICIES), default="auto",
         help="Replay retention: auto, none, failures, sampled, or all",
     )
-    parser.add_argument("--replay-interval", type=int, default=DEFAULT_REPLAY_INTERVAL)
+    parser.add_argument(
+        "--replay-interval", type=int,
+        help=("Rounds between sampled training replays; by default train mode "
+              "saves at each 10%% progress milestone"),
+    )
     location = parser.add_mutually_exclusive_group(required=True)
     location.add_argument("--run-id")
     location.add_argument("--output", type=Path)

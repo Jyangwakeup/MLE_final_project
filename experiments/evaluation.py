@@ -60,13 +60,14 @@ def run_evaluation_mode(
     if not checkpoint.is_file():
         raise FileNotFoundError(f"Evaluation checkpoint does not exist: {checkpoint}")
     n_rounds = args.n_rounds or configured_rounds
+    replay_interval = args.replay_interval or 500
     if args.seed is not None:
         output, _ = output_directory(args.run_id, args.output)
         completed = run_session(
             args.config, "evaluate", args.seed, output, args.agent, opponents,
             scenario, n_rounds, checkpoint, task_name,
             "none" if args.replay_policy == "auto" else args.replay_policy,
-            args.replay_interval,
+            replay_interval,
         )
         summary = completed / "summary"
         analyze_runs([completed], summary)
@@ -78,5 +79,5 @@ def run_evaluation_mode(
         args.config, seeds, n_rounds, args.run_id, args.agent, opponents,
         scenario, checkpoint, task_name,
         "all" if args.replay_policy == "auto" else args.replay_policy,
-        args.replay_interval,
+        replay_interval,
     )
