@@ -118,11 +118,15 @@ results/
 /final_project.pdf
 /reinforcement_learning_basics.md
 
-MLE_project_bomberman
+MLE_project_bomberman/
 notes/
+tmp/pdfs/
+output
+runs/
+
+checkpoints/
 
 # Local Agent configuration and in-progress Agent artifacts
-<<<<<<< HEAD
 # /AGENTS.md
 # /Agent/
 =======
@@ -132,6 +136,3 @@ notes/
 tmp/pdfs/
 output
 >>>>>>> d4057d32 (q learning)
-runs/test_c1_c4/episodes.jsonl
-runs/test_c1_c4/metadata.json
-runs/test_c1_c4/official_stats.json

@@ -18,7 +18,23 @@ and epsilon-greedy exploration over physically legal actions.
 Train from the repository root:
 
 ```bash
-python main.py play --agents dqn_agent --train 1 --n-rounds 1000 --no-gui
+BOMBERMAN_TRAINING_TASK=task1 python3 main.py play --agents dqn_agent --train 1 --scenario coin-heaven --n-rounds 1000 --no-gui
 ```
 
+Set `BOMBERMAN_TRAINING_TASK` to a stable curriculum-stage name. When the saved
+name changes (for example, from `task1` to `task2`), the checkpoint weights and
+optimizer are retained while epsilon exploration progress restarts. Continuing
+with the same name also continues the saved exploration progress.
+
 The checkpoint is saved as `agent_code/dqn_agent/dqn-model.pt`.
+
+
+
+
+BOMBERMAN_TRAINING_TASK=task2 \
+python3 main.py play \
+  --agents dqn_agent \
+  --train 1 \
+  --scenario classic \
+  --n-rounds 10000 \
+  --no-gui

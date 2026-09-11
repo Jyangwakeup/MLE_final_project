@@ -1,11 +1,22 @@
+import csv
 import json
+import os
 import shutil
 import subprocess
 import sys
-import tempfile
 import unittest
 import uuid
 from pathlib import Path
+from unittest.mock import patch
+
+import settings as s
+from experiments.run import (
+    TASKS,
+    _task_settings,
+    run_agent_evaluation,
+    run_agent_session,
+)
+from experiments.training import TrainingEarlyStopping, early_stopping_config
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -14,216 +25,168 @@ BASE_CONFIG = PROJECT_ROOT / "experiments" / "configs" / "base.json"
 RUNS_ROOT = PROJECT_ROOT / "runs"
 
 
-class ExperimentRunCliTest(unittest.TestCase):
+class ExperimentRunTest(unittest.TestCase):
     def setUp(self):
-        self.run_ids = []
-        self.runs_root_existed = RUNS_ROOT.exists()
+        self.outputs = []
 
     def tearDown(self):
-        for run_id in self.run_ids:
-            run_directory = RUNS_ROOT / run_id
-            if run_directory.exists():
-                shutil.rmtree(run_directory)
-        if not self.runs_root_existed and RUNS_ROOT.exists() and not any(RUNS_ROOT.iterdir()):
-            RUNS_ROOT.rmdir()
+        for output in self.outputs:
+            if output.exists():
+                shutil.rmtree(output)
 
-    def _run_id(self):
-        run_id = f"test-baseline-{uuid.uuid4().hex}"
-        self.run_ids.append(run_id)
-        return run_id
-
-    def _baseline_config(self, directory, n_rounds=1):
-        config = json.loads(BASE_CONFIG.read_text(encoding="utf-8"))
-        config["baseline"] = {
-            "agents": ["random_agent"],
-            "n_rounds": n_rounds,
-            "scenario": "classic",
-        }
-        path = Path(directory) / "baseline.json"
-        path.write_text(json.dumps(config, indent=2) + "\n", encoding="utf-8")
+    def output(self, suffix):
+        path = RUNS_ROOT / f"test-experiment-{uuid.uuid4().hex}-{suffix}"
+        self.outputs.append(path)
         return path
 
-    def _invoke(self, config, run_id, mode="baseline", seed=10001):
-        return subprocess.run(
+    def test_four_tasks_select_expected_scenario_and_agents(self):
+        self.assertEqual(set(TASKS), {1, 2, 3, 4})
+        self.assertEqual(_task_settings(1, None), ("coin_navigation", "coin-heaven", ()))
+        self.assertEqual(_task_settings(2, None), ("crate_navigation", "classic", ()))
+        self.assertEqual(
+            _task_settings(3, None),
+            ("weak_opponents", "classic", ("peaceful_agent", "coin_collector_agent")),
+        )
+        self.assertEqual(
+            _task_settings(4, ["random_agent", "rule_based_agent"]),
+            ("full_match", "classic", ("random_agent", "rule_based_agent")),
+        )
+
+    def test_task_constraints_reject_wrong_opponents(self):
+        with self.assertRaises(ValueError):
+            _task_settings(1, ["random_agent"])
+        with self.assertRaises(ValueError):
+            _task_settings(3, ["random_agent"])
+        with self.assertRaises(ValueError):
+            _task_settings(4, [])
+
+    def test_training_writes_checkpoint_table_summary_and_chart(self):
+        output = self.output("train")
+        checkpoint = output / "checkpoints" / "final.pkl"
+        with (
+            patch.object(s, "MAX_STEPS", 3),
+            patch.dict(os.environ, {"Q_LEARNING_ALLOW_BOMB": "false"}),
+        ):
+            run_agent_session(
+                BASE_CONFIG, "train", 11, output, "q_learning_agent", (),
+                "coin-heaven", 1, checkpoint, "coin_navigation", "sampled", 500,
+            )
+
+        self.assertTrue(checkpoint.is_file())
+        self.assertTrue((output / "training_summary.json").is_file())
+        self.assertTrue((output / "training_progress.png").is_file())
+        self.assertTrue((output / "replays" / "round_00001.pt").is_file())
+        replay_manifest = (output / "replays" / "manifest.jsonl").read_text()
+        self.assertIn('"reason": "periodic_sample"', replay_manifest)
+        metadata = json.loads((output / "metadata.json").read_text())
+        self.assertEqual(metadata["expanded_config"]["execution"]["replay_policy"], "sampled")
+        self.assertEqual(metadata["expanded_config"]["execution"]["replay_interval"], 500)
+        with (output / "training.csv").open(newline="", encoding="utf-8") as file:
+            rows = list(csv.DictReader(file))
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0]["algorithm"], "q_learning")
+        self.assertEqual(rows[0]["round"], "1")
+
+    def test_training_early_stopping_detects_reward_plateau(self):
+        output = self.output("early-stop-unit")
+        output.mkdir()
+        training_path = output / "training.csv"
+        training_path.write_text("round,reward\n", encoding="utf-8")
+        stopper = TrainingEarlyStopping(training_path, {
+            "window": 2,
+            "patience": 2,
+            "min_rounds": 4,
+            "min_delta": 0.1,
+            "target_reward": 9.0,
+        })
+
+        decisions = []
+        for round_index, reward in enumerate((10, 10, 10, 10), start=1):
+            with training_path.open("a", encoding="utf-8") as file:
+                file.write(f"{round_index},{reward}\n")
+            decisions.append(stopper(round_index))
+
+        self.assertEqual(decisions, [False, False, False, True])
+        self.assertEqual(stopper.result["reason"], "rolling_mean_plateau")
+        self.assertEqual(stopper.result["completed_rounds"], 4)
+
+    def test_early_stopping_is_opt_in(self):
+        self.assertIsNone(early_stopping_config({}))
+        config = {"early_stopping": {"enabled": True, "window": 5}}
+        self.assertEqual(early_stopping_config(config), config["early_stopping"])
+
+    def test_evaluation_checks_checkpoint_before_creating_output(self):
+        output = self.output("missing")
+        result = subprocess.run(
             [
-                sys.executable,
-                str(RUNNER),
-                "--config",
-                str(config),
-                "--mode",
-                mode,
-                "--seed",
-                str(seed),
-                "--run-id",
-                run_id,
+                sys.executable, str(RUNNER), "--config", str(BASE_CONFIG),
+                "--mode", "evaluate", "--task", "1", "--agent",
+                "q_learning_agent", "--checkpoint", str(output / "missing.pkl"),
+                "--seed", "10001", "--n-rounds", "1", "--run-id", output.name,
             ],
             cwd=PROJECT_ROOT,
             text=True,
             capture_output=True,
-            timeout=60,
+            timeout=30,
         )
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("checkpoint does not exist", result.stderr)
+        self.assertFalse(output.exists())
 
-    def test_baseline_reads_config_preserves_it_and_writes_official_stats(self):
-        with tempfile.TemporaryDirectory() as temporary_directory:
-            config = self._baseline_config(temporary_directory)
-            original_config = config.read_bytes()
-            run_id = self._run_id()
-
-            result = self._invoke(config, run_id)
-
-            self.assertEqual(result.returncode, 0, result.stderr)
-            self.assertEqual(config.read_bytes(), original_config)
-
-            output = RUNS_ROOT / run_id
-            metadata = json.loads((output / "metadata.json").read_text(encoding="utf-8"))
-            self.assertEqual(metadata["status"], "completed")
-            self.assertEqual(metadata["mode"], "baseline")
-            self.assertEqual(metadata["seed"], 10001)
-            self.assertEqual(metadata["expanded_config"]["baseline"]["n_rounds"], 1)
-
-            official_stats = json.loads((output / "official_stats.json").read_text(encoding="utf-8"))
-            self.assertIn("by_agent", official_stats)
-            self.assertIn("by_round", official_stats)
-
-    def test_existing_run_directory_is_not_overwritten(self):
-        with tempfile.TemporaryDirectory() as temporary_directory:
-            config = self._baseline_config(temporary_directory)
-            run_id = self._run_id()
-            output = RUNS_ROOT / run_id
-            output.mkdir(parents=True)
-            marker = output / "keep.txt"
-            marker.write_text("keep", encoding="utf-8")
-
-            result = self._invoke(config, run_id)
-
-            self.assertNotEqual(result.returncode, 0)
-            self.assertEqual(marker.read_text(encoding="utf-8"), "keep")
-            self.assertFalse((output / "metadata.json").exists())
-
-    def test_unsupported_mode_records_failed_metadata(self):
-        with tempfile.TemporaryDirectory() as temporary_directory:
-            config = self._baseline_config(temporary_directory)
-            run_id = self._run_id()
-
-            result = self._invoke(config, run_id, mode="train")
-
-            self.assertNotEqual(result.returncode, 0)
-            metadata = json.loads(
-                (RUNS_ROOT / run_id / "metadata.json").read_text(encoding="utf-8")
+    def test_evaluation_is_frozen_and_writes_episode_results(self):
+        training_output = self.output("source")
+        evaluation_output = self.output("evaluation")
+        checkpoint = training_output / "checkpoints" / "final.pkl"
+        with (
+            patch.object(s, "MAX_STEPS", 3),
+            patch.dict(os.environ, {"Q_LEARNING_ALLOW_BOMB": "false"}),
+        ):
+            run_agent_session(
+                BASE_CONFIG, "train", 11, training_output, "q_learning_agent", (),
+                "coin-heaven", 1, checkpoint, "coin_navigation",
             )
-            self.assertEqual(metadata["status"], "failed")
-            self.assertEqual(metadata["mode"], "train")
-            self.assertEqual(metadata["error"]["type"], "ValueError")
-
-    def test_each_round_appends_an_episode_consistent_with_official_stats(self):
-        with tempfile.TemporaryDirectory() as temporary_directory:
-            config = self._baseline_config(temporary_directory, n_rounds=3)
-            run_id = self._run_id()
-
-            result = self._invoke(config, run_id)
-
-            self.assertEqual(result.returncode, 0, result.stderr)
-            output = RUNS_ROOT / run_id
-            episode_lines = (output / "episodes.jsonl").read_text(encoding="utf-8").splitlines()
-            self.assertEqual(len(episode_lines), 3)
-
-            episodes = [json.loads(line) for line in episode_lines]
-            self.assertEqual([episode["round_index"] for episode in episodes], [1, 2, 3])
-            for episode in episodes:
-                self.assertEqual(episode["schema_version"], "episode-v1")
-                self.assertEqual(episode["run_id"], run_id)
-                self.assertEqual(episode["seed"], 10001)
-                self.assertEqual(episode["scenario"], "classic")
-                self.assertEqual(episode["stage"], "official_baseline")
-                self.assertGreaterEqual(episode["round_steps"], 1)
-                self.assertEqual(len(episode["agents"]), 1)
-                self.assertEqual(
-                    set(episode["agents"][0]),
-                    {
-                        "name",
-                        "score",
-                        "coins",
-                        "kills",
-                        "suicides",
-                        "crates",
-                        "bombs",
-                        "invalid",
-                        "survived",
-                        "dead",
-                    },
-                )
-
-            official = json.loads((output / "official_stats.json").read_text(encoding="utf-8"))
-            recorded_by_agent = {}
-            for episode in episodes:
-                for agent in episode["agents"]:
-                    totals = recorded_by_agent.setdefault(agent["name"], {})
-                    for metric in ("score", "coins", "kills", "suicides", "crates", "bombs", "invalid"):
-                        totals[metric] = totals.get(metric, 0) + agent[metric]
-
-            for agent_name, recorded in recorded_by_agent.items():
-                for metric, total in recorded.items():
-                    self.assertEqual(total, official["by_agent"][agent_name].get(metric, 0))
-
-    def test_seed_plan_records_and_reproduces_baseline_results(self):
-        with tempfile.TemporaryDirectory() as temporary_directory:
-            config = self._baseline_config(temporary_directory)
-            first_run_id = self._run_id()
-            repeated_run_id = self._run_id()
-            different_seed_run_id = self._run_id()
-
-            first = self._invoke(config, first_run_id, seed=10001)
-            repeated = self._invoke(config, repeated_run_id, seed=10001)
-            different = self._invoke(config, different_seed_run_id, seed=10002)
-
-            self.assertEqual(first.returncode, 0, first.stderr)
-            self.assertEqual(repeated.returncode, 0, repeated.stderr)
-            self.assertEqual(different.returncode, 0, different.stderr)
-
-            first_output = RUNS_ROOT / first_run_id
-            repeated_output = RUNS_ROOT / repeated_run_id
-            different_output = RUNS_ROOT / different_seed_run_id
-            first_metadata = json.loads((first_output / "metadata.json").read_text(encoding="utf-8"))
-            repeated_metadata = json.loads(
-                (repeated_output / "metadata.json").read_text(encoding="utf-8")
-            )
-            different_metadata = json.loads(
-                (different_output / "metadata.json").read_text(encoding="utf-8")
+            before = checkpoint.read_bytes()
+            run_agent_session(
+                BASE_CONFIG, "evaluate", 10001, evaluation_output,
+                "q_learning_agent", (), "coin-heaven", 1, checkpoint,
+                "coin_navigation",
             )
 
-            expected_first_seeds = {
-                "experiment_seed": 10001,
-                "environment_seed": 10001,
-                "official_opponent_seed": 110001,
-            }
-            self.assertEqual(first_metadata["seeds"], expected_first_seeds)
-            self.assertEqual(repeated_metadata["seeds"], expected_first_seeds)
-            self.assertEqual(
-                different_metadata["seeds"],
-                {
-                    "experiment_seed": 10002,
-                    "environment_seed": 10002,
-                    "official_opponent_seed": 110002,
-                },
+        self.assertEqual(checkpoint.read_bytes(), before)
+        metadata = json.loads((evaluation_output / "metadata.json").read_text())
+        self.assertEqual(metadata["mode"], "evaluate")
+        self.assertEqual(metadata["expanded_config"]["execution"]["task"], "coin_navigation")
+        self.assertTrue((evaluation_output / "episodes.jsonl").is_file())
+        self.assertFalse((evaluation_output / "training.csv").exists())
+
+    def test_multi_seed_evaluation_groups_runs_under_run_id_directory(self):
+        output = self.output("multi-seed")
+        checkpoint = output.parent / f"{output.name}-checkpoint.pkl"
+        checkpoint.write_bytes(b"checkpoint")
+        self.addCleanup(checkpoint.unlink, missing_ok=True)
+
+        def fake_session(*args):
+            run_output = args[3]
+            run_output.mkdir()
+            return run_output
+
+        def fake_analysis(run_directories, summary):
+            summary.mkdir()
+
+        with (
+            patch("experiments.run.run_agent_session", side_effect=fake_session),
+            patch("experiments.run.analyze_runs", side_effect=fake_analysis),
+        ):
+            summary = run_agent_evaluation(
+                BASE_CONFIG, (10001, 10002), 1, output.name,
+                "q_learning_agent", (), "coin-heaven", checkpoint,
+                "coin_navigation",
             )
 
-            first_episodes = [
-                json.loads(line)
-                for line in (first_output / "episodes.jsonl").read_text(encoding="utf-8").splitlines()
-            ]
-            repeated_episodes = [
-                json.loads(line)
-                for line in (repeated_output / "episodes.jsonl").read_text(encoding="utf-8").splitlines()
-            ]
-            different_episodes = [
-                json.loads(line)
-                for line in (different_output / "episodes.jsonl").read_text(encoding="utf-8").splitlines()
-            ]
-            self.assertEqual(first_episodes[0]["environment_seed"], 10001)
-            self.assertEqual(different_episodes[0]["environment_seed"], 10002)
-            for episode in first_episodes + repeated_episodes:
-                episode.pop("run_id")
-            self.assertEqual(first_episodes, repeated_episodes)
+        self.assertEqual(summary, output / f"{output.name}_summary")
+        self.assertTrue((output / f"{output.name}_s10001").is_dir())
+        self.assertTrue((output / f"{output.name}_s10002").is_dir())
+        self.assertTrue((summary / "fixed_evaluation.json").is_file())
 
 
 if __name__ == "__main__":

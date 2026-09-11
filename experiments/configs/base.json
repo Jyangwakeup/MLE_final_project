@@ -4,31 +4,20 @@
   "reward_version": "r1",
   "seed": null,
   "checkpoint": null,
+  "evaluation": {
+    "seeds": [10001, 10002, 10003, 10004, 10005],
+    "n_rounds": 20
+  },
   "training": {
-    "total_action_steps": 100000,
-    "stages": [
-      {
-        "name": "coin_navigation",
-        "scenario": "coin-heaven",
-        "budget_fraction": 0.1
-      },
-      {
-        "name": "single_agent_crates",
-        "scenario": "classic",
-        "budget_fraction": 0.3
-      },
-      {
-        "name": "weak_opponents",
-        "scenario": "classic",
-        "budget_fraction": 0.2
-      },
-      {
-        "name": "full_match",
-        "scenario": "classic",
-        "budget_fraction": 0.4
-      }
-    ],
-    "metrics": {}
+    "n_rounds": null,
+    "early_stopping": {
+      "enabled": false,
+      "window": 100,
+      "patience": 100,
+      "min_rounds": 300,
+      "min_delta": 0.1,
+      "target_reward": null
+    }
   },
   "rewards": {
     "coin_collected": 1.0,

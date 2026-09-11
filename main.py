@@ -30,7 +30,9 @@ class Timekeeper:
 
 
 def world_controller(world, n_rounds, *,
-                     gui, every_step, turn_based, make_video, update_interval):
+                     gui, every_step, turn_based, make_video, update_interval,
+                     show_progress=True, progress_ncols=80,
+                     stop_condition=None):
     if make_video and not gui.screenshot_dir.exists():
         gui.screenshot_dir.mkdir()
 
@@ -48,7 +50,13 @@ def world_controller(world, n_rounds, *,
             pygame.display.flip()
 
     user_input = None
-    for _ in tqdm(range(n_rounds)):
+    completed_rounds = 0
+    for _ in tqdm(
+        range(n_rounds),
+        disable=not show_progress,
+        ncols=progress_ncols,
+        dynamic_ncols=progress_ncols is None,
+    ):
         world.new_round()
         while world.running:
             # Only render when the last frame is not too old
@@ -78,6 +86,10 @@ def world_controller(world, n_rounds, *,
         if make_video:
             gui.make_video()
 
+        completed_rounds += 1
+        if stop_condition is not None and stop_condition(completed_rounds):
+            break
+
         # Render end screen until next round is queried
         if gui is not None:
             do_continue = False
@@ -92,6 +104,7 @@ def world_controller(world, n_rounds, *,
                             do_continue = True
 
     world.end()
+    return completed_rounds
 
 
 def main(argv = None):
