@@ -132,3 +132,6 @@ notes/
 tmp/pdfs/
 output
 >>>>>>> d4057d32 (q learning)
+runs/test_c1_c4/episodes.jsonl
+runs/test_c1_c4/metadata.json
+runs/test_c1_c4/official_stats.json
