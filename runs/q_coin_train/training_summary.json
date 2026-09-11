@@ -1,0 +1,15 @@
+{
+  "algorithm": "q_learning",
+  "best_round": 252,
+  "best_round_reward": 50.900000000000034,
+  "checkpoint": "/Users/zyy/workspace/MLE_final/runs/q_coin_train/checkpoints/final.pkl",
+  "final_action_steps": 190973,
+  "final_epsilon": 0.050000000000000044,
+  "final_loss": null,
+  "final_q_states": 50,
+  "final_updates": null,
+  "mean_reward": 48.64127000000008,
+  "mean_reward_last_100": 50.35100000000009,
+  "rounds": 1000,
+  "schema_version": "training-summary-v1"
+}

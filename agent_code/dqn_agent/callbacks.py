@@ -14,6 +14,7 @@ BOARD_SIZE = 17
 CHANNELS = 7
 INPUT_SIZE = CHANNELS * BOARD_SIZE * BOARD_SIZE + 1
 MODEL_FILE = Path(__file__).with_name("dqn-model.pt")
+CHECKPOINT_ENV = "BOMBERMAN_CHECKPOINT"
 SEED = 0
 TRAINING_TASK_ENV = "BOMBERMAN_TRAINING_TASK"
 
@@ -34,8 +35,14 @@ def setup(self):
     self.model = DQN(INPUT_SIZE, len(ACTIONS), seed=SEED)
     self.training_task = _training_task()
     self.action_steps = 0
-    if MODEL_FILE.exists():
-        checkpoint = torch.load(MODEL_FILE, map_location="cpu", weights_only=True)
+    configured_checkpoint = os.getenv(CHECKPOINT_ENV)
+    self.model_file = (
+        Path(configured_checkpoint).expanduser().resolve()
+        if configured_checkpoint
+        else MODEL_FILE
+    )
+    if self.model_file.exists():
+        checkpoint = torch.load(self.model_file, map_location="cpu", weights_only=True)
         self.model.load_checkpoint(checkpoint, training=self.train)
         self.action_steps = int(checkpoint.get("action_steps", 0))
         previous_task = checkpoint.get("training_task")
@@ -50,7 +57,11 @@ def setup(self):
                 self.training_task,
             )
             self.action_steps = 0
-        self.logger.info("Loaded DQN checkpoint from %s", MODEL_FILE)
+        self.logger.info("Loaded DQN checkpoint from %s", self.model_file)
+    elif configured_checkpoint and not self.train:
+        raise FileNotFoundError(
+            f"Evaluation checkpoint does not exist: {self.model_file}"
+        )
     elif not self.train:
         self.logger.warning("No DQN checkpoint found; using an untrained network")
 

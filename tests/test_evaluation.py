@@ -1,4 +1,5 @@
 import json
+import csv
 import tempfile
 import unittest
 from pathlib import Path
@@ -77,16 +78,24 @@ class ExperimentAnalysisTest(unittest.TestCase):
             rows = {row["agent_name"]: row for row in summarize_runs([run])}
 
             self.assertAlmostEqual(rows["a"]["mean_score"], 10 / 3)
+            self.assertEqual(rows["a"]["total_score"], 10.0)
+            self.assertEqual(rows["a"]["rank_by_total_score"], 1)
             self.assertAlmostEqual(rows["a"]["score_std"], 2.3570226039)
             self.assertEqual(rows["a"]["coins"], 2)
+            self.assertAlmostEqual(rows["a"]["mean_coins"], 2 / 3)
             self.assertEqual(rows["a"]["kills"], 1)
             self.assertEqual(rows["a"]["crates"], 3)
             self.assertEqual(rows["a"]["invalid_actions"], 4)
+            self.assertAlmostEqual(rows["a"]["invalid_action_rate"], 4 / 30)
             self.assertAlmostEqual(rows["a"]["survival_rate"], 1.0)
+            self.assertAlmostEqual(rows["a"]["mean_survival_steps"], 10.0)
             self.assertAlmostEqual(rows["b"]["survival_rate"], 2 / 3)
             self.assertEqual(rows["a"]["exclusive_wins"], 1)
+            self.assertAlmostEqual(rows["a"]["exclusive_win_rate"], 1 / 3)
             self.assertEqual(rows["a"]["tied_first"], 1)
+            self.assertAlmostEqual(rows["a"]["tied_first_rate"], 1 / 3)
             self.assertEqual(rows["a"]["zero_score_ties"], 1)
+            self.assertAlmostEqual(rows["a"]["zero_score_tie_rate"], 1 / 3)
             self.assertEqual(rows["b"]["exclusive_wins"], 0)
             self.assertEqual(rows["b"]["tied_first"], 1)
             self.assertEqual(rows["b"]["zero_score_ties"], 1)
@@ -106,6 +115,11 @@ class ExperimentAnalysisTest(unittest.TestCase):
             self.assertEqual([(row["run_id"], row["mean_score"]) for row in rows], [("first", 1.0), ("second", 3.0)])
             self.assertTrue((output / "summary.csv").is_file())
             self.assertTrue((output / "mean_score.png").is_file())
+            with (output / "summary.csv").open(newline="", encoding="utf-8") as file:
+                summary_rows = list(csv.DictReader(file))
+            self.assertEqual(summary_rows[-1]["run_id"], "AVERAGE")
+            self.assertEqual(summary_rows[-1]["agent_name"], "a")
+            self.assertEqual(float(summary_rows[-1]["mean_score"]), 2.0)
 
     def test_missing_or_malformed_episodes_fail_clearly(self):
         with tempfile.TemporaryDirectory() as temporary_directory:

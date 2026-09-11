@@ -30,6 +30,7 @@ The checkpoint is saved as `agent_code/dqn_agent/dqn-model.pt`.
 
 
 
+
 BOMBERMAN_TRAINING_TASK=task2 \
 python3 main.py play \
   --agents dqn_agent \

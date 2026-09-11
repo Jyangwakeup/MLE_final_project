@@ -218,6 +218,7 @@ class AgentRunner:
 
         self.fake_self = SimpleNamespace()
         self.fake_self.train = train
+        self.fake_self.agent_name = agent_name
 
         self.wlogger = logging.getLogger(self.agent_name + '_wrapper')
         self.wlogger.setLevel(s.LOG_AGENT_WRAPPER)

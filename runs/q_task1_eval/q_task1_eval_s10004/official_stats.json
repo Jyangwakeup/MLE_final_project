@@ -1,0 +1,134 @@
+{
+    "by_agent": {
+        "q_learning_agent": {
+            "coins": 685,
+            "moves": 5702,
+            "rounds": 20,
+            "score": 685,
+            "steps": 7711,
+            "time": 28.31763005256653
+        }
+    },
+    "by_round": {
+        "q_task1_eval_s10004 | Round 01 (2026-09-11 20-32-03)": {
+            "coins": 42,
+            "kills": 0,
+            "steps": 400,
+            "suicides": 0
+        },
+        "q_task1_eval_s10004 | Round 02 (2026-09-11 20-32-04)": {
+            "coins": 4,
+            "kills": 0,
+            "steps": 400,
+            "suicides": 0
+        },
+        "q_task1_eval_s10004 | Round 03 (2026-09-11 20-32-06)": {
+            "coins": 29,
+            "kills": 0,
+            "steps": 400,
+            "suicides": 0
+        },
+        "q_task1_eval_s10004 | Round 04 (2026-09-11 20-32-07)": {
+            "coins": 24,
+            "kills": 0,
+            "steps": 400,
+            "suicides": 0
+        },
+        "q_task1_eval_s10004 | Round 05 (2026-09-11 20-32-09)": {
+            "coins": 42,
+            "kills": 0,
+            "steps": 400,
+            "suicides": 0
+        },
+        "q_task1_eval_s10004 | Round 06 (2026-09-11 20-32-11)": {
+            "coins": 29,
+            "kills": 0,
+            "steps": 400,
+            "suicides": 0
+        },
+        "q_task1_eval_s10004 | Round 07 (2026-09-11 20-32-12)": {
+            "coins": 41,
+            "kills": 0,
+            "steps": 400,
+            "suicides": 0
+        },
+        "q_task1_eval_s10004 | Round 08 (2026-09-11 20-32-14)": {
+            "coins": 45,
+            "kills": 0,
+            "steps": 400,
+            "suicides": 0
+        },
+        "q_task1_eval_s10004 | Round 09 (2026-09-11 20-32-15)": {
+            "coins": 45,
+            "kills": 0,
+            "steps": 400,
+            "suicides": 0
+        },
+        "q_task1_eval_s10004 | Round 10 (2026-09-11 20-32-17)": {
+            "coins": 45,
+            "kills": 0,
+            "steps": 400,
+            "suicides": 0
+        },
+        "q_task1_eval_s10004 | Round 11 (2026-09-11 20-32-18)": {
+            "coins": 20,
+            "kills": 0,
+            "steps": 400,
+            "suicides": 0
+        },
+        "q_task1_eval_s10004 | Round 12 (2026-09-11 20-32-20)": {
+            "coins": 44,
+            "kills": 0,
+            "steps": 400,
+            "suicides": 0
+        },
+        "q_task1_eval_s10004 | Round 13 (2026-09-11 20-32-22)": {
+            "coins": 28,
+            "kills": 0,
+            "steps": 400,
+            "suicides": 0
+        },
+        "q_task1_eval_s10004 | Round 14 (2026-09-11 20-32-23)": {
+            "coins": 37,
+            "kills": 0,
+            "steps": 400,
+            "suicides": 0
+        },
+        "q_task1_eval_s10004 | Round 15 (2026-09-11 20-32-25)": {
+            "coins": 21,
+            "kills": 0,
+            "steps": 400,
+            "suicides": 0
+        },
+        "q_task1_eval_s10004 | Round 16 (2026-09-11 20-32-27)": {
+            "coins": 10,
+            "kills": 0,
+            "steps": 400,
+            "suicides": 0
+        },
+        "q_task1_eval_s10004 | Round 17 (2026-09-11 20-32-28)": {
+            "coins": 45,
+            "kills": 0,
+            "steps": 400,
+            "suicides": 0
+        },
+        "q_task1_eval_s10004 | Round 18 (2026-09-11 20-32-30)": {
+            "coins": 40,
+            "kills": 0,
+            "steps": 400,
+            "suicides": 0
+        },
+        "q_task1_eval_s10004 | Round 19 (2026-09-11 20-32-31)": {
+            "coins": 50,
+            "kills": 0,
+            "steps": 111,
+            "suicides": 0
+        },
+        "q_task1_eval_s10004 | Round 20 (2026-09-11 20-32-32)": {
+            "coins": 44,
+            "kills": 0,
+            "steps": 400,
+            "suicides": 0
+        }
+    }
+}
