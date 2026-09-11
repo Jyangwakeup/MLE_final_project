@@ -58,11 +58,13 @@ def _append_json_line(path: Path, value: dict[str, Any]) -> None:
 class ExperimentWorld(BombeRLeWorld):
     """Official world extension that appends one record after each completed round."""
 
-    def __init__(self, args: WorldArgs, agents, output: Path, run_id: str, seed: int):
+    def __init__(
+        self, args: WorldArgs, agents, output: Path, run_id: str, environment_seed: int
+    ):
         self._episodes_path = output / "episodes.jsonl"
         self._episodes_path.touch(exist_ok=False)
         self._experiment_run_id = run_id
-        self._environment_seed = seed
+        self._environment_seed = environment_seed
         super().__init__(args, agents)
 
     def end_round(self) -> None:
@@ -92,6 +94,7 @@ class ExperimentWorld(BombeRLeWorld):
                 "run_id": self._experiment_run_id,
                 "round_index": int(self.round),
                 "seed": self._environment_seed,
+                "environment_seed": self._environment_seed,
                 "scenario": self.args.scenario,
                 "stage": "official_baseline",
                 "round_steps": int(self.step),
@@ -111,7 +114,24 @@ def _source_commit() -> str | None:
     return result.stdout.strip() if result.returncode == 0 else None
 
 
-def _initial_metadata(config_path: Path, mode: str, run_id: str, seed: int) -> dict[str, Any]:
+def _baseline_seeds(experiment_seed: int) -> dict[str, int]:
+    """Return the validation/test seed plan fixed by the implementation guide."""
+    return {
+        "experiment_seed": experiment_seed,
+        "environment_seed": experiment_seed,
+        "official_opponent_seed": experiment_seed + 100000,
+    }
+
+
+def _seed_official_rng(official_opponent_seed: int) -> None:
+    """Seed official agents' shared Python and NumPy RNGs at lifecycle boundaries."""
+    random.seed(official_opponent_seed)
+    np.random.seed(official_opponent_seed)
+
+
+def _initial_metadata(
+    config_path: Path, mode: str, run_id: str, seeds: dict[str, int]
+) -> dict[str, Any]:
     dependencies: dict[str, str | None] = {}
     for distribution in ("numpy", "tqdm", "pygame"):
         try:
@@ -134,7 +154,8 @@ def _initial_metadata(config_path: Path, mode: str, run_id: str, seed: int) -> d
         "mode": mode,
         "python_version": platform.python_version(),
         "run_id": run_id,
-        "seed": seed,
+        "seed": seeds["experiment_seed"],
+        "seeds": seeds,
         "source_commit": _source_commit(),
         "started_at": _utc_now(),
         "status": "running",
@@ -148,7 +169,7 @@ def _read_config(config_path: Path) -> dict[str, Any]:
     return value
 
 
-def _expanded_config(config: dict[str, Any], seed: int) -> tuple[dict[str, Any], tuple[str, ...], str, int, int]:
+def _expanded_config(config: dict[str, Any], seed: int) -> tuple[dict[str, Any], tuple[str, ...], str, int]:
     expanded = json.loads(json.dumps(config))
     baseline = expanded.setdefault("baseline", {})
     if not isinstance(baseline, dict):
@@ -157,7 +178,6 @@ def _expanded_config(config: dict[str, Any], seed: int) -> tuple[dict[str, Any],
     agents = baseline.setdefault("agents", list(DEFAULT_BASELINE_AGENTS))
     scenario = baseline.setdefault("scenario", "classic")
     n_rounds = baseline.setdefault("n_rounds", 5)
-    opponent_seed = baseline.setdefault("opponent_seed", seed + 100000)
     expanded["seed"] = seed
 
     if not isinstance(agents, list) or not all(isinstance(agent, str) for agent in agents):
@@ -171,10 +191,10 @@ def _expanded_config(config: dict[str, Any], seed: int) -> tuple[dict[str, Any],
         raise ValueError(f"Unknown scenario: {scenario}")
     if isinstance(n_rounds, bool) or not isinstance(n_rounds, int) or n_rounds < 1:
         raise ValueError("config.baseline.n_rounds must be a positive integer")
-    if isinstance(opponent_seed, bool) or not isinstance(opponent_seed, int):
-        raise ValueError("config.baseline.opponent_seed must be an integer")
+    if "opponent_seed" in baseline:
+        raise ValueError("config.baseline.opponent_seed is derived from --seed")
 
-    return expanded, tuple(agents), scenario, n_rounds, opponent_seed
+    return expanded, tuple(agents), scenario, n_rounds
 
 
 def _output_directory(run_id: str | None, output: Path | None) -> tuple[Path, str]:
@@ -215,12 +235,13 @@ def run_baseline(config_path: Path, mode: str, seed: int, run_id: str | None, ou
     output_directory, resolved_run_id = _output_directory(run_id, output)
     output_directory.mkdir(parents=True, exist_ok=False)
     metadata_path = output_directory / "metadata.json"
-    metadata = _initial_metadata(config_path, mode, resolved_run_id, seed)
+    seeds = _baseline_seeds(seed)
+    metadata = _initial_metadata(config_path, mode, resolved_run_id, seeds)
     _write_json(metadata_path, metadata)
 
     try:
         config = _read_config(config_path)
-        expanded, agents, scenario, n_rounds, opponent_seed = _expanded_config(config, seed)
+        expanded, agents, scenario, n_rounds = _expanded_config(config, seed)
         metadata["expanded_config"] = expanded
         metadata["config_sha256"] = hashlib.sha256(
             json.dumps(expanded, sort_keys=True, separators=(",", ":")).encode("utf-8")
@@ -231,15 +252,15 @@ def run_baseline(config_path: Path, mode: str, seed: int, run_id: str | None, ou
             raise ValueError("Only --mode baseline is supported in C2")
 
         (output_directory / "logs").mkdir()
+        _seed_official_rng(seeds["official_opponent_seed"])
         world = ExperimentWorld(
-            _world_args(output_directory, scenario, seed, resolved_run_id),
+            _world_args(output_directory, scenario, seeds["environment_seed"], resolved_run_id),
             [(agent, False) for agent in agents],
             output_directory,
             resolved_run_id,
-            seed,
+            seeds["environment_seed"],
         )
-        random.seed(opponent_seed)
-        np.random.seed(opponent_seed)
+        _seed_official_rng(seeds["official_opponent_seed"])
         world_controller(
             world,
             n_rounds,

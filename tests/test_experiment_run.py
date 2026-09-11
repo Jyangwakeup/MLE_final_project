@@ -43,7 +43,7 @@ class ExperimentRunCliTest(unittest.TestCase):
         path.write_text(json.dumps(config, indent=2) + "\n", encoding="utf-8")
         return path
 
-    def _invoke(self, config, run_id, mode="baseline"):
+    def _invoke(self, config, run_id, mode="baseline", seed=10001):
         return subprocess.run(
             [
                 sys.executable,
@@ -53,7 +53,7 @@ class ExperimentRunCliTest(unittest.TestCase):
                 "--mode",
                 mode,
                 "--seed",
-                "10001",
+                str(seed),
                 "--run-id",
                 run_id,
             ],
@@ -164,6 +164,66 @@ class ExperimentRunCliTest(unittest.TestCase):
             for agent_name, recorded in recorded_by_agent.items():
                 for metric, total in recorded.items():
                     self.assertEqual(total, official["by_agent"][agent_name].get(metric, 0))
+
+    def test_seed_plan_records_and_reproduces_baseline_results(self):
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            config = self._baseline_config(temporary_directory)
+            first_run_id = self._run_id()
+            repeated_run_id = self._run_id()
+            different_seed_run_id = self._run_id()
+
+            first = self._invoke(config, first_run_id, seed=10001)
+            repeated = self._invoke(config, repeated_run_id, seed=10001)
+            different = self._invoke(config, different_seed_run_id, seed=10002)
+
+            self.assertEqual(first.returncode, 0, first.stderr)
+            self.assertEqual(repeated.returncode, 0, repeated.stderr)
+            self.assertEqual(different.returncode, 0, different.stderr)
+
+            first_output = RUNS_ROOT / first_run_id
+            repeated_output = RUNS_ROOT / repeated_run_id
+            different_output = RUNS_ROOT / different_seed_run_id
+            first_metadata = json.loads((first_output / "metadata.json").read_text(encoding="utf-8"))
+            repeated_metadata = json.loads(
+                (repeated_output / "metadata.json").read_text(encoding="utf-8")
+            )
+            different_metadata = json.loads(
+                (different_output / "metadata.json").read_text(encoding="utf-8")
+            )
+
+            expected_first_seeds = {
+                "experiment_seed": 10001,
+                "environment_seed": 10001,
+                "official_opponent_seed": 110001,
+            }
+            self.assertEqual(first_metadata["seeds"], expected_first_seeds)
+            self.assertEqual(repeated_metadata["seeds"], expected_first_seeds)
+            self.assertEqual(
+                different_metadata["seeds"],
+                {
+                    "experiment_seed": 10002,
+                    "environment_seed": 10002,
+                    "official_opponent_seed": 110002,
+                },
+            )
+
+            first_episodes = [
+                json.loads(line)
+                for line in (first_output / "episodes.jsonl").read_text(encoding="utf-8").splitlines()
+            ]
+            repeated_episodes = [
+                json.loads(line)
+                for line in (repeated_output / "episodes.jsonl").read_text(encoding="utf-8").splitlines()
+            ]
+            different_episodes = [
+                json.loads(line)
+                for line in (different_output / "episodes.jsonl").read_text(encoding="utf-8").splitlines()
+            ]
+            self.assertEqual(first_episodes[0]["environment_seed"], 10001)
+            self.assertEqual(different_episodes[0]["environment_seed"], 10002)
+            for episode in first_episodes + repeated_episodes:
+                episode.pop("run_id")
+            self.assertEqual(first_episodes, repeated_episodes)
 
 
 if __name__ == "__main__":

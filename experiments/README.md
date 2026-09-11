@@ -55,6 +55,19 @@ C 需要 B 提供的最小信息是：
 运行器将在执行前保存实际使用的完整配置及其 SHA256。恢复或评估模式缺少
 checkpoint 时应报错，而不是训练或回退到随机动作。
 
+### 随机种子
+
+当前只支持 baseline（验证/测试性质）运行。对 CLI 的实验种子 `S`，固定使用：
+
+- `experiment_seed = S`；
+- `environment_seed = S`，传给官方 world 的独立 RNG；
+- `official_opponent_seed = S + 100000`，用于官方 agent 共享的 Python 与 NumPy RNG。
+
+官方 agent 的共享 RNG 在创建 world 前设置一次，并在所有 agent `setup` 后、第一局
+开始前再次设置一次；不会在每个 `act()` 中重置。未来训练模式将按指南使用
+`environment_seed = 1000 + S` 和 `official_opponent_seed = 3000 + S`，训练种子为
+`11`、`22`、`33`；该模式尚未实现。
+
 ### 运行产物
 
 每次运行独占一个目录，目标布局为：
@@ -77,7 +90,7 @@ runs/<run_id>/
 `episodes.jsonl` 当前使用 `episode-v1` schema，每行对应一个已完整结束的 round：
 
 - round 字段：`run_id`、`round_index`、环境 `seed`、`scenario`、`stage` 和
-  `round_steps`；
+  `environment_seed`、`round_steps`；
 - `agents` 中每名 agent 的字段：`name`、`score`、`coins`、`kills`、`suicides`、
   `crates`、`bombs`、`invalid`、`survived` 和 `dead`。
 
