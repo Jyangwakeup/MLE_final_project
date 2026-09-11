@@ -118,10 +118,11 @@ results/
 /final_project.pdf
 /reinforcement_learning_basics.md
 
-MLE_project_bomberman
+MLE_project_bomberman/
 notes/
 tmp/pdfs/
 output
+runs
 
 checkpoints/
 
