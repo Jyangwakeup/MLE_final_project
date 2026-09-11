@@ -5,6 +5,29 @@
 本目录是实验编排层。其接口来自 `PROJECT_REQUIREMENTS.md` 与
 `IMPLEMENTATION_GUIDE.md`；特征和学习模块的实现细节仍分别由 A 与 B 负责。
 
+## 代码结构与协作边界
+
+实验命令保持单一入口，但训练与评估分别开发：
+
+```text
+experiments/
+  run.py                 CLI、公共 session、World 扩展和 metadata
+  training.py            训练模式参数、训练调度和早停策略
+  evaluation.py          单 seed / 多 seed 冻结评估调度
+  analyze_training.py    训练指标汇总与训练曲线
+  analyze.py             评估指标汇总与对比图
+  configs/base.json      公共实验配置示例
+```
+
+`run.py` 是唯一的命令行入口，通过 `--mode train|evaluate` 分发到
+`training.py` 或 `evaluation.py`。两种模式复用 `run_agent_session()`，从而保证 World
+构造、随机种子、日志、checkpoint 路径、回放和 metadata 格式一致。不要在训练和评估
+模块中各自复制 session 初始化逻辑。
+
+团队可以按文件划分开发责任：训练负责人主要维护 `training.py` 和
+`analyze_training.py`；评估负责人主要维护 `evaluation.py` 和 `analyze.py`；修改
+`run.py` 的公共契约时双方共同确认。对外命令保持不变，因此拆分模块不会影响已有实验脚本。
+
 ## C 的职责
 
 C 负责实验编排、评估、原始结果记录、分析、可复现性、消融配置和最终打包。这些
@@ -87,7 +110,8 @@ runs/<run_id>/
 ```
 
 `metadata.json` 记录展开后的配置、代码/源码身份、依赖、硬件、种子、模式、时间戳和
-终态状态。JSONL 文件是追加式原始记录。`official_stats.json` 是用于交叉检查的官方
+终态状态；`termination` 进一步记录计划局数、实际完成局数及早停结果。JSONL 文件是
+追加式原始记录。`official_stats.json` 是用于交叉检查的官方
 框架导出。`checkpoints/` 与 `sandbox/` 只属于对应运行。运行目录不得覆盖已有运行。
 
 `episodes.jsonl` 当前使用 `episode-v1` schema，每行对应一个已完整结束的 round：
@@ -100,8 +124,8 @@ runs/<run_id>/
   该 agent 的危险爆炸来源，可区分 `self_bomb`、`opponent_bomb` 及同一步多重命中。
 
 逐局的 `score`、`coins`、`kills`、`suicides`、`crates`、`bombs` 和 `invalid` 可按
-agent 累加，并与 `official_stats.json` 的 `by_agent` 交叉检查。运行器和逐局记录已在
-C2/C3 实现；训练、checkpoint 和打包将在后续阶段实现。
+agent 累加，并与 `official_stats.json` 的 `by_agent` 交叉检查。训练模式会持续保存
+checkpoint 和训练指标；评估模式要求 checkpoint 已存在，并且不会更新模型。
 
 `timing.jsonl` 当前使用 `timing-v1` schema，每行对应一次 agent 决策机会，记录
 `run_id`、`round_index`、`step`、`agent_name`、最终执行的 `action`、agent 请求的
