@@ -1,6 +1,0 @@
-schema_version,algorithm,round,reward,action_steps,epsilon,q_states,loss,updates,checkpoint
-training-v1,q_learning,1,10.990000000000077,400,0.9949333333333333,18,,,/Users/zyy/workspace/MLE_final/runs/q_coin_train1/checkpoints/final.pkl
-training-v1,q_learning,2,19.99,800,0.9898666666666667,27,,,/Users/zyy/workspace/MLE_final/runs/q_coin_train1/checkpoints/final.pkl
-training-v1,q_learning,3,23.98999999999999,1200,0.9848,33,,,/Users/zyy/workspace/MLE_final/runs/q_coin_train1/checkpoints/final.pkl
-training-v1,q_learning,4,17.989999999999785,1600,0.9797333333333333,37,,,/Users/zyy/workspace/MLE_final/runs/q_coin_train1/checkpoints/final.pkl
-training-v1,q_learning,5,17.989999999999945,2000,0.9746666666666667,39,,,/Users/zyy/workspace/MLE_final/runs/q_coin_train1/checkpoints/final.pkl
