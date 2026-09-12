@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 import pickle
+import random
 import tempfile
 import unittest
 from types import SimpleNamespace
@@ -12,6 +13,23 @@ from tests.test_danger import make_game_state
 
 
 class QLearningAgentConfigurationTestCase(unittest.TestCase):
+    def test_setup_uses_runner_agent_seed_and_exploration_schedule(self):
+        specification = (
+            '{"version":"linear-v1","start":1.0,"end":0.05,'
+            '"decay_action_steps":1920000}'
+        )
+        agent = SimpleNamespace(train=True, logger=Mock())
+
+        with patch.dict(os.environ, {
+            "BOMBERMAN_AGENT_SEED": "17",
+            "BOMBERMAN_EXPLORATION_SPEC": specification,
+        }, clear=True):
+            setup(agent)
+
+        self.assertEqual(agent.agent_seed, 17)
+        self.assertEqual(agent.rng.getstate(), random.Random(17).getstate())
+        self.assertEqual(agent.exploration_spec["decay_action_steps"], 1_920_000)
+
     def test_shared_features_are_cached_per_round_step(self):
         agent = SimpleNamespace(
             _feature_cache_key=None,

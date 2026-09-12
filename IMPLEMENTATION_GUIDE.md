@@ -1,10 +1,10 @@
 # Bomberman 项目实现指引：技术路线、逐文件步骤与三人分工
 
-> 文档日期：2026-09-07。目标项目：本仓库。模板基线提交：`61b79ffa1f6976bd9f19eb922ca82ceed5ee7a9c`。
+> 初始文档日期：2026-09-07；正式训练计划更新：2026-09-12。目标项目：本仓库。模板基线提交：`61b79ffa1f6976bd9f19eb922ca82ceed5ee7a9c`。
 >
 > 本文只记录团队派生的技术方案、实验计划与分工，不是课程要求的权威来源。课程硬约束、提交和报告要求统一见 [`PROJECT_REQUIREMENTS.md`](PROJECT_REQUIREMENTS.md)。
 >
-> 本文列出的 `team_agent`、实验脚本、检查和结果均为**待实现或待执行**，不代表已经完成。
+> Q-learning、DQN、实验入口、完整恢复和 GPU/CPU smoke 已实现并有测试证据；正式六链训练、阶段门槛、消融、选模和提交仍是待执行工作。文中的计划不得当作已完成结果。
 >
 > **证据驱动同步规则：**实现可以在明确分析并通过相关测试后改进本文的旧方案，但实现、接口约定、理由和检查项必须在同一可运行变更中同步。不得保留无说明的代码—文档差异，也不得通过改写本文掩盖实现缺陷。
 
@@ -12,10 +12,10 @@
 
 团队选择实现**表格型 Q-learning** 和**小型 DQN**。两者使用同一套客观特征、奖励和动作合法性规则，进行可复现的比较，并按预先确定的验证规则选择候选模型。
 
-- 普通 CPU 为默认资源；不把 GPU 可用性当作完成条件。
+- 正式训练使用 CPU。Task 1 smoke 中 DQN CPU 前 20 局约 120 秒，GPU 同阶段约 130 秒；A100 路径保留作工程验证，但小网络未体现吞吐优势。
 - 三人经验与投入接近，第一轮实现阶段各按约 24 小时安排，共 72 人时；无人值守训练另计。
 - 优先完成正确性、原始数据、核心实验和独立交付，不预先保证比赛名次或某个胜率。
-- 一个自包含的 `agent_code/team_agent/`，通过配置切换算法。三人都服务于两个模型，不按“一人一个模型”分工。
+- `q_learning_agent` 与 `dqn_agent` 是两个独立可运行 Agent，共用 `team_agent` 的特征、奖励和探索协议。三人都服务于两个模型，不按“一人一个模型”分工；选模后只打包胜出的一个目录及其共享运行依赖。
 - 统一过滤物理非法动作；保留危险但合法的动作，让模型使用危险特征进行权衡。
 - 第一版不做 CNN、Dueling、Double DQN、自我对弈或复杂奖励搜索。对称增强只在核心工作完成后开展。
 - 实现期间同步记录方法、图表、失败案例与作者，供正式报告复用。
@@ -88,48 +88,46 @@
 
 不新增 `best_action`、`target_action`、综合推荐方向或“服从推荐动作”奖励。物理非法动作过滤不是安全策略：危险但合法的方向不被过滤。预测未来新出现的对手炸弹不在第一版范围内，有限预测不称为必然安全。
 
-## 4. 新文件清单：负责人、输入输出、依赖与验收
+## 4. 模块索引与剩余交付项
 
-本节路径全部为**待新增**；小包补空 `__init__.py`，由相应目录负责人处理。`tpl_agent` 和官方框架不改动。
+本节是已实现接口的索引，不再是待建文件清单。`q_learning_agent` 和 `dqn_agent` 分别提供官方回调，`team_agent` 仅承载共享特征、危险、奖励和探索协议；`tpl_agent` 与官方核心文件保持不变。
 
 ### 4.1 智能体目录
 
-| 新文件 / 负责人 | 输入 → 输出与主要功能 | 依赖 | 完成标准 |
+| 文件 / 负责人 | 输入 → 输出与主要功能 | 依赖 | 完成标准 |
 |---|---|---|---|
 | `agent_code/team_agent/features.py` / A | `game_state` → `Features(state_key, vector, legal_mask)`；字段定义、确定性编码、坐标与合法性 | `danger.py`、NumPy | 14 项键与 40 维向量一致；不改输入；相同状态输出一致 |
 | `agent_code/team_agent/danger.py` / A | 原始状态、是否假设放弹 → 未来危险、通行与各第一步逃生结果 | NumPy、标准库、官方参数 | 与第 5 节时序一致，固定局面检查通过 |
-| `agent_code/team_agent/callbacks.py` / B | 官方 `setup`、`act` → 初始化状态、合法动作字符串 | 特征、模型、存储、配置 | 非训练模式不导入 `train.py`；完整动作计时；不学习、不写训练数据 |
-| `agent_code/team_agent/train.py` / B | 官方训练回调 → 去重后的转移、模型更新和检查点 | 特征、奖励、模型、存储 | 每个 `(round, step)` 只更新一次，终止无 bootstrap，死亡不遗漏 |
+| `agent_code/q_learning_agent/callbacks.py`、`agent_code/dqn_agent/callbacks.py` / B | 官方 `setup`、`act` → 初始化状态、合法动作字符串 | 共享特征、探索协议、各自模型 | 训练 seed 和探索配置可追溯；评估不学习 |
+| `agent_code/q_learning_agent/train.py`、`agent_code/dqn_agent/train.py` / B | 官方训练回调 → 去重转移、模型更新和检查点 | 特征、奖励、各自模型 | 每个 `(round, step)` 只更新一次，终止无 bootstrap，死亡不遗漏 |
 | `agent_code/team_agent/rewards.py` / B | 事件序列、奖励配置 → 标量奖励和分项 | `events.py` | 重复箱子事件逐个累加；死亡只计一次；不修改原事件列表 |
-| `agent_code/team_agent/models.py` / B | `Features` → 六个 Q 值；转移 → 更新 | NumPy；DQN 分支延迟导入 PyTorch | 表格和网络输入信息相同，Q 值有限，非法动作不参与下一状态最大值 |
-| `agent_code/team_agent/storage.py` / B | 模型、版本、训练状态 ↔ 检查点文件 | 标准库、NumPy/PyTorch | 保存加载后动作价值一致；版本错误和丢失文件明确报错 |
-| `agent_code/team_agent/config.json` / C | 包内默认算法、种子、参数、奖励、路径 | 与 A/B 约定字段 | 无外部配置也能评估；所有训练参数可追溯；无本机绝对路径 |
+| Q 表（位于 `q_learning_agent/callbacks.py`）与 `dqn_agent/model.py` / B | `Features` → 六个 Q 值；转移 → 更新 | NumPy / PyTorch | 表格和网络输入信息相同，Q 值有限，非法动作不参与 bootstrap |
+| `agent_code/team_agent/exploration.py` / B | 完整配置、动作步 → 线性 ε | 标准库 | Q-learning 与 DQN 使用同一版本化公式，恢复时校验完整配置 |
 
 ### 4.2 实验与交付目录
 
-| 新文件 / 负责人 | 输入 → 输出与主要功能 | 依赖 | 完成标准 |
+| 文件 / 负责人 | 输入 → 输出与主要功能 | 依赖 | 完成标准 |
 |---|---|---|---|
 | `experiments/run.py` / C | Task、Agent、模式、配置、输出目录 → 训练或评估报告 | 官方世界类、自有与官方智能体 | `train`/`evaluate` 独立；四个 Task 自动选择场景和默认对手；各运行隔离 |
 | `experiments/analyze.py` / C | 运行目录列表 → CSV 汇总和 PNG 图 | JSON、NumPy、Matplotlib | 正确区别独占第一、并列第一、零分平局；图能从原始数据生成 |
-| `experiments/configs/base.json` / C | 共享奖励、评估 seeds、默认局数 | 第 6–8 节约定 | 不自动分配四阶段预算；每次运行显式选择 Task 和局数 |
-| `experiments/configs/q_learning.json`、`dqn.json` / C | 两算法配置 | `base.json` 对应的完整展开值 | 第一轮除算法外信息、奖励和运行条件一致 |
-| `experiments/configs/dqn_no_danger.json`、`dqn_no_crate_reward.json` / C | 两个固定消融配置 | A/B 定义消融含义 | 各只改变一个实验因素，分别重新训练 |
-| `tools/package_agent.py` / C | 指定检查点和展开配置 → 可独立加载的智能体目录及 zip | 存储格式、自有目录 | 只打包选中模型，重新加载检查通过后才输出成功 |
-| `requirements.txt` / C | 项目直接依赖清单 | 实际实现与兼容性结果 | 记录验证过的版本；不照抄旧项目整套依赖 |
-| `agent_code/team_agent/requirements.txt` / C | 参赛包依赖 | 所选算法 | Q 表包无需 PyTorch；DQN 包包含 PyTorch 依赖 |
+| `experiments/configs/base.json`、`formal_training.json`、`stage_gate.json`、`main_validation.json`、`final_test.json` / C | 工程默认与正式训练/评估数据集 | 第 6–8 节约定 | CPU、`v1`、`r1`、预定 seed 和局数均可校验 |
+| `agent_code/legal_random_agent/` / C | 官方状态 → 从同一合法掩码均匀抽样 | 共享特征、独立 RNG | Task 1 诊断基线可固定 seed 重现，不包含学习状态 |
+| `experiments/resume.py`、`devices.py` / C | 原子完整恢复、CPU/CUDA 设备解析 | 标准库、NumPy、可选 PyTorch | v3 合同和两代回退可验证；评估强制 CPU |
+| 待实现：消融配置 / A、C | `v1_no_danger`、`r1_no_crate` 的独立完整课程 | 已版本化特征与奖励 | 各只改变一个因素并从零训练 |
+| 待实现：打包工具和最终依赖清单 / C | 胜出 checkpoint → 单一可提交 Agent 包 | 最终模型存储格式 | 在原版框架、Docker、CPU 上独立加载后才标记完成 |
 
-配置使用标准 JSON，第一版不做配置继承框架。实验配置保存完整展开值。公共类型 `Features` 放在 `features.py`，`Transition` 放在 `models.py`，避免产生多份字段定义。
+配置使用标准 JSON，不做隐式配置继承。实验运行保存完整展开值和源配置 SHA256。公共 `Features` 契约放在 `features.py`，各算法的转移和模型状态留在自己包内。
 
 ### 4.3 检查文件
 
-| 新文件 / 负责人 | 要检查的行为 | 不通过时阻止什么 |
+| 检查文件 / 负责人 | 要检查的行为 | 不通过时阻止什么 |
 |---|---|---|
 | `tests/test_features.py` / A | 编码、缺失目标、边缘坐标、合法性、确定性和不修改输入 | 与模型集成 |
 | `tests/test_danger.py` / A | 时间推进、爆炸范围、多炸弹和逃生 | 正式炸箱训练 |
-| `tests/test_learning.py` / B | Q 更新、DQN 终止掩码、合法 bootstrap、存取恢复 | 模型对比 |
-| `tests/test_callbacks.py` / B | 普通/终止回调合并、自杀事件、跨回合清理 | 长时间训练 |
+| `tests/test_q_learning_agent.py`、`test_dqn_agent.py` / B | 更新、终止掩码、合法 bootstrap、存取与 seed | 模型对比 |
+| `tests/test_resume.py`、`test_exploration.py` / B、C | 原子恢复、课程约束、探索边界与 v3 合同 | 长时间训练 |
 | `tests/test_evaluation.py` / C | 排名口径、种子、原始记录和聚合 | 报告中的性能结论 |
-| `tests/test_submission.py` / C | 只复制导出目录后运行、CPU 加载、依赖与缺失模型 | 预测试与最终提交 |
+| `tests/test_devices.py`、`test_formal_training.py` / C | 设备契约、正式配置、合法随机基线 | 正式开训 |
 
 检查采用标准库 `unittest`；PyTorch 只在 DQN 检查中需要。第一版不新增测试框架。
 
@@ -202,7 +200,7 @@ Q(key, action) += alpha * (target - Q(key, action))
 
 DQN：40→64→64→6，隐藏层 ReLU，输出层线性。回放容量 20000，均匀采样 batch=64；累计 2000 次自身决策后开始，在每条完成转移进入模型时至多进行一次参数更新。Adam，学习率 0.0003，Huber/SmoothL1 loss；目标网络不计算梯度，每 1000 次成功参数更新硬同步。预测当前动作只 `gather` 已执行动作的 Q 值；下一状态取目标网络的合法最大值，终止样本不加下一状态价值。
 
-Q 表 α=0.1；两模型 γ=0.95。训练从 ε=1.0 线性降到 0.05，覆盖总自身决策预算的前 80%，后 20% 固定为 0.05。跨场景继续全局计数，不每个阶段重置探索。
+Q 表 α=0.15；两模型 γ=0.95。两算法共用 `linear-v1`：决策步 0 时 ε=1.0，在 1,920,000 次自身决策内线性降到 0.05，之后保持 0.05。该区间是单条课程最多 6,000×400=2,400,000 动作上界的 80%。跨 Task 保留累计决策步，不重置 ε。
 
 CPU 模式固定 PyTorch 单线程；Q 表路径延迟导入或完全不导入 PyTorch，以便导出不需要神经网络依赖的包。训练和评估速度要分别测量。
 
@@ -249,9 +247,9 @@ CPU 模式固定 PyTorch 单线程；Q 表路径延迟导入或完全不导入 P
 - 模型路径相对包内配置解析，训练输出从 run 目录解析。配置进入运行前保存完整副本和 SHA256。
 - 新训练由实验配置明确指定，不因文件不存在而推测“自动重练”；恢复模式或评估模式缺失检查点直接报错。
 - Q 表保存整数键数组和浮点 Q 数组到 NPZ（读取禁用对象 pickle），附 JSON 元数据；DQN 保存 `state_dict`，不 pickle 整个模型对象。
-- 完整训练检查点包含策略网络、目标网络、优化器、回放池、自有 RNG 状态、NumPy Generator 状态、Torch RNG 状态、动作步数、更新步数、阶段与探索进度；Q 表保存对应适用状态。新建 DQN 前按模型种子设置 Torch RNG；恢复时在网络和优化器构造完成后恢复 RNG，避免初始化消耗改变后续随机序列。
+- 完整训练检查点包含策略网络、目标网络、优化器、回放池、自有 RNG 状态、NumPy Generator 状态、CPU/CUDA Torch RNG 状态、训练设备、动作步数、更新步数、阶段与探索进度；Q 表保存对应适用状态。新建 DQN 前按模型种子设置 Torch RNG；恢复时在网络和优化器构造完成后恢复 RNG，避免初始化消耗改变后续随机序列。GPU 训练启用确定性算法，正式评估始终映射到 CPU。
 - 每个完整回合的训练回调成功返回后保存一代 resume 快照。先写临时 generation，校验文件 SHA256 后原子发布，再原子更新 `latest.json`；只保留最新和上一代。最新一代损坏时自动回退上一代，并在子 run 谱系中记录原因所对应的丢失局数。
-- `--resume-from` 只接受父 run 根目录，并始终创建新的子 run。只允许同 Task 或 `1→2→3→4` 的直接晋级；算法、训练 seed、动作顺序、特征版本、奖励版本和 checkpoint schema 必须一致。`--n-rounds` 表示子 run 新增局数。
+- `--resume-from` 只接受父 run 根目录，并始终创建新的子 run。只允许同 Task 或 `1→2→3→4` 的直接晋级；算法、训练 seed/Agent seed、动作顺序、特征版本、奖励版本、完整探索配置、训练设备和 checkpoint schema 必须一致。当前完整恢复 schema 为 `training-resume-v3`。`--n-rounds` 表示子 run 新增局数。v1/v2 resume 和旧 `final.pkl`/`final.pt` 只允许冻结评估。
 - 同 Task 只在回合边界精确恢复，包含学习器、世界 RNG、全局 Python/NumPy RNG、下一回合编号和早停历史；早停配置也必须一致。下一 Task 保留学习器完整状态与探索进度，但清空回调 pending/终局去重状态、重置早停，并使用同一训练 seed 重建环境与官方对手随机流。跨机器/库版本不承诺逐位一致，记录环境差异。
 - 旧 `final.pkl`/`final.pt` 仍可用于冻结评估；缺少 resume schema 的旧 checkpoint 不能用于精确续训。
 - 参赛导出仅保留推理权重、配置和所选算法依赖，不包含优化器、回放池、训练日志或本机绝对路径。
@@ -262,13 +260,12 @@ CPU 模式固定 PyTorch 单线程；Q 表路径延迟导入或完全不导入 P
 
 官方 `--save-stats` 可以导出累计数据，但现有 `by_round` 没有完整的逐智能体排名信息。`experiments/run.py` 定义 `ExperimentWorld(BombeRLeWorld)`，在 `end_round` 调用父类后追加每个智能体的 `score`、`statistics`、`dead` 和回合长度。官方核心文件保持不变。
 
-每个进程只运行一个实验配置，默认不并发。不同成员在各自 checkout 上运行；共享机器也按独立进程/目录串行调度，避免顺序后端的全局 cwd 和日志处理器互相干扰。
-
-在输出目录下创建实验专用的模板副本（排除 `.git`、已有 results/logs/replays/runs、模型历史），把当前 team_agent 复制进去。仅在该副本中执行，不覆盖开发目录的 config 或权重。副本的官方文件哈希须与基线一致。
+每个进程只运行一个实验配置并独占 run 目录。正式六条链可作为六个单线程 CPU 进程并行；每条链内部必须串行，且设置 PyTorch/BLAS 单线程，避免共享 cwd、日志处理器和 CPU 超额订阅。运行器直接使用当前工作树，不创建未实现的框架副本，因此正式开训前必须冻结干净提交并记录源码身份。
 
 ### 7.2 随机性
 
 - 自有智能体用独立 `random.Random(seed)` 或 NumPy Generator，不在 `act` 内调用全局 `random.seed`/`np.random.seed`。
+- Runner 通过 `BOMBERMAN_AGENT_SEED` 把训练 seed 传给 Agent RNG 和 DQN 参数初始化；直接由官方框架启动、没有该环境变量时默认 seed 0。
 - 世界地图与执行顺序使用官方世界 RNG；初始化由明确环境种子控制。
 - 官方规则对手使用全局 Python/NumPy 随机数；实验进程在创建世界前设置一次，并在世界和所有智能体 setup 完成后、第一局开始前再次设置。恢复训练则在此处恢复保存的状态。后一次操作覆盖官方 setup 的无参数 `np.random.seed()`，是复现必要条件。
 - 每个训练种子 S 的环境初始种子为 `1000+S`、官方对手全局种子为 `3000+S`；S 固定为 11、22、33。
@@ -288,7 +285,6 @@ runs/<run_id>/
   official_stats.json    官方导出，作为交叉检查
   checkpoints/           只属于该运行的模型
   resume/                两代原子完整训练快照及 latest.json
-  sandbox/               实验专用框架副本
 ```
 
 `episodes.jsonl` 记录 `run_id`、阶段、回合索引、环境种子、场景、对手、各 agent 的金币/击杀/自杀/箱子/炸弹/无效动作/实际得分、存活、回合总步数。自有智能体生存步数通过只读观察每步 active_agents 记录。失败、中断、缺少记录必须显式标记。
@@ -309,56 +305,61 @@ runs/<run_id>/
 
 ### 7.5 打包规则
 
-`tools/package_agent.py` 接受指定检查点、配置及输出 zip 路径，创建 `team_agent/`，复制自有 Python 模块、所选推理权重、相对路径配置和 requirements。由于模型文件用延迟依赖，Q 表包可以保留模型源码但无需安装 PyTorch。
+打包工具仍是代码截止前的剩余交付项。其目标接口接受指定检查点、配置及输出 zip 路径，创建唯一胜出 Agent 的独立目录，复制自有 Python 模块、推理权重、相对路径配置和 requirements。若胜出 Q-learning，包不应要求 PyTorch；若胜出 DQN，则必须声明经过验证的 CPU PyTorch 依赖。
 
 生成前检查配置版本、40 维输入、六动作顺序、权重存在及加载；生成后解压到新的原版框架副本，以 `train=0` 对三个 random_agent 完成运行，再对三个 rule_based_agent 检查耗时。通过后才标记提交包就绪。
 
 只打包一个包含 `callbacks.py` 的智能体目录，避免官方搜索到错误模型；输出名称与交付边界按 [`PROJECT_REQUIREMENTS.md`](PROJECT_REQUIREMENTS.md) 执行。
 
-## 8. 实现与训练的分阶段步骤
+## 8. 正式课程训练进程、门槛与选择
 
-### 第 0 步：当天建立可并行的接口
+### 8.1 开训条件与 smoke 证据
 
-- A 写特征表和固定局面；B 依据本指南的 Features/Transition 约定写人工转移；C 用官方智能体产生首份逐局数据。
-- 三人固定配置、动作顺序和版本，分别建立检查。不把所有公共文件交给三个人同时修改；按第 4 节指定文件负责人合并。
-- C 在 1000 次决策的小试跑中记录吞吐与预计总耗时，不承诺普通 CPU 一定能在某个小时内训练完成。
-- 完成标准：三个人各自有可检查成果，尚不要求学习模型有实力。
+GPU/CPU smoke 只证明工程链路，不进入正式训练谱系或模型比较。Task 1、seed 11 的留存证据为：Q-learning CPU 100 局约 349.95 秒，39,040 次动作、50 个 Q 状态；其 5 局 CPU 冻结评估共收集 158 枚金币。DQN A100 100 局约 1,183.42 秒、36,358 次 optimizer update、峰值显存约 65.2 MiB；其 5 局 CPU 冻结评估共收集 94 枚金币。DQN CPU 前 20 局约 120 秒，而 GPU 同阶段约 130 秒，因此正式训练选择 CPU。所有 smoke 均未在 Task 1 使用 `BOMB`，且未发现超时或硬错误。
 
-### 第 1 步：金币导航
+正式开训前必须满足：完整测试、`py_compile` 和 `git diff --check` 通过；代码、配置和本指南冻结为干净提交；六条主链的 `source_commit`、`source_hash` 与源配置 hash 一致。正式配置固定 CPU、`v1`、`r1`、sampled replay 和关闭 early stopping。硬错误或行为修复改变源码后，所有受影响的公平对照链从 Task 1 重训，不跨 commit 续训。
 
-- 场景 `coin-heaven`，仅 team_agent。先接 Q-learning，DQN 同时开发。
-- 使用完整固定编码，对手字段为 0；本阶段炸箱和击杀事件自然不存在。
-- 在阶段结束检查点上，用未训练地图比较相同合法约束的随机策略和学习策略：金币数、移动效率、无效动作、绕圈情况。
-- 随机基线由实验脚本在运行副本创建简单临时智能体，调用同一合法掩码并均匀选动作；它只作诊断基线，不作为参赛学习模型。
-- 没有改进时先查动作下标、奖励、Q 更新和金币编码，不能只无限增加训练局数。
+### 8.2 六条独立课程链
 
-### 第 2 步：单人炸箱
+Q-learning 与 DQN 各使用训练 seeds 11、22、33，共六条链。最多启动六个单线程 CPU 进程；每条链独立通过门槛并晋级，不等待其他链，但链内严格按 `1→2→3→4` 串行并用 `--resume-from` 创建子 run。
 
-- 场景 `classic`，仅 team_agent。接入已经通过检查的危险预测和放弹后逃生特征。
-- 同时观察金币数、炸箱数和自杀率；仅生存率高或仅炸箱多都不够。
-- 两模型沿用同一奖励和特征。阶段之间保留参数和全局探索进度；DQN 回放池保留，避免暗中改变算法条件。
-- 完成标准：能稳定运行和产生可解释指标；失败案例可归因到预测、特征或学习，不要求固定胜率。
+| Task | 新增局数 | 训练环境 | 本阶段能力目标 | 性能失败追加 |
+|---|---:|---|---|---:|
+| 1 | 500 | `coin-heaven`、无对手、禁 `BOMB` | 高效收集可见金币 | 125 |
+| 2 | 1,000 | `classic`、无对手 | 炸箱、逃生和隐藏金币 | 250 |
+| 3 | 1,500 | `classic`、同时面对 `peaceful_agent` 与 `coin_collector_agent` | 竞争、追击和击杀 | 375 |
+| 4 | 3,000 | `classic`、三名 `rule_based_agent` | 正式四人强对战 | 750 |
 
-### 第 3 步：弱对手
+Task 3 同时使用两名弱对手，是团队对官方 SHOULD 课程路线的合并实现；不是两个可互换的单对手实验。每阶段默认保存第 1 局及 10% 进度回放，每回合仍提交两代完整 resume generation。中断后按已完成局数补足本阶段预算，修复后新 run 使用 `_retryN`，不得覆盖旧目录。
 
-- `classic`，team_agent + peaceful_agent + coin_collector_agent，只有 team_agent 训练。
-- 对手字段按第 5 节定义输出，不增加新维度。加入真实击杀事件奖励，不加“预测必杀”巨奖。
-- 在当前状态可见范围内分析对手，不用外部世界对象向 act 泄露未来动作或隐藏金币。
+命名模板为 `formal_<q|dqn>_v1_r1_s<seed>_t<task>_r<local-rounds>`；同配置追加可增加 `_cont<rounds>`，故障重跑增加 `_retryN`。名称只作索引，累计局数和谱系以 metadata 为准。
 
-### 第 4 步：完整对战
+### 8.3 每阶段 20-seed 门槛
 
-- `classic`，team_agent + 一个或多个强对手，默认使用 rule_based_agent，也可指定自有 Agent 变体。
-- 每个 Task 是一次独立训练运行，运行前明确局数和 seed；检查训练报告后再用 `--resume-from` 从直接上一 Task 创建子 run，不自动一次跑完四阶段，也不直接复制 checkpoint。
-- 比较 Q-learning、DQN 或消融时，为被比较方案使用相同 Task、局数、seed 和对手组合；实际训练量以各 run 的 metadata 与 training.csv 为准。
-- 训练可在自有智能体死亡后按官方训练规则结束；正式评估必须完整运行，不因自有智能体死亡提前截断。
+阶段门槛在 CPU 上使用 seeds 10000–10019，每个 seed 恰好一局；同一候选的父子比较复用完全相同的 seed 列表。
 
-### 第 5 步：验证、选择与冻结
+共同硬门槛：run 完整且局数正确；冻结 checkpoint 可加载；最新两代 resume generation 均通过 hash 校验；Q 表状态数增长，或 DQN optimizer updates 大于零且 loss 有限；无异常、超时或框架跳过；完整 `act` P95 < 50 ms、最大值 < 500 ms；Task 1 不出现 `BOMB`；无效动作率不超过 1%。任一硬门槛失败立即停止该链并修复。
 
-- 主验证：每个完成的训练检查点对三个规则对手运行种子 10000–10099，共 100 局；金币、单人炸箱、弱对手能力回归各用 10000–10019，共 20 局。
-- 正式候选先排除不能独立加载、崩溃或存在超时问题的检查点，再按四人对战验证 mean_score 排序；相同则按自杀率更低、完整 act P95 更低、检查点 ID 字典序决定。
-- 报告全部三个训练种子的结果，不能仅报告选出的最好种子。选定算法、特征、奖励和检查点后才使用 20000–20099 做最终 100 局测试；测试结果不能再用于反复选模。
-- 若发现功能错误需要修复，旧测试成为开发数据，重新预先划定新的留出测试集合并记录变更；不隐瞒测试集复用。
-- 原计划运行未完成则标记未完成，不把较短预算当作相同预算比较；资源不足优先完成两模型主实验，再做核心消融，不把缺失实验写成已完成。
+能力门槛：Task 1 的平均金币数至少比 `legal_random_agent` 高 2；Task 2 的平均炸箱数至少比 Task 1 父模型高 0.5；Task 3/4 的平均击杀数至少比直接父模型高 0.1，或独占/并列第一率至少提高 5 个百分点。晋级模型在所有旧 Task 上的 `mean_score` 不得低于父模型的 90%；有炸弹阶段的自杀率不得比父模型高 10 个百分点，且绝对值不得超过 35%。比例均以完整评估局数为分母。
+
+仅能力门槛失败时，允许按表中 25% 预算以同配置续训一次并重测；仍失败则保留失败证据，并按第 8.5 节的截止策略继续。不得借此改奖励、特征、seed 或探索日程。硬门槛失败不适用该例外。
+
+### 8.4 主验证、模型族与最终测试
+
+完成 Task 4 后，六个主候选分别在 seeds 10000–10099 上对三名 `rule_based_agent` 做一次 100 局主验证。先将每个模型族三个训练 seed 的 checkpoint `mean_score` 取平均，在 Q-learning 与 DQN 之间选族；平分依次比较模型族平均自杀率、最差完整 `act` P95、模型族 ID 字典序。胜出族内按单 checkpoint 的 `mean_score` 选一个，平分依次使用更低自杀率、更低 `act` P95、checkpoint ID 字典序。
+
+只冻结胜者，然后在从未用于调参的 seeds 20000–20099 上执行一次最终测试。最终测试结果不得触发新的训练、超参数修改或重新选模；验证和测试的数据隔离由 `main_validation.json` 与 `final_test.json` 固定。
+
+### 8.5 截止策略与消融
+
+- 9 月 12–13 日：完成前置实现、测试、指南同步和源码冻结。
+- 9 月 13 日：Task 1–2 训练与阶段门槛。
+- 9 月 14–15 日：Task 3–4 训练与阶段门槛。
+- 9 月 16 日：选择最早合格的 Task 4 checkpoint，完成原版框架、Docker、CPU、三 random/三 rule-based 兼容检查并生成预测试包。若无合格 Task 4，依次降级为表现最佳的失败 Task 4、合格 Task 3、合格 Task 2，并明确标记保底候选。
+- 9 月 17 日预测试后：DQN 的 `v1_no_danger` 与 `r1_no_crate` 分别从零运行 seed 11 的完整课程。其 100-seed `mean_score` 相对基础 DQN 的变化满足 `abs(variant-base) / max(abs(base), 1) >= 10%` 时，才复制 seeds 22/33；完成同等验证后方可参与最终模型族选择。
+- 9 月 20 日：冻结最终 Agent；预留一天处理 9 月 21 日提交。
+
+原计划未完成必须标为未完成，不能把较短预算当成相同预算比较。训练可在自有智能体死亡后按官方训练规则结束；阶段门槛、主验证和最终测试必须让整局正常结束。
 
 ## 9. 核心实验如何分配和解释
 
@@ -424,39 +425,53 @@ runs/<run_id>/
 
 | 日期 | 阶段成果 | 通过条件 |
 |---|---|---|
-| 9 月 7–8 日 | 接口、记录、最小 Q-learning，DQN 并行开发 | 五回调可接通，原始数据能保存，模型可加载 |
-| 9 月 9–10 日 | 金币与单人炸箱 | 危险局面通过，学习结果可测量 |
-| 9 月 11–12 日 | 两模型与弱对手 | 相同信息和预算的比较可运行 |
-| 9 月 13–15 日 | 完整对战与核心消融 | 多种子结果及验证候选 |
-| 9 月 16–17 日 | 原版与 Docker 检查 | 预测试压缩包独立运行 |
-| 9 月 18–20 日 | 修复、最终测试、冻结 | 代码、配置、参数、依赖一致 |
-| 9 月 22–27 日 | 报告整理与复核 | 七章结构、图表可追溯、作者标明 |
+| 9 月 12–13 日 | 前置实现、测试、指南、源码冻结 | 干净提交；六链源码/配置身份一致 |
+| 9 月 13 日 | Task 1–2 与阶段门槛 | 每条链独立记录晋级或失败证据 |
+| 9 月 14–15 日 | Task 3–4 与阶段门槛 | 得到最多六个 Task 4 候选 |
+| 9 月 16 日 | 候选降级决策、原版/Docker/CPU 兼容检查 | 预测试压缩包独立运行 |
+| 9 月 17 日后 | 两项 DQN 消融 | seed 11 完整课程；达到阈值才扩展 22/33 |
+| 9 月 20 日 | 最终测试与 Agent 冻结 | 测试集只使用一次，代码/配置/参数一致 |
+| 9 月 21 日 | 提交缓冲 | 仅处理交付问题，不再调参 |
 
-以下第一组命令使用**已有框架入口**；需要先在项目根目录配置好 Python 环境：
+先在项目根目录建立并验证统一环境：
 
-```powershell
-python main.py play --help
-python -m unittest test
+```bash
+conda env create -f environment.yml
+conda run --no-capture-output -n mle python -m unittest discover -s tests -p "test_*.py"
 ```
 
-当前实验入口将训练和评估分开，并显式选择 Task：
+并行启动六条链前，在每个训练终端设置 `OMP_NUM_THREADS=1` 与 `MKL_NUM_THREADS=1`；DQN
+自身还会调用 `torch.set_num_threads(1)`。每条命令只启动一条链，绝不并行启动同一链的两个阶段。
 
-```powershell
-python -m unittest discover -s tests -p "test_*.py"
-python experiments/run.py --config experiments/configs/base.json --mode train --task 1 --agent q_learning_agent --n-rounds 10000 --seed 11 --run-id q_task1_s11
-python experiments/run.py --config experiments/configs/base.json --mode train --task 3 --agent dqn_agent --n-rounds 10000 --seed 11 --run-id dqn_task3_s11
-python experiments/run.py --config experiments/configs/base.json --mode evaluate --task 3 --agent dqn_agent --checkpoint runs/dqn_task3_s11/checkpoints/final.pt --run-id dqn_task3_validation
-python experiments/analyze.py --runs runs/q_learning_s11_validation runs/dqn_s11_validation --output results/model_comparison
-python tools/package_agent.py --config runs/selected/config.json --checkpoint runs/selected/checkpoint --output final-project-agent-code.zip
+以下以 Q-learning seed 11 演示一条链；DQN 仅将 `q_learning_agent`/`q` 替换为 `dqn_agent`/`dqn`。Task 1 必须从零开始，后续 Task 必须引用直接父 run：
+
+```bash
+conda run --no-capture-output -n mle python experiments/run.py --config experiments/configs/formal_training.json --mode train --device cpu --task 1 --agent q_learning_agent --n-rounds 500 --seed 11 --run-id formal_q_v1_r1_s11_t1_r500
+
+conda run --no-capture-output -n mle python experiments/run.py --config experiments/configs/formal_training.json --mode train --device cpu --task 2 --agent q_learning_agent --n-rounds 1000 --seed 11 --resume-from runs/formal_q_v1_r1_s11_t1_r500 --run-id formal_q_v1_r1_s11_t2_r1000
+
+conda run --no-capture-output -n mle python experiments/run.py --config experiments/configs/formal_training.json --mode train --device cpu --task 3 --agent q_learning_agent --n-rounds 1500 --seed 11 --resume-from runs/formal_q_v1_r1_s11_t2_r1000 --run-id formal_q_v1_r1_s11_t3_r1500
+
+conda run --no-capture-output -n mle python experiments/run.py --config experiments/configs/formal_training.json --mode train --device cpu --task 4 --agent q_learning_agent --n-rounds 3000 --seed 11 --resume-from runs/formal_q_v1_r1_s11_t3_r1500 --run-id formal_q_v1_r1_s11_t4_r3000
 ```
 
-`runs/selected/...` 是选模后实际复制/登记的路径示例，不表示当前存在。训练和评估分别执行；评估使用固定 seed 集合，并在开始前验证 checkpoint。正式训练不使用 `--silence-errors` 掩盖异常。
+Task 3 会固定加入 `peaceful_agent` 和 `coin_collector_agent`；Task 4 默认加入三名 `rule_based_agent`，无需手写 `--opponents`。另外五条链分别使用 Q-learning seeds 22/33 和 DQN seeds 11/22/33，可在独立终端作为单线程进程并行启动。
 
-官方框架加载新智能体后的直接检查入口：
+Task 1 合法均匀随机诊断基线与候选阶段门槛示例：
 
-```powershell
-python main.py play --no-gui --agents team_agent random_agent random_agent random_agent --n-rounds 10 --save-stats results/submission_smoke.json
-python main.py play --no-gui --my-agent team_agent --n-rounds 100 --save-stats results/submission_rules.json
+```bash
+conda run --no-capture-output -n mle python experiments/run.py --config experiments/configs/stage_gate.json --mode evaluate --task 1 --agent legal_random_agent --checkpoint agent_code/legal_random_agent/baseline.json --run-id gate_legal_random_t1
+
+conda run --no-capture-output -n mle python experiments/run.py --config experiments/configs/stage_gate.json --mode evaluate --task 1 --agent q_learning_agent --checkpoint runs/formal_q_v1_r1_s11_t1_r500/checkpoints/final.pkl --run-id gate_formal_q_v1_r1_s11_t1
+```
+
+主验证改用 `main_validation.json`，且 Task 4 对三名规则对手运行；冻结唯一胜者后才改用 `final_test.json`。配置已分别固定 10000–10099 和 20000–20099，每个 seed 一局，不再使用“5 seeds×20 局”。正式训练不使用 `--silence-errors`，也不在本轮指南更新时自动启动。
+
+最终打包工具尚未实现；在其实现并通过独立目录检查前，不得把下列官方框架手工检查当成完整打包验收。选中 Q-learning 或 DQN 后将 `<selected_agent>` 替换为唯一胜出目录：
+
+```bash
+python main.py play --no-gui --agents <selected_agent> random_agent random_agent random_agent --n-rounds 10 --save-stats results/submission_random.json
+python main.py play --no-gui --agents <selected_agent> rule_based_agent rule_based_agent rule_based_agent --n-rounds 10 --save-stats results/submission_rules.json
 ```
 
 ## 12. 验收清单

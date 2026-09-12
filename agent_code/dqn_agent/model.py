@@ -1,7 +1,13 @@
 from collections import deque, namedtuple
+import os
 import random
 
 import numpy as np
+
+# Required by CUDA >= 10.2 when deterministic algorithms are enabled. It must
+# be present before the first cuBLAS handle is created.
+os.environ.setdefault("CUBLAS_WORKSPACE_CONFIG", ":4096:8")
+
 import torch
 from torch import nn
 
@@ -80,10 +86,18 @@ class ReplayBuffer:
 class DQN:
     def __init__(self, input_size, action_count, seed=0, gamma=0.95, learning_rate=3e-4,
                  batch_size=64, replay_capacity=20_000, warmup=2_000,
-                 target_sync_interval=1_000):
+                 target_sync_interval=1_000, device="cpu", deterministic=True):
+        self.device = torch.device(device)
+        if self.device.type == "cuda" and not torch.cuda.is_available():
+            raise RuntimeError("CUDA was requested but is not available")
         torch.manual_seed(seed)
+        if self.device.type == "cuda":
+            torch.cuda.manual_seed_all(seed)
+        torch.use_deterministic_algorithms(deterministic)
+        if torch.backends.cudnn.is_available():
+            torch.backends.cudnn.benchmark = False
+            torch.backends.cudnn.deterministic = deterministic
         torch.set_num_threads(1)
-        self.device = torch.device("cpu")
         self.action_count = action_count
         self.gamma = gamma
         self.batch_size = batch_size
@@ -112,20 +126,32 @@ class DQN:
 
     def _learn(self):
         batch = self.replay.sample(self.batch_size)
-        states = torch.as_tensor(np.stack([t.state for t in batch]), dtype=torch.float32)
-        actions = torch.as_tensor([t.action for t in batch], dtype=torch.long).unsqueeze(1)
-        rewards = torch.as_tensor([t.reward for t in batch], dtype=torch.float32)
-        dones = torch.as_tensor([t.done for t in batch], dtype=torch.bool)
+        states = torch.as_tensor(
+            np.stack([t.state for t in batch]), dtype=torch.float32, device=self.device
+        )
+        actions = torch.as_tensor(
+            [t.action for t in batch], dtype=torch.long, device=self.device
+        ).unsqueeze(1)
+        rewards = torch.as_tensor(
+            [t.reward for t in batch], dtype=torch.float32, device=self.device
+        )
+        dones = torch.as_tensor(
+            [t.done for t in batch], dtype=torch.bool, device=self.device
+        )
 
         current_q = self.policy(states).gather(1, actions).squeeze(1)
-        next_values = torch.zeros(self.batch_size, dtype=torch.float32)
+        next_values = torch.zeros(
+            self.batch_size, dtype=torch.float32, device=self.device
+        )
         nonterminal = ~dones
         if nonterminal.any():
             next_states = torch.as_tensor(
-                np.stack([t.next_state for t in batch if not t.done]), dtype=torch.float32
+                np.stack([t.next_state for t in batch if not t.done]),
+                dtype=torch.float32, device=self.device,
             )
             legal = torch.as_tensor(
-                np.stack([t.next_legal for t in batch if not t.done]), dtype=torch.bool
+                np.stack([t.next_legal for t in batch if not t.done]),
+                dtype=torch.bool, device=self.device,
             )
             with torch.no_grad():
                 next_q = self.target(next_states).masked_fill(~legal, -torch.inf)
@@ -144,22 +170,48 @@ class DQN:
         return float(loss.item())
 
     def checkpoint(self):
-        return {
+        checkpoint = {
             "policy": self.policy.state_dict(),
             "target": self.target.state_dict(),
             "optimizer": self.optimizer.state_dict(),
             "replay": self.replay.state_dict(),
             "torch_rng_state": torch.get_rng_state(),
+            "training_device_name": (
+                torch.cuda.get_device_name(self.device) if self.device.type == "cuda" else None
+            ),
+            "training_device_type": self.device.type,
+            "peak_cuda_memory_bytes": (
+                int(torch.cuda.max_memory_allocated(self.device))
+                if self.device.type == "cuda" else 0
+            ),
             "updates": self.updates,
         }
+        if self.device.type == "cuda":
+            checkpoint["cuda_rng_state_all"] = torch.cuda.get_rng_state_all()
+        return checkpoint
 
     def load_checkpoint(self, checkpoint, training=False):
+        if training and checkpoint.get("training_device_type") not in (None, self.device.type):
+            raise ValueError("Cannot resume DQN training on a different training device")
+        if (
+            training and self.device.type == "cuda"
+            and checkpoint.get("training_device_name") not in (
+                None, torch.cuda.get_device_name(self.device)
+            )
+        ):
+            raise ValueError("Cannot resume DQN training on a different GPU model")
         self.policy.load_state_dict(checkpoint["policy"])
         self.target.load_state_dict(checkpoint.get("target", checkpoint["policy"]))
         self.updates = checkpoint.get("updates", 0)
         if training and "optimizer" in checkpoint:
             self.optimizer.load_state_dict(checkpoint["optimizer"])
+            for state in self.optimizer.state.values():
+                for key, value in state.items():
+                    if torch.is_tensor(value):
+                        state[key] = value.to(self.device)
         if training and "replay" in checkpoint:
             self.replay.load_state_dict(checkpoint["replay"])
         if training and "torch_rng_state" in checkpoint:
             torch.set_rng_state(checkpoint["torch_rng_state"])
+        if training and self.device.type == "cuda" and "cuda_rng_state_all" in checkpoint:
+            torch.cuda.set_rng_state_all(checkpoint["cuda_rng_state_all"])

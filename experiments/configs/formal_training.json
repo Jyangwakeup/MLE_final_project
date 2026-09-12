@@ -1,0 +1,28 @@
+{
+  "algorithm": null,
+  "feature_version": "v1",
+  "reward_version": "r1",
+  "seed": null,
+  "checkpoint": null,
+  "evaluation": {
+    "device": "cpu",
+    "seeds": [10000, 10001, 10002, 10003, 10004, 10005, 10006, 10007, 10008, 10009, 10010, 10011, 10012, 10013, 10014, 10015, 10016, 10017, 10018, 10019],
+    "n_rounds": 1
+  },
+  "training": {
+    "device": "cpu",
+    "n_rounds": null,
+    "exploration": {
+      "version": "linear-v1",
+      "start": 1.0,
+      "end": 0.05,
+      "decay_action_steps": 1920000
+    },
+    "early_stopping": {"enabled": false}
+  },
+  "curriculum": {
+    "training_seeds": [11, 22, 33],
+    "rounds": {"1": 500, "2": 1000, "3": 1500, "4": 3000},
+    "retry_rounds": {"1": 125, "2": 250, "3": 375, "4": 750}
+  }
+}

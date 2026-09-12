@@ -15,7 +15,7 @@ from typing import Any
 import numpy as np
 
 
-CHECKPOINT_SCHEMA_VERSION = "training-resume-v1"
+CHECKPOINT_SCHEMA_VERSION = "training-resume-v3"
 TASK_ORDER = ("coin_navigation", "crate_navigation", "weak_opponents", "full_match")
 RETAINED_GENERATIONS = 2
 
@@ -47,7 +47,13 @@ class LoadedSnapshot:
             "feature_version": metadata["feature_version"],
             "reward_version": metadata["reward_version"],
             "checkpoint_schema": metadata["checkpoint_schema"],
+            "training_device_name": metadata["training_device_name"],
+            "training_device_type": metadata["training_device_type"],
             "actions": metadata["actions"],
+            "agent_seed": metadata["agent_seed"],
+            "exploration_spec": metadata["exploration_spec"],
+            "source_commit": self.source_commit,
+            "source_hash": self.source_hash,
         }
 
 
@@ -143,6 +149,8 @@ def commit_training_snapshot(
         required = {
             "checkpoint_schema", "algorithm", "actions", "feature_version",
             "reward_version", "reward_spec", "training_task",
+            "training_device_name", "training_device_type",
+            "agent_seed", "exploration_spec",
         }
         missing = sorted(required.difference(learner))
         if missing:
@@ -174,8 +182,12 @@ def commit_training_snapshot(
                 "actions": list(learner["actions"]),
                 "checkpoint_schema": CHECKPOINT_SCHEMA_VERSION,
                 "feature_version": learner["feature_version"],
+                "agent_seed": learner["agent_seed"],
+                "exploration_spec": learner["exploration_spec"],
                 "reward_spec": learner["reward_spec"],
                 "reward_version": learner["reward_version"],
+                "training_device_name": learner["training_device_name"],
+                "training_device_type": learner["training_device_type"],
             },
             "cumulative_completed_rounds": (
                 int(round_index)
@@ -192,8 +204,10 @@ def commit_training_snapshot(
         files = learner_files + ["runner_state.json"]
         hashes = {name: _sha256(temporary / name) for name in files}
         manifest = {
+            "agent_seed": learner["agent_seed"],
             "algorithm": algorithm,
             "checkpoint_schema": CHECKPOINT_SCHEMA_VERSION,
+            "exploration_spec": learner["exploration_spec"],
             "files": hashes,
             "round_index": int(round_index),
             "seed": int(seed),
@@ -333,7 +347,9 @@ def validate_resume_transition(
 ) -> str:
     """Validate curriculum and compatibility contracts; return resume kind."""
     for field in (
-        "algorithm", "seed", "feature_version", "reward_version", "checkpoint_schema"
+        "algorithm", "seed", "feature_version", "reward_version", "checkpoint_schema",
+        "training_device_type", "training_device_name", "agent_seed", "exploration_spec",
+        "source_commit", "source_hash",
     ):
         if parent.get(field) != child.get(field):
             raise ValueError(f"Resume {field} must match the parent run")

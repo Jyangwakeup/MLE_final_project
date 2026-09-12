@@ -10,7 +10,9 @@ from typing import Any, Callable, Sequence
 import numpy as np
 
 from agent_code.team_agent.features import ACTIONS, FEATURE_VERSION
+from agent_code.team_agent.exploration import resolve_exploration_spec
 from agent_code.team_agent.rewards import REWARD_VERSION
+from experiments.devices import resolve_device
 from experiments.resume import (
     CHECKPOINT_SCHEMA_VERSION,
     load_training_snapshot,
@@ -121,6 +123,8 @@ def run_training_mode(
     output_directory: Callable,
     checkpoint_name: Callable[[str], str],
     run_session: Callable,
+    source_commit: str | None,
+    source_hash: str,
 ) -> Path:
     """Validate and execute the training-specific CLI branch."""
     if args.seeds is not None:
@@ -141,6 +145,9 @@ def run_training_mode(
     checkpoint = output / "checkpoints" / checkpoint_name(args.agent)
     replay_interval = args.replay_interval or replay_progress_interval(n_rounds)
     stopping_config = early_stopping_config(training)
+    algorithm = "dqn" if "dqn" in args.agent.lower() else "q_learning"
+    requested_device = args.device or training.get("device", "auto")
+    device_info = resolve_device(algorithm, "train", requested_device)
     positional = (
         args.config, "train", seed, output, args.agent, opponents, scenario,
         n_rounds, checkpoint, task_name,
@@ -148,7 +155,7 @@ def run_training_mode(
         replay_interval, stopping_config,
     )
     if args.resume_from is None:
-        return run_session(*positional)
+        return run_session(*positional, device_info=device_info)
 
     parent_run = Path(args.resume_from)
     if not parent_run.is_absolute():
@@ -160,7 +167,6 @@ def run_training_mode(
         raise ValueError("Parent run is missing metadata.json")
     import json
     parent_metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
-    algorithm = "dqn" if "dqn" in args.agent.lower() else "q_learning"
     child_contract = {
         "algorithm": algorithm,
         "seed": seed,
@@ -169,6 +175,12 @@ def run_training_mode(
         "reward_version": config.get("reward_version", REWARD_VERSION),
         "checkpoint_schema": CHECKPOINT_SCHEMA_VERSION,
         "actions": list(ACTIONS),
+        "training_device_name": device_info["name"],
+        "training_device_type": device_info["type"],
+        "agent_seed": seed,
+        "exploration_spec": resolve_exploration_spec(training.get("exploration")),
+        "source_commit": source_commit,
+        "source_hash": source_hash,
     }
     parent_status = parent_metadata.get("status", "unknown")
     resume_kind = validate_resume_transition(
@@ -184,6 +196,7 @@ def run_training_mode(
         resume_snapshot=snapshot,
         resume_kind=resume_kind,
         parent_metadata=parent_metadata,
+        device_info=device_info,
     )
 
 

@@ -21,6 +21,14 @@ from experiments.resume import (
 )
 
 
+EXPLORATION_SPEC = {
+    "version": "linear-v1",
+    "start": 1.0,
+    "end": 0.05,
+    "decay_action_steps": 1_920_000,
+}
+
+
 class ResumeProtocolTestCase(unittest.TestCase):
     def _q_checkpoint(self, path: Path, value: float, round_index: int) -> None:
         with path.open("wb") as file:
@@ -34,6 +42,10 @@ class ResumeProtocolTestCase(unittest.TestCase):
                     "step": -0.01, "coin": 1.0, "kill": 5.0,
                     "crate": 0.2, "death": -10.0, "invalid": -0.1,
                 },
+                "training_device_type": "cpu",
+                "training_device_name": None,
+                "agent_seed": 11,
+                "exploration_spec": EXPLORATION_SPEC,
                 "q_table": {(0,) * 14: np.full(6, value, dtype=np.float32)},
                 "training_steps": round_index,
                 "training_task": "coin_navigation",
@@ -64,6 +76,9 @@ class ResumeProtocolTestCase(unittest.TestCase):
             latest = json.loads((run / "resume" / "latest.json").read_text())
             self.assertEqual(len(latest["generations"]), 2)
             newest = run / "resume" / latest["generations"][0]
+            manifest = json.loads((newest / "manifest.json").read_text())
+            self.assertEqual(manifest["agent_seed"], 11)
+            self.assertEqual(manifest["exploration_spec"], EXPLORATION_SPEC)
             self.assertTrue((newest / "q_table.npz").is_file())
             (newest / "q_table.npz").write_bytes(b"corrupt")
 
@@ -82,6 +97,9 @@ class ResumeProtocolTestCase(unittest.TestCase):
             "algorithm": "q_learning", "seed": 11, "task": "crate_navigation",
             "feature_version": "v1", "reward_version": "r1",
             "checkpoint_schema": CHECKPOINT_SCHEMA_VERSION,
+            "training_device_type": "cpu", "training_device_name": None,
+            "agent_seed": 11, "exploration_spec": EXPLORATION_SPEC,
+            "source_commit": "abc123", "source_hash": "source-hash",
         }
         validate_resume_transition(parent, {
             **parent, "task": "weak_opponents",
@@ -105,6 +123,11 @@ class ResumeProtocolTestCase(unittest.TestCase):
         for field, value in (
             ("algorithm", "dqn"), ("seed", 22),
             ("feature_version", "v2"), ("checkpoint_schema", "old"),
+            ("training_device_type", "cuda"),
+            ("agent_seed", 22),
+            ("exploration_spec", {**EXPLORATION_SPEC, "end": 0.1}),
+            ("source_commit", "different-commit"),
+            ("source_hash", "different-source"),
         ):
             with self.subTest(field=field):
                 with self.assertRaisesRegex(ValueError, field):
@@ -135,6 +158,10 @@ class ResumeProtocolTestCase(unittest.TestCase):
                     "crate": 0.2, "death": -10.0, "invalid": -0.1,
                 },
                 "training_task": "coin_navigation",
+                "training_device_type": "cuda",
+                "training_device_name": "NVIDIA A100-PCIE-40GB",
+                "agent_seed": 11,
+                "exploration_spec": EXPLORATION_SPEC,
                 "policy": {"weight": torch.ones(1)},
                 "target": {"weight": torch.ones(1)},
                 "optimizer": {},
@@ -154,6 +181,7 @@ class ResumeProtocolTestCase(unittest.TestCase):
             materialize_learner_checkpoint(loaded, destination)
             restored = torch.load(destination, map_location="cpu", weights_only=True)
             self.assertEqual(restored["checkpoint_schema"], CHECKPOINT_SCHEMA_VERSION)
+            self.assertEqual(CHECKPOINT_SCHEMA_VERSION, "training-resume-v3")
             self.assertIn("replay", restored)
 
 

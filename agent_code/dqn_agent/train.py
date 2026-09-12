@@ -8,6 +8,7 @@ import torch
 from agent_code.team_agent.rewards import (
     REWARD_VERSION, resolve_reward_spec, reward_from_events,
 )
+from agent_code.team_agent.exploration import epsilon_at, resolve_exploration_spec
 
 from .callbacks import ACTIONS, FEATURE_VERSION, _features_for
 from .model import Transition
@@ -17,7 +18,7 @@ TRAINING_FIELDS = (
     "schema_version", "algorithm", "round", "reward", "action_steps",
     "epsilon", "q_states", "loss", "updates", "checkpoint",
 )
-CHECKPOINT_SCHEMA_VERSION = "training-resume-v1"
+CHECKPOINT_SCHEMA_VERSION = "training-resume-v3"
 
 
 def setup_training(self):
@@ -71,7 +72,11 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
         "checkpoint_schema": CHECKPOINT_SCHEMA_VERSION,
         "algorithm": "dqn",
         "actions": list(ACTIONS),
+        "agent_seed": getattr(self, "agent_seed", 0),
         "agent_rng_state": self.rng.getstate(),
+        "exploration_spec": getattr(
+            self, "exploration_spec", resolve_exploration_spec()
+        ),
         "feature_version": FEATURE_VERSION,
         "reward_version": getattr(self, "reward_version", REWARD_VERSION),
         "reward_spec": getattr(
@@ -96,7 +101,10 @@ def _append_training_metrics(self, last_game_state) -> None:
     if not run_dir:
         return
     path = Path(run_dir) / "training.csv"
-    epsilon = max(0.05, 1.0 - 0.95 * min(self.action_steps / 80_000, 1.0))
+    epsilon = epsilon_at(
+        self.action_steps,
+        getattr(self, "exploration_spec", resolve_exploration_spec()),
+    )
     record = {
         "schema_version": "training-v1",
         "algorithm": "dqn",

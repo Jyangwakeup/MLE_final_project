@@ -1,5 +1,6 @@
 import csv
 from contextlib import redirect_stderr
+import hashlib
 import io
 import json
 import os
@@ -61,6 +62,10 @@ class ExperimentRunTest(unittest.TestCase):
             _task_settings(4, ["random_agent", "rule_based_agent"]),
             ("full_match", "classic", ("random_agent", "rule_based_agent")),
         )
+        self.assertEqual(
+            _task_settings(4, None),
+            ("full_match", "classic", ("rule_based_agent",) * 3),
+        )
 
     def test_task_constraints_reject_wrong_opponents(self):
         with self.assertRaises(ValueError):
@@ -88,6 +93,17 @@ class ExperimentRunTest(unittest.TestCase):
         self.assertFalse(train_output.exists())
         self.assertFalse(eval_output.exists())
 
+    def test_cli_rejects_cuda_for_q_learning_before_creating_output(self):
+        output = self.output("q-cuda")
+        with redirect_stderr(io.StringIO()):
+            result = experiment_main([
+                "--config", str(BASE_CONFIG), "--mode", "train", "--task", "1",
+                "--agent", "q_learning_agent", "--n-rounds", "1", "--seed", "11",
+                "--device", "cuda", "--output", str(output),
+            ])
+        self.assertEqual(result, 2)
+        self.assertFalse(output.exists())
+
     def test_training_writes_checkpoint_table_summary_and_chart(self):
         output = self.output("train")
         checkpoint = output / "checkpoints" / "final.pkl"
@@ -112,7 +128,26 @@ class ExperimentRunTest(unittest.TestCase):
         self.assertFalse(metadata["expanded_config"]["execution"]["allow_bomb"])
         self.assertEqual(metadata["reward_version"], "r1")
         self.assertEqual(metadata["rewards"]["invalid_action"], -0.1)
+        self.assertEqual(metadata["agent_seed"], 11)
+        self.assertEqual(metadata["exploration_spec"], {
+            "version": "linear-v1",
+            "start": 1.0,
+            "end": 0.05,
+            "decay_action_steps": 1_920_000,
+        })
+        self.assertEqual(
+            metadata["expanded_config"]["training"]["exploration"],
+            metadata["exploration_spec"],
+        )
         self.assertEqual(len(metadata["source_hash"]), 64)
+        self.assertEqual(
+            metadata["config_source_sha256"],
+            hashlib.sha256(BASE_CONFIG.read_bytes()).hexdigest(),
+        )
+        with checkpoint.open("rb") as file:
+            payload = pickle.load(file)
+        self.assertEqual(payload["agent_seed"], 11)
+        self.assertEqual(payload["exploration_spec"], metadata["exploration_spec"])
         with (output / "training.csv").open(newline="", encoding="utf-8") as file:
             rows = list(csv.DictReader(file))
         self.assertEqual(len(rows), 1)
@@ -349,7 +384,8 @@ class ExperimentRunTest(unittest.TestCase):
         checkpoint.write_bytes(b"checkpoint")
         self.addCleanup(checkpoint.unlink, missing_ok=True)
 
-        def fake_session(*args):
+        def fake_session(*args, **kwargs):
+            self.assertEqual(kwargs["device_info"]["actual"], "cpu")
             run_output = args[3]
             run_output.mkdir()
             return run_output
@@ -371,6 +407,27 @@ class ExperimentRunTest(unittest.TestCase):
         self.assertTrue((output / f"{output.name}_s10001").is_dir())
         self.assertTrue((output / f"{output.name}_s10002").is_dir())
         self.assertTrue((summary / "fixed_evaluation.json").is_file())
+
+    def test_legal_random_baseline_runs_through_the_frozen_cli(self):
+        output = self.output("legal-random")
+        marker = PROJECT_ROOT / "agent_code" / "legal_random_agent" / "baseline.json"
+        with patch.object(s, "MAX_STEPS", 3):
+            result = experiment_main([
+                "--config", str(PROJECT_ROOT / "experiments/configs/stage_gate.json"),
+                "--mode", "evaluate", "--task", "1",
+                "--agent", "legal_random_agent", "--n-rounds", "1",
+                "--seed", "10000", "--device", "cpu",
+                "--checkpoint", str(marker), "--output", str(output),
+            ])
+
+        self.assertEqual(result, 0)
+        metadata = json.loads((output / "metadata.json").read_text())
+        self.assertEqual(metadata["algorithm"], "legal_random")
+        self.assertEqual(metadata["agent_seed"], 10000)
+        actions = [json.loads(line)["action"] for line in (
+            output / "timing.jsonl"
+        ).read_text().splitlines()]
+        self.assertNotIn("BOMB", actions)
 
 
 if __name__ == "__main__":

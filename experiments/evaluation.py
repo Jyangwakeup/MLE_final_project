@@ -5,13 +5,15 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Callable, Sequence
 
+from experiments.devices import resolve_device
+
 
 def run_multi_seed_evaluation(
     config_path: Path, seeds: Sequence[int], n_rounds: int,
     run_id_prefix: str, agent: str, opponents: Sequence[str], scenario: str,
     checkpoint: Path, task_name: str, replay_policy: str, replay_interval: int,
     *, runs_root: Path, project_root: Path, run_session: Callable,
-    analyze_runs: Callable, write_json: Callable,
+    analyze_runs: Callable, write_json: Callable, device_info: dict[str, Any],
 ) -> Path:
     checkpoint = checkpoint.resolve()
     if not checkpoint.is_file():
@@ -33,6 +35,7 @@ def run_multi_seed_evaluation(
             config_path, "evaluate", int(seed), output, agent, opponents,
             scenario, n_rounds, checkpoint, task_name, replay_policy,
             replay_interval,
+            device_info=device_info,
         ))
     analyze_runs(run_directories, summary)
     write_json(summary / "fixed_evaluation.json", {
@@ -40,6 +43,7 @@ def run_multi_seed_evaluation(
         "n_rounds_per_seed": n_rounds, "opponents": list(opponents),
         "replay_interval": replay_interval, "replay_policy": replay_policy,
         "scenario": scenario, "seeds": list(seeds), "task": task_name,
+        "device": device_info,
     })
     return summary
 
@@ -59,6 +63,12 @@ def run_evaluation_mode(
         checkpoint = (project_root / checkpoint).resolve()
     if not checkpoint.is_file():
         raise FileNotFoundError(f"Evaluation checkpoint does not exist: {checkpoint}")
+    evaluation = config.get("evaluation", {})
+    if not isinstance(evaluation, dict):
+        raise ValueError("config.evaluation must be an object")
+    algorithm = "dqn" if "dqn" in args.agent.lower() else "q_learning"
+    requested_device = args.device or evaluation.get("device", "cpu")
+    device_info = resolve_device(algorithm, "evaluate", requested_device)
     n_rounds = args.n_rounds or configured_rounds
     replay_interval = args.replay_interval or 500
     if args.seed is not None:
@@ -68,6 +78,7 @@ def run_evaluation_mode(
             scenario, n_rounds, checkpoint, task_name,
             "none" if args.replay_policy == "auto" else args.replay_policy,
             replay_interval,
+            device_info=device_info,
         )
         summary = completed / "summary"
         analyze_runs([completed], summary)
@@ -80,4 +91,5 @@ def run_evaluation_mode(
         scenario, checkpoint, task_name,
         "all" if args.replay_policy == "auto" else args.replay_policy,
         replay_interval,
+        device_info=device_info,
     )

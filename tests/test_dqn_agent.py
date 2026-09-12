@@ -56,6 +56,27 @@ class DQNRewardTestCase(unittest.TestCase):
 
 
 class DQNTrainingTaskTestCase(unittest.TestCase):
+    def test_setup_passes_runner_seed_and_exploration_schedule_to_model(self):
+        agent = SimpleNamespace(train=True, logger=Mock())
+        specification = (
+            '{"version":"linear-v1","start":1.0,"end":0.05,'
+            '"decay_action_steps":1920000}'
+        )
+
+        with (
+            patch.dict(os.environ, {
+                "BOMBERMAN_AGENT_SEED": "17",
+                "BOMBERMAN_EXPLORATION_SPEC": specification,
+            }, clear=True),
+            patch("agent_code.dqn_agent.callbacks.DQN") as model_type,
+        ):
+            setup(agent)
+
+        model_type.assert_called_once_with(INPUT_SIZE, 6, seed=17, device="cpu")
+        self.assertEqual(agent.agent_seed, 17)
+        self.assertEqual(agent.rng.getstate(), random.Random(17).getstate())
+        self.assertEqual(agent.exploration_spec["decay_action_steps"], 1_920_000)
+
     def test_shared_flag_disables_bombs_during_training_and_evaluation(self):
         for training in (True, False):
             with self.subTest(training=training):
@@ -225,6 +246,39 @@ class DQNCheckpointTestCase(unittest.TestCase):
         for name, value in model.target.state_dict().items():
             self.assertTrue(torch.equal(value, restored.target.state_dict()[name]))
         self.assertEqual(model.updates, restored.updates)
+
+    @unittest.skipUnless(torch.cuda.is_available(), "CUDA is unavailable")
+    def test_cuda_checkpoint_resumes_the_next_update_and_loads_on_cpu(self):
+        model = DQN(INPUT_SIZE, 6, seed=17, batch_size=2, warmup=2, device="cuda")
+        self.assertTrue(next(model.policy.parameters()).is_cuda)
+        first = Transition(
+            np.zeros(INPUT_SIZE, dtype=np.float32), 0, 1.0,
+            np.ones(INPUT_SIZE, dtype=np.float32), False,
+            np.ones(6, dtype=bool),
+        )
+        model.replay.append(first)
+        checkpoint = model.checkpoint()
+        self.assertEqual(checkpoint["training_device_type"], "cuda")
+        self.assertIn("cuda_rng_state_all", checkpoint)
+
+        restored = DQN(INPUT_SIZE, 6, seed=999, batch_size=2, warmup=2, device="cuda")
+        restored.load_checkpoint(checkpoint, training=True)
+        second = Transition(
+            np.ones(INPUT_SIZE, dtype=np.float32), 1, -0.5,
+            np.zeros(INPUT_SIZE, dtype=np.float32), False,
+            np.ones(6, dtype=bool),
+        )
+        self.assertAlmostEqual(model.observe(second), restored.observe(second))
+        for original, resumed in zip(
+            model.policy.parameters(), restored.policy.parameters(), strict=True
+        ):
+            self.assertTrue(torch.equal(original, resumed))
+
+        cpu_model = DQN(INPUT_SIZE, 6, seed=0, device="cpu")
+        cpu_model.load_checkpoint(checkpoint, training=False)
+        self.assertFalse(next(cpu_model.policy.parameters()).is_cuda)
+        with self.assertRaisesRegex(ValueError, "training device"):
+            cpu_model.load_checkpoint(checkpoint, training=True)
 
 
 if __name__ == "__main__":
