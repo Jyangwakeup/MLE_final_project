@@ -5,6 +5,7 @@ import random
 import numpy as np
 import torch
 
+from agent_code.team_agent.rewards import REWARD_VERSION, resolve_reward_spec
 from .features import ACTIONS, FEATURE_DIM, FEATURE_VERSION, features_for_state
 from .model import DQN
 
@@ -15,6 +16,7 @@ CHECKPOINT_ENV = "BOMBERMAN_CHECKPOINT"
 SEED = 0
 TRAINING_TASK_ENV = "BOMBERMAN_TRAINING_TASK"
 ALLOW_BOMB_ENV = "BOMBERMAN_ALLOW_BOMB"
+REWARD_VERSION_ENV = "BOMBERMAN_REWARD_VERSION"
 
 
 def _env_flag(name: str, default: bool) -> bool:
@@ -47,6 +49,8 @@ def setup(self):
     self.model = DQN(INPUT_SIZE, len(ACTIONS), seed=SEED)
     self.allow_bomb = _env_flag(ALLOW_BOMB_ENV, True)
     self.training_task = _training_task()
+    self.reward_version = os.getenv(REWARD_VERSION_ENV, REWARD_VERSION)
+    self.reward_spec = resolve_reward_spec(self.reward_version)
     self.action_steps = 0
     self._feature_cache_key = None
     self._feature_cache_value = None
@@ -68,20 +72,17 @@ def setup(self):
                 raise ValueError(message)
             self.logger.warning("%s; starting with a new network", message)
         else:
+            if (
+                self.train
+                and "checkpoint_schema" in checkpoint
+                and checkpoint.get("reward_version") != self.reward_version
+            ):
+                raise ValueError("Cannot continue DQN with a different reward version")
             self.model.load_checkpoint(checkpoint, training=self.train)
             self.action_steps = int(checkpoint.get("action_steps", 0))
             previous_task = checkpoint.get("training_task")
-            if (
-                self.train
-                and self.training_task is not None
-                and self.training_task != previous_task
-            ):
-                self.logger.info(
-                    "Training task changed from %r to %r; resetting exploration progress",
-                    previous_task,
-                    self.training_task,
-                )
-                self.action_steps = 0
+            if self.train and "agent_rng_state" in checkpoint:
+                self.rng.setstate(checkpoint["agent_rng_state"])
             self.logger.info("Loaded DQN checkpoint from %s", self.model_file)
     elif configured_checkpoint and not self.train:
         raise FileNotFoundError(

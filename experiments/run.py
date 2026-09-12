@@ -3,9 +3,11 @@
 from __future__ import annotations
 
 import argparse
+import csv
 import hashlib
 import importlib.metadata
 import json
+import logging
 import math
 import os
 import pickle
@@ -30,12 +32,20 @@ from environment import Trophy
 from experiments.analyze import analyze_runs
 from experiments.analyze_training import analyze_training
 from experiments.evaluation import run_evaluation_mode, run_multi_seed_evaluation
+from experiments.resume import (
+    CHECKPOINT_SCHEMA_VERSION,
+    LoadedSnapshot,
+    commit_training_snapshot,
+    materialize_learner_checkpoint,
+)
 from experiments.training import (
     TrainingEarlyStopping,
     early_stopping_config as _early_stopping_config,
     run_training_mode,
 )
 from main import world_controller
+from agent_code.team_agent.features import ACTIONS, FEATURE_VERSION
+from agent_code.team_agent.rewards import REWARD_VERSION, resolve_reward_spec
 
 
 RUNS_ROOT = PROJECT_ROOT / "runs"
@@ -81,6 +91,7 @@ class ExperimentWorld(BombeRLeWorld):
         self, args: WorldArgs, agents, output: Path, run_id: str,
         environment_seed: int, stage: str = "evaluation",
         replay_policy: str = "none", replay_interval: int = DEFAULT_REPLAY_INTERVAL,
+        snapshot_config: dict[str, Any] | None = None,
     ):
         self._episodes_path = output / "episodes.jsonl"
         self._timing_path = output / "timing.jsonl"
@@ -92,6 +103,7 @@ class ExperimentWorld(BombeRLeWorld):
         self._output = output
         self._replay_policy = replay_policy
         self._replay_interval = replay_interval
+        self._snapshot_config = snapshot_config
         self._death_steps: dict[str, int] = {}
         self._death_causes: dict[str, list[dict[str, str]]] = {}
         super().__init__(args, agents)
@@ -294,6 +306,31 @@ class ExperimentWorld(BombeRLeWorld):
                 "agents": agents,
             },
         )
+        if self._snapshot_config is not None:
+            training_path = self._output / "training.csv"
+            local_rewards: list[float] = []
+            if training_path.is_file():
+                with training_path.open(newline="", encoding="utf-8") as file:
+                    local_rewards = [float(row["reward"]) for row in csv.DictReader(file)]
+            inherited = self._snapshot_config.get("inherited_rewards", [])
+            commit_training_snapshot(
+                self._output,
+                self._snapshot_config["checkpoint"],
+                algorithm=self._snapshot_config["algorithm"],
+                task=self._snapshot_config["task"],
+                seed=self._snapshot_config["seed"],
+                round_index=int(self.round),
+                world_rng_state=self.rng.bit_generator.state,
+                python_rng_state=random.getstate(),
+                numpy_rng_state=np.random.get_state(),
+                early_stopping_rewards=[*inherited, *local_rewards],
+                source_commit=self._snapshot_config["source_commit"],
+                source_hash=self._snapshot_config["source_hash"],
+                cumulative_completed_rounds=(
+                    self._snapshot_config["parent_cumulative"] + len(local_rewards)
+                ),
+                early_stopping_config=self._snapshot_config["early_stopping_config"],
+            )
 
 
 def _source_commit() -> str | None:
@@ -305,6 +342,24 @@ def _source_commit() -> str | None:
         text=True,
     )
     return result.stdout.strip() if result.returncode == 0 else None
+
+
+def _source_hash() -> str:
+    """Hash runtime Python/config sources, including uncommitted files."""
+    digest = hashlib.sha256()
+    roots = [PROJECT_ROOT / "agent_code", PROJECT_ROOT / "experiments"]
+    paths = [PROJECT_ROOT / name for name in ("agents.py", "environment.py", "items.py", "settings.py")]
+    for root in roots:
+        paths.extend(root.rglob("*.py"))
+        paths.extend(root.rglob("*.json"))
+    for path in sorted({item for item in paths if item.is_file()}):
+        if "__pycache__" in path.parts:
+            continue
+        relative = path.relative_to(PROJECT_ROOT).as_posix().encode("utf-8")
+        digest.update(len(relative).to_bytes(4, "big"))
+        digest.update(relative)
+        digest.update(path.read_bytes())
+    return digest.hexdigest()
 
 
 def _evaluation_seeds(experiment_seed: int) -> dict[str, int]:
@@ -463,6 +518,31 @@ def _checkpoint_name(agent: str) -> str:
     return "final.pt" if "dqn" in agent.lower() else "final.pkl"
 
 
+def _algorithm_name(agent: str) -> str:
+    return "dqn" if "dqn" in agent.lower() else "q_learning"
+
+
+def _close_output_log_handlers(output: Path) -> None:
+    """Release per-run files so tests and callers can move completed runs."""
+    root = output.resolve()
+    loggers = [logging.getLogger()]
+    loggers.extend(
+        item for item in logging.Logger.manager.loggerDict.values()
+        if isinstance(item, logging.Logger)
+    )
+    for logger in loggers:
+        for handler in list(logger.handlers):
+            filename = getattr(handler, "baseFilename", None)
+            if filename is None:
+                continue
+            try:
+                Path(filename).resolve().relative_to(root)
+            except ValueError:
+                continue
+            logger.removeHandler(handler)
+            handler.close()
+
+
 def run_agent_session(
     config_path: Path,
     mode: str,
@@ -477,6 +557,10 @@ def run_agent_session(
     replay_policy: str = "none",
     replay_interval: int = DEFAULT_REPLAY_INTERVAL,
     early_stopping_config: dict[str, Any] | None = None,
+    *,
+    resume_snapshot: LoadedSnapshot | None = None,
+    resume_kind: str | None = None,
+    parent_metadata: dict[str, Any] | None = None,
 ) -> Path:
     """Run one isolated training or frozen-evaluation session."""
     training = mode == "train"
@@ -490,15 +574,37 @@ def run_agent_session(
     replay_interval = _positive_int(replay_interval, "replay_interval")
     specs = _custom_agents(agent, opponents, training)
     checkpoint = checkpoint.resolve()
+    expanded = _read_config(config_path)
+    algorithm = _algorithm_name(agent)
+    configured_algorithm = expanded.get("algorithm")
+    if configured_algorithm not in (None, algorithm):
+        raise ValueError("Configured algorithm does not match the selected agent")
+    configured_features = expanded.get("feature_version", FEATURE_VERSION)
+    if configured_features != FEATURE_VERSION:
+        raise ValueError("Configured feature_version does not match the agent")
+    reward_version = expanded.get("reward_version", REWARD_VERSION)
+    resolved_rewards = resolve_reward_spec(reward_version)
+    if resume_snapshot is not None and not training:
+        raise ValueError("Resume snapshots are only valid in training mode")
+    if (resume_snapshot is None) != (resume_kind is None):
+        raise ValueError("Resume snapshot and resume kind must be provided together")
     if not training and not checkpoint.is_file():
         raise FileNotFoundError(f"Evaluation checkpoint does not exist: {checkpoint}")
     output.mkdir(parents=True, exist_ok=False)
     if training:
         checkpoint.parent.mkdir(parents=True, exist_ok=True)
+    if resume_snapshot is not None:
+        materialize_learner_checkpoint(resume_snapshot, checkpoint)
 
     seeds = _training_seeds(seed) if training else _evaluation_seeds(seed)
     metadata = _initial_metadata(config_path, mode, output.name, seeds)
-    expanded = _read_config(config_path)
+    source_commit = metadata["source_commit"]
+    source_hash = _source_hash()
+    metadata["source_hash"] = source_hash
+    expanded["algorithm"] = algorithm
+    expanded["feature_version"] = FEATURE_VERSION
+    expanded["reward_version"] = reward_version
+    expanded["resolved_rewards"] = resolved_rewards
     expanded["seed"] = seed
     expanded["execution"] = {
         "agent": agent,
@@ -512,6 +618,32 @@ def run_agent_session(
         "task": task_name,
     }
     metadata["expanded_config"] = expanded
+    metadata["algorithm"] = algorithm
+    metadata["checkpoint_schema"] = CHECKPOINT_SCHEMA_VERSION
+    metadata["feature_version"] = FEATURE_VERSION
+    metadata["reward_version"] = reward_version
+    metadata["rewards"] = resolved_rewards
+    metadata["task"] = task_name
+    parent_cumulative = 0
+    if resume_snapshot is not None:
+        parent_cumulative = int(
+            resume_snapshot.runner_state["cumulative_completed_rounds"]
+        )
+    elif parent_metadata is not None:
+        termination = parent_metadata.get("termination") or {}
+        parent_cumulative = int(termination.get(
+            "cumulative_completed_rounds", termination.get("completed_rounds", 0)
+        ))
+    metadata["lineage"] = None if resume_snapshot is None else {
+        "fallback_reason": resume_snapshot.fallback_reason,
+        "fallback_lost_rounds": resume_snapshot.lost_rounds,
+        "parent_generation": resume_snapshot.generation,
+        "parent_generation_hash": resume_snapshot.generation_hash,
+        "parent_run": str(resume_snapshot.run_directory),
+        "parent_source_commit": resume_snapshot.source_commit,
+        "parent_source_hash": resume_snapshot.source_hash,
+        "resume_kind": resume_kind,
+    }
     metadata["config_sha256"] = hashlib.sha256(
         json.dumps(expanded, sort_keys=True, separators=(",", ":")).encode("utf-8")
     ).hexdigest()
@@ -523,7 +655,7 @@ def run_agent_session(
         for name in (
             "BOMBERMAN_CHECKPOINT", "BOMBERMAN_CONFIG", "BOMBERMAN_RUN_DIR",
             "BOMBERMAN_RUN_ID", "BOMBERMAN_TRAINING_TASK",
-            "BOMBERMAN_ALLOW_BOMB",
+            "BOMBERMAN_ALLOW_BOMB", "BOMBERMAN_REWARD_VERSION",
         )
     }
     try:
@@ -533,6 +665,7 @@ def run_agent_session(
         os.environ["BOMBERMAN_RUN_DIR"] = str(output.resolve())
         os.environ["BOMBERMAN_RUN_ID"] = output.name
         os.environ["BOMBERMAN_TRAINING_TASK"] = task_name
+        os.environ["BOMBERMAN_REWARD_VERSION"] = reward_version
         # Task 1 isolates coin navigation. Keep its action space free of bombs
         # for both training and frozen evaluation so agents are compared under
         # the same curriculum constraint.
@@ -540,6 +673,10 @@ def run_agent_session(
             "false" if task_name == "coin_navigation" else "true"
         )
         _seed_official_rng(seeds["official_opponent_seed"])
+        inherited_rewards = (
+            resume_snapshot.runner_state.get("early_stopping_rewards", [])
+            if resume_snapshot is not None and resume_kind == "same_task" else []
+        )
         world = ExperimentWorld(
             _world_args(output, scenario, seeds["environment_seed"], output.name),
             specs,
@@ -549,10 +686,33 @@ def run_agent_session(
             stage=f"{task_name}_{mode}",
             replay_policy=replay_policy,
             replay_interval=replay_interval,
+            snapshot_config=(
+                {
+                    "algorithm": algorithm,
+                    "checkpoint": checkpoint,
+                    "inherited_rewards": inherited_rewards,
+                    "early_stopping_config": early_stopping_config,
+                    "parent_cumulative": parent_cumulative,
+                    "seed": seed,
+                    "source_commit": source_commit,
+                    "source_hash": source_hash,
+                    "task": task_name,
+                }
+                if training else None
+            ),
         )
-        _seed_official_rng(seeds["official_opponent_seed"])
+        if resume_snapshot is not None and resume_kind == "same_task":
+            runner_state = resume_snapshot.runner_state
+            world.rng.bit_generator.state = runner_state["world_rng_state"]
+            world.round = resume_snapshot.round_index
+            random.setstate(runner_state["python_rng_state"])
+            np.random.set_state(runner_state["numpy_rng_state"])
+        else:
+            _seed_official_rng(seeds["official_opponent_seed"])
         early_stopping = (
-            TrainingEarlyStopping(output / "training.csv", early_stopping_config)
+            TrainingEarlyStopping(
+                output / "training.csv", early_stopping_config, inherited_rewards
+            )
             if training and early_stopping_config is not None else None
         )
         completed_rounds = world_controller(
@@ -567,19 +727,27 @@ def run_agent_session(
         metadata["ended_at"] = _utc_now()
         metadata["termination"] = {
             "completed_rounds": completed_rounds,
+            "cumulative_completed_rounds": parent_cumulative + completed_rounds,
             "early_stopping": None if early_stopping is None else early_stopping.result,
+            "local_completed_rounds": completed_rounds,
             "requested_rounds": n_rounds,
         }
-        metadata["status"] = "completed"
+        metadata["status"] = (
+            "early_stopped" if early_stopping is not None and early_stopping.result
+            else "completed"
+        )
         _write_json(metadata_path, metadata)
         return output
     except BaseException as exception:
         metadata["ended_at"] = _utc_now()
         metadata["error"] = {"message": str(exception), "type": type(exception).__name__}
-        metadata["status"] = "failed"
+        metadata["status"] = (
+            "interrupted" if isinstance(exception, KeyboardInterrupt) else "error"
+        )
         _write_json(metadata_path, metadata)
         raise
     finally:
+        _close_output_log_handlers(output)
         for name, value in previous.items():
             if value is None:
                 os.environ.pop(name, None)
@@ -622,6 +790,10 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--opponents", nargs="*")
     parser.add_argument("--checkpoint", type=Path)
     parser.add_argument(
+        "--resume-from", type=Path,
+        help="Parent training run directory used for exact or curriculum resume",
+    )
+    parser.add_argument(
         "--replay-policy", choices=("auto", *REPLAY_POLICIES), default="auto",
         help="Replay retention: auto, none, failures, sampled, or all",
     )
@@ -652,6 +824,8 @@ def main(argv: Sequence[str] | None = None) -> int:
                 run_session=run_agent_session,
             )
         else:
+            if args.resume_from is not None:
+                raise ValueError("--resume-from is only valid with --mode train")
             run_evaluation_mode(
                 args, config, configured_seeds, configured_rounds,
                 task_name, scenario, opponents, project_root=PROJECT_ROOT,

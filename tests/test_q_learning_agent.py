@@ -61,7 +61,7 @@ class QLearningAgentConfigurationTestCase(unittest.TestCase):
             allow_bomb=agent.allow_bomb,
         )[-1])
 
-    def test_new_task_resets_progress_but_keeps_q_table(self):
+    def test_new_task_keeps_progress_and_q_table(self):
         with tempfile.TemporaryDirectory() as directory:
             model_file = Path(directory) / "q-table.pkl"
             expected_table = {("known",): [1.0, 2.0, 3.0, 4.0, 5.0, 6.0]}
@@ -81,7 +81,7 @@ class QLearningAgentConfigurationTestCase(unittest.TestCase):
                 setup(agent)
 
         self.assertEqual(agent.q_table, expected_table)
-        self.assertEqual(agent.training_steps, 0)
+        self.assertEqual(agent.training_steps, 123)
         self.assertEqual(agent.training_task, "task2")
 
     def test_explicit_evaluation_checkpoint_must_exist(self):

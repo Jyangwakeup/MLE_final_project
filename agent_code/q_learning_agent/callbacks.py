@@ -8,11 +8,17 @@ import random
 
 import numpy as np
 
+from agent_code.team_agent.rewards import REWARD_VERSION, resolve_reward_spec
 from .features import ACTIONS, FEATURE_VERSION, features_for_state
 MODEL_FILE = Path(__file__).with_name("final.pkl")
 CHECKPOINT_ENV = "BOMBERMAN_CHECKPOINT"
 SEED = 0
 TRAINING_TASK_ENV = "BOMBERMAN_TRAINING_TASK"
+REWARD_VERSION_ENV = "BOMBERMAN_REWARD_VERSION"
+
+
+class ResumeCompatibilityError(RuntimeError):
+    """A full training checkpoint cannot be resumed under this contract."""
 
 
 def _env_flag(name: str, default: bool) -> bool:
@@ -52,6 +58,8 @@ def setup(self):
     else:
         self.allow_bomb = _env_flag("Q_LEARNING_ALLOW_BOMB", True)
     self.training_task = _training_task()
+    self.reward_version = os.getenv(REWARD_VERSION_ENV, REWARD_VERSION)
+    self.reward_spec = resolve_reward_spec(self.reward_version)
     self.q_table = {}
     self.training_steps = 0
     self._feature_cache_key = None
@@ -73,10 +81,12 @@ def setup(self):
                 self.training_steps = int(payload.get("training_steps", 0))
                 previous_task = payload.get("training_task")
                 previous_feature_version = payload.get("feature_version")
+                previous_reward_version = payload.get("reward_version")
             else:  # backwards-compatible with a directly pickled Q table
                 self.q_table = payload
                 previous_task = None
                 previous_feature_version = None
+                previous_reward_version = None
             if previous_feature_version != FEATURE_VERSION:
                 self.logger.warning(
                     "Ignoring Q table trained with feature version %r; expected %r",
@@ -85,17 +95,12 @@ def setup(self):
                 )
                 self.q_table = {}
                 self.training_steps = 0
-            if (
-                self.train
-                and self.training_task is not None
-                and self.training_task != previous_task
-            ):
-                self.logger.info(
-                    "Training task changed from %r to %r; resetting exploration progress",
-                    previous_task,
-                    self.training_task,
-                )
-                self.training_steps = 0
+            if self.train and "agent_rng_state" in payload:
+                if previous_reward_version != self.reward_version:
+                    raise ResumeCompatibilityError(
+                        "Cannot continue Q-learning with a different reward version"
+                    )
+                self.rng.setstate(payload["agent_rng_state"])
             self.logger.info("Loaded Q table with %d states", len(self.q_table))
         except (OSError, pickle.PickleError, EOFError, TypeError, ValueError) as exc:
             self.logger.warning("Could not load Q table (%s); starting fresh", exc)

@@ -1,6 +1,9 @@
 import csv
+from contextlib import redirect_stderr
+import io
 import json
 import os
+import pickle
 import shutil
 import subprocess
 import sys
@@ -9,10 +12,12 @@ import uuid
 from pathlib import Path
 from unittest.mock import patch
 
+import numpy as np
 import settings as s
 from experiments.run import (
     TASKS,
     _task_settings,
+    main as experiment_main,
     run_agent_evaluation,
     run_agent_session,
 )
@@ -26,6 +31,7 @@ from experiments.training import (
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 RUNNER = PROJECT_ROOT / "experiments" / "run.py"
 BASE_CONFIG = PROJECT_ROOT / "experiments" / "configs" / "base.json"
+BASE_EARLY_STOPPING = json.loads(BASE_CONFIG.read_text())["training"]["early_stopping"]
 RUNS_ROOT = PROJECT_ROOT / "runs"
 
 
@@ -64,6 +70,24 @@ class ExperimentRunTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             _task_settings(4, [])
 
+    def test_cli_separates_training_resume_from_evaluation_checkpoint(self):
+        train_output = self.output("invalid-train-checkpoint")
+        eval_output = self.output("invalid-eval-resume")
+        common = ["--config", str(BASE_CONFIG), "--task", "1", "--agent", "q_learning_agent"]
+        with redirect_stderr(io.StringIO()):
+            train_result = experiment_main([
+                *common, "--mode", "train", "--n-rounds", "1", "--seed", "11",
+                "--checkpoint", str(BASE_CONFIG), "--output", str(train_output),
+            ])
+            eval_result = experiment_main([
+                *common, "--mode", "evaluate", "--checkpoint", str(BASE_CONFIG),
+                "--resume-from", str(PROJECT_ROOT), "--output", str(eval_output),
+            ])
+        self.assertEqual(train_result, 2)
+        self.assertEqual(eval_result, 2)
+        self.assertFalse(train_output.exists())
+        self.assertFalse(eval_output.exists())
+
     def test_training_writes_checkpoint_table_summary_and_chart(self):
         output = self.output("train")
         checkpoint = output / "checkpoints" / "final.pkl"
@@ -86,11 +110,161 @@ class ExperimentRunTest(unittest.TestCase):
         self.assertEqual(metadata["expanded_config"]["execution"]["replay_policy"], "sampled")
         self.assertEqual(metadata["expanded_config"]["execution"]["replay_interval"], 500)
         self.assertFalse(metadata["expanded_config"]["execution"]["allow_bomb"])
+        self.assertEqual(metadata["reward_version"], "r1")
+        self.assertEqual(metadata["rewards"]["invalid_action"], -0.1)
+        self.assertEqual(len(metadata["source_hash"]), 64)
         with (output / "training.csv").open(newline="", encoding="utf-8") as file:
             rows = list(csv.DictReader(file))
         self.assertEqual(len(rows), 1)
         self.assertEqual(rows[0]["algorithm"], "q_learning")
         self.assertEqual(rows[0]["round"], "1")
+
+    def test_training_can_resume_into_an_immutable_child_run(self):
+        parent = self.output("resume-parent")
+        child = self.output("resume-child")
+        self.outputs.remove(child)
+        checkpoint = parent / "checkpoints" / "final.pkl"
+        with patch.object(s, "MAX_STEPS", 3):
+            run_agent_session(
+                BASE_CONFIG, "train", 11, parent, "q_learning_agent", (),
+                "coin-heaven", 1, checkpoint, "coin_navigation", "none", 1,
+                BASE_EARLY_STOPPING,
+            )
+            result = experiment_main([
+                "--config", str(BASE_CONFIG), "--mode", "train", "--task", "1",
+                "--agent", "q_learning_agent", "--n-rounds", "1", "--seed", "11",
+                "--resume-from", str(parent), "--output", str(child),
+                "--replay-policy", "none",
+            ])
+
+        self.assertEqual(result, 0)
+        self.outputs.append(child)
+        metadata = json.loads((child / "metadata.json").read_text())
+        self.assertEqual(metadata["lineage"]["resume_kind"], "same_task")
+        self.assertEqual(metadata["lineage"]["parent_run"], str(parent.resolve()))
+        self.assertEqual(metadata["termination"]["local_completed_rounds"], 1)
+        self.assertEqual(metadata["termination"]["cumulative_completed_rounds"], 2)
+        episode = json.loads((child / "episodes.jsonl").read_text().splitlines()[0])
+        self.assertEqual(episode["round_index"], 2)
+
+    def test_same_task_resume_matches_uninterrupted_next_round(self):
+        continuous = self.output("continuous")
+        parent = self.output("split-parent")
+        child = self.output("split-child")
+        self.outputs.remove(child)
+        with patch.object(s, "MAX_STEPS", 3):
+            run_agent_session(
+                BASE_CONFIG, "train", 11, continuous, "q_learning_agent", (),
+                "coin-heaven", 2, continuous / "checkpoints" / "final.pkl",
+                "coin_navigation", "all", 1, BASE_EARLY_STOPPING,
+            )
+            run_agent_session(
+                BASE_CONFIG, "train", 11, parent, "q_learning_agent", (),
+                "coin-heaven", 1, parent / "checkpoints" / "final.pkl",
+                "coin_navigation", "all", 1, BASE_EARLY_STOPPING,
+            )
+            result = experiment_main([
+                "--config", str(BASE_CONFIG), "--mode", "train", "--task", "1",
+                "--agent", "q_learning_agent", "--n-rounds", "1", "--seed", "11",
+                "--resume-from", str(parent), "--output", str(child),
+                "--replay-policy", "all",
+            ])
+        self.assertEqual(result, 0)
+        self.outputs.append(child)
+
+        with (continuous / "replays" / "round_00002.pt").open("rb") as file:
+            uninterrupted_replay = pickle.load(file)
+        with (child / "replays" / "round_00002.pt").open("rb") as file:
+            resumed_replay = pickle.load(file)
+        np.testing.assert_array_equal(
+            uninterrupted_replay["arena"], resumed_replay["arena"]
+        )
+        self.assertEqual(uninterrupted_replay["coins"], resumed_replay["coins"])
+        self.assertEqual(uninterrupted_replay["actions"], resumed_replay["actions"])
+        self.assertEqual(
+            [list(value) for value in uninterrupted_replay["permutations"]],
+            [list(value) for value in resumed_replay["permutations"]],
+        )
+        with (continuous / "checkpoints" / "final.pkl").open("rb") as file:
+            uninterrupted_model = pickle.load(file)
+        with (child / "checkpoints" / "final.pkl").open("rb") as file:
+            resumed_model = pickle.load(file)
+        self.assertEqual(
+            uninterrupted_model["training_steps"], resumed_model["training_steps"]
+        )
+        self.assertEqual(
+            uninterrupted_model["agent_rng_state"], resumed_model["agent_rng_state"]
+        )
+        self.assertEqual(set(uninterrupted_model["q_table"]), set(resumed_model["q_table"]))
+        for key in uninterrupted_model["q_table"]:
+            np.testing.assert_array_equal(
+                uninterrupted_model["q_table"][key], resumed_model["q_table"][key]
+            )
+
+    def test_direct_next_task_inherits_learning_but_restarts_world_rounds(self):
+        parent = self.output("promotion-parent")
+        child = self.output("promotion-child")
+        self.outputs.remove(child)
+        with patch.object(s, "MAX_STEPS", 3):
+            run_agent_session(
+                BASE_CONFIG, "train", 11, parent, "q_learning_agent", (),
+                "coin-heaven", 1, parent / "checkpoints" / "final.pkl",
+                "coin_navigation", "none", 1,
+            )
+            with (parent / "checkpoints" / "final.pkl").open("rb") as file:
+                parent_steps = pickle.load(file)["training_steps"]
+            result = experiment_main([
+                "--config", str(BASE_CONFIG), "--mode", "train", "--task", "2",
+                "--agent", "q_learning_agent", "--n-rounds", "1", "--seed", "11",
+                "--resume-from", str(parent), "--output", str(child),
+                "--replay-policy", "none",
+            ])
+        self.assertEqual(result, 0)
+        self.outputs.append(child)
+        metadata = json.loads((child / "metadata.json").read_text())
+        self.assertEqual(metadata["lineage"]["resume_kind"], "next_task")
+        episode = json.loads((child / "episodes.jsonl").read_text().splitlines()[0])
+        self.assertEqual(episode["round_index"], 1)
+        with (child / "checkpoints" / "final.pkl").open("rb") as file:
+            child_model = pickle.load(file)
+        self.assertGreater(child_model["training_steps"], parent_steps)
+        self.assertEqual(child_model["training_task"], "crate_navigation")
+
+    def test_corrupt_latest_snapshot_falls_back_and_corrects_lineage_rounds(self):
+        parent = self.output("fallback-parent")
+        child = self.output("fallback-child")
+        self.outputs.remove(child)
+        with patch.object(s, "MAX_STEPS", 3):
+            run_agent_session(
+                BASE_CONFIG, "train", 11, parent, "q_learning_agent", (),
+                "coin-heaven", 2, parent / "checkpoints" / "final.pkl",
+                "coin_navigation", "none", 1, BASE_EARLY_STOPPING,
+            )
+            latest = json.loads((parent / "resume" / "latest.json").read_text())
+            newest = parent / "resume" / latest["generations"][0] / "q_table.npz"
+            newest.write_bytes(b"corrupt")
+            crashed_metadata = json.loads((parent / "metadata.json").read_text())
+            crashed_metadata["status"] = "running"
+            crashed_metadata.pop("termination", None)
+            (parent / "metadata.json").write_text(
+                json.dumps(crashed_metadata), encoding="utf-8"
+            )
+            result = experiment_main([
+                "--config", str(BASE_CONFIG), "--mode", "train", "--task", "1",
+                "--agent", "q_learning_agent", "--n-rounds", "1", "--seed", "11",
+                "--resume-from", str(parent), "--output", str(child),
+                "--replay-policy", "none",
+            ])
+
+        self.assertEqual(result, 0)
+        self.outputs.append(child)
+        metadata = json.loads((child / "metadata.json").read_text())
+        self.assertEqual(metadata["lineage"]["fallback_lost_rounds"], 1)
+        self.assertIn("integrity validation", metadata["lineage"]["fallback_reason"])
+        self.assertEqual(metadata["lineage"]["parent_generation"], "generation-00000001")
+        self.assertEqual(metadata["termination"]["cumulative_completed_rounds"], 2)
+        episode = json.loads((child / "episodes.jsonl").read_text().splitlines()[0])
+        self.assertEqual(episode["round_index"], 2)
 
     def test_training_early_stopping_detects_reward_plateau(self):
         output = self.output("early-stop-unit")

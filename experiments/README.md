@@ -296,6 +296,8 @@ runs/q_coin_train/
   training_progress.png
   official_stats.json
   checkpoints/final.pkl
+  resume/latest.json
+  resume/generation-00010000/
 ```
 
 `training.csv` 每个训练回合写一行，统一包含 `round`、`reward`、`action_steps`、
@@ -303,6 +305,33 @@ runs/q_coin_train/
 `q_states`，DQN 使用 `loss` 与 `updates`；不适用的列留空。`training_summary.json` 保存
 最终步数、平均 reward、最近 100 局平均 reward 和最佳回合，`training_progress.png` 展示
 reward 与 epsilon 的变化。
+
+### 续训与课程晋级
+
+`--resume-from` 指向父训练 run 的根目录，并总是写入一个新的子 run。`--n-rounds`
+表示子 run 新增的局数。例如，在同一 Task 再训练 2000 局：
+
+```bash
+python3 experiments/run.py \
+  --config experiments/configs/base.json \
+  --mode train \
+  --task 1 \
+  --agent q_learning_agent \
+  --n-rounds 2000 \
+  --seed 11 \
+  --resume-from runs/q_coin_train \
+  --run-id q_coin_train_more
+```
+
+进入直接下一 Task 时命令相同，只需修改 `--task` 和新 `--run-id`。同 Task 恢复世界、
+对手、Agent 和早停状态，回合编号连续；下一 Task 保留全部学习器状态和 epsilon 进度，
+但按同一 seed 重建环境/对手随机流、从回合 1 开始并重置早停。只允许同 Task 或
+`1→2→3→4`，且算法、seed、动作顺序、特征版本、奖励版本和 resume schema 必须一致。
+同 Task 的早停配置也必须保持一致。
+
+每回合边界发布一代完整快照，`resume/` 只保留最新两代。最新一代校验失败时自动回退
+上一代，丢失局数记录在子 run 的 `metadata.json`。`--checkpoint` 仅用于冻结评估；旧
+checkpoint 仍可评估，但不能替代 `--resume-from`。
 
 训练模式可在配置中启用基于 reward 移动平均的早停：
 
@@ -438,6 +467,7 @@ python3 experiments/run.py \
 | `--seed` | 单次运行 seed；评估时也会切换为单 seed 模式 |
 | `--seeds` | 多 seed 评估列表 |
 | `--checkpoint` | `evaluate` 模式加载的模型路径 |
+| `--resume-from` | `train` 模式使用的父 run 根目录；创建新的子 run |
 | `--opponents` | 覆盖 Task 4 的默认对手列表 |
 | `--run-id` | 本次实验的唯一输出名称 |
 | `--replay-policy` | 回放策略；默认 `auto` |

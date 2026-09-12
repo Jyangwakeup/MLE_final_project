@@ -38,6 +38,44 @@ class ReplayBuffer:
     def __len__(self):
         return len(self.memory)
 
+    def state_dict(self):
+        return {
+            "transitions": [
+                {
+                    "state": torch.as_tensor(item.state, dtype=torch.float32),
+                    "action": int(item.action),
+                    "reward": float(item.reward),
+                    "next_state": (
+                        None if item.next_state is None
+                        else torch.as_tensor(item.next_state, dtype=torch.float32)
+                    ),
+                    "done": bool(item.done),
+                    "next_legal": (
+                        None if item.next_legal is None
+                        else torch.as_tensor(item.next_legal, dtype=torch.bool)
+                    ),
+                }
+                for item in self.memory
+            ],
+            "rng_state": self.random.getstate(),
+        }
+
+    def load_state_dict(self, state):
+        self.memory.clear()
+        self.memory.extend(
+            Transition(
+                item["state"].cpu().numpy(),
+                item["action"],
+                item["reward"],
+                None if item["next_state"] is None else item["next_state"].cpu().numpy(),
+                item["done"],
+                None if item["next_legal"] is None else item["next_legal"].cpu().numpy(),
+            )
+            for item in state.get("transitions", ())
+        )
+        if "rng_state" in state:
+            self.random.setstate(state["rng_state"])
+
 
 class DQN:
     def __init__(self, input_size, action_count, seed=0, gamma=0.95, learning_rate=3e-4,
@@ -110,6 +148,8 @@ class DQN:
             "policy": self.policy.state_dict(),
             "target": self.target.state_dict(),
             "optimizer": self.optimizer.state_dict(),
+            "replay": self.replay.state_dict(),
+            "torch_rng_state": torch.get_rng_state(),
             "updates": self.updates,
         }
 
@@ -119,3 +159,7 @@ class DQN:
         self.updates = checkpoint.get("updates", 0)
         if training and "optimizer" in checkpoint:
             self.optimizer.load_state_dict(checkpoint["optimizer"])
+        if training and "replay" in checkpoint:
+            self.replay.load_state_dict(checkpoint["replay"])
+        if training and "torch_rng_state" in checkpoint:
+            torch.set_rng_state(checkpoint["torch_rng_state"])

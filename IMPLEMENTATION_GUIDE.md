@@ -243,15 +243,17 @@ CPU 模式固定 PyTorch 单线程；Q 表路径延迟导入或完全不导入 P
 
 ### 6.5 配置、存档与恢复
 
-包内 `config.json` 至少包含 `algorithm`（`q_learning`/`dqn`）、`feature_version`（`v1`）、`reward_version`、`seed`、`checkpoint`、`training`、`evaluation`、`rewards`。训练局数由每次运行显式指定，不在基础配置中按四阶段自动分配。
+包内 `config.json` 至少包含 `algorithm`（`q_learning`/`dqn`）、`feature_version`（`v1`）、`reward_version`、`seed`、`checkpoint`、`training` 和 `evaluation`。奖励数值只在共享奖励注册表中维护；Runner 把所选版本解析后的完整奖励表写入展开配置、metadata 和 checkpoint。训练局数由每次运行显式指定，不在基础配置中按四阶段自动分配。
 
 - 实验进程可用 `BOMBERMAN_CONFIG` 指定一个绝对配置路径、`BOMBERMAN_RUN_DIR` 指定绝对输出目录；没有这些变量时仅使用包内默认值。实验配置自包含，不做隐式多层覆盖。
 - 模型路径相对包内配置解析，训练输出从 run 目录解析。配置进入运行前保存完整副本和 SHA256。
 - 新训练由实验配置明确指定，不因文件不存在而推测“自动重练”；恢复模式或评估模式缺失检查点直接报错。
 - Q 表保存整数键数组和浮点 Q 数组到 NPZ（读取禁用对象 pickle），附 JSON 元数据；DQN 保存 `state_dict`，不 pickle 整个模型对象。
 - 完整训练检查点包含策略网络、目标网络、优化器、回放池、自有 RNG 状态、NumPy Generator 状态、Torch RNG 状态、动作步数、更新步数、阶段与探索进度；Q 表保存对应适用状态。新建 DQN 前按模型种子设置 Torch RNG；恢复时在网络和优化器构造完成后恢复 RNG，避免初始化消耗改变后续随机序列。
-- 每个阶段结束和每跨过 5000 次自身决策后的回合边界保存。先写临时文件，再原子替换；保存后校验版本和加载。
-- 只在回合边界精确恢复；实验运行器还需保存世界 RNG 及官方对手 Python/NumPy RNG 状态、下一回合标识。恢复这些状态必须在所有智能体 setup 完成后、new_round 前进行。跨机器/库版本不承诺逐位一致，记录环境差异。切换场景时恢复学习状态，但清空上一场景的回调去重标记；实验全局记录以阶段加 `(round, step)` 区分，避免新世界从 round=1 开始造成编号冲突。
+- 每个完整回合的训练回调成功返回后保存一代 resume 快照。先写临时 generation，校验文件 SHA256 后原子发布，再原子更新 `latest.json`；只保留最新和上一代。最新一代损坏时自动回退上一代，并在子 run 谱系中记录原因所对应的丢失局数。
+- `--resume-from` 只接受父 run 根目录，并始终创建新的子 run。只允许同 Task 或 `1→2→3→4` 的直接晋级；算法、训练 seed、动作顺序、特征版本、奖励版本和 checkpoint schema 必须一致。`--n-rounds` 表示子 run 新增局数。
+- 同 Task 只在回合边界精确恢复，包含学习器、世界 RNG、全局 Python/NumPy RNG、下一回合编号和早停历史；早停配置也必须一致。下一 Task 保留学习器完整状态与探索进度，但清空回调 pending/终局去重状态、重置早停，并使用同一训练 seed 重建环境与官方对手随机流。跨机器/库版本不承诺逐位一致，记录环境差异。
+- 旧 `final.pkl`/`final.pt` 仍可用于冻结评估；缺少 resume schema 的旧 checkpoint 不能用于精确续训。
 - 参赛导出仅保留推理权重、配置和所选算法依赖，不包含优化器、回放池、训练日志或本机绝对路径。
 
 ## 7. C 的具体实现：可复现实验和独立交付
@@ -285,6 +287,7 @@ runs/<run_id>/
   timing.jsonl           完整 act 的用时及超时/跳过记录
   official_stats.json    官方导出，作为交叉检查
   checkpoints/           只属于该运行的模型
+  resume/                两代原子完整训练快照及 latest.json
   sandbox/               实验专用框架副本
 ```
 
@@ -345,7 +348,7 @@ runs/<run_id>/
 ### 第 4 步：完整对战
 
 - `classic`，team_agent + 一个或多个强对手，默认使用 rule_based_agent，也可指定自有 Agent 变体。
-- 每个 Task 是一次独立训练运行，运行前明确局数和 seed；检查训练报告后再决定是否加载其 checkpoint 进入下一 Task，不自动一次跑完四阶段。
+- 每个 Task 是一次独立训练运行，运行前明确局数和 seed；检查训练报告后再用 `--resume-from` 从直接上一 Task 创建子 run，不自动一次跑完四阶段，也不直接复制 checkpoint。
 - 比较 Q-learning、DQN 或消融时，为被比较方案使用相同 Task、局数、seed 和对手组合；实际训练量以各 run 的 metadata 与 training.csv 为准。
 - 训练可在自有智能体死亡后按官方训练规则结束；正式评估必须完整运行，不因自有智能体死亡提前截断。
 
