@@ -5,7 +5,7 @@ This agent uses the same versioned representation and objective base reward as
 and rewards constant:
 
 - feature version: `v1` (40-dimensional one-hot vector)
-- reward version: `base-v1`
+- reward version: `r1`
 - action order and physical legal-action mask: shared team contract
 
 There are no hand-authored best-action labels, direction recommendations, or
@@ -19,13 +19,15 @@ Train from the repository root:
 BOMBERMAN_TRAINING_TASK=task1 python3 main.py play --agents dqn_agent --train 1 --scenario coin-heaven --n-rounds 1000 --no-gui
 ```
 
-Set `BOMBERMAN_TRAINING_TASK` to a stable curriculum-stage name. When the saved
-name changes (for example, from `task1` to `task2`), the checkpoint weights and
-optimizer are retained while epsilon exploration progress restarts. Continuing
-with the same name also continues the saved exploration progress. A checkpoint
-with a different or missing feature version is never loaded into this network.
+For curriculum training, use `experiments/run.py --resume-from <parent-run>`.
+The runner retains policy/target weights, optimizer, replay buffer, sampler RNG,
+Torch RNG, Agent RNG, update counters, and the global epsilon progress. A direct
+next Task rebuilds the environment/opponent streams but does not restart epsilon.
+A checkpoint with a different or missing feature version is never loaded into
+this network.
 
-The checkpoint is saved as `agent_code/dqn_agent/dqn-model.pt`.
+Direct official-run training saves `agent_code/dqn_agent/final.pt`; experiment
+runs save their own `checkpoints/final.pt` plus private resume generations.
 
 
 

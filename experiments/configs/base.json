@@ -18,13 +18,5 @@
       "min_delta": 0.1,
       "target_reward": null
     }
-  },
-  "rewards": {
-    "coin_collected": 1.0,
-    "killed_opponent": 5.0,
-    "crate_destroyed": 0.2,
-    "death": -10.0,
-    "step": -0.01,
-    "invalid_action": -0.1
   }
 }

@@ -17,7 +17,7 @@ Q_LEARNING_ALLOW_BOMB=false python3 main.py play --agents q_learning_agent --tra
 
 `Q_LEARNING_ALLOW_BOMB` 接受 `true/false`、`1/0`、`yes/no` 和 `on/off`；未指定时默认允许炸弹。
 
-模型会保存为本目录下的 `q-table.pkl`。测试训练结果时不要传 `--train`：
+直接使用官方入口时，模型会保存为本目录下的 `final.pkl`。测试训练结果时不要传 `--train`：
 
 ```bash
 python3 main.py play --agents q_learning_agent --scenario classic --n-rounds 10
@@ -41,15 +41,9 @@ Q_LEARNING_ALLOW_BOMB=true python3 main.py play \
   --n-rounds 10000 \
   --no-gui
 
-## Task 2：保留 Task 1 的 Q-table，重新开始 epsilon 衰减
-BOMBERMAN_TRAINING_TASK=task2 \
-Q_LEARNING_ALLOW_BOMB=true \
-python3 main.py play \
-  --agents q_learning_agent \
-  --train 1 \
-  --scenario classic \
-  --n-rounds 10000 \
-  --no-gui
+跨 Task 训练请使用仓库级实验入口的 `--resume-from`。它保留 Q-table、动作步数和
+Agent RNG，因此 epsilon 不会在新 Task 重新开始；同时会为下一 Task 重建环境和对手随机流。
+不要通过复制 `final.pkl` 模拟精确恢复，因为冻结推理 checkpoint 不包含 Runner 状态。
 
 ## Task 2 测试
 python3 main.py play \

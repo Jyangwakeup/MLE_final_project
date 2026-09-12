@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+import random
 import tempfile
 import unittest
 from types import SimpleNamespace
@@ -40,7 +41,7 @@ class DQNRewardTestCase(unittest.TestCase):
             e.CRATE_DESTROYED,
             e.INVALID_ACTION,
         ]
-        self.assertAlmostEqual(reward_from_events(events), 6.19)
+        self.assertAlmostEqual(reward_from_events(events), 6.29)
 
     def test_death_is_penalized_only_once(self):
         self.assertAlmostEqual(
@@ -78,7 +79,7 @@ class DQNTrainingTaskTestCase(unittest.TestCase):
 
                 self.assertNotEqual(action, "BOMB")
 
-    def test_new_task_resets_progress_but_keeps_checkpoint(self):
+    def test_new_task_keeps_progress_and_checkpoint(self):
         with tempfile.TemporaryDirectory() as directory:
             model_file = Path(directory) / "dqn-model.pt"
             model = DQN(INPUT_SIZE, 6)
@@ -98,7 +99,7 @@ class DQNTrainingTaskTestCase(unittest.TestCase):
             ):
                 setup(agent)
 
-        self.assertEqual(agent.action_steps, 0)
+        self.assertEqual(agent.action_steps, 123)
         self.assertEqual(agent.training_task, "task2")
         self.assertTrue(torch.equal(
             next(agent.model.policy.parameters()).detach(),
@@ -156,6 +157,7 @@ class DQNTransitionTestCase(unittest.TestCase):
             model=model,
             model_file=Path(self.directory) / "checkpoint.pt",
             action_steps=1,
+            rng=random.Random(0),
             training_task="task1",
             logger=Mock(),
             _feature_cache_key=None,
@@ -185,7 +187,44 @@ class DQNTransitionTestCase(unittest.TestCase):
         self.assertIsInstance(transition, Transition)
         self.assertTrue(transition.done)
         self.assertIsNone(transition.next_state)
-        self.assertAlmostEqual(transition.reward, 0.99)
+        self.assertAlmostEqual(transition.reward, -0.01)
+
+
+class DQNCheckpointTestCase(unittest.TestCase):
+    def test_checkpoint_restores_replay_sampler_and_torch_rng(self):
+        model = DQN(INPUT_SIZE, 6, seed=17, batch_size=2, warmup=2)
+        transition = Transition(
+            np.zeros(INPUT_SIZE, dtype=np.float32), 0, 1.0,
+            np.ones(INPUT_SIZE, dtype=np.float32), False,
+            np.ones(6, dtype=bool),
+        )
+        model.replay.append(transition)
+        checkpoint = model.checkpoint()
+        expected_torch_rng = checkpoint["torch_rng_state"].clone()
+        expected_sampler_state = checkpoint["replay"]["rng_state"]
+
+        restored = DQN(INPUT_SIZE, 6, seed=999, batch_size=2, warmup=2)
+        restored.load_checkpoint(checkpoint, training=True)
+
+        self.assertEqual(len(restored.replay), 1)
+        self.assertEqual(restored.replay.random.getstate(), expected_sampler_state)
+        self.assertTrue(torch.equal(torch.get_rng_state(), expected_torch_rng))
+
+        next_transition = Transition(
+            np.ones(INPUT_SIZE, dtype=np.float32), 1, -0.5,
+            np.zeros(INPUT_SIZE, dtype=np.float32), False,
+            np.ones(6, dtype=bool),
+        )
+        original_loss = model.observe(next_transition)
+        restored_loss = restored.observe(next_transition)
+        self.assertAlmostEqual(original_loss, restored_loss)
+        for original, resumed in zip(
+            model.policy.parameters(), restored.policy.parameters(), strict=True
+        ):
+            self.assertTrue(torch.equal(original, resumed))
+        for name, value in model.target.state_dict().items():
+            self.assertTrue(torch.equal(value, restored.target.state_dict()[name]))
+        self.assertEqual(model.updates, restored.updates)
 
 
 if __name__ == "__main__":

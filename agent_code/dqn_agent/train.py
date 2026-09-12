@@ -5,7 +5,9 @@ from typing import List
 
 import torch
 
-from agent_code.team_agent.rewards import REWARD_VERSION, reward_from_events
+from agent_code.team_agent.rewards import (
+    REWARD_VERSION, resolve_reward_spec, reward_from_events,
+)
 
 from .callbacks import ACTIONS, FEATURE_VERSION, _features_for
 from .model import Transition
@@ -15,6 +17,7 @@ TRAINING_FIELDS = (
     "schema_version", "algorithm", "round", "reward", "action_steps",
     "epsilon", "q_states", "loss", "updates", "checkpoint",
 )
+CHECKPOINT_SCHEMA_VERSION = "training-resume-v1"
 
 
 def setup_training(self):
@@ -33,7 +36,7 @@ def game_events_occurred(self, old_game_state: dict, self_action: str,
         return
     if self.pending is not None and self.pending[0] != key:
         _submit(self, self.pending[1])
-    reward = reward_from_events(events)
+    reward = reward_from_events(events, getattr(self, "reward_version", REWARD_VERSION))
     old_features = _features_for(self, old_game_state)
     new_features = _features_for(self, new_game_state)
     next_legal = new_features.legal_mask.copy()
@@ -51,7 +54,7 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
         if key != self.ended_key:
             if self.pending is not None and self.pending[0] != key:
                 _submit(self, self.pending[1])
-            reward = reward_from_events(events)
+            reward = reward_from_events(events, getattr(self, "reward_version", REWARD_VERSION))
             features = _features_for(self, last_game_state)
             transition = Transition(
                 features.vector.copy(), ACTIONS.index(last_action), reward,
@@ -65,13 +68,23 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
     self.pending = None
     checkpoint = self.model.checkpoint()
     checkpoint.update({
+        "checkpoint_schema": CHECKPOINT_SCHEMA_VERSION,
+        "algorithm": "dqn",
+        "actions": list(ACTIONS),
+        "agent_rng_state": self.rng.getstate(),
         "feature_version": FEATURE_VERSION,
-        "reward_version": REWARD_VERSION,
+        "reward_version": getattr(self, "reward_version", REWARD_VERSION),
+        "reward_spec": getattr(
+            self, "reward_spec",
+            resolve_reward_spec(getattr(self, "reward_version", REWARD_VERSION)),
+        ),
         "action_steps": self.action_steps,
         "training_task": self.training_task,
     })
     self.model_file.parent.mkdir(parents=True, exist_ok=True)
-    torch.save(checkpoint, self.model_file)
+    temporary = self.model_file.with_name(self.model_file.name + ".tmp")
+    torch.save(checkpoint, temporary)
+    temporary.replace(self.model_file)
     _append_training_metrics(self, last_game_state)
     self.logger.info("Round environment reward: %.2f; last loss: %s",
                      self.round_reward, self.last_loss)
