@@ -9,6 +9,11 @@ import random
 import numpy as np
 
 from agent_code.team_agent.rewards import REWARD_VERSION, resolve_reward_spec
+from agent_code.team_agent.exploration import (
+    agent_seed_from_environment,
+    epsilon_at,
+    exploration_from_environment,
+)
 from .features import ACTIONS, FEATURE_VERSION, features_for_state
 MODEL_FILE = Path(__file__).with_name("final.pkl")
 CHECKPOINT_ENV = "BOMBERMAN_CHECKPOINT"
@@ -49,7 +54,9 @@ def _training_task():
 
 def setup(self):
     """Load a learned Q table, or initialise an empty one."""
-    self.rng = random.Random(SEED)
+    self.agent_seed = agent_seed_from_environment(SEED)
+    self.exploration_spec = exploration_from_environment()
+    self.rng = random.Random(self.agent_seed)
     # The experiment runner uses the shared flag for curriculum consistency.
     # Keep the old agent-specific variable as a backwards-compatible fallback
     # for direct `main.py` invocations documented by this agent.
@@ -125,7 +132,10 @@ def act(self, game_state: dict) -> str:
     _record_q_diagnostic(self, values is None)
 
     if self.train:
-        epsilon = max(0.05, 1.0 - 0.95 * min(self.training_steps / 75_000, 1.0))
+        epsilon = epsilon_at(
+            self.training_steps,
+            getattr(self, "exploration_spec", None),
+        )
         self.training_steps += 1
         if self.rng.random() < epsilon:
             return ACTIONS[self.rng.choice(legal_indices)]

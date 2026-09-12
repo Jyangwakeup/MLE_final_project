@@ -16,7 +16,9 @@ experiments/
   evaluation.py          单 seed / 多 seed 冻结评估调度
   analyze_training.py    训练指标汇总与训练曲线
   analyze.py             评估指标汇总与对比图
-  configs/base.json      公共实验配置示例
+  resume.py              两代原子完整恢复及课程约束
+  devices.py             CPU/CUDA 设备解析与元数据
+  configs/               工程默认、正式训练、阶段门槛、验证和最终测试
 ```
 
 `run.py` 是唯一的命令行入口，通过 `--mode train|evaluate` 分发到
@@ -51,8 +53,8 @@ C 不复制这些定义、不改变特征语义，也不依赖特征实现细节
 
 ### B/C seam
 
-C 仅通过配置、环境变量、官方 agent 回调和 checkpoint 路径驱动未来统一的
-`team_agent`。C 不访问或重新定义 `Transition`、Q-table、网络、replay buffer、
+C 仅通过配置、环境变量、官方 agent 回调和 checkpoint 路径驱动独立的
+`q_learning_agent` 与 `dqn_agent`；两者共享 `team_agent` 中的特征、奖励和探索协议。C 不访问或重新定义 `Transition`、Q-table、网络、replay buffer、
 学习更新或其他学习实现细节。
 
 C 需要 B 提供的最小信息是：
@@ -63,15 +65,16 @@ C 需要 B 提供的最小信息是：
 - checkpoint 版本元数据；以及
 - 训练指标的输出位置。
 
-`team_agent` 实际消费的配置键、模式映射、checkpoint schema 与文件名、版本字段及
-训练指标 schema 均为**待与 B 确认**项。在确认前，实验代码不得导入
-`agent_code/q_learning_agent/` 或 `agent_code/dqn_agent/` 的私有模块。
+已冻结的完整恢复 schema 为 `training-resume-v3`。Runner 只校验公开 checkpoint 合同，
+不导入 `agent_code/q_learning_agent/` 或 `agent_code/dqn_agent/` 的私有学习实现。
 
 ### 运行时配置
 
 - `BOMBERMAN_CONFIG` 指向一个绝对路径的完整实验配置。未设置时，agent 仅使用包内
   默认配置。配置必须自包含；第一版不支持隐式继承或多层合并。
 - `BOMBERMAN_RUN_DIR` 指向绝对路径的运行输出目录。训练输出从该目录解析。
+- `BOMBERMAN_AGENT_SEED` 与 `BOMBERMAN_EXPLORATION_SPEC` 由 Runner 设置；直接使用官方
+  框架时分别回退为 seed 0 和共享 `linear-v1` 默认值。
 - 包内配置中的模型路径相对 agent 包解析。导出配置与模型路径不得包含开发机器的
   绝对路径。
 
@@ -90,6 +93,7 @@ checkpoint 时应报错，而不是训练或回退到随机动作。
 开始前再次设置一次；不会在每个 `act()` 中重置。训练模式使用
 `environment_seed = 1000 + S` 和 `official_opponent_seed = 3000 + S`；未显式传入
 `--seed` 时使用配置中的 seed，配置也未指定时默认使用 `11`。
+同一 `S` 还用于 Agent 自有 RNG 与 DQN 参数初始化，且写入 metadata/checkpoint。
 
 ### 运行产物
 
@@ -105,14 +109,14 @@ runs/<run_id>/
   timing.jsonl
   official_stats.json
   checkpoints/
-  sandbox/
+  resume/                  # 训练 run 的最新两代完整快照
   replays/                 # 按回放策略可选生成
 ```
 
 `metadata.json` 记录展开后的配置、代码/源码身份、依赖、硬件、种子、模式、时间戳和
 终态状态；`termination` 进一步记录计划局数、实际完成局数及早停结果。JSONL 文件是
 追加式原始记录。`official_stats.json` 是用于交叉检查的官方
-框架导出。`checkpoints/` 与 `sandbox/` 只属于对应运行。运行目录不得覆盖已有运行。
+框架导出。`checkpoints/`、`resume/` 与 `replays/` 只属于对应运行。运行目录不得覆盖已有运行。
 
 `episodes.jsonl` 当前使用 `episode-v1` schema，每行对应一个已完整结束的 round：
 
@@ -202,8 +206,8 @@ python3 main.py replay \
 训练 1,000 局时每 100 局保存一次，训练 10,000 局时每 1,000 局保存一次。可用
 `--replay-interval` 显式覆盖进度比例生成的间隔。回放写入每个运行目录的
 `replays/round_XXXXX.pt`，`replays/manifest.jsonl` 同时记录 round、seed、目标 Agent
-得分以及保存原因。训练不会因此保存全部回放；默认 5 seeds × 20 局的正式评估会保留
-全部 100 局，便于复核高分和失败案例。
+得分以及保存原因。训练不会因此保存全部回放；阶段门槛、主验证和最终测试均采用多个
+独立 seed、每 seed 一局，并保留全部评估回放以复核高分和失败案例。
 
 查看某一局时运行：
 
@@ -264,30 +268,48 @@ checkpoint，只在 `metadata.json` 和 `fixed_evaluation.json` 中记录其绝�
 | `1` | `coin-heaven` | 目标 Agent，无对手 |
 | `2` | `classic` | 目标 Agent，无对手 |
 | `3` | `classic` | 目标 Agent、`peaceful_agent`、`coin_collector_agent` |
-| `4` | `classic` | 目标 Agent、`rule_based_agent`；可用 `--opponents` 覆盖 |
+| `4` | `classic` | 目标 Agent、三名 `rule_based_agent`；可用 `--opponents` 覆盖 |
 
-Task 1 和 Task 2 不接受对手；Task 3 的两个官方对手固定；Task 4 至少需要一个对手，且可
-混合官方 Agent、其他自有 Agent 或同一 Agent 的变体。
+Task 1 和 Task 2 不接受对手；Task 3 的两个官方对手固定，是对官方 SHOULD 课程路线的
+合并实现；Task 4 至少需要一个对手，正式训练和验证均使用默认三名规则对手。
+
+正式六链由 Q-learning/DQN × seeds 11/22/33 构成，阶段新增预算依次为 500、1,000、
+1,500、3,000 局；能力门槛失败只可按原预算 25% 追加一次，即 125、250、375、750 局。
+各链独立晋级，链内严格串行。run-id 使用
+`formal_<q|dqn>_v1_r1_s<seed>_t<task>_r<local-rounds>`，故障重跑追加 `_retryN`。
 
 ### 单独训练
 
-例如在 Task 1 训练 Q-learning 10000 局（实验运行器会自动禁止放炸弹）：
+先从仓库根目录创建统一训练环境：
+
+```bash
+conda env create -f environment.yml
+conda run --no-capture-output -n mle python -m unittest discover -s tests
+```
+
+`mle` 使用 CUDA 11.8 版 PyTorch；DQN 训练可用 `--device cuda` 明确选择第一张
+`CUDA_VISIBLE_DEVICES` 内可见的 GPU。`--device auto` 在 CUDA 可用时选择 GPU，
+否则回退 CPU。Q-learning 始终使用 CPU，冻结评估也强制使用 CPU，以匹配官方环境。
+
+正式训练固定 CPU、`v1`、`r1`、关闭 early stopping。以下启动 Q-learning seed 11 的
+Task 1 共 500 局；实验运行器会自动禁止放炸弹：
 
 ```bash
 python3 experiments/run.py \
-  --config experiments/configs/base.json \
+  --config experiments/configs/formal_training.json \
   --mode train \
+  --device cpu \
   --task 1 \
   --agent q_learning_agent \
-  --n-rounds 10000 \
+  --n-rounds 500 \
   --seed 11 \
-  --run-id q_coin_train
+  --run-id formal_q_v1_r1_s11_t1_r500
 ```
 
 训练输出：
 
 ```text
-runs/q_coin_train/
+runs/formal_q_v1_r1_s11_t1_r500/
   metadata.json
   episodes.jsonl
   timing.jsonl
@@ -297,7 +319,7 @@ runs/q_coin_train/
   official_stats.json
   checkpoints/final.pkl
   resume/latest.json
-  resume/generation-00010000/
+  resume/generation-00000500/
 ```
 
 `training.csv` 每个训练回合写一行，统一包含 `round`、`reward`、`action_steps`、
@@ -309,24 +331,27 @@ reward 与 epsilon 的变化。
 ### 续训与课程晋级
 
 `--resume-from` 指向父训练 run 的根目录，并总是写入一个新的子 run。`--n-rounds`
-表示子 run 新增的局数。例如，在同一 Task 再训练 2000 局：
+表示子 run 新增的局数。例如，Task 1 能力门槛失败后唯一允许的 25% 追加为 125 局：
 
 ```bash
 python3 experiments/run.py \
-  --config experiments/configs/base.json \
+  --config experiments/configs/formal_training.json \
   --mode train \
+  --device cpu \
   --task 1 \
   --agent q_learning_agent \
-  --n-rounds 2000 \
+  --n-rounds 125 \
   --seed 11 \
-  --resume-from runs/q_coin_train \
-  --run-id q_coin_train_more
+  --resume-from runs/formal_q_v1_r1_s11_t1_r500 \
+  --run-id formal_q_v1_r1_s11_t1_r125_cont125
 ```
 
 进入直接下一 Task 时命令相同，只需修改 `--task` 和新 `--run-id`。同 Task 恢复世界、
 对手、Agent 和早停状态，回合编号连续；下一 Task 保留全部学习器状态和 epsilon 进度，
 但按同一 seed 重建环境/对手随机流、从回合 1 开始并重置早停。只允许同 Task 或
-`1→2→3→4`，且算法、seed、动作顺序、特征版本、奖励版本和 resume schema 必须一致。
+`1→2→3→4`，且算法、训练/Agent seed、动作顺序、特征版本、奖励版本、探索配置、训练设备
+、`source_commit`、`source_hash` 和 resume schema 必须一致。当前 schema 为 `training-resume-v3`；v1/v2 及冻结 final
+checkpoint 不能精确续训。
 同 Task 的早停配置也必须保持一致。
 
 每回合边界发布一代完整快照，`resume/` 只保留最新两代。最新一代校验失败时自动回退
@@ -354,17 +379,19 @@ checkpoint 仍可评估，但不能替代 `--resume-from`。
 `target_reward` 会允许低奖励平台触发早停。实际完成轮数和停止原因写入
 `metadata.json` 的 `termination` 字段。该配置仅对 `train` 模式生效。
 
-其他任务只需更换 `--task`。例如 Task 3：
+不得从零直接启动 Task 3。进入下一阶段必须引用直接父 run，例如 Task 1 晋级 Task 2：
 
 ```bash
 python3 experiments/run.py \
-  --config experiments/configs/base.json \
+  --config experiments/configs/formal_training.json \
   --mode train \
-  --task 3 \
+  --device cpu \
+  --task 2 \
   --agent q_learning_agent \
-  --n-rounds 10000 \
+  --n-rounds 1000 \
   --seed 11 \
-  --run-id q_task3_train
+  --resume-from runs/formal_q_v1_r1_s11_t1_r500 \
+  --run-id formal_q_v1_r1_s11_t2_r1000
 ```
 
 ### 单独测试和评估
@@ -374,39 +401,39 @@ python3 experiments/run.py \
 
 ```bash
 python3 experiments/run.py \
-  --config experiments/configs/base.json \
+  --config experiments/configs/stage_gate.json \
   --mode evaluate \
   --task 1 \
   --agent q_learning_agent \
-  --checkpoint runs/q_coin_train/checkpoints/final.pkl \
-  --run-id q_task1_eval
+  --checkpoint runs/formal_q_v1_r1_s11_t1_r500/checkpoints/final.pkl \
+  --run-id gate_formal_q_v1_r1_s11_t1
 ```
 
 该命令按配置中的全部固定 seeds 运行，并生成：
 
 ```text
-runs/q_task1_eval/q_task1_eval_s10001/
+runs/gate_formal_q_v1_r1_s11_t1/gate_formal_q_v1_r1_s11_t1_s10000/
 ...
-runs/q_task1_eval/q_task1_eval_summary/
+runs/gate_formal_q_v1_r1_s11_t1/gate_formal_q_v1_r1_s11_t1_summary/
   summary.csv
   mean_score.png
   fixed_evaluation.json
 ```
 
-评估刚才训练产生的 checkpoint：
+Task 1 还必须运行使用同一合法动作掩码的确定性均匀随机诊断基线：
 
 ```bash
 python3 experiments/run.py \
-  --config experiments/configs/base.json \
+  --config experiments/configs/stage_gate.json \
   --mode evaluate \
   --task 1 \
-  --agent q_learning_agent \
-  --checkpoint runs/q_coin_train/checkpoints/final.pkl \
-  --run-id q_coin_eval
+  --agent legal_random_agent \
+  --checkpoint agent_code/legal_random_agent/baseline.json \
+  --run-id gate_legal_random_t1
 ```
 
-默认 seeds 和每个 seed 的测试局数来自 `base.json` 的 `evaluation`。也可用
-`--seeds 10001 10002` 和 `--n-rounds 5` 临时覆盖。
+阶段门槛使用 `stage_gate.json` 的 10000–10019，主验证使用 `main_validation.json` 的
+10000–10099，最终测试只使用一次 `final_test.json` 的 20000–20099；三者都是每 seed 一局。
 
 ### 单 Seed 快速测试
 
@@ -442,17 +469,18 @@ python3 experiments/run.py \
 
 ### DQN
 
-DQN 使用相同入口，只需更换 Agent 名称。checkpoint 扩展名为 `.pt`：
+DQN 使用相同正式配置，只需更换 Agent 名称。checkpoint 扩展名为 `.pt`：
 
 ```bash
 python3 experiments/run.py \
-  --config experiments/configs/base.json \
+  --config experiments/configs/formal_training.json \
   --mode train \
+  --device cpu \
   --task 1 \
   --agent dqn_agent \
-  --n-rounds 10000 \
+  --n-rounds 500 \
   --seed 11 \
-  --run-id dqn_coin
+  --run-id formal_dqn_v1_r1_s11_t1_r500
 ```
 
 ### 常用参数
@@ -468,6 +496,7 @@ python3 experiments/run.py \
 | `--seeds` | 多 seed 评估列表 |
 | `--checkpoint` | `evaluate` 模式加载的模型路径 |
 | `--resume-from` | `train` 模式使用的父 run 根目录；创建新的子 run |
+| `--device` | DQN 训练设备：`auto`、`cpu` 或 `cuda`；评估固定为 CPU |
 | `--opponents` | 覆盖 Task 4 的默认对手列表 |
 | `--run-id` | 本次实验的唯一输出名称 |
 | `--replay-policy` | 回放策略；默认 `auto` |
@@ -482,3 +511,8 @@ Q-learning 与 DQN agent 都会据此屏蔽炸弹。Task 2–4 会自动允许�
 `checkpoint` 为 `null`，表示具体运行可通过命令行显式选择值。训练过程使用
 `training-v1` CSV schema，固定评估的逐局记录使用 `episode-v1`，决策耗时使用
 `timing-v1`。
+
+`configs/formal_training.json` 固定 CPU、`v1`、`r1`、关闭 early stopping、共享
+`linear-v1` 探索（1.0→0.05，1,920,000 动作步）及六链预算。`stage_gate.json`、
+`main_validation.json`、`final_test.json` 分别固定 20-seed 阶段门槛、100-seed 主验证和
+100-seed 最终留出测试。smoke run 只用于工程验证，不得成为正式链父节点或参与选模。

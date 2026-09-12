@@ -6,6 +6,11 @@ import numpy as np
 import torch
 
 from agent_code.team_agent.rewards import REWARD_VERSION, resolve_reward_spec
+from agent_code.team_agent.exploration import (
+    agent_seed_from_environment,
+    epsilon_at,
+    exploration_from_environment,
+)
 from .features import ACTIONS, FEATURE_DIM, FEATURE_VERSION, features_for_state
 from .model import DQN
 
@@ -17,6 +22,7 @@ SEED = 0
 TRAINING_TASK_ENV = "BOMBERMAN_TRAINING_TASK"
 ALLOW_BOMB_ENV = "BOMBERMAN_ALLOW_BOMB"
 REWARD_VERSION_ENV = "BOMBERMAN_REWARD_VERSION"
+TORCH_DEVICE_ENV = "BOMBERMAN_TORCH_DEVICE"
 
 
 def _env_flag(name: str, default: bool) -> bool:
@@ -45,8 +51,13 @@ def _training_task():
 
 
 def setup(self):
-    self.rng = random.Random(SEED)
-    self.model = DQN(INPUT_SIZE, len(ACTIONS), seed=SEED)
+    self.agent_seed = agent_seed_from_environment(SEED)
+    self.exploration_spec = exploration_from_environment()
+    self.rng = random.Random(self.agent_seed)
+    self.model = DQN(
+        INPUT_SIZE, len(ACTIONS), seed=self.agent_seed,
+        device=os.getenv(TORCH_DEVICE_ENV, "cpu"),
+    )
     self.allow_bomb = _env_flag(ALLOW_BOMB_ENV, True)
     self.training_task = _training_task()
     self.reward_version = os.getenv(REWARD_VERSION_ENV, REWARD_VERSION)
@@ -102,7 +113,10 @@ def act(self, game_state: dict) -> str:
     legal_indices = np.flatnonzero(legal).tolist()
 
     if self.train:
-        epsilon = max(0.05, 1.0 - 0.95 * min(self.action_steps / 80_000, 1.0))
+        epsilon = epsilon_at(
+            self.action_steps,
+            getattr(self, "exploration_spec", None),
+        )
         self.action_steps += 1
         if self.rng.random() < epsilon:
             return ACTIONS[self.rng.choice(legal_indices)]

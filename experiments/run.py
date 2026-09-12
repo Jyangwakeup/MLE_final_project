@@ -32,6 +32,8 @@ from environment import Trophy
 from experiments.analyze import analyze_runs
 from experiments.analyze_training import analyze_training
 from experiments.evaluation import run_evaluation_mode, run_multi_seed_evaluation
+from experiments.devices import resolve_device
+from agent_code.team_agent.exploration import resolve_exploration_spec
 from experiments.resume import (
     CHECKPOINT_SCHEMA_VERSION,
     LoadedSnapshot,
@@ -57,7 +59,11 @@ TASKS = {
         "scenario": "classic",
         "opponents": ("peaceful_agent", "coin_collector_agent"),
     },
-    4: {"name": "full_match", "scenario": "classic", "opponents": ("rule_based_agent",)},
+    4: {
+        "name": "full_match",
+        "scenario": "classic",
+        "opponents": ("rule_based_agent", "rule_based_agent", "rule_based_agent"),
+    },
 }
 EPISODE_SCHEMA_VERSION = "episode-v1"
 TIMING_SCHEMA_VERSION = "timing-v1"
@@ -389,6 +395,7 @@ def _initial_metadata(
 
     return {
         "config_path": str(config_path.resolve()),
+        "config_source_sha256": hashlib.sha256(config_path.read_bytes()).hexdigest(),
         "config_sha256": None,
         "dependencies": dependencies,
         "ended_at": None,
@@ -519,6 +526,8 @@ def _checkpoint_name(agent: str) -> str:
 
 
 def _algorithm_name(agent: str) -> str:
+    if agent == "legal_random_agent":
+        return "legal_random"
     return "dqn" if "dqn" in agent.lower() else "q_learning"
 
 
@@ -561,6 +570,7 @@ def run_agent_session(
     resume_snapshot: LoadedSnapshot | None = None,
     resume_kind: str | None = None,
     parent_metadata: dict[str, Any] | None = None,
+    device_info: dict[str, Any] | None = None,
 ) -> Path:
     """Run one isolated training or frozen-evaluation session."""
     training = mode == "train"
@@ -576,6 +586,19 @@ def run_agent_session(
     checkpoint = checkpoint.resolve()
     expanded = _read_config(config_path)
     algorithm = _algorithm_name(agent)
+    training_config = expanded.get("training", {})
+    if not isinstance(training_config, dict):
+        raise ValueError("config.training must be an object")
+    exploration_spec = resolve_exploration_spec(training_config.get("exploration"))
+    training_config["exploration"] = exploration_spec
+    expanded["training"] = training_config
+    agent_seed = int(seed)
+    if device_info is None:
+        section = expanded.get("training" if training else "evaluation", {})
+        if not isinstance(section, dict):
+            raise ValueError("Device config section must be an object")
+        requested_device = section.get("device", "auto" if training else "cpu")
+        device_info = resolve_device(algorithm, mode, requested_device)
     configured_algorithm = expanded.get("algorithm")
     if configured_algorithm not in (None, algorithm):
         raise ValueError("Configured algorithm does not match the selected agent")
@@ -616,14 +639,18 @@ def run_agent_session(
         "replay_policy": replay_policy,
         "scenario": scenario,
         "task": task_name,
+        "device": device_info,
     }
     metadata["expanded_config"] = expanded
     metadata["algorithm"] = algorithm
+    metadata["agent_seed"] = agent_seed
     metadata["checkpoint_schema"] = CHECKPOINT_SCHEMA_VERSION
     metadata["feature_version"] = FEATURE_VERSION
+    metadata["exploration_spec"] = exploration_spec
     metadata["reward_version"] = reward_version
     metadata["rewards"] = resolved_rewards
     metadata["task"] = task_name
+    metadata["device"] = device_info
     parent_cumulative = 0
     if resume_snapshot is not None:
         parent_cumulative = int(
@@ -656,6 +683,8 @@ def run_agent_session(
             "BOMBERMAN_CHECKPOINT", "BOMBERMAN_CONFIG", "BOMBERMAN_RUN_DIR",
             "BOMBERMAN_RUN_ID", "BOMBERMAN_TRAINING_TASK",
             "BOMBERMAN_ALLOW_BOMB", "BOMBERMAN_REWARD_VERSION",
+            "BOMBERMAN_TORCH_DEVICE", "BOMBERMAN_AGENT_SEED",
+            "BOMBERMAN_EXPLORATION_SPEC",
         )
     }
     try:
@@ -666,6 +695,11 @@ def run_agent_session(
         os.environ["BOMBERMAN_RUN_ID"] = output.name
         os.environ["BOMBERMAN_TRAINING_TASK"] = task_name
         os.environ["BOMBERMAN_REWARD_VERSION"] = reward_version
+        os.environ["BOMBERMAN_TORCH_DEVICE"] = device_info["actual"]
+        os.environ["BOMBERMAN_AGENT_SEED"] = str(agent_seed)
+        os.environ["BOMBERMAN_EXPLORATION_SPEC"] = json.dumps(
+            exploration_spec, sort_keys=True, separators=(",", ":")
+        )
         # Task 1 isolates coin navigation. Keep its action space free of bombs
         # for both training and frozen evaluation so agents are compared under
         # the same curriculum constraint.
@@ -724,6 +758,14 @@ def run_agent_session(
             raise RuntimeError(f"Training did not write checkpoint: {checkpoint}")
         if training:
             analyze_training(output)
+            if algorithm == "dqn":
+                import torch
+                checkpoint_metadata = torch.load(
+                    checkpoint, map_location="cpu", weights_only=True
+                )
+                metadata["device"]["peak_memory_bytes"] = int(
+                    checkpoint_metadata.get("peak_cuda_memory_bytes", 0)
+                )
         metadata["ended_at"] = _utc_now()
         metadata["termination"] = {
             "completed_rounds": completed_rounds,
@@ -767,13 +809,18 @@ def run_agent_evaluation(
     task_name: str,
     replay_policy: str = "all",
     replay_interval: int = DEFAULT_REPLAY_INTERVAL,
+    *,
+    device_info: dict[str, Any] | None = None,
 ) -> Path:
+    if device_info is None:
+        device_info = resolve_device(_algorithm_name(agent), "evaluate", "cpu")
     return run_multi_seed_evaluation(
         config_path, seeds, n_rounds, run_id_prefix, agent, opponents,
         scenario, checkpoint, task_name, replay_policy, replay_interval,
         runs_root=RUNS_ROOT, project_root=PROJECT_ROOT,
         run_session=run_agent_session, analyze_runs=analyze_runs,
         write_json=_write_json,
+        device_info=device_info,
     )
 
 
@@ -789,6 +836,10 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--n-rounds", type=int)
     parser.add_argument("--opponents", nargs="*")
     parser.add_argument("--checkpoint", type=Path)
+    parser.add_argument(
+        "--device", choices=("auto", "cpu", "cuda"),
+        help="DQN training device; evaluation is always resolved to CPU",
+    )
     parser.add_argument(
         "--resume-from", type=Path,
         help="Parent training run directory used for exact or curriculum resume",
@@ -822,6 +873,8 @@ def main(argv: Sequence[str] | None = None) -> int:
                 output_directory=_output_directory,
                 checkpoint_name=_checkpoint_name,
                 run_session=run_agent_session,
+                source_commit=_source_commit(),
+                source_hash=_source_hash(),
             )
         else:
             if args.resume_from is not None:

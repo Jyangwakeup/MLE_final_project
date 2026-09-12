@@ -13,6 +13,11 @@ rewards for following a human-selected action. The 40→64→64→6 network lear
 with replay memory, a target network, Huber loss, and epsilon-greedy exploration
 over physically legal actions.
 
+Formal runs receive their Agent/model initialization seed from the runner and
+share `linear-v1` with Q-learning: epsilon decreases from 1.0 to 0.05 over
+1,920,000 Agent decisions and continues across Tasks. Direct framework use
+defaults to Agent seed 0.
+
 Train from the repository root:
 
 ```bash
@@ -26,8 +31,21 @@ next Task rebuilds the environment/opponent streams but does not restart epsilon
 A checkpoint with a different or missing feature version is never loaded into
 this network.
 
+Exact resume uses `training-resume-v3` and also validates the Agent seed and
+complete exploration specification. Earlier v1/v2 resume snapshots and legacy
+final checkpoints remain frozen-evaluation inputs only.
+
+The experiment runner accepts `--device cuda` for single-GPU training. Direct
+framework use and every frozen evaluation default to CPU, matching the official
+runtime. GPU checkpoints include CUDA RNG state and remain loadable on CPU.
+
 Direct official-run training saves `agent_code/dqn_agent/final.pt`; experiment
 runs save their own `checkpoints/final.pt` plus private resume generations.
+
+The six formal curriculum chains run on CPU because the retained Task 1 smoke
+measured about 120 seconds for the first 20 CPU rounds versus about 130 seconds
+for the same GPU prefix. GPU remains supported for engineering checks; smoke
+runs are excluded from formal lineage and model selection.
 
 
 
