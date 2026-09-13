@@ -134,9 +134,6 @@ class ExperimentRunTest(unittest.TestCase):
         self.assertEqual(metadata["expanded_config"]["execution"]["replay_policy"], "sampled")
         self.assertEqual(metadata["expanded_config"]["execution"]["replay_interval"], 500)
         self.assertFalse(metadata["expanded_config"]["execution"]["allow_bomb"])
-<<<<<<< HEAD
-        self.assertEqual(metadata["reward_version"], "r1")
-        self.assertEqual(metadata["rewards"]["invalid_action"], -0.1)
         self.assertEqual(metadata["agent_seed"], 11)
         self.assertEqual(metadata["exploration_spec"], {
             "version": "linear-v1",
@@ -148,7 +145,6 @@ class ExperimentRunTest(unittest.TestCase):
             metadata["expanded_config"]["training"]["exploration"],
             metadata["exploration_spec"],
         )
-=======
         self.assertEqual(metadata["reward_version"], "r2_balanced")
         self.assertEqual(metadata["feature_id"], "discrete-q-v2")
         self.assertEqual(metadata["feature_schema"]["state_shape"], [16])
@@ -160,7 +156,6 @@ class ExperimentRunTest(unittest.TestCase):
         self.assertEqual(metadata["reward_id"], "r2_balanced")
         self.assertEqual(metadata["checkpoint"], str(checkpoint.resolve()))
         self.assertEqual(metadata["rewards"]["invalid_action"], -0.2)
->>>>>>> e6253fd1 (add more feature id, reward id, and model)
         self.assertEqual(len(metadata["source_hash"]), 64)
         self.assertEqual(
             metadata["config_source_sha256"],
@@ -396,6 +391,9 @@ class ExperimentRunTest(unittest.TestCase):
         self.assertEqual(checkpoint.read_bytes(), before)
         metadata = json.loads((evaluation_output / "metadata.json").read_text())
         self.assertEqual(metadata["mode"], "evaluate")
+        self.assertEqual(
+            metadata["checkpoint_reward_contract"]["reward_version"], "r2_balanced",
+        )
         self.assertEqual(metadata["expanded_config"]["execution"]["task"], "coin_navigation")
         self.assertTrue((evaluation_output / "episodes.jsonl").is_file())
         self.assertFalse((evaluation_output / "training.csv").exists())

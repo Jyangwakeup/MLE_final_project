@@ -28,6 +28,22 @@ REWARD_SPECS = {
         "death": -10.0,
         "invalid_action": -0.1,
     },
+    "r1_coin3": {
+        "step": -0.01,
+        "coin_collected": 3.0,
+        "killed_opponent": 5.0,
+        "crate_destroyed": 0.2,
+        "death": -10.0,
+        "invalid_action": -0.1,
+    },
+    "r1_coin3_no_crate": {
+        "step": -0.01,
+        "coin_collected": 3.0,
+        "killed_opponent": 5.0,
+        "crate_destroyed": 0.0,
+        "death": -10.0,
+        "invalid_action": -0.1,
+    },
     "r2_balanced": {
         "step": -0.01,
         "coin_collected": 3.0,

@@ -7,15 +7,62 @@ import unittest
 from types import SimpleNamespace
 from unittest.mock import Mock, patch
 
-from agent_code.q_learning_agent.callbacks import FEATURE_ID, _features_for, setup
+from agent_code.q_learning_agent.callbacks import (
+    FEATURE_ID,
+    FEATURE_VERSION,
+    ResumeCompatibilityError,
+    _features_for,
+    setup,
+)
 from agent_code.team_agent.feature_system import feature_schema_contract
+from agent_code.team_agent.rewards import resolve_reward_spec
 from agent_code.q_learning_agent.features import legal_actions
 from agent_code.learning_common.temporal_reward import temporal_reward_context
 from tests.test_danger import make_game_state
 
 
 class QLearningAgentConfigurationTestCase(unittest.TestCase):
-<<<<<<< HEAD
+    def test_legacy_reward_checkpoint_is_frozen_only(self):
+        legacy_spec = {
+            "step": -0.01,
+            "coin_collected": 1.0,
+            "killed_opponent": 5.0,
+            "crate_destroyed": 0.2,
+            "death": -10.0,
+            "invalid_action": -0.1,
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            model_file = Path(directory) / "legacy.pkl"
+            with model_file.open("wb") as file:
+                pickle.dump({
+                    "checkpoint_schema": "training-resume-v3",
+                    "feature_id": "discrete-v1",
+                    "feature_version": "v1",
+                    "feature_schema": feature_schema_contract("discrete-v1"),
+                    "actions": ["UP", "RIGHT", "DOWN", "LEFT", "WAIT", "BOMB"],
+                    "reward_version": "r1",
+                    "reward_spec": legacy_spec,
+                    "q_table": {},
+                    "training_steps": 1,
+                    "agent_rng_state": random.Random(0).getstate(),
+                }, file)
+
+            frozen = SimpleNamespace(train=False, logger=Mock())
+            with patch.dict(
+                os.environ, {"BOMBERMAN_CHECKPOINT": str(model_file)}, clear=True,
+            ):
+                setup(frozen)
+            self.assertEqual(frozen.checkpoint_reward_version, "r1")
+
+            resumed = SimpleNamespace(train=True, logger=Mock())
+            with patch.dict(
+                os.environ, {"BOMBERMAN_CHECKPOINT": str(model_file)}, clear=True,
+            ):
+                with self.assertRaisesRegex(
+                    ResumeCompatibilityError, "legacy checkpoint schema",
+                ):
+                    setup(resumed)
+
     def test_setup_uses_runner_agent_seed_and_exploration_schedule(self):
         specification = (
             '{"version":"linear-v1","start":1.0,"end":0.05,'
@@ -32,7 +79,6 @@ class QLearningAgentConfigurationTestCase(unittest.TestCase):
         self.assertEqual(agent.agent_seed, 17)
         self.assertEqual(agent.rng.getstate(), random.Random(17).getstate())
         self.assertEqual(agent.exploration_spec["decay_action_steps"], 1_920_000)
-=======
     @staticmethod
     def _checkpoint(reward_id="r4_anti_oscillation"):
         return {
@@ -101,12 +147,12 @@ class QLearningAgentConfigurationTestCase(unittest.TestCase):
         self.assertEqual((first, second), (1, 2))
         self.assertEqual(temporal_reward_context(
             agent, "RIGHT", old_state, new_state, [])["idle_streak"], 0)
->>>>>>> e6253fd1 (add more feature id, reward id, and model)
 
     def test_shared_features_are_cached_per_round_step(self):
         agent = SimpleNamespace(
             _feature_cache_key=None,
             _feature_cache_value=None,
+            feature_id=FEATURE_ID,
         )
         first_state = make_game_state()
         first_state.update(round=1, step=1)
@@ -173,6 +219,10 @@ class QLearningAgentConfigurationTestCase(unittest.TestCase):
                     "feature_schema": feature_schema_contract(FEATURE_ID),
                     "actions": ["UP", "RIGHT", "DOWN", "LEFT", "WAIT", "BOMB"],
                     "reward_version": "r1",
+                    "reward_id": "r1",
+                    "reward_spec": resolve_reward_spec("r1"),
+                    "checkpoint_schema": "training-resume-v4",
+                    "agent_rng_state": random.Random(0).getstate(),
                     "q_table": expected_table,
                     "training_steps": 123,
                     "training_task": "task1",

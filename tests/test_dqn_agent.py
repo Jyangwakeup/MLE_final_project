@@ -29,7 +29,10 @@ from agent_code.dqn_agent.train import (
 from agent_code.q_learning_agent.features import features_for_state as q_features_for_state
 from agent_code.dqn_agent.features import FEATURE_DIM
 from agent_code.team_agent.feature_system import feature_schema_contract
-from agent_code.team_agent.rewards import reward_from_events as shared_reward_from_events
+from agent_code.team_agent.rewards import (
+    resolve_reward_spec,
+    reward_from_events as shared_reward_from_events,
+)
 from tests.test_danger import make_game_state
 
 
@@ -57,6 +60,44 @@ class DQNRewardTestCase(unittest.TestCase):
 
 
 class DQNTrainingTaskTestCase(unittest.TestCase):
+    def test_legacy_reward_checkpoint_is_frozen_only(self):
+        legacy_spec = {
+            "step": -0.01,
+            "coin_collected": 1.0,
+            "killed_opponent": 5.0,
+            "crate_destroyed": 0.2,
+            "death": -10.0,
+            "invalid_action": -0.1,
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            model_file = Path(directory) / "legacy.pt"
+            checkpoint = DQN(INPUT_SIZE, 6).checkpoint()
+            checkpoint.update({
+                "checkpoint_schema": "training-resume-v3",
+                "feature_id": "discrete-q-v2",
+                "feature_version": None,
+                "feature_schema": feature_schema_contract("discrete-q-v2"),
+                "actions": ["UP", "RIGHT", "DOWN", "LEFT", "WAIT", "BOMB"],
+                "reward_id": "r1",
+                "reward_version": "r1",
+                "reward_spec": legacy_spec,
+            })
+            torch.save(checkpoint, model_file)
+
+            frozen = SimpleNamespace(train=False, logger=Mock())
+            with patch.dict(
+                os.environ, {"BOMBERMAN_CHECKPOINT": str(model_file)}, clear=True,
+            ):
+                setup(frozen)
+            self.assertEqual(frozen.reward_id, "r1")
+
+            resumed = SimpleNamespace(train=True, logger=Mock())
+            with patch.dict(
+                os.environ, {"BOMBERMAN_CHECKPOINT": str(model_file)}, clear=True,
+            ):
+                with self.assertRaisesRegex(ValueError, "legacy checkpoint schema"):
+                    setup(resumed)
+
     def test_setup_passes_runner_seed_and_exploration_schedule_to_model(self):
         agent = SimpleNamespace(train=True, logger=Mock())
         specification = (
@@ -90,6 +131,7 @@ class DQNTrainingTaskTestCase(unittest.TestCase):
                     _feature_cache_key=None,
                     _feature_cache_value=None,
                     model=Mock(),
+                    feature_id="discrete-q-v2",
                 )
                 agent.model.q_values.return_value = np.array(
                     [0, 0, 0, 0, 0, 100], dtype=np.float32
@@ -113,8 +155,13 @@ class DQNTrainingTaskTestCase(unittest.TestCase):
                 "actions": ["UP", "RIGHT", "DOWN", "LEFT", "WAIT", "BOMB"],
                 "reward_id": "r1",
                 "reward_version": "r1",
+                "checkpoint_schema": "training-resume-v4",
+                "feature_version": FEATURE_VERSION,
+                "reward_version": "r1",
+                "reward_spec": resolve_reward_spec("r1"),
                 "action_steps": 123,
                 "training_task": "task1",
+                "agent_rng_state": random.Random(0).getstate(),
             })
             torch.save(checkpoint, model_file)
             expected_parameter = next(model.policy.parameters()).detach().clone()
@@ -142,7 +189,7 @@ class DQNTrainingTaskTestCase(unittest.TestCase):
             agent = SimpleNamespace(train=False, logger=Mock())
 
             with patch.dict(os.environ, {"BOMBERMAN_CHECKPOINT": str(model_file)}):
-                with self.assertRaisesRegex(ValueError, "feature version"):
+                with self.assertRaisesRegex(ValueError, "feature ID"):
                     setup(agent)
 
 
@@ -170,7 +217,10 @@ class DQNSharedFeatureTestCase(unittest.TestCase):
         self.assertIs(reward_from_events, shared_reward_from_events)
 
     def test_shared_features_are_cached_per_round_step(self):
-        agent = SimpleNamespace(_feature_cache_key=None, _feature_cache_value=None)
+        agent = SimpleNamespace(
+            _feature_cache_key=None, _feature_cache_value=None,
+            feature_id="discrete-q-v2",
+        )
         state = make_game_state()
         state.update(round=1, step=1)
         self.assertIs(_features_for(agent, state), _features_for(agent, state))
@@ -189,6 +239,8 @@ class DQNTransitionTestCase(unittest.TestCase):
             logger=Mock(),
             _feature_cache_key=None,
             _feature_cache_value=None,
+            feature_id="discrete-q-v2",
+            reward_id="r1",
         )
 
     def setUp(self):

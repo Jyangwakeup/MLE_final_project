@@ -1,7 +1,7 @@
-import json
 from math import exp
 from pathlib import Path
 import unittest
+import json
 
 import events as e
 import numpy as np
@@ -13,6 +13,7 @@ from agent_code.team_agent.rewards import (
     REWARD_SPECS,
     REWARD_VERSION,
     _state_potential,
+    identify_checkpoint_reward_version,
     resolve_reward_spec,
     reward_from_events,
 )
@@ -41,8 +42,12 @@ class SharedRewardTestCase(unittest.TestCase):
             "death": -10.0,
             "invalid_action": -0.1,
         })
-        self.assertEqual(
-            resolve_reward_spec("r1_no_crate")["coin_collected"], 3.0)
+        self.assertIn("r1_no_crate", REWARD_SPECS)
+        self.assertEqual(resolve_reward_spec("r1_no_crate")["coin_collected"], 1.0)
+        self.assertEqual(resolve_reward_spec("r1_coin3")["coin_collected"], 3.0)
+        self.assertEqual(resolve_reward_spec("r1_coin3_no_crate")["coin_collected"], 3.0)
+        self.assertEqual(resolve_reward_spec("r1_no_crate")["crate_destroyed"], 0.0)
+        self.assertEqual(resolve_reward_spec("r1_coin3_no_crate")["crate_destroyed"], 0.0)
 
     def test_r1_combines_repeated_objective_events(self):
         events = [
@@ -55,6 +60,8 @@ class SharedRewardTestCase(unittest.TestCase):
         ]
 
         self.assertAlmostEqual(reward_from_events(events), 6.29)
+        self.assertAlmostEqual(
+            reward_from_events(events, "r1_coin3"), 8.29)
 
     def test_death_is_penalized_only_once(self):
         self.assertAlmostEqual(
@@ -83,9 +90,13 @@ class SharedRewardTestCase(unittest.TestCase):
         self.assertAlmostEqual(
             reward_from_events([e.GOT_KILLED], "r2_balanced"), -5.01)
 
-    def test_every_non_r1_reward_values_collected_coin_at_three(self):
-        for reward_id, spec in REWARD_SPECS.items():
-            if reward_id != "r1":
+    def test_coin3_and_shaped_rewards_value_collected_coin_at_three(self):
+        for reward_id in (
+            "r1_coin3", "r1_coin3_no_crate", "r2_balanced",
+            "r3_potential", "r4_anti_oscillation",
+        ):
+            spec = REWARD_SPECS[reward_id]
+            if reward_id:
                 with self.subTest(reward_id=reward_id):
                     self.assertEqual(spec["coin_collected"], 3.0)
 
@@ -101,7 +112,9 @@ class SharedRewardTestCase(unittest.TestCase):
                 config = json.loads(path.read_text(encoding="utf-8"))
                 self.assertEqual(config["reward_id"], reward_id)
                 self.assertEqual(config["reward_version"], reward_id)
-        self.assertTrue({"r1", "r1_no_crate"}.issubset(REWARD_SPECS))
+        self.assertTrue({
+            "r1", "r1_no_crate", "r1_coin3", "r1_coin3_no_crate",
+        }.issubset(REWARD_SPECS))
 
     def test_r3_potential_rewards_progress_without_action_rules(self):
         old_state = make_state(position=(3, 3), coins=((5, 3),))
@@ -171,6 +184,5 @@ class SharedRewardTestCase(unittest.TestCase):
         safety = 1.0 if earliest > HORIZON else max(0.0, earliest - 1) / HORIZON
         expected += spec["potential_safety_weight"] * safety
         self.assertAlmostEqual(_state_potential(state, spec), expected)
-
 if __name__ == "__main__":
     unittest.main()
