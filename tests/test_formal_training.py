@@ -39,6 +39,17 @@ class FormalConfigurationTestCase(unittest.TestCase):
         self.assertEqual(
             resolve_reward_spec(config["reward_id"])["coin_collected"], 3.0)
 
+    def test_coin3_stage_gate_has_frozen_contract_and_diagnostics(self):
+        config = json.loads((CONFIG_ROOT / "stage_gate_coin3.json").read_text())
+        self.assertEqual(config["feature_id"], "discrete-v1")
+        self.assertEqual(config["feature_version"], "v1")
+        self.assertEqual(config["reward_id"], "r1_coin3")
+        self.assertEqual(config["reward_version"], "r1_coin3")
+        self.assertTrue(config["evaluation"]["navigation_diagnostics"])
+        self.assertEqual(config["evaluation"]["seeds"], list(range(10_000, 10_020)))
+        self.assertEqual(config["evaluation"]["n_rounds"], 1)
+        self.assertEqual(config["evaluation"]["device"], "cpu")
+
     def test_formal_training_budget_and_exploration_are_pre_registered(self):
         config = json.loads((CONFIG_ROOT / "formal_training.json").read_text())
 

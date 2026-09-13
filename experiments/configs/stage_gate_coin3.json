@@ -1,0 +1,21 @@
+{
+  "algorithm": null,
+  "feature_id": "discrete-v1",
+  "feature_version": "v1",
+  "reward_id": "r1_coin3",
+  "reward_version": "r1_coin3",
+  "seed": null,
+  "checkpoint": null,
+  "evaluation": {
+    "device": "cpu",
+    "navigation_diagnostics": true,
+    "seeds": [10000, 10001, 10002, 10003, 10004, 10005, 10006, 10007, 10008, 10009, 10010, 10011, 10012, 10013, 10014, 10015, 10016, 10017, 10018, 10019],
+    "n_rounds": 1
+  },
+  "training": {
+    "device": "cpu",
+    "n_rounds": null,
+    "exploration": {"version": "linear-v1", "start": 1.0, "end": 0.05, "decay_action_steps": 1920000},
+    "early_stopping": {"enabled": false}
+  }
+}

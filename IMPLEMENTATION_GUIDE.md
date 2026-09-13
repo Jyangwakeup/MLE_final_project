@@ -110,9 +110,9 @@
 |---|---|---|---|
 | `experiments/run.py` / C | Task、Agent、模式、配置、输出目录 → 训练或评估报告 | 官方世界类、自有与官方智能体 | `train`/`evaluate` 独立；四个 Task 自动选择场景和默认对手；各运行隔离 |
 | `experiments/analyze.py` / C | 运行目录列表 → CSV 汇总和 PNG 图 | JSON、NumPy、Matplotlib | 正确区别独占第一、并列第一、零分平局；图能从原始数据生成 |
-| `experiments/configs/base.json`、`formal_training.json`、`formal_training_coin3.json`、`stage_gate.json`、`main_validation.json`、`final_test.json` / C | 工程默认与正式训练/评估数据集 | 第 6–8 节约定 | CPU、冻结 Feature/Reward 契约、预定 seed 和局数均可校验 |
+| `experiments/configs/base.json`、`formal_training.json`、`formal_training_coin3.json`、`stage_gate.json`、`stage_gate_coin3.json`、`main_validation.json`、`final_test.json` / C | 工程默认与正式训练/评估数据集 | 第 6–8 节约定 | CPU、冻结 Feature/Reward 契约、预定 seed 和局数均可校验 |
 | `agent_code/legal_random_agent/` / C | 官方状态 → 从同一合法掩码均匀抽样 | 共享特征、独立 RNG | Task 1 诊断基线可固定 seed 重现，不包含学习状态 |
-| `experiments/resume.py`、`devices.py` / C | 原子完整恢复、CPU/CUDA 设备解析 | 标准库、NumPy、可选 PyTorch | v3 合同和两代回退可验证；评估强制 CPU |
+| `experiments/resume.py`、`devices.py` / C | 原子完整恢复、CPU/CUDA 设备解析 | 标准库、NumPy、可选 PyTorch | v4 合同和两代回退可验证；评估强制 CPU |
 | 待实现：消融配置 / A、C | `v1_no_danger`、`r1_coin3_no_crate` 的独立完整课程 | 已版本化特征与奖励 | 各只改变一个因素并从零训练 |
 | 待实现：打包工具和最终依赖清单 / C | 胜出 checkpoint → 单一可提交 Agent 包 | 最终模型存储格式 | 在原版框架、Docker、CPU 上独立加载后才标记完成 |
 | `experiments/configs/reward_r2_balanced.json` / C | R2 奖励、评估 seeds、默认局数 | 第 6–8 节约定 | 不自动分配四阶段预算；每次运行显式选择 Task 和局数 |
@@ -353,11 +353,29 @@ Task 3 同时使用两名弱对手，是团队对官方 SHOULD 课程路线的�
 
 阶段门槛在 CPU 上使用 seeds 10000–10019，每个 seed 恰好一局；同一候选的父子比较复用完全相同的 seed 列表。
 
+Task 1 coin3 checkpoint 与合法均匀随机基线均使用专用
+`stage_gate_coin3.json`，固定 `discrete-v1 + r1_coin3` 并启用只读导航诊断。主判据仍只有
+20-seed 平均金币相对同 seed 随机基线至少 `+2`；不得根据结果事后改变门槛。辅助诊断报告
+每 100 步金币、每枚金币步数、收完 50 枚金币的比例与完成步数、`WAIT` 率、立即反向率、
+缩短最近金币距离的动作率、仍可追踪旧目标时的目标切换率，以及多个等距最近金币的出现率。
+这些指标只用于定位失败原因，不单独决定晋级。
+
+聚合公式固定为：`coins_per_100_steps = 100 × Σcoins / Σround_steps`，
+`steps_per_coin = Σround_steps / Σcoins`；完成步数只在收完 50 枚金币的局上取平均。
+`WAIT`/立即反向率以全部诊断决策为分母，缩短距离率以动作前后距离均可比较的决策为分母，
+目标切换率以旧目标仍存在的机会为分母，等距目标率以存在可达金币目标的决策为分母。
+
 共同硬门槛：run 完整且局数正确；冻结 checkpoint 可加载；最新两代 resume generation 均通过 hash 校验；Q 表状态数增长，或 DQN optimizer updates 大于零且 loss 有限；无异常、超时或框架跳过；完整 `act` P95 < 50 ms、最大值 < 500 ms；Task 1 不出现 `BOMB`；无效动作率不超过 1%。任一硬门槛失败立即停止该链并修复。
 
 能力门槛：Task 1 的平均金币数至少比 `legal_random_agent` 高 2；Task 2 的平均炸箱数至少比 Task 1 父模型高 0.5；Task 3/4 的平均击杀数至少比直接父模型高 0.1，或独占/并列第一率至少提高 5 个百分点。晋级模型在所有旧 Task 上的 `mean_score` 不得低于父模型的 90%；有炸弹阶段的自杀率不得比父模型高 10 个百分点，且绝对值不得超过 35%。比例均以完整评估局数为分母。
 
-仅能力门槛失败时，允许按表中 25% 预算以同配置续训一次并重测；仍失败则保留失败证据，并按第 8.5 节的截止策略继续。不得借此改奖励、特征、seed 或探索日程。硬门槛失败不适用该例外。
+通过的链立即独立晋级，不等待其他 seed。某模型族至少 2/3 seeds 通过时不修改该模型族；
+至少 2/3 seeds 失败但冻结表现已明显优于随机时，才使用表中 25% 预算按同配置续训一次。
+若优势不足 2 枚或循环诊断明显异常，则跳过低价值追加，为失败模型族从零运行 seed 11 的
+`discrete-v1/discrete-q-v2 × sparse r1_coin3/coin-only potential` 2×2 实验。四个变体先各训
+250 局并冻结评估，前两个再用同契约子 run 补至总计 500 局；若两族都失败，先做 DQN。
+仍失败则保留证据并按第 8.5 节截止策略继续。任何新 Feature、Reward 或探索配置使用新 ID
+和新谱系，不得接续当前 v4 checkpoint。硬门槛失败不适用上述性能追加。
 
 ### 8.4 主验证、模型族与最终测试
 
@@ -475,9 +493,9 @@ Task 3 会固定加入 `peaceful_agent` 和 `coin_collector_agent`；Task 4 默�
 Task 1 合法均匀随机诊断基线与候选阶段门槛示例：
 
 ```bash
-conda run --no-capture-output -n mle python experiments/run.py --config experiments/configs/stage_gate.json --mode evaluate --task 1 --agent legal_random_agent --checkpoint agent_code/legal_random_agent/baseline.json --run-id gate_legal_random_t1
+conda run --no-capture-output -n mle python experiments/run.py --config experiments/configs/stage_gate_coin3.json --mode evaluate --task 1 --agent legal_random_agent --checkpoint agent_code/legal_random_agent/baseline.json --run-id gate_legal_random_discrete_v1_r1_coin3_t1
 
-conda run --no-capture-output -n mle python experiments/run.py --config experiments/configs/stage_gate.json --mode evaluate --task 1 --agent q_learning_agent --checkpoint runs/formal_q_discrete_v1_r1_coin3_s11_t1_r500/checkpoints/final.pkl --run-id gate_formal_q_discrete_v1_r1_coin3_s11_t1
+conda run --no-capture-output -n mle python experiments/run.py --config experiments/configs/stage_gate_coin3.json --mode evaluate --task 1 --agent q_learning_agent --checkpoint runs/formal_q_discrete_v1_r1_coin3_s11_t1_r500/checkpoints/final.pkl --run-id gate_formal_q_discrete_v1_r1_coin3_s11_t1
 ```
 
 主验证改用 `main_validation.json`，且 Task 4 对三名规则对手运行；冻结唯一胜者后才改用 `final_test.json`。配置已分别固定 10000–10099 和 20000–20099，每个 seed 一局，不再使用“5 seeds×20 局”。正式训练不使用 `--silence-errors`，也不在本轮指南更新时自动启动。

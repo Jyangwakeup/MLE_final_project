@@ -30,10 +30,14 @@ SUMMARY_FIELDS = (
     "rank_by_total_score",
     "mean_score",
     "score_std",
+    "total_round_steps",
     "coins",
     "mean_coins",
+    "coins_per_100_steps",
+    "steps_per_coin",
     "all_coins_count",
     "all_coins_rate",
+    "mean_all_coins_completion_steps",
     "max_steps_count",
     "max_steps_rate",
     "long_wait_loop_count",
@@ -65,6 +69,15 @@ SUMMARY_FIELDS = (
     "act_max_time",
     "act_timeout_count",
     "act_skipped_count",
+    "navigation_decisions",
+    "coin_distance_comparable_count",
+    "coin_target_observation_count",
+    "coin_target_continuity_opportunity_count",
+    "wait_action_rate",
+    "immediate_reverse_rate",
+    "coin_distance_reducing_rate",
+    "coin_target_switch_rate",
+    "multiple_nearest_coin_rate",
     "unseen_q_states",
     "q_decisions",
     "unseen_q_state_rate",
@@ -179,6 +192,48 @@ def _validate_timing(value: Any, path: Path, line_number: int) -> dict[str, Any]
     think_time = value.get("think_time")
     if think_time is not None:
         _number(think_time, "think_time", path, line_number)
+    navigation = value.get("navigation")
+    if navigation is not None:
+        if not isinstance(navigation, dict):
+            raise _invalid(path, line_number, "navigation must be an object")
+        for field in (
+            "distance_comparable", "distance_reduced", "multiple_nearest_coins",
+            "previous_target_still_available",
+            "target_switched_while_previous_available", "waited",
+            "immediate_reverse", "movement_legal_in_observed_state",
+        ):
+            if not isinstance(navigation.get(field), bool):
+                raise _invalid(
+                    path, line_number, f"navigation.{field} must be a boolean")
+        for field in (
+            "nearest_coin_distance_before",
+            "predicted_nearest_coin_distance_after",
+        ):
+            if navigation.get(field) is not None:
+                _number(navigation[field], f"navigation.{field}", path, line_number)
+        if (
+            not isinstance(navigation.get("coin_count_before"), int)
+            or isinstance(navigation["coin_count_before"], bool)
+            or navigation["coin_count_before"] < 0
+        ):
+            raise _invalid(
+                path, line_number,
+                "navigation.coin_count_before must be a non-negative integer",
+            )
+        if "selected_target" not in navigation:
+            raise _invalid(
+                path, line_number, "navigation.selected_target is required")
+        selected_target = navigation["selected_target"]
+        if selected_target is not None and (
+            not isinstance(selected_target, list)
+            or len(selected_target) != 2
+            or any(isinstance(value, bool) or not isinstance(value, int)
+                   for value in selected_target)
+        ):
+            raise _invalid(
+                path, line_number,
+                "navigation.selected_target must be null or an integer pair",
+            )
     return value
 
 
@@ -263,7 +318,17 @@ def _summary_row(
 ) -> dict[str, Any]:
     scores = [sample["score"] for sample in samples]
     episode_count = len(samples)
+    total_round_steps = sum(sample["round_steps"] for sample in samples)
+    total_coins = sum(sample["coins"] for sample in samples)
+    completion_steps = [
+        sample["round_steps"] for sample in samples if sample["all_coins"]
+    ]
     act_times = timing.get("think_times", [])
+    navigation_decisions = timing.get("navigation_decisions", 0)
+    comparable = timing.get("coin_distance_comparable", 0)
+    target_observations = timing.get("coin_target_observations", 0)
+    continuity_opportunities = timing.get(
+        "coin_target_continuity_opportunities", 0)
     q_decisions = q_diagnostics.get("q_decisions", 0.0)
     unseen_q_states = q_diagnostics.get("unseen_q_states", 0.0)
     return {
@@ -274,10 +339,15 @@ def _summary_row(
         "rank_by_total_score": None,
         "mean_score": mean(scores),
         "score_std": pstdev(scores),
-        "coins": sum(sample["coins"] for sample in samples),
-        "mean_coins": sum(sample["coins"] for sample in samples) / episode_count,
+        "total_round_steps": total_round_steps,
+        "coins": total_coins,
+        "mean_coins": total_coins / episode_count,
+        "coins_per_100_steps": 100.0 * total_coins / max(1.0, total_round_steps),
+        "steps_per_coin": total_round_steps / total_coins if total_coins else None,
         "all_coins_count": sum(sample["all_coins"] for sample in samples),
         "all_coins_rate": mean(sample["all_coins"] for sample in samples),
+        "mean_all_coins_completion_steps": (
+            mean(completion_steps) if completion_steps else None),
         "max_steps_count": sum(sample["max_steps"] for sample in samples),
         "max_steps_rate": mean(sample["max_steps"] for sample in samples),
         "long_wait_loop_count": sum(sample["long_wait_loop"] for sample in samples),
@@ -315,6 +385,25 @@ def _summary_row(
         "act_max_time": max(act_times) if act_times else None,
         "act_timeout_count": timing.get("timeout_count", 0),
         "act_skipped_count": timing.get("skipped_count", 0),
+        "navigation_decisions": navigation_decisions,
+        "coin_distance_comparable_count": comparable,
+        "coin_target_observation_count": target_observations,
+        "coin_target_continuity_opportunity_count": continuity_opportunities,
+        "wait_action_rate": (
+            timing.get("wait_actions", 0) / navigation_decisions
+            if navigation_decisions else None),
+        "immediate_reverse_rate": (
+            timing.get("immediate_reversals", 0) / navigation_decisions
+            if navigation_decisions else None),
+        "coin_distance_reducing_rate": (
+            timing.get("coin_distance_reducing", 0) / comparable
+            if comparable else None),
+        "coin_target_switch_rate": (
+            timing.get("coin_target_switches", 0) / continuity_opportunities
+            if continuity_opportunities else None),
+        "multiple_nearest_coin_rate": (
+            timing.get("multiple_nearest_coins", 0) / target_observations
+            if target_observations else None),
         "unseen_q_states": unseen_q_states,
         "q_decisions": q_decisions,
         "unseen_q_state_rate": unseen_q_states / q_decisions if q_decisions else None,
@@ -325,7 +414,16 @@ def summarize_runs(run_directories: Iterable[Path]) -> list[dict[str, Any]]:
     """Return one provenance-preserving summary row for every run and agent."""
     samples_by_agent: dict[tuple[str, str], list[dict[str, Any]]] = defaultdict(list)
     timing_by_agent: dict[tuple[str, str], dict[str, Any]] = defaultdict(
-        lambda: {"think_times": [], "act_count": 0, "timeout_count": 0, "skipped_count": 0}
+        lambda: {
+            "think_times": [], "act_count": 0, "timeout_count": 0,
+            "skipped_count": 0, "navigation_decisions": 0,
+            "wait_actions": 0, "immediate_reversals": 0,
+            "coin_distance_comparable": 0, "coin_distance_reducing": 0,
+            "coin_target_observations": 0,
+            "coin_target_continuity_opportunities": 0,
+            "coin_target_switches": 0,
+            "multiple_nearest_coins": 0,
+        }
     )
     q_by_agent: dict[tuple[str, str], dict[str, float]] = defaultdict(
         lambda: {"unseen_q_states": 0.0, "q_decisions": 0.0}
@@ -380,6 +478,24 @@ def summarize_runs(run_directories: Iterable[Path]) -> list[dict[str, Any]]:
                 bucket["timeout_count"] += 1
             if record["skipped"]:
                 bucket["skipped_count"] += 1
+            navigation = record.get("navigation")
+            if navigation is not None:
+                bucket["navigation_decisions"] += 1
+                bucket["wait_actions"] += int(navigation["waited"])
+                bucket["immediate_reversals"] += int(
+                    navigation["immediate_reverse"])
+                bucket["coin_distance_comparable"] += int(
+                    navigation["distance_comparable"])
+                bucket["coin_distance_reducing"] += int(
+                    navigation["distance_reduced"])
+                bucket["coin_target_observations"] += int(
+                    navigation["selected_target"] is not None)
+                bucket["coin_target_continuity_opportunities"] += int(
+                    navigation["previous_target_still_available"])
+                bucket["coin_target_switches"] += int(
+                    navigation["target_switched_while_previous_available"])
+                bucket["multiple_nearest_coins"] += int(
+                    navigation["multiple_nearest_coins"])
 
         for agent_name, diagnostics in _read_q_diagnostics(run_directory).items():
             bucket = q_by_agent[(run_directory.name, agent_name)]
@@ -428,6 +544,11 @@ def _average_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
         mean_scores = [float(row["mean_score"]) for row in agent_rows]
         q_decisions = sum(float(row["q_decisions"]) for row in agent_rows)
         unseen_q_states = sum(float(row["unseen_q_states"]) for row in agent_rows)
+        total_round_steps = sum(
+            float(row["total_round_steps"]) for row in agent_rows)
+        total_coins = sum(float(row["coins"]) for row in agent_rows)
+        all_coins_count = sum(
+            float(row["all_coins_count"]) for row in agent_rows)
         act_times = [row["act_mean_time"] for row in agent_rows if row["act_mean_time"] is not None]
         p95_times = [row["act_p95_time"] for row in agent_rows if row["act_p95_time"] is not None]
         max_times = [row["act_max_time"] for row in agent_rows if row["act_max_time"] is not None]
@@ -440,10 +561,18 @@ def _average_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
                 "rank_by_total_score": mean(float(row["rank_by_total_score"]) for row in agent_rows),
                 "mean_score": _weighted_mean(agent_rows, "mean_score"),
                 "score_std": pstdev(mean_scores) if len(mean_scores) > 1 else 0.0,
-                "coins": sum(float(row["coins"]) for row in agent_rows),
+                "total_round_steps": total_round_steps,
+                "coins": total_coins,
                 "mean_coins": _weighted_mean(agent_rows, "mean_coins"),
-                "all_coins_count": sum(float(row["all_coins_count"]) for row in agent_rows),
+                "coins_per_100_steps": (
+                    100.0 * total_coins / total_round_steps
+                    if total_round_steps else None),
+                "steps_per_coin": (
+                    total_round_steps / total_coins if total_coins else None),
+                "all_coins_count": all_coins_count,
                 "all_coins_rate": _weighted_mean(agent_rows, "all_coins_rate"),
+                "mean_all_coins_completion_steps": _weighted_mean(
+                    agent_rows, "mean_all_coins_completion_steps", "all_coins_count"),
                 "max_steps_count": sum(float(row["max_steps_count"]) for row in agent_rows),
                 "max_steps_rate": _weighted_mean(agent_rows, "max_steps_rate"),
                 "long_wait_loop_count": sum(
@@ -480,6 +609,30 @@ def _average_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
                 "act_max_time": max(max_times) if max_times else None,
                 "act_timeout_count": sum(int(row["act_timeout_count"]) for row in agent_rows),
                 "act_skipped_count": sum(int(row["act_skipped_count"]) for row in agent_rows),
+                "navigation_decisions": sum(
+                    int(row["navigation_decisions"]) for row in agent_rows),
+                "coin_distance_comparable_count": sum(
+                    int(row["coin_distance_comparable_count"])
+                    for row in agent_rows),
+                "coin_target_observation_count": sum(
+                    int(row["coin_target_observation_count"])
+                    for row in agent_rows),
+                "coin_target_continuity_opportunity_count": sum(
+                    int(row["coin_target_continuity_opportunity_count"])
+                    for row in agent_rows),
+                "wait_action_rate": _weighted_mean(
+                    agent_rows, "wait_action_rate", "navigation_decisions"),
+                "immediate_reverse_rate": _weighted_mean(
+                    agent_rows, "immediate_reverse_rate", "navigation_decisions"),
+                "coin_distance_reducing_rate": _weighted_mean(
+                    agent_rows, "coin_distance_reducing_rate",
+                    "coin_distance_comparable_count"),
+                "coin_target_switch_rate": _weighted_mean(
+                    agent_rows, "coin_target_switch_rate",
+                    "coin_target_continuity_opportunity_count"),
+                "multiple_nearest_coin_rate": _weighted_mean(
+                    agent_rows, "multiple_nearest_coin_rate",
+                    "coin_target_observation_count"),
                 "unseen_q_states": unseen_q_states,
                 "q_decisions": q_decisions,
                 "unseen_q_state_rate": unseen_q_states / q_decisions if q_decisions else None,

@@ -49,6 +49,7 @@ from main import world_controller
 from agent_code.team_agent.feature_system import ACTIONS, normalize_feature_id
 from agent_code.team_agent.rewards import REWARD_VERSION, resolve_reward_spec
 from experiments.agent_contracts import resolve_agent_contract
+from experiments.navigation_diagnostics import navigation_diagnostic
 
 
 RUNS_ROOT = PROJECT_ROOT / "runs"
@@ -127,6 +128,7 @@ class ExperimentWorld(BombeRLeWorld):
         environment_seed: int, stage: str = "evaluation",
         replay_policy: str = "none", replay_interval: int = DEFAULT_REPLAY_INTERVAL,
         snapshot_config: dict[str, Any] | None = None,
+        navigation_diagnostics: bool = False,
     ):
         self._episodes_path = output / "episodes.jsonl"
         self._timing_path = output / "timing.jsonl"
@@ -143,6 +145,9 @@ class ExperimentWorld(BombeRLeWorld):
         self._replay_policy = replay_policy
         self._replay_interval = replay_interval
         self._snapshot_config = snapshot_config
+        self._navigation_diagnostics = navigation_diagnostics
+        self._navigation_previous_action: dict[str, str] = {}
+        self._navigation_previous_target: dict[str, tuple[int, int] | None] = {}
         self._training_rewards: list[float] = []
         self._training_csv_offset = 0
         self._training_reward_column: int | None = None
@@ -153,6 +158,8 @@ class ExperimentWorld(BombeRLeWorld):
     def new_round(self) -> None:
         self._death_steps = {}
         self._death_causes = {}
+        self._navigation_previous_action = {}
+        self._navigation_previous_target = {}
         super().new_round()
 
     def evaluate_explosions(self) -> None:
@@ -186,9 +193,9 @@ class ExperimentWorld(BombeRLeWorld):
         timed_out: bool,
         available_before: float,
         available_after: float,
+        game_state: dict[str, Any],
     ) -> None:
-        self._timing_file.write(
-            json.dumps({
+        record = {
                 "schema_version": TIMING_SCHEMA_VERSION,
                 "run_id": self._experiment_run_id,
                 "round_index": int(self.round),
@@ -201,12 +208,24 @@ class ExperimentWorld(BombeRLeWorld):
                 "timed_out": timed_out,
                 "available_before": available_before,
                 "available_after": available_after,
-            }, sort_keys=True) + "\n"
-        )
+            }
+        if self._navigation_diagnostics:
+            diagnostic, target = navigation_diagnostic(
+                game_state,
+                action,
+                previous_target=self._navigation_previous_target.get(agent.name),
+                previous_action=self._navigation_previous_action.get(agent.name),
+            )
+            record["navigation"] = diagnostic
+            self._navigation_previous_target[agent.name] = target
+            self._navigation_previous_action[agent.name] = action
+        self._timing_file.write(json.dumps(record, sort_keys=True) + "\n")
 
     def poll_and_run_agents(self) -> None:
+        states: dict[str, dict[str, Any]] = {}
         for agent in self.active_agents:
             state = self.get_state_for_agent(agent)
+            states[agent.name] = state
             agent.store_game_state(state)
             agent.reset_game_events()
             if agent.available_think_time > 0:
@@ -271,6 +290,7 @@ class ExperimentWorld(BombeRLeWorld):
                 timed_out,
                 available_before,
                 float(agent.available_think_time),
+                states[agent.name],
             )
             self.replay["actions"][agent.name].append(action)
             self.perform_agent_action(agent, action)
@@ -672,6 +692,14 @@ def run_agent_session(
     exploration_spec = resolve_exploration_spec(training_config.get("exploration"))
     training_config["exploration"] = exploration_spec
     expanded["training"] = training_config
+    evaluation_config = expanded.get("evaluation", {})
+    if not isinstance(evaluation_config, dict):
+        raise ValueError("config.evaluation must be an object")
+    navigation_diagnostics = evaluation_config.get(
+        "navigation_diagnostics", False)
+    if not isinstance(navigation_diagnostics, bool):
+        raise ValueError("config.evaluation.navigation_diagnostics must be a boolean")
+    navigation_diagnostics = bool(navigation_diagnostics and not training)
     agent_seed = int(seed)
     if device_info is None:
         section = expanded.get("training" if training else "evaluation", {})
@@ -741,6 +769,7 @@ def run_agent_session(
         "device": device_info,
         "curriculum_action_mask": {"BOMB": task_name != "coin_navigation"},
         "checkpoint_reward_contract": checkpoint_reward_contract,
+        "navigation_diagnostics": navigation_diagnostics,
     }
     metadata["expanded_config"] = expanded
     metadata["agent"] = agent
@@ -852,6 +881,7 @@ def run_agent_session(
                 }
                 if training else None
             ),
+            navigation_diagnostics=navigation_diagnostics,
         )
         if resume_snapshot is not None and resume_kind == "same_task":
             runner_state = resume_snapshot.runner_state

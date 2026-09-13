@@ -48,6 +48,10 @@ def run_multi_seed_evaluation(
             "reported": [
                 "mean_coins", "all_coins_rate", "max_steps_rate",
                 "long_wait_loop_rate", "long_ping_pong_loop_rate",
+                "coins_per_100_steps", "steps_per_coin",
+                "mean_all_coins_completion_steps", "wait_action_rate",
+                "immediate_reverse_rate", "coin_distance_reducing_rate",
+                "coin_target_switch_rate", "multiple_nearest_coin_rate",
             ],
         },
         "n_rounds_per_seed": n_rounds, "opponents": list(opponents),

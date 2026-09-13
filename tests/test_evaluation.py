@@ -148,6 +148,68 @@ class ExperimentAnalysisTest(unittest.TestCase):
             self.assertEqual(row["long_ping_pong_loop_rate"], 0.0)
             self.assertTrue(row["exploration_disabled"])
 
+    def test_coin_navigation_efficiency_and_action_diagnostics_are_aggregated(self):
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            agent = _agent("a", 2, coins=2)
+            agent.update({
+                "all_coins": False, "max_steps": False,
+                "long_wait_loop": False, "long_ping_pong_loop": False,
+            })
+            run = self._write_run(
+                temporary_directory,
+                "navigation",
+                [{**_episode("navigation", 1, [agent], round_steps=20),
+                  "exploration_disabled": True}],
+            )
+            records = []
+            for step, values in enumerate((
+                (False, True, False, False),
+                (True, False, True, True),
+            ), 1):
+                waited, reduced, reversed_action, switched = values
+                records.append({
+                    "schema_version": "timing-v1", "run_id": "navigation",
+                    "round_index": 1, "step": step, "agent_name": "a",
+                    "action": "WAIT" if waited else "RIGHT",
+                    "requested_action": "WAIT" if waited else "RIGHT",
+                    "think_time": 0.001, "skipped": False, "timed_out": False,
+                    "available_before": 0.5, "available_after": 0.5,
+                    "navigation": {
+                        "coin_count_before": 2,
+                        "nearest_coin_distance_before": 2.0,
+                        "predicted_nearest_coin_distance_after": 1.0,
+                        "distance_comparable": True,
+                        "distance_reduced": reduced,
+                        "multiple_nearest_coins": step == 1,
+                        "selected_target": [5, 3],
+                        "previous_target_still_available": True,
+                        "target_switched_while_previous_available": switched,
+                        "waited": waited,
+                        "immediate_reverse": reversed_action,
+                        "movement_legal_in_observed_state": True,
+                    },
+                })
+            (run / "timing.jsonl").write_text(
+                "".join(json.dumps(record) + "\n" for record in records),
+                encoding="utf-8",
+            )
+
+            row = summarize_runs([run])[0]
+
+            self.assertEqual(row["coins_per_100_steps"], 10.0)
+            self.assertEqual(row["steps_per_coin"], 10.0)
+            self.assertEqual(row["total_round_steps"], 20.0)
+            self.assertEqual(row["navigation_decisions"], 2)
+            self.assertEqual(row["coin_distance_comparable_count"], 2)
+            self.assertEqual(row["coin_target_observation_count"], 2)
+            self.assertEqual(
+                row["coin_target_continuity_opportunity_count"], 2)
+            self.assertEqual(row["wait_action_rate"], 0.5)
+            self.assertEqual(row["immediate_reverse_rate"], 0.5)
+            self.assertEqual(row["coin_distance_reducing_rate"], 0.5)
+            self.assertEqual(row["coin_target_switch_rate"], 0.5)
+            self.assertEqual(row["multiple_nearest_coin_rate"], 0.5)
+
     def test_missing_or_malformed_episodes_fail_clearly(self):
         with tempfile.TemporaryDirectory() as temporary_directory:
             missing = Path(temporary_directory) / "missing"
