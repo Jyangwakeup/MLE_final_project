@@ -1,0 +1,15 @@
+{
+  "algorithm": "dqn",
+  "best_round": 473,
+  "best_round_reward": 36.999999999999936,
+  "checkpoint": "/export/data/sfan/MLE_final_project/runs/formal_dqn_v1_r1_s33_t1_r500/checkpoints/final.pt",
+  "final_action_steps": 200000,
+  "final_epsilon": 0.9010416666666666,
+  "final_loss": 0.04081317409873009,
+  "final_q_states": null,
+  "final_updates": 198001,
+  "mean_reward": 20.571999999999875,
+  "mean_reward_last_100": 23.119999999999816,
+  "rounds": 500,
+  "schema_version": "training-summary-v1"
+}
