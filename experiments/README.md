@@ -170,7 +170,10 @@ checkpoint 和训练指标；评估模式要求 checkpoint 已存在，并且不
 `timing.jsonl` 当前使用 `timing-v1` schema，每行对应一次 agent 决策机会，记录
 `run_id`、`round_index`、`step`、`agent_name`、最终执行的 `action`、agent 请求的
 `requested_action`、`think_time`、是否 `timed_out`、是否因上一轮超时被 `skipped`，
-以及前后的可用思考时间。
+以及前后的可用思考时间。配置启用 `evaluation.navigation_diagnostics` 时，还在动作已经返回后
+追加只读 `navigation` 对象：最近金币距离及静态预测的动作后距离、是否缩短距离、是否
+立即反向或等待、是否存在多个等距最近金币，以及旧目标仍存在时是否切换目标。诊断不读取
+或修改 Agent RNG，不过滤或替换动作。
 
 Q-table 泛化诊断通过可选的 `q_diagnostics.jsonl` 汇总。现有 `q_learning_agent` 在设置
 `BOMBERMAN_RUN_DIR` 时会逐决策追加 `q_decisions` 和 `unseen_q_states`；非 Q-table
@@ -184,7 +187,8 @@ agent 或未上报的运行在分析结果中对应字段为空或为 0。
 `mean_score.png`。它报告总分、总分排名、平均分、总体标准差、
 金币/击杀/自杀/被击杀/箱子/无效动作的逐运行累计值与均值或比例、存活率、平均存活步数、
 独占第一/并列第一/全体零分平局的次数与比例、`act()` 平均/P95/最大耗时、超时和跳过次数，
-以及可选的未见 Q 状态比例。输入缺少 `episodes.jsonl`、空文件、非法 JSON 或不符合
+以及可选的未见 Q 状态比例。Task 1 导航诊断还汇总每 100 步金币、每枚金币步数、全金币
+完成步数、等待率、立即反向率、缩短距离率和目标切换率。输入缺少 `episodes.jsonl`、空文件、非法 JSON 或不符合
 schema 时会明确失败。
 
 ## 运行命令

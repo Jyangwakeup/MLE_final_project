@@ -430,6 +430,7 @@ class ExperimentRunTest(unittest.TestCase):
 
     def test_legal_random_baseline_runs_through_the_frozen_cli(self):
         output = self.output("legal-random")
+        diagnostic_output = self.output("legal-random-diagnostics")
         marker = PROJECT_ROOT / "agent_code" / "legal_random_agent" / "baseline.json"
         with patch.object(s, "MAX_STEPS", 3):
             result = experiment_main([
@@ -439,14 +440,29 @@ class ExperimentRunTest(unittest.TestCase):
                 "--seed", "10000", "--device", "cpu",
                 "--checkpoint", str(marker), "--output", str(output),
             ])
+            diagnostic_result = experiment_main([
+                "--config", str(
+                    PROJECT_ROOT / "experiments/configs/stage_gate_coin3.json"),
+                "--mode", "evaluate", "--task", "1",
+                "--agent", "legal_random_agent", "--n-rounds", "1",
+                "--seed", "10000", "--device", "cpu",
+                "--checkpoint", str(marker), "--output", str(diagnostic_output),
+            ])
 
         self.assertEqual(result, 0)
+        self.assertEqual(diagnostic_result, 0)
         metadata = json.loads((output / "metadata.json").read_text())
         self.assertEqual(metadata["algorithm"], "legal_random")
         self.assertEqual(metadata["agent_seed"], 10000)
         actions = [json.loads(line)["action"] for line in (
             output / "timing.jsonl"
         ).read_text().splitlines()]
+        diagnostic_records = [json.loads(line) for line in (
+            diagnostic_output / "timing.jsonl"
+        ).read_text().splitlines()]
+        diagnostic_actions = [record["action"] for record in diagnostic_records]
+        self.assertEqual(actions, diagnostic_actions)
+        self.assertTrue(all("navigation" in record for record in diagnostic_records))
         self.assertNotIn("BOMB", actions)
 
 
