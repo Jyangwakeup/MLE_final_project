@@ -8,8 +8,17 @@ import random
 
 import numpy as np
 
+from agent_code.learning_common.action_history import (
+    action_history_for_state, init_action_history, load_action_history_state,
+    record_selected_action,
+)
+from agent_code.learning_common.training_spec import (
+    n_step_from_environment, retention_from_environment,
+    training_budget_from_environment,
+)
 from agent_code.team_agent.exploration import (
     agent_seed_from_environment, epsilon_at, exploration_from_environment,
+    safe_exploration_from_environment, survivable_exploration_mask,
 )
 from agent_code.team_agent.feature_system import (
     normalize_feature_id, validate_checkpoint_feature_contract,
@@ -26,7 +35,8 @@ TRAINING_TASK_ENV = "BOMBERMAN_TRAINING_TASK"
 REWARD_VERSION_ENV = "BOMBERMAN_REWARD_VERSION"
 FEATURE_ID_ENV = "BOMBERMAN_FEATURE_ID"
 REWARD_ID_ENV = "BOMBERMAN_REWARD_ID"
-CHECKPOINT_SCHEMA_VERSION = "training-resume-v4"
+CHECKPOINT_SCHEMA_VERSION = "training-resume-v5"
+HYPERPARAMETERS = {"learning_rate": 0.15, "discount_factor": 0.95}
 
 
 class ResumeCompatibilityError(RuntimeError):
@@ -68,6 +78,12 @@ def setup(self):
     """Load a learned Q table, or initialise an empty one."""
     self.agent_seed = agent_seed_from_environment(SEED)
     self.exploration_spec = exploration_from_environment()
+    self.safe_exploration = safe_exploration_from_environment()
+    self.n_step = n_step_from_environment()
+    self.retention_spec = retention_from_environment()
+    self.training_budget = training_budget_from_environment()
+    self.network_spec = None
+    self.hyperparameters = dict(HYPERPARAMETERS)
     self.rng = random.Random(self.agent_seed)
     if "BOMBERMAN_ALLOW_BOMB" in os.environ:
         self.allow_bomb = _env_flag("BOMBERMAN_ALLOW_BOMB", True)
@@ -86,11 +102,16 @@ def setup(self):
     self.reward_spec = resolve_reward_spec(self.reward_id)
     self.q_table = {}
     self.training_steps = 0
+    self.total_action_steps = 0
+    self.stage_action_steps = 0
+    self.safe_exploration_decisions = 0
+    self.safe_exploration_fallbacks = 0
     self._feature_cache_key = None
     self._feature_cache_value = None
     self.previous_action = None
     self.move_history = []
     self.stationary_streak = 0
+    init_action_history(self)
 
     configured_checkpoint = os.getenv(CHECKPOINT_ENV)
     self.model_file = (
@@ -122,7 +143,18 @@ def setup(self):
             self.feature_id = configured_feature_id or checkpoint_feature_id
             validate_checkpoint_feature_contract(payload, self.feature_id, ACTIONS)
             self.q_table = payload["q_table"]
-            self.training_steps = int(payload.get("training_steps", 0))
+            self.total_action_steps = int(payload.get(
+                "total_action_steps", payload.get("training_steps", 0)))
+            same_task = payload.get("training_task") == self.training_task
+            self.stage_action_steps = int(payload.get(
+                "stage_action_steps", self.total_action_steps)) if same_task else 0
+            self.training_steps = self.total_action_steps
+            self.safe_exploration_decisions = int(payload.get(
+                "safe_exploration_decisions", 0))
+            self.safe_exploration_fallbacks = int(payload.get(
+                "safe_exploration_fallbacks", 0))
+            self._resume_n_step_state = (
+                payload.get("n_step_state") if same_task else None)
             checkpoint_reward_id = payload.get(
                 "reward_id", payload.get("reward_version"))
             if configured_reward_id and checkpoint_reward_id != configured_reward_id:
@@ -141,7 +173,15 @@ def setup(self):
                 if payload.get("reward_spec") != self.reward_spec:
                     raise ResumeCompatibilityError(
                         "Cannot continue Q-learning with a different reward contract")
+                if payload.get("network_spec") != self.network_spec:
+                    raise ResumeCompatibilityError(
+                        "Cannot continue Q-learning with a different network contract")
+                if payload.get("hyperparameters") != self.hyperparameters:
+                    raise ResumeCompatibilityError(
+                        "Cannot continue Q-learning with different learner hyperparameters")
                 self.rng.setstate(payload["agent_rng_state"])
+                if same_task:
+                    load_action_history_state(self, payload.get("action_history_state"))
             self.logger.info("Loaded Q table with %d states", len(self.q_table))
         except (OSError, pickle.PickleError, EOFError, TypeError) as exc:
             self.logger.warning("Could not load Q table (%s); starting fresh", exc)
@@ -163,23 +203,55 @@ def act(self, game_state: dict) -> str:
     values = self.q_table.get(state)
     _record_q_diagnostic(self, values is None)
     if self.train:
-        epsilon = epsilon_at(self.training_steps, self.exploration_spec)
-        self.training_steps += 1
+        stage_steps = int(getattr(
+            self, "stage_action_steps", getattr(self, "training_steps", 0)))
+        total_steps = int(getattr(
+            self, "total_action_steps", getattr(self, "training_steps", 0)))
+        epsilon = epsilon_at(
+            stage_steps, getattr(self, "exploration_spec", None))
+        self.stage_action_steps = stage_steps
+        self.total_action_steps = total_steps
+        self.stage_action_steps += 1
+        self.total_action_steps += 1
+        self.training_steps = self.total_action_steps
         if self.rng.random() < epsilon:
-            return ACTIONS[self.rng.choice(legal_indices)]
+            if getattr(self, "safe_exploration", False):
+                legal_mask, fallback = survivable_exploration_mask(
+                    game_state, legal_mask, allow_bomb=self.allow_bomb)
+                legal_indices = np.flatnonzero(legal_mask).tolist()
+                self.safe_exploration_decisions = int(getattr(
+                    self, "safe_exploration_decisions", 0)) + 1
+                self.safe_exploration_fallbacks = int(getattr(
+                    self, "safe_exploration_fallbacks", 0)) + int(fallback)
+            action = ACTIONS[self.rng.choice(legal_indices)]
+            record_selected_action(self, game_state, action)
+            return action
     if values is None:
-        return ACTIONS[self.rng.choice(legal_indices)]
+        if self.train and getattr(self, "safe_exploration", False):
+            legal_mask, fallback = survivable_exploration_mask(
+                game_state, legal_mask, allow_bomb=self.allow_bomb)
+            legal_indices = np.flatnonzero(legal_mask).tolist()
+            self.safe_exploration_decisions = int(getattr(
+                self, "safe_exploration_decisions", 0)) + 1
+            self.safe_exploration_fallbacks = int(getattr(
+                self, "safe_exploration_fallbacks", 0)) + int(fallback)
+        action = ACTIONS[self.rng.choice(legal_indices)]
+        record_selected_action(self, game_state, action)
+        return action
     best = max(float(values[index]) for index in legal_indices)
     choices = [index for index in legal_indices if float(values[index]) == best]
-    return ACTIONS[self.rng.choice(choices)]
+    action = ACTIONS[self.rng.choice(choices)]
+    record_selected_action(self, game_state, action)
+    return action
 
 
 def _features_for(self, game_state: dict):
     key = (game_state.get("round"), game_state.get("step"))
     if key != self._feature_cache_key:
+        previous_action, wait_streak = action_history_for_state(self, game_state)
         self._feature_cache_value = features_for_state(
-            game_state, getattr(self, "previous_action", None),
-            getattr(self, "feature_id", FEATURE_ID))
+            game_state, previous_action,
+            getattr(self, "feature_id", FEATURE_ID), wait_streak)
         self._feature_cache_key = key
     return self._feature_cache_value
 

@@ -5,10 +5,13 @@ from pathlib import Path
 
 import numpy as np
 
+from agent_code.learning_common.action_history import record_selected_action
 from agent_code.learning_common.runtime import (
-    CHECKPOINT_SCHEMA, adopt_checkpoint_reward, epsilon_at,
+    CHECKPOINT_SCHEMA, adopt_checkpoint_reward,
     load_common_configuration, validate_checkpoint,
 )
+from agent_code.team_agent.exploration import epsilon_at
+from agent_code.team_agent.exploration import survivable_exploration_mask
 from .features import ACTIONS, FEATURE_ID, FEATURE_SCHEMA, canonical_legal_mask, features_for_state
 
 
@@ -46,7 +49,12 @@ def setup(self):
         self.q_table_a = checkpoint["q_table_a"]
         self.q_table_b = checkpoint["q_table_b"]
         self.union_q_states = len(self.q_table_a.keys() | self.q_table_b.keys())
-        self.action_steps = int(checkpoint["training_steps"])
+        self.total_action_steps = int(checkpoint.get(
+            "total_action_steps", checkpoint["training_steps"]))
+        same_task = checkpoint.get("training_task") == self.training_task
+        self.stage_action_steps = int(checkpoint.get(
+            "stage_action_steps", self.total_action_steps)) if same_task else 0
+        self.action_steps = self.total_action_steps
         if self.train:
             self.rng.setstate(checkpoint["rng_state"])
         self.logger.info("Loaded Double Q checkpoint from %s", self.model_file)
@@ -82,19 +90,34 @@ def act(self, game_state: dict) -> str:
     if not known:
         self.unseen_q_states += 1
     if self.train:
-        epsilon = epsilon_at(self.action_steps, HYPERPARAMETERS)
-        self.action_steps += 1
+        epsilon = epsilon_at(self.stage_action_steps, self.exploration_spec)
+        self.stage_action_steps += 1
+        self.total_action_steps += 1
+        self.action_steps = self.total_action_steps
         if self.rng.random() < epsilon:
+            if self.safe_exploration:
+                world_legal = features.legal_mask.copy()
+                safe_world, fallback = survivable_exploration_mask(
+                    game_state, world_legal,
+                    allow_bomb=self.curriculum_allows_bomb)
+                legal = safe_world[list(features.action_transform.canonical_to_world)]
+                legal_indices = np.flatnonzero(legal).tolist()
+                self.safe_exploration_decisions += 1
+                self.safe_exploration_fallbacks += int(fallback)
             canonical_index = self.rng.choice(legal_indices)
             world_index = features.action_transform.canonical_to_world[canonical_index]
-            return ACTIONS[world_index]
+            action = ACTIONS[world_index]
+            record_selected_action(self, game_state, action)
+            return action
     values = _values(self.q_table_a, features.state_key) + _values(
         self.q_table_b, features.state_key)
     best = max(float(values[index]) for index in legal_indices)
     tied = [index for index in legal_indices if float(values[index]) == best]
     canonical_index = self.rng.choice(tied) if self.train else tied[0]
     world_index = features.action_transform.canonical_to_world[canonical_index]
-    return ACTIONS[world_index]
+    action = ACTIONS[world_index]
+    record_selected_action(self, game_state, action)
+    return action
 
 
 def state_to_features(game_state):

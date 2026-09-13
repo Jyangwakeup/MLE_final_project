@@ -36,6 +36,14 @@ REWARD_SPEC = {
     "death": -10.0,
     "invalid_action": -0.1,
 }
+RETENTION_SPEC = {
+    "parent_fraction": 0.5,
+    "distillation_weight": 1.0,
+    "temperature": 1.0,
+    "per_task_capacity": 20_000,
+    "current_warmup": 2_000,
+}
+TRAINING_BUDGET = {"target_stage_action_steps": 100_000, "min_rounds": 1}
 
 
 class ResumeProtocolTestCase(unittest.TestCase):
@@ -57,8 +65,20 @@ class ResumeProtocolTestCase(unittest.TestCase):
                 "training_device_name": None,
                 "agent_seed": 11,
                 "exploration_spec": EXPLORATION_SPEC,
+                "safe_exploration": True,
+                "safe_exploration_decisions": round_index,
+                "safe_exploration_fallbacks": 0,
+                "action_history_state": {
+                    "previous_action": None, "wait_streak": 0, "round": None,
+                },
+                "n_step": 1,
+                "n_step_state": {"n_step": 1, "gamma": 0.95, "pending": []},
+                "retention_spec": RETENTION_SPEC,
+                "training_budget": TRAINING_BUDGET,
                 "q_table": {(0,) * 14: np.full(6, value, dtype=np.float32)},
                 "training_steps": round_index,
+                "total_action_steps": round_index,
+                "stage_action_steps": round_index,
                 "training_task": "coin_navigation",
                 "agent_rng_state": random.Random(7).getstate(),
             }, file)
@@ -111,6 +131,9 @@ class ResumeProtocolTestCase(unittest.TestCase):
             "checkpoint_schema": CHECKPOINT_SCHEMA_VERSION,
             "training_device_type": "cpu", "training_device_name": None,
             "agent_seed": 11, "exploration_spec": EXPLORATION_SPEC,
+            "safe_exploration": True, "n_step": 1,
+            "retention_spec": RETENTION_SPEC,
+            "training_budget": TRAINING_BUDGET,
             "source_commit": "abc123", "source_hash": "source-hash",
         }
         validate_resume_transition(parent, {
@@ -197,12 +220,26 @@ class ResumeProtocolTestCase(unittest.TestCase):
                 "training_device_name": "NVIDIA A100-PCIE-40GB",
                 "agent_seed": 11,
                 "exploration_spec": EXPLORATION_SPEC,
+                "safe_exploration": True,
+                "safe_exploration_decisions": 1,
+                "safe_exploration_fallbacks": 0,
+                "action_history_state": {
+                    "previous_action": None, "wait_streak": 0, "round": None,
+                },
+                "n_step": 1,
+                "n_step_state": {"n_step": 1, "gamma": 0.95, "pending": []},
+                "retention_spec": RETENTION_SPEC,
+                "training_budget": TRAINING_BUDGET,
+                "total_action_steps": 1,
+                "stage_action_steps": 1,
                 "policy": {"weight": torch.ones(1)},
                 "target": {"weight": torch.ones(1)},
                 "optimizer": {},
                 "replay": {"transitions": [], "rng_state": random.Random(1).getstate()},
                 "torch_rng_state": torch.get_rng_state(),
                 "agent_rng_state": random.Random(2).getstate(),
+                "updates": 0,
+                "teacher": None,
             }, checkpoint)
             commit_training_snapshot(
                 run, checkpoint, algorithm="dqn", task="coin_navigation", seed=11,
@@ -216,7 +253,7 @@ class ResumeProtocolTestCase(unittest.TestCase):
             materialize_learner_checkpoint(loaded, destination)
             restored = torch.load(destination, map_location="cpu", weights_only=True)
             self.assertEqual(restored["checkpoint_schema"], CHECKPOINT_SCHEMA_VERSION)
-            self.assertEqual(CHECKPOINT_SCHEMA_VERSION, "training-resume-v4")
+            self.assertEqual(CHECKPOINT_SCHEMA_VERSION, "training-resume-v5")
             self.assertIn("replay", restored)
 
 

@@ -19,9 +19,47 @@ from experiments.resume import (
     validate_resume_transition,
 )
 from experiments.agent_contracts import resolve_agent_contract
+from agent_code.learning_common.training_spec import resolve_retention_spec
 
 
 DEFAULT_REPLAY_PROGRESS_PERCENT = 10
+
+
+class TrainingActionBudget:
+    """Stop after both a local round minimum and a stage action target."""
+
+    def __init__(self, training_path: Path, target_stage_action_steps: int,
+                 min_rounds: int):
+        self.training_path = training_path
+        self.target = _positive_int(
+            target_stage_action_steps, "target_stage_action_steps")
+        self.min_rounds = _positive_int(min_rounds, "min_rounds")
+        self.result: dict[str, Any] | None = None
+
+    def __call__(self, completed_rounds: int) -> bool:
+        with self.training_path.open(newline="", encoding="utf-8") as file:
+            rows = list(csv.DictReader(file))
+        if not rows:
+            return False
+        stage_steps = int(rows[-1]["stage_action_steps"])
+        reached = completed_rounds >= self.min_rounds and stage_steps >= self.target
+        if reached:
+            self.result = {
+                "reason": "stage_action_target_reached",
+                "completed_rounds": completed_rounds,
+                "stage_action_steps": stage_steps,
+                "target_stage_action_steps": self.target,
+                "min_rounds": self.min_rounds,
+            }
+        return reached
+
+
+class CompositeTrainingStop:
+    def __init__(self, *conditions):
+        self.conditions = tuple(condition for condition in conditions if condition is not None)
+
+    def __call__(self, completed_rounds: int) -> bool:
+        return any(condition(completed_rounds) for condition in self.conditions)
 
 
 class TrainingEarlyStopping:
@@ -146,8 +184,33 @@ def run_training_mode(
     checkpoint = output / "checkpoints" / checkpoint_name(args.agent)
     replay_interval = args.replay_interval or replay_progress_interval(n_rounds)
     stopping_config = early_stopping_config(training)
-    configured_id = config.get("feature_id")
-    configured_legacy = config.get("feature_version")
+    target_steps = (
+        getattr(args, "target_stage_action_steps", None)
+        if getattr(args, "target_stage_action_steps", None) is not None
+        else training.get("target_stage_action_steps")
+    )
+    min_rounds = getattr(args, "min_rounds", None) or training.get("min_rounds", 1)
+    budget_config = {
+        "target_stage_action_steps": (
+            None if target_steps is None
+            else _positive_int(target_steps, "target_stage_action_steps")
+        ),
+        "min_rounds": _positive_int(min_rounds, "min_rounds"),
+    }
+    if budget_config["min_rounds"] > int(n_rounds):
+        raise ValueError("--min-rounds cannot exceed --n-rounds")
+    safe_exploration = training.get("safe_exploration", False)
+    if not isinstance(safe_exploration, bool):
+        raise ValueError("config.training.safe_exploration must be a boolean")
+    n_step = training.get("n_step", 1)
+    if n_step not in {1, 4}:
+        raise ValueError("config.training.n_step must be 1 or 4")
+    retention_spec = resolve_retention_spec(training.get("retention"))
+    adaptation_triggers = tuple(getattr(args, "adaptation_trigger", ()) or ())
+    configured_id = getattr(args, "feature_id", None) or config.get("feature_id")
+    configured_legacy = (
+        None if getattr(args, "feature_id", None) is not None
+        else config.get("feature_version"))
     requested_feature_id = (
         None if configured_id is None and configured_legacy is None
         else normalize_feature_id(configured_id, configured_legacy)
@@ -163,7 +226,16 @@ def run_training_mode(
         replay_interval, stopping_config,
     )
     if args.resume_from is None:
-        return run_session(*positional, device_info=device_info)
+        return run_session(
+            *positional, device_info=device_info,
+            action_budget_config=budget_config,
+            safe_exploration=safe_exploration,
+            n_step=n_step,
+            retention_spec=retention_spec,
+            adaptation_triggers=adaptation_triggers,
+            feature_id_override=getattr(args, "feature_id", None),
+            reward_id_override=getattr(args, "reward_id", None),
+        )
 
     parent_run = Path(args.resume_from)
     if not parent_run.is_absolute():
@@ -175,7 +247,8 @@ def run_training_mode(
         raise ValueError("Parent run is missing metadata.json")
     import json
     parent_metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
-    reward_id = config.get("reward_id", config.get("reward_version", REWARD_VERSION))
+    reward_id = getattr(args, "reward_id", None) or config.get(
+        "reward_id", config.get("reward_version", REWARD_VERSION))
     child_contract = {
         "algorithm": algorithm,
         "seed": seed,
@@ -193,6 +266,10 @@ def run_training_mode(
         "training_device_type": device_info["type"],
         "agent_seed": seed,
         "exploration_spec": resolve_exploration_spec(training.get("exploration")),
+        "safe_exploration": safe_exploration,
+        "n_step": n_step,
+        "retention_spec": retention_spec,
+        "training_budget": budget_config,
         "source_commit": source_commit,
         "source_hash": source_hash,
         "network_spec": agent_contract.network_spec,
@@ -213,6 +290,13 @@ def run_training_mode(
         resume_kind=resume_kind,
         parent_metadata=parent_metadata,
         device_info=device_info,
+        action_budget_config=budget_config,
+        safe_exploration=safe_exploration,
+        n_step=n_step,
+        retention_spec=retention_spec,
+        adaptation_triggers=adaptation_triggers,
+        feature_id_override=getattr(args, "feature_id", None),
+        reward_id_override=getattr(args, "reward_id", None),
     )
 
 
@@ -232,5 +316,5 @@ def replay_progress_interval(
 
 def _positive_int(value: Any, name: str) -> int:
     if isinstance(value, bool) or not isinstance(value, int) or value < 1:
-        raise ValueError(f"config.training.early_stopping.{name} must be a positive integer")
+        raise ValueError(f"config.training.{name} must be a positive integer")
     return value

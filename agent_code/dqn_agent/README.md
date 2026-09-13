@@ -2,23 +2,25 @@
 
 小型 DQN 基线，包含 `64 → 64 → 6` MLP、replay buffer、target network、Huber loss 和 epsilon-greedy。
 
-- 默认 Feature：`discrete-q-v2` 的 50 维 one-hot；实验配置也可选择冻结 `discrete-v1` 的 40 维输入。
-- 默认 Reward：`r1`；正式 coin3 课程使用 `r1_coin3`。
-- Checkpoint：`final.pt`，保存 policy、target、optimizer、完整 replay 及 Python/Torch/CUDA RNG。
+- 默认 Feature：`discrete-q-v2` 的 50 维 one-hot；Task 3 前矩阵可选 40 维 `discrete-v1` 或 60 维 `discrete-objective-v1`。
+- 默认 Reward：`r1`；当前 Task 1 矩阵比较 `r1_coin3` 与 `r5_coin_potential`，Task 2 比较对应 r6 安全版本。
+- Checkpoint：`final.pt`，保存 policy、target、optimizer、按 Task 分区 replay、冻结父网络及 Python/Torch/CUDA RNG。
 - 正式训练选择 CPU；`--device cuda` 保留用于工程验证。冻结评估强制 CPU。
 - Task 1 由 Runner 禁止 `BOMB`。
+- Task 2 当前分区至少 2000 条后，以 32 条 Task 1 + 32 条 Task 2 更新，并在父样本物理合法动作分布上做 λ=1、T=1 蒸馏。
 
-## 正式 Task 1
+## 当前 Task 1 初筛
 
 ```bash
 python experiments/run.py \
-  --config experiments/configs/formal_training_coin3.json \
+  --config experiments/configs/pre_task3_task1.json \
   --mode train --device cpu --task 1 --agent dqn_agent \
-  --n-rounds 500 --seed 11 \
-  --run-id formal_dqn_discrete_v1_r1_coin3_s11_t1_r500
+  --feature-id discrete-objective-v1 --reward-id r5_coin_potential \
+  --n-rounds 500 --target-stage-action-steps 100000 --min-rounds 1 --seed 11 \
+  --run-id iter_r1_dqn_discrete_objective_v1_r5_coin_potential_s11_t1_a100000_COMMIT
 ```
 
-DQN 根据实际 feature schema 建立 40 或 50 维输入层。未配置 Feature 且没有 checkpoint 时默认 `discrete-q-v2`；冻结加载时从 checkpoint 推断并严格校验。当前精确恢复协议为 `training-resume-v4`；v1–v3 和旧 final checkpoint 仅支持冻结评估。
+DQN 根据实际 Feature schema 建立 40、50 或 60 维输入层。未配置 Feature 且没有 checkpoint 时默认 `discrete-q-v2`；冻结加载时从 checkpoint 推断并严格校验。当前精确恢复协议为 `training-resume-v5`；v1–v4 和旧 final checkpoint 仅支持冻结评估。第三轮能力失败才允许使用 78 维 `double_dqn_continuous_v2_agent`。
 
 ## 冻结评估
 

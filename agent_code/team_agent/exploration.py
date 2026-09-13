@@ -7,6 +7,8 @@ import math
 import os
 from typing import Any, Mapping
 
+import numpy as np
+
 
 EXPLORATION_VERSION = "linear-v1"
 DEFAULT_EXPLORATION_SPEC = {
@@ -17,6 +19,7 @@ DEFAULT_EXPLORATION_SPEC = {
 }
 AGENT_SEED_ENV = "BOMBERMAN_AGENT_SEED"
 EXPLORATION_SPEC_ENV = "BOMBERMAN_EXPLORATION_SPEC"
+SAFE_EXPLORATION_ENV = "BOMBERMAN_SAFE_EXPLORATION"
 
 
 def resolve_exploration_spec(value: Mapping[str, Any] | None = None) -> dict[str, Any]:
@@ -77,6 +80,47 @@ def exploration_from_environment() -> dict[str, Any]:
     except json.JSONDecodeError as exception:
         raise ValueError(f"{EXPLORATION_SPEC_ENV} must be valid JSON") from exception
     return resolve_exploration_spec(value)
+
+
+def safe_exploration_from_environment(default: bool = False) -> bool:
+    raw = os.getenv(SAFE_EXPLORATION_ENV)
+    if raw is None:
+        return default
+    normalized = raw.strip().lower()
+    if normalized in {"1", "true", "yes", "on"}:
+        return True
+    if normalized in {"0", "false", "no", "off"}:
+        return False
+    raise ValueError(f"{SAFE_EXPLORATION_ENV} must be a boolean")
+
+
+def survivable_exploration_mask(
+    game_state: dict,
+    legal_mask: np.ndarray,
+    *,
+    allow_bomb: bool,
+) -> tuple[np.ndarray, bool]:
+    """Restrict a stochastic training choice to horizon-survivable actions.
+
+    The returned boolean is true only when no survivable action existed and
+    the function had to fall back to the physical curriculum mask.
+    """
+    from agent_code.team_agent.feature_system.common import ACTIONS, build_safety_context
+
+    physical = np.asarray(legal_mask, dtype=bool).copy()
+    if not allow_bomb:
+        physical[ACTIONS.index("BOMB")] = False
+    context = build_safety_context(game_state)
+    safe = np.zeros_like(physical)
+    for index, action in enumerate(ACTIONS[:5]):
+        safe[index] = physical[index] and context.movement_reachability[
+            action].survives_horizon
+    bomb = context.bomb_reachability
+    safe[ACTIONS.index("BOMB")] = bool(
+        physical[ACTIONS.index("BOMB")] and bomb and bomb.survives_horizon)
+    if safe.any():
+        return safe, False
+    return physical, True
 
 
 def _probability(value: Any, name: str) -> float:

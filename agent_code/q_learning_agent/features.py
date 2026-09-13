@@ -9,11 +9,15 @@ FEATURE_ID = "discrete-q-v2"
 FEATURE_VERSION = None
 
 
-def features_for_state(game_state: dict, previous_action=None, feature_id=FEATURE_ID):
+def features_for_state(
+    game_state: dict, previous_action=None, feature_id=FEATURE_ID, wait_streak=0,
+):
     resolved = normalize_feature_id(feature_id)
     extractor = get_feature_extractor(resolved)
     if resolved == "discrete-q-v2":
         return extractor(game_state, previous_action)
+    if resolved == "discrete-objective-v1":
+        return extractor(game_state, previous_action, wait_streak)
     return extractor(game_state)
 
 

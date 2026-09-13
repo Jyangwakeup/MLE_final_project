@@ -10,12 +10,19 @@ from typing import Any
 import numpy as np
 
 from agent_code.team_agent.feature_system import validate_checkpoint_feature_contract
-from agent_code.team_agent.exploration import exploration_from_environment
+from agent_code.team_agent.exploration import (
+    exploration_from_environment, safe_exploration_from_environment,
+)
 from agent_code.team_agent.rewards import resolve_reward_spec
 from .temporal_reward import init_temporal_reward_state
+from .action_history import init_action_history
+from .training_spec import (
+    n_step_from_environment, retention_from_environment,
+    training_budget_from_environment,
+)
 
 
-CHECKPOINT_SCHEMA = "training-resume-v4"
+CHECKPOINT_SCHEMA = "training-resume-v5"
 DEFAULT_REWARD_ID = "r1"
 CHECKPOINT_ENV = "BOMBERMAN_CHECKPOINT"
 FEATURE_ID_ENV = "BOMBERMAN_FEATURE_ID"
@@ -59,15 +66,24 @@ def load_common_configuration(self, *, feature_id: str, default_model: Path) -> 
     self.agent_seed = int(os.getenv(AGENT_SEED_ENV, "0"))
     self.rng = random.Random(self.agent_seed)
     self.exploration_spec = exploration_from_environment()
+    self.safe_exploration = safe_exploration_from_environment()
+    self.n_step = n_step_from_environment()
+    self.retention_spec = retention_from_environment()
+    self.training_budget = training_budget_from_environment()
     configured_checkpoint = os.getenv(CHECKPOINT_ENV)
     self.model_file = (
         Path(configured_checkpoint).expanduser().resolve()
         if configured_checkpoint else default_model
     )
     self.action_steps = 0
+    self.total_action_steps = 0
+    self.stage_action_steps = 0
+    self.safe_exploration_decisions = 0
+    self.safe_exploration_fallbacks = 0
     self._feature_cache_key = None
     self._feature_cache_value = None
     init_temporal_reward_state(self)
+    init_action_history(self)
 
 
 def adopt_checkpoint_reward(self, payload: dict[str, Any]) -> None:
@@ -116,7 +132,7 @@ def validate_checkpoint(
     checkpoint_schema = payload.get("checkpoint_schema")
     frozen_schemas = {
         "training-resume-v1", "training-resume-v2",
-        "training-resume-v3", CHECKPOINT_SCHEMA,
+        "training-resume-v3", "training-resume-v4", CHECKPOINT_SCHEMA,
     }
     if checkpoint_schema not in frozen_schemas:
         raise ValueError("checkpoint uses an incompatible checkpoint schema")

@@ -1,0 +1,26 @@
+{
+  "algorithm": null,
+  "feature_id": "discrete-objective-v1",
+  "feature_version": null,
+  "reward_id": "r1_coin3",
+  "reward_version": "r1_coin3",
+  "seed": null,
+  "checkpoint": null,
+  "evaluation": {
+    "device": "cpu",
+    "seeds": [10000, 10001, 10002, 10003, 10004, 10005, 10006, 10007, 10008, 10009, 10010, 10011, 10012, 10013, 10014, 10015, 10016, 10017, 10018, 10019],
+    "n_rounds": 1,
+    "navigation_diagnostics": true
+  },
+  "training": {
+    "device": "cpu",
+    "n_rounds": 500,
+    "target_stage_action_steps": 100000,
+    "min_rounds": 1,
+    "safe_exploration": true,
+    "n_step": 1,
+    "exploration": {"version": "linear-v1", "start": 1.0, "end": 0.1, "decay_action_steps": 160000},
+    "retention": {"parent_fraction": 0.5, "distillation_weight": 1.0, "temperature": 1.0, "per_task_capacity": 20000, "current_warmup": 2000},
+    "early_stopping": {"enabled": false}
+  }
+}

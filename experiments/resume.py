@@ -22,7 +22,7 @@ from agent_code.team_agent.feature_system import (
 )
 
 
-CHECKPOINT_SCHEMA_VERSION = "training-resume-v4"
+CHECKPOINT_SCHEMA_VERSION = "training-resume-v5"
 TASK_ORDER = ("coin_navigation", "crate_navigation", "weak_opponents", "full_match")
 RETAINED_GENERATIONS = 2
 TABLE_ALGORITHMS = frozenset(("q_learning", "double_q_learning"))
@@ -71,6 +71,10 @@ class LoadedSnapshot:
             "source_hash": self.source_hash,
             "network_spec": metadata.get("network_spec"),
             "hyperparameters": metadata.get("hyperparameters", {}),
+            "safe_exploration": metadata.get("safe_exploration", False),
+            "n_step": metadata.get("n_step", 1),
+            "retention_spec": metadata.get("retention_spec", {}),
+            "training_budget": metadata.get("training_budget", {}),
         }
 
 
@@ -178,7 +182,20 @@ def commit_training_snapshot(
             "feature_schema", "reward_id", "reward_version", "reward_spec",
             "training_task", "training_device_name", "training_device_type",
             "agent_seed", "exploration_spec", "network_spec", "hyperparameters",
+            "safe_exploration", "n_step", "retention_spec", "training_budget",
+            "total_action_steps", "stage_action_steps", "n_step_state",
+            "agent_rng_state", "action_history_state",
+            "safe_exploration_decisions", "safe_exploration_fallbacks",
         }
+        if algorithm in TABLE_ALGORITHMS:
+            required.update(
+                {"q_table"} if algorithm == "q_learning"
+                else {"q_table_a", "q_table_b"})
+        else:
+            required.update({
+                "policy", "target", "optimizer", "replay", "torch_rng_state",
+                "updates", "teacher",
+            })
         missing = sorted(required.difference(learner))
         if missing:
             raise ValueError(
@@ -243,6 +260,10 @@ def commit_training_snapshot(
                 "reward_version": learner["reward_version"],
                 "network_spec": learner.get("network_spec"),
                 "hyperparameters": learner.get("hyperparameters", {}),
+                "safe_exploration": learner["safe_exploration"],
+                "n_step": learner["n_step"],
+                "retention_spec": learner["retention_spec"],
+                "training_budget": learner["training_budget"],
             },
             "cumulative_completed_rounds": (
                 int(round_index)
@@ -406,8 +427,8 @@ def validate_resume_transition(
     """Validate curriculum and compatibility contracts; return resume kind."""
     for field in (
         "algorithm", "seed", "checkpoint_schema", "reward_spec",
-        "training_device_type", "training_device_name", "agent_seed", "exploration_spec",
-        "source_commit", "source_hash",
+        "training_device_type", "training_device_name", "agent_seed",
+        "source_commit", "source_hash", "safe_exploration",
     ):
         if parent.get(field) != child.get(field):
             raise ValueError(f"Resume {field} must match the parent run")
@@ -447,6 +468,22 @@ def validate_resume_transition(
     except (KeyError, ValueError) as exception:
         raise ValueError("Resume task is not part of the curriculum") from exception
     if child_index == parent_index:
+        for field in ("n_step", "retention_spec"):
+            if parent.get(field) != child.get(field):
+                raise ValueError(f"Same-Task resume {field} must match the parent run")
+        if parent.get("exploration_spec") != child.get("exploration_spec"):
+            raise ValueError("Same-Task resume exploration_spec must match the parent run")
+        parent_budget = parent.get("training_budget", {})
+        child_budget = child.get("training_budget", {})
+        if parent_budget.get("min_rounds") != child_budget.get("min_rounds"):
+            raise ValueError("Same-Task resume minimum rounds must match the parent run")
+        parent_target = parent_budget.get("target_stage_action_steps")
+        child_target = child_budget.get("target_stage_action_steps")
+        if (
+            parent_target is not None
+            and (child_target is None or int(child_target) < int(parent_target))
+        ):
+            raise ValueError("Same-Task resume action target cannot decrease")
         return "same_task"
     if child_index != parent_index + 1:
         raise ValueError("Resume must use the same or direct next Task")

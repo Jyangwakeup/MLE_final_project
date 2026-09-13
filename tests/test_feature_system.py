@@ -38,7 +38,8 @@ def assert_state_unchanged(test_case, actual, expected):
 class RegistryAndBaselineTestCase(unittest.TestCase):
     def test_registry_has_stable_semantic_ids_and_legacy_alias(self):
         self.assertEqual(available_feature_ids(), (
-            "discrete-v1", "discrete-q-v2", "discrete-compact-v1", "continuous-v1",
+            "discrete-v1", "discrete-q-v2", "discrete-objective-v1",
+            "discrete-compact-v1", "continuous-v1", "continuous-v2",
             "board-v1", "hybrid-v1",
         ))
         self.assertEqual(normalize_feature_id(legacy_version="v1"), "discrete-v1")

@@ -274,7 +274,7 @@ class CheckpointTests(unittest.TestCase):
             root = Path(directory)
             checkpoint = root / "checkpoint.pkl"
             payload = {
-                "checkpoint_schema": "training-resume-v4",
+                "checkpoint_schema": "training-resume-v5",
                 "algorithm": "double_q_learning", "actions": list(dq_callbacks.ACTIONS),
                 "feature_id": dq_callbacks.FEATURE_ID,
                 "feature_schema": dq_callbacks.FEATURE_SCHEMA,
@@ -282,7 +282,22 @@ class CheckpointTests(unittest.TestCase):
                 "reward_spec": resolve_reward_spec("r1"),
                 "training_task": "coin_navigation", "network_spec": None,
                 "hyperparameters": dq_callbacks.HYPERPARAMETERS,
-                "agent_seed": 11, "exploration_spec": {},
+                "agent_seed": 11, "agent_rng_state": __import__("random").Random(11).getstate(),
+                "exploration_spec": {},
+                "safe_exploration": True,
+                "safe_exploration_decisions": 1,
+                "safe_exploration_fallbacks": 0,
+                "action_history_state": {
+                    "previous_action": None, "wait_streak": 0, "round": None,
+                },
+                "n_step": 1,
+                "n_step_state": {"n_step": 1, "gamma": 0.95, "pending": []},
+                "retention_spec": {},
+                "training_budget": {
+                    "target_stage_action_steps": None, "min_rounds": 1,
+                },
+                "total_action_steps": 1,
+                "stage_action_steps": 1,
                 "training_device_name": None, "training_device_type": "cpu",
                 "q_table_a": {(1,) * 12: np.ones(6, dtype=np.float32)},
                 "q_table_b": {(2,) * 12: np.full(6, 2, dtype=np.float32)},

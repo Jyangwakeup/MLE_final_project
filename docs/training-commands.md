@@ -1,8 +1,18 @@
 # 六个学习型 Agent 训练命令
 
-本文档集中记录当前推荐训练入口。新训练使用 `r2_balanced`、`r3_potential` 或
-`r4_anti_oscillation`；`r1` 和
-`r1_no_crate` 仅保留历史 checkpoint 兼容，不再用于新实验。
+> 2026-09-13：当前 Task 3 前入口已切换到
+> [`experiments/pre_task3_iteration.json`](../experiments/pre_task3_iteration.json)。下方原六模型命令仅作历史参考，不得替代预注册三轮实验或接续 v4 run。
+
+当前第一轮只使用 `q_learning_agent` 与 `dqn_agent`，以 seed 11 比较
+`discrete-v1/discrete-objective-v1 × r1_coin3/r5_coin_potential` 共 8 条链。每条命令使用
+`experiments/configs/pre_task3_task1.json`、`--n-rounds 500`、
+`--target-stage-action-steps 100000 --min-rounds 1 --device cpu`，run ID 遵守
+`iter_r<round>_<agent>_<feature>_<reward>_s<seed>_t<task>_a<target>_<commit>`。
+
+各算法前两名才用 `--resume-from` 累计到 200k 动作；Task 1 mean coins ≥35 后才进入
+Task 2。Task 2 使用 `pre_task3_task2*.json`，至少 500 局且 150k 动作、最多 2000 局。
+第三轮能力失败才启用 `double_q_agent` 或 `double_dqn_continuous_v2_agent`。完整分支、门槛与
+seed 隔离见实施指南第 8.6 节。当前完整恢复协议为 v5；v4 及更早 run 只可冻结评估。
 
 所有命令都应从仓库根目录运行。`experiments.run` 会自动选择 Agent 的 `feature_id`，Task 1
 自动禁止炸弹，Task 2–4 自动允许炸弹，并保存 metadata、CSV、checkpoint 和恢复快照。
@@ -23,7 +33,7 @@
 也没有改变 Feature/Reward 数值、epsilon、网络、Q 更新和随机采样顺序。旧 replay checkpoint
 仍可加载；新 checkpoint 使用更快的列式 replay 内部格式。
 
-## 当前组合
+## 历史六模型组合（非当前 Task 1–2 入口）
 
 | Agent | Feature | Reward | Checkpoint |
 |---|---|---|---|

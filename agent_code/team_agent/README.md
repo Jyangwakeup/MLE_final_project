@@ -15,8 +15,10 @@ schema = get_feature_schema("discrete-q-v2", game_state["field"].shape)
 |---|---|---|---|
 | `discrete-v1` | Q-learning / DQN 冻结对照 | 14 项状态、40 维向量 | 兼容旧 `v1` checkpoint |
 | `discrete-q-v2` | Q-learning / DQN 默认 | 16 项状态、50 维向量 | 不兼容 v1 |
+| `discrete-objective-v1` | Task 1–2 Q-learning / DQN | 14 项目标/安全/历史状态、60 维 | v5 新谱系 |
 | `discrete-compact-v1` | Double Q | 12 项状态、38 维向量 | 独立契约 |
 | `continuous-v1` | MLP Double DQN | 70 维向量 | 独立契约 |
+| `continuous-v2` | 第三轮 Double DQN 兜底 | 修正距离增量并加入历史，78 维 | v5 新谱系 |
 | `board-v1` | CNN Double DQN | `12×W×H` | 独立契约 |
 | `hybrid-v1` | Hybrid Dueling Double DQN | `12×W×H + 70` | 独立契约 |
 
@@ -39,10 +41,15 @@ schema = get_feature_schema("discrete-q-v2", game_state["field"].shape)
 | `r2_balanced` | -0.01 | +3.0 | +0.25 | +5.0 | +0.1 | -7.0 | -5.0 | +0.25 | -0.2 |
 | `r3_potential` | -0.01 | +3.0 | +0.25 | +5.0 | +0.1 | -7.0 | -5.0 | +0.25 | -0.2 |
 | `r4_anti_oscillation` | -0.01 | +3.0 | +0.25 | +5.0 | +0.1 | -7.0 | -5.0 | +0.25 | -0.2 |
+| `r5_coin_potential` | -0.01 | +3.0 | — | +5.0 | +0.2 | -10.0 | -10.0 | — | -0.1 |
+| `r6_safe_sparse` | -0.01 | +3.0 | — | +5.0 | +0.2 | -20.0 | -10.0 | — | -0.1 |
+| `r6_safe_potential` | -0.01 | +3.0 | — | +5.0 | +0.2 | -20.0 | -10.0 | — | -0.1 |
+| `r7_safe_credit_sparse` | -0.01 | +3.0 | — | +5.0 | +0.2 | -20.0 | -10.0 | — | -0.1 |
+| `r7_safe_credit_potential` | -0.01 | +3.0 | — | +5.0 | +0.2 | -20.0 | -10.0 | — | -0.1 |
 
-`r1_coin3` 相对 `r1` 只改变金币奖励；`r1_coin3_no_crate` 相对它只关闭炸箱奖励，因此可作为严格单因素消融。`r3_potential` 在 `r2_balanced` 事件奖励上增加状态势能，`r4_anti_oscillation` 再增加连续反向移动和安全空等惩罚。
+`r5` 使用金币路径势；r6 增加箱区/危险势、可逃有收益放弹信用和不可逃放弹 −10；r7 将不可逃放弹改为 −20。势函数统一使用 `γΦ(s')−Φ(s)`，不直接奖励移动、等待、普通放弹、发现或存活事件。`sparse/potential` 的唯一区别是是否包含金币势。
 
-Feature 与 Reward 是独立契约。metadata、final checkpoint 和 `training-resume-v4` 快照同时记录 ID 与完整 schema/spec；任何语义变化必须创建新 ID，跨契约不得续训。v1–v3 resume 只允许冻结评估。
+Feature 与 Reward 是独立契约。metadata、final checkpoint 和 `training-resume-v5` 快照同时记录 ID 与完整 schema/spec；任何语义变化必须创建新 ID，跨契约不得续训。v1–v4 resume 只允许冻结评估。
 
 ## 开发约定
 

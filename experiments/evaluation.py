@@ -14,6 +14,8 @@ def run_multi_seed_evaluation(
     checkpoint: Path, task_name: str, replay_policy: str, replay_interval: int,
     *, runs_root: Path, project_root: Path, run_session: Callable,
     analyze_runs: Callable, write_json: Callable, device_info: dict[str, Any],
+    feature_id_override: str | None = None,
+    reward_id_override: str | None = None,
 ) -> Path:
     checkpoint = checkpoint.resolve()
     if not checkpoint.is_file():
@@ -36,6 +38,8 @@ def run_multi_seed_evaluation(
             scenario, n_rounds, checkpoint, task_name, replay_policy,
             replay_interval,
             device_info=device_info,
+            feature_id_override=feature_id_override,
+            reward_id_override=reward_id_override,
         ))
     analyze_runs(run_directories, summary)
     write_json(summary / "fixed_evaluation.json", {
@@ -93,6 +97,8 @@ def run_evaluation_mode(
             "none" if args.replay_policy == "auto" else args.replay_policy,
             replay_interval,
             device_info=device_info,
+            feature_id_override=getattr(args, "feature_id", None),
+            reward_id_override=getattr(args, "reward_id", None),
         )
         summary = completed / "summary"
         analyze_runs([completed], summary)
@@ -106,4 +112,6 @@ def run_evaluation_mode(
         "all" if args.replay_policy == "auto" else args.replay_policy,
         replay_interval,
         device_info=device_info,
+        feature_id_override=getattr(args, "feature_id", None),
+        reward_id_override=getattr(args, "reward_id", None),
     )

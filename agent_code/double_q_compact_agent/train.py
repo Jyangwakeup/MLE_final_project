@@ -8,11 +8,13 @@ from typing import List, NamedTuple
 
 import numpy as np
 
-from agent_code.learning_common.runtime import CHECKPOINT_SCHEMA, epsilon_at, save_checkpoint_atomic
+from agent_code.learning_common.runtime import CHECKPOINT_SCHEMA, save_checkpoint_atomic
+from agent_code.team_agent.exploration import epsilon_at
 from agent_code.team_agent.rewards import reward_from_events
 from agent_code.learning_common.temporal_reward import (
     reset_temporal_reward_state, temporal_reward_context,
 )
+from agent_code.learning_common.action_history import action_history_state, init_action_history
 from .callbacks import (
     ACTIONS, ALGORITHM, FEATURE_ID, FEATURE_SCHEMA, HYPERPARAMETERS, _features_for,
 )
@@ -96,7 +98,8 @@ def game_events_occurred(self, old_game_state: dict, self_action: str,
         self, self_action, old_game_state, new_game_state, events)
     reward = reward_from_events(
         events, self.reward_id, old_game_state=old_game_state,
-        new_game_state=new_game_state, terminal=False, **reward_context)
+        new_game_state=new_game_state, terminal=False, action=self_action,
+        **reward_context)
     self.pending = (key, _make_transition(
         self, old_game_state, self_action, reward, new_game_state, False))
 
@@ -109,7 +112,7 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
                 _submit(self, self.pending[1])
             reward = reward_from_events(
                 events, self.reward_id, old_game_state=last_game_state,
-                new_game_state=None, terminal=True)
+                new_game_state=None, terminal=True, action=last_action)
             _submit(self, _make_transition(
                 self, last_game_state, last_action, reward, None, True))
             self.ended_key = key
@@ -117,6 +120,7 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
         _submit(self, self.pending[1])
     self.pending = None
     reset_temporal_reward_state(self)
+    init_action_history(self)
     checkpoint = {
         "checkpoint_schema": CHECKPOINT_SCHEMA, "algorithm": ALGORITHM,
         "actions": list(ACTIONS), "feature_id": FEATURE_ID,
@@ -124,10 +128,20 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
         "reward_version": self.reward_id, "reward_spec": self.reward_spec,
         "hyperparameters": HYPERPARAMETERS, "network_spec": None,
         "q_table_a": self.q_table_a, "q_table_b": self.q_table_b,
-        "training_steps": self.action_steps, "action_steps": self.action_steps,
+        "training_steps": self.total_action_steps, "action_steps": self.total_action_steps,
+        "total_action_steps": self.total_action_steps,
+        "stage_action_steps": self.stage_action_steps,
         "rng_state": self.rng.getstate(), "agent_rng_state": self.rng.getstate(),
         "agent_seed": getattr(self, "agent_seed", 0),
         "exploration_spec": getattr(self, "exploration_spec", {}),
+        "safe_exploration": self.safe_exploration,
+        "safe_exploration_decisions": self.safe_exploration_decisions,
+        "safe_exploration_fallbacks": self.safe_exploration_fallbacks,
+        "action_history_state": action_history_state(self),
+        "n_step": self.n_step,
+        "n_step_state": {"n_step": self.n_step, "gamma": HYPERPARAMETERS["gamma"], "pending": []},
+        "retention_spec": self.retention_spec,
+        "training_budget": self.training_budget,
         "training_device_name": None, "training_device_type": "cpu",
         "training_task": self.training_task,
     }
@@ -155,8 +169,8 @@ def _append_metrics(self, last_game_state):
     record = {
         "schema_version": "training-v1", "algorithm": ALGORITHM,
         "round": "" if last_game_state is None else last_game_state.get("round", ""),
-        "reward": self.round_reward, "action_steps": self.action_steps,
-        "epsilon": epsilon_at(self.action_steps, HYPERPARAMETERS), "q_states": union,
+        "reward": self.round_reward, "action_steps": self.total_action_steps,
+        "epsilon": epsilon_at(self.stage_action_steps, self.exploration_spec), "q_states": union,
         "q_states_a": len(self.q_table_a), "q_states_b": len(self.q_table_b),
         "union_q_states": union, "unseen_q_states": self.unseen_q_states,
         "unseen_q_state_rate": self.unseen_q_states / max(self.q_decisions, 1),

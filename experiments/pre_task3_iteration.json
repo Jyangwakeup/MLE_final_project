@@ -1,0 +1,44 @@
+{
+  "schema_version": "pre-task3-iteration-v1",
+  "training_seed_screen": 11,
+  "replication_seeds": [11, 22, 33],
+  "development_seeds": [10000, 10001, 10002, 10003, 10004, 10005, 10006, 10007, 10008, 10009, 10010, 10011, 10012, 10013, 10014, 10015, 10016, 10017, 10018, 10019],
+  "main_validation_seeds": {"start": 11000, "end": 11099},
+  "reserved_final_test_seeds": {"start": 20000, "end": 20099},
+  "bootstrap": {"samples": 10000, "seed": 20260913, "interval": [0.025, 0.975]},
+  "round_1": {
+    "agents": ["q_learning_agent", "dqn_agent"],
+    "features": ["discrete-v1", "discrete-objective-v1"],
+    "rewards": ["r1_coin3", "r5_coin_potential"],
+    "screen_action_steps": 100000,
+    "screen_round_cap": 500,
+    "finalist_count_per_agent": 2,
+    "final_action_steps": 200000,
+    "final_round_cap": 750
+  },
+  "round_2": {
+    "base_to_safe_reward": {"r1_coin3": "r6_safe_sparse", "r5_coin_potential": "r6_safe_potential"},
+    "task2_action_steps": 150000,
+    "task2_min_rounds": 500,
+    "task2_round_cap": 2000
+  },
+  "round_3": {
+    "suicide": {"reward_prefix": "r7_safe_credit", "n_step": 4},
+    "retention": {"parent_fraction": 0.75, "distillation_weight": 2.0},
+    "q_capability_agent": "double_q_agent",
+    "dqn_capability_agent": "double_dqn_continuous_v2_agent"
+  },
+  "gates": {
+    "task1_mean_coins": 35.0,
+    "task2_mean_coins": 2.0,
+    "task2_mean_crates": 5.0,
+    "task2_crate_gain": 0.5,
+    "task1_retention": 0.9,
+    "task2_suicide_rate": 0.05,
+    "invalid_action_rate": 0.01,
+    "act_p95_seconds": 0.05,
+    "act_max_seconds": 0.5
+  },
+  "maximum_adaptive_rounds": 3,
+  "task3_launch": false
+}

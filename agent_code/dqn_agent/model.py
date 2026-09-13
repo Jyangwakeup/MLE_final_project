@@ -12,19 +12,33 @@ import torch
 from torch import nn
 
 
-Transition = namedtuple("Transition", ("state", "action", "reward", "next_state", "done", "next_legal"))
-REPLAY_CHECKPOINT_FORMAT = "vector-replay-columnar-v1"
+Transition = namedtuple(
+    "Transition",
+    (
+        "state", "action", "reward", "next_state", "done", "next_legal",
+        "state_legal", "task_id", "steps",
+    ),
+    defaults=(None, None, 1),
+)
+REPLAY_CHECKPOINT_FORMAT = "vector-replay-task-partitioned-v2"
+DEFAULT_GAMMA = 0.95
+DEFAULT_LEARNING_RATE = 3e-4
+DEFAULT_BATCH_SIZE = 64
+DEFAULT_REPLAY_CAPACITY = 20_000
+DEFAULT_WARMUP = 2_000
+DEFAULT_TARGET_SYNC_INTERVAL = 1_000
+DEFAULT_HIDDEN_SIZE = 64
 
 
 class QNetwork(nn.Module):
-    def __init__(self, input_size: int, action_count: int):
+    def __init__(self, input_size: int, action_count: int, hidden_size: int = 64):
         super().__init__()
         self.layers = nn.Sequential(
-            nn.Linear(input_size, 64),
+            nn.Linear(input_size, hidden_size),
             nn.ReLU(),
-            nn.Linear(64, 64),
+            nn.Linear(hidden_size, hidden_size),
             nn.ReLU(),
-            nn.Linear(64, action_count),
+            nn.Linear(hidden_size, action_count),
         )
 
     def forward(self, x):
@@ -33,17 +47,45 @@ class QNetwork(nn.Module):
 
 class ReplayBuffer:
     def __init__(self, capacity: int, seed: int):
-        self.memory = deque(maxlen=capacity)
+        self.capacity = int(capacity)
+        self.partitions = {}
+        self.current_task = None
         self.random = random.Random(seed)
 
+    def configure(self, current_task: str | None, per_task_capacity: int | None = None):
+        self.current_task = current_task or "unassigned"
+        if per_task_capacity is not None:
+            self.capacity = int(per_task_capacity)
+
     def append(self, transition: Transition):
-        self.memory.append(transition)
+        task_id = transition.task_id or self.current_task or "unassigned"
+        if task_id not in self.partitions:
+            self.partitions[task_id] = deque(maxlen=self.capacity)
+        self.partitions[task_id].append(transition._replace(task_id=task_id))
 
     def sample(self, size: int):
-        return self.random.sample(self.memory, size)
+        return self.random.sample(self._all_items(), size)
 
-    def sample_batch(self, size: int):
-        items = self.random.sample(self.memory, size)
+    def sample_batch(self, size: int, parent_fraction: float = 0.0):
+        current = list(self.partitions.get(self.current_task, ()))
+        parents = [
+            item for task, partition in self.partitions.items()
+            if task != self.current_task for item in partition
+        ]
+        if parents and current and parent_fraction > 0.0:
+            parent_count = min(len(parents), int(round(size * parent_fraction)))
+            current_count = size - parent_count
+            if len(current) < current_count:
+                current_count = len(current)
+                parent_count = size - current_count
+            if len(parents) < parent_count:
+                parent_count = len(parents)
+                current_count = size - parent_count
+            items = self.random.sample(parents, parent_count) + self.random.sample(
+                current, current_count)
+            self.random.shuffle(items)
+        else:
+            items = self.random.sample(self._all_items(), size)
         nonterminal = [item for item in items if not item.done]
         return {
             "states": np.stack([item.state for item in items]),
@@ -53,6 +95,15 @@ class ReplayBuffer:
                 (item.reward for item in items), dtype=np.float32, count=size),
             "dones": np.fromiter(
                 (item.done for item in items), dtype=bool, count=size),
+            "steps": np.fromiter(
+                (item.steps for item in items), dtype=np.int64, count=size),
+            "state_legal": np.stack([
+                np.ones(6, dtype=bool) if item.state_legal is None else item.state_legal
+                for item in items
+            ]),
+            "is_parent": np.fromiter(
+                (item.task_id != self.current_task for item in items),
+                dtype=bool, count=size),
             "next_states": None if not nonterminal else np.stack([
                 item.next_state for item in nonterminal]),
             "next_legal": None if not nonterminal else np.stack([
@@ -60,14 +111,22 @@ class ReplayBuffer:
         }
 
     def __len__(self):
-        return len(self.memory)
+        return sum(len(partition) for partition in self.partitions.values())
+
+    def current_size(self):
+        return len(self.partitions.get(self.current_task, ()))
+
+    def _all_items(self):
+        return [item for partition in self.partitions.values() for item in partition]
 
     def state_dict(self):
-        items = list(self.memory)
+        items = self._all_items()
         if not items:
             return {
                 "format": REPLAY_CHECKPOINT_FORMAT,
                 "count": 0,
+                "capacity": self.capacity,
+                "current_task": self.current_task,
                 "rng_state": self.random.getstate(),
             }
         states = np.stack([item.state for item in items]).astype(np.float32, copy=False)
@@ -78,6 +137,8 @@ class ReplayBuffer:
         return {
             "format": REPLAY_CHECKPOINT_FORMAT,
             "count": len(items),
+            "capacity": self.capacity,
+            "current_task": self.current_task,
             "states": torch.as_tensor(states, dtype=torch.float32),
             "next_states": torch.as_tensor(next_states, dtype=torch.float32),
             "actions": torch.as_tensor(
@@ -86,6 +147,13 @@ class ReplayBuffer:
                 [item.reward for item in items], dtype=torch.float64),
             "dones": torch.as_tensor(
                 [item.done for item in items], dtype=torch.bool),
+            "steps": torch.as_tensor(
+                [item.steps for item in items], dtype=torch.int64),
+            "state_legal": torch.as_tensor(np.stack([
+                np.ones(6, dtype=bool) if item.state_legal is None else item.state_legal
+                for item in items
+            ]), dtype=torch.bool),
+            "task_ids": [item.task_id for item in items],
             "next_legal": torch.as_tensor(np.stack([
                 np.zeros(6, dtype=bool) if item.next_legal is None else item.next_legal
                 for item in items
@@ -94,8 +162,10 @@ class ReplayBuffer:
         }
 
     def load_state_dict(self, state):
-        self.memory.clear()
+        self.partitions.clear()
         if state.get("format") == REPLAY_CHECKPOINT_FORMAT:
+            self.capacity = int(state.get("capacity", self.capacity))
+            self.current_task = state.get("current_task", self.current_task)
             count = int(state.get("count", 0))
             if count:
                 states = state["states"].cpu().numpy()
@@ -103,38 +173,45 @@ class ReplayBuffer:
                 actions = state["actions"].cpu().numpy()
                 rewards = state["rewards"].cpu().numpy()
                 dones = state["dones"].cpu().numpy()
+                steps = state["steps"].cpu().numpy()
+                state_legal = state["state_legal"].cpu().numpy()
                 next_legal = state["next_legal"].cpu().numpy()
-                self.memory.extend(
-                    Transition(
+                task_ids = list(state["task_ids"])
+                for index in range(count):
+                    transition = Transition(
                         states[index].copy(), int(actions[index]),
                         float(rewards[index]),
                         None if bool(dones[index]) else next_states[index].copy(),
                         bool(dones[index]),
                         None if bool(dones[index]) else next_legal[index].copy(),
+                        state_legal[index].copy(), task_ids[index], int(steps[index]),
                     )
-                    for index in range(count)
-                )
+                    self.append(transition)
         else:
             # Backward-compatible loader for existing baseline checkpoints.
-            self.memory.extend(
-                Transition(
+            for item in state.get("transitions", ()):
+                self.append(Transition(
                     item["state"].cpu().numpy(), item["action"], item["reward"],
                     None if item["next_state"] is None
                     else item["next_state"].cpu().numpy(),
                     item["done"],
                     None if item["next_legal"] is None
                     else item["next_legal"].cpu().numpy(),
-                )
-                for item in state.get("transitions", ())
-            )
+                ))
         if "rng_state" in state:
             self.random.setstate(state["rng_state"])
 
 
 class DQN:
-    def __init__(self, input_size, action_count, seed=0, gamma=0.95, learning_rate=3e-4,
-                 batch_size=64, replay_capacity=20_000, warmup=2_000,
-                 target_sync_interval=1_000, device="cpu", deterministic=True):
+    def __init__(self, input_size, action_count, seed=0, gamma=DEFAULT_GAMMA,
+                 learning_rate=DEFAULT_LEARNING_RATE,
+                 batch_size=DEFAULT_BATCH_SIZE,
+                 replay_capacity=DEFAULT_REPLAY_CAPACITY,
+                 warmup=DEFAULT_WARMUP,
+                 target_sync_interval=DEFAULT_TARGET_SYNC_INTERVAL,
+                 device="cpu", deterministic=True,
+                 training_task=None, retention_spec=None, double_dqn=False,
+                 hidden_size=DEFAULT_HIDDEN_SIZE):
         self.device = torch.device(device)
         if self.device.type == "cuda" and not torch.cuda.is_available():
             raise RuntimeError("CUDA was requested but is not available")
@@ -148,18 +225,32 @@ class DQN:
         torch.set_num_threads(1)
         self.action_count = action_count
         self.gamma = gamma
+        self.learning_rate = learning_rate
         self.batch_size = batch_size
+        self.replay_capacity = replay_capacity
         self.warmup = warmup
         self.target_sync_interval = target_sync_interval
+        self.training_task = training_task
+        self.retention_spec = dict(retention_spec or {
+            "parent_fraction": 0.0, "distillation_weight": 0.0,
+            "temperature": 1.0, "per_task_capacity": replay_capacity,
+            "current_warmup": warmup,
+        })
+        self.double_dqn = bool(double_dqn)
+        self.input_size = int(input_size)
+        self.hidden_size = int(hidden_size)
         self.updates = 0
 
-        self.policy = QNetwork(input_size, action_count).to(self.device)
-        self.target = QNetwork(input_size, action_count).to(self.device)
+        self.policy = QNetwork(input_size, action_count, hidden_size).to(self.device)
+        self.target = QNetwork(input_size, action_count, hidden_size).to(self.device)
         self.target.load_state_dict(self.policy.state_dict())
         self.target.eval()
         self.optimizer = torch.optim.Adam(self.policy.parameters(), lr=learning_rate)
         self.loss_function = nn.SmoothL1Loss()
-        self.replay = ReplayBuffer(replay_capacity, seed)
+        self.replay = ReplayBuffer(
+            int(self.retention_spec["per_task_capacity"]), seed)
+        self.replay.configure(training_task)
+        self.teacher = None
 
     def q_values(self, state: np.ndarray) -> np.ndarray:
         with torch.no_grad():
@@ -168,12 +259,18 @@ class DQN:
 
     def observe(self, transition: Transition):
         self.replay.append(transition)
-        if len(self.replay) < max(self.batch_size, self.warmup):
+        required_current = max(
+            self.batch_size, int(self.retention_spec["current_warmup"]))
+        if self.replay.current_size() < required_current:
             return None
         return self._learn()
 
     def _learn(self):
-        batch = self.replay.sample_batch(self.batch_size)
+        parent_fraction = (
+            float(self.retention_spec["parent_fraction"])
+            if self.teacher is not None else 0.0
+        )
+        batch = self.replay.sample_batch(self.batch_size, parent_fraction)
         states = torch.as_tensor(
             batch["states"], dtype=torch.float32, device=self.device)
         actions = torch.as_tensor(
@@ -182,6 +279,8 @@ class DQN:
             batch["rewards"], dtype=torch.float32, device=self.device)
         dones = torch.as_tensor(
             batch["dones"], dtype=torch.bool, device=self.device)
+        steps = torch.as_tensor(
+            batch["steps"], dtype=torch.float32, device=self.device)
 
         current_q = self.policy(states).gather(1, actions).squeeze(1)
         next_values = torch.zeros(
@@ -193,11 +292,35 @@ class DQN:
             legal = torch.as_tensor(
                 batch["next_legal"], dtype=torch.bool, device=self.device)
             with torch.no_grad():
-                next_q = self.target(next_states).masked_fill(~legal, -torch.inf)
-                next_values[nonterminal] = next_q.max(dim=1).values
+                target_q = self.target(next_states).masked_fill(~legal, -torch.inf)
+                if self.double_dqn:
+                    policy_q = self.policy(next_states).masked_fill(~legal, -torch.inf)
+                    selected = policy_q.argmax(dim=1, keepdim=True)
+                    next_values[nonterminal] = target_q.gather(
+                        1, selected).squeeze(1)
+                else:
+                    next_values[nonterminal] = target_q.max(dim=1).values
 
-        targets = rewards + self.gamma * next_values
+        targets = rewards + torch.pow(
+            torch.full_like(steps, self.gamma), steps) * next_values
         loss = self.loss_function(current_q, targets)
+        parent_rows = torch.as_tensor(
+            batch["is_parent"], dtype=torch.bool, device=self.device)
+        if self.teacher is not None and parent_rows.any():
+            temperature = float(self.retention_spec["temperature"])
+            legal = torch.as_tensor(
+                batch["state_legal"], dtype=torch.bool, device=self.device)[parent_rows]
+            student_q = self.policy(states[parent_rows]).masked_fill(~legal, -torch.inf)
+            with torch.no_grad():
+                teacher_q = self.teacher(states[parent_rows]).masked_fill(~legal, -torch.inf)
+                teacher_probabilities = torch.softmax(teacher_q / temperature, dim=1)
+            distillation = nn.functional.kl_div(
+                torch.log_softmax(student_q / temperature, dim=1),
+                teacher_probabilities,
+                reduction="batchmean",
+            ) * (temperature ** 2)
+            loss = loss + float(
+                self.retention_spec["distillation_weight"]) * distillation
         self.optimizer.zero_grad()
         loss.backward()
         nn.utils.clip_grad_norm_(self.policy.parameters(), 10.0)
@@ -224,12 +347,15 @@ class DQN:
                 if self.device.type == "cuda" else 0
             ),
             "updates": self.updates,
+            "teacher": None if self.teacher is None else self.teacher.state_dict(),
+            "retention_spec": self.retention_spec,
+            "double_dqn": self.double_dqn,
         }
         if self.device.type == "cuda":
             checkpoint["cuda_rng_state_all"] = torch.cuda.get_rng_state_all()
         return checkpoint
 
-    def load_checkpoint(self, checkpoint, training=False):
+    def load_checkpoint(self, checkpoint, training=False, training_task=None):
         if training and checkpoint.get("training_device_type") not in (None, self.device.type):
             raise ValueError("Cannot resume DQN training on a different training device")
         if (
@@ -250,6 +376,22 @@ class DQN:
                         state[key] = value.to(self.device)
         if training and "replay" in checkpoint:
             self.replay.load_state_dict(checkpoint["replay"])
+            parent_task = checkpoint.get("training_task")
+            self.training_task = training_task or self.training_task
+            self.replay.configure(
+                self.training_task, int(self.retention_spec["per_task_capacity"]))
+            if parent_task != self.training_task:
+                self.teacher = QNetwork(
+                    self.input_size, self.action_count, self.hidden_size).to(self.device)
+                self.teacher.load_state_dict(checkpoint["policy"])
+            elif checkpoint.get("teacher") is not None:
+                self.teacher = QNetwork(
+                    self.input_size, self.action_count, self.hidden_size).to(self.device)
+                self.teacher.load_state_dict(checkpoint["teacher"])
+            if self.teacher is not None:
+                self.teacher.eval()
+                for parameter in self.teacher.parameters():
+                    parameter.requires_grad_(False)
         if training and "torch_rng_state" in checkpoint:
             torch.set_rng_state(checkpoint["torch_rng_state"])
         if training and self.device.type == "cuda" and "cuda_rng_state_all" in checkpoint:

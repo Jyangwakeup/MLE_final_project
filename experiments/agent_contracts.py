@@ -31,8 +31,11 @@ _BASELINES = {
 _NEW_AGENTS = {
     "double_q_compact_agent", "double_dqn_continuous_agent",
     "cnn_double_dqn_agent", "hybrid_dueling_double_dqn_agent",
+    "double_q_agent", "double_dqn_continuous_v2_agent",
 }
-_BASELINE_FEATURE_IDS = {"discrete-v1", "discrete-q-v2"}
+_BASELINE_FEATURE_IDS = {
+    "discrete-v1", "discrete-q-v2", "discrete-objective-v1",
+}
 
 
 def resolve_agent_contract(
@@ -49,9 +52,21 @@ def resolve_agent_contract(
             raise ValueError(
                 f"{agent} only supports {sorted(allowed)}; "
                 f"got {resolved_feature_id!r}")
+        if agent == "q_learning_agent":
+            from agent_code.q_learning_agent.callbacks import HYPERPARAMETERS
+            hyperparameters = dict(HYPERPARAMETERS)
+        elif agent == "dqn_agent":
+            from agent_code.dqn_agent.callbacks import (
+                HYPERPARAMETERS, network_spec as dqn_network_spec,
+            )
+            hyperparameters = dict(HYPERPARAMETERS)
+            network = dqn_network_spec(
+                feature_schema_contract(resolved_feature_id)["vector_shape"][0])
+        else:
+            hyperparameters = {}
         return AgentContract(
             agent, algorithm, resolved_feature_id, checkpoint,
-            feature_schema_contract(resolved_feature_id), network, {},
+            feature_schema_contract(resolved_feature_id), network, hyperparameters,
         )
     if agent not in _NEW_AGENTS:
         raise ValueError(f"experiments do not define a learning contract for {agent!r}")
