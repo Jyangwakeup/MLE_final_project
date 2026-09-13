@@ -41,7 +41,7 @@ from experiments.resume import (
     materialize_learner_checkpoint,
 )
 from experiments.training import (
-    TrainingEarlyStopping,
+    CompositeTrainingStop, TrainingActionBudget, TrainingEarlyStopping,
     early_stopping_config as _early_stopping_config,
     run_training_mode,
 )
@@ -50,6 +50,7 @@ from agent_code.team_agent.feature_system import ACTIONS, normalize_feature_id
 from agent_code.team_agent.rewards import REWARD_VERSION, resolve_reward_spec
 from experiments.agent_contracts import resolve_agent_contract
 from experiments.navigation_diagnostics import navigation_diagnostic
+from agent_code.learning_common.training_spec import resolve_retention_spec
 
 
 RUNS_ROOT = PROJECT_ROOT / "runs"
@@ -532,6 +533,16 @@ def _positive_int(value: Any, field: str) -> int:
     return value
 
 
+def _last_training_integer(path: Path, field: str) -> int | None:
+    if not path.is_file():
+        return None
+    with path.open(newline="", encoding="utf-8") as file:
+        rows = list(csv.DictReader(file))
+    if not rows or not rows[-1].get(field):
+        return None
+    return int(rows[-1][field])
+
+
 def _configured_evaluation(config: dict[str, Any]) -> tuple[tuple[int, ...], int]:
     evaluation = config.setdefault("evaluation", {})
     if not isinstance(evaluation, dict):
@@ -671,6 +682,13 @@ def run_agent_session(
     resume_kind: str | None = None,
     parent_metadata: dict[str, Any] | None = None,
     device_info: dict[str, Any] | None = None,
+    action_budget_config: dict[str, Any] | None = None,
+    safe_exploration: bool = False,
+    n_step: int = 1,
+    retention_spec: dict[str, Any] | None = None,
+    adaptation_triggers: Sequence[str] = (),
+    feature_id_override: str | None = None,
+    reward_id_override: str | None = None,
 ) -> Path:
     """Run one isolated training or frozen-evaluation session."""
     training = mode == "train"
@@ -691,7 +709,31 @@ def run_agent_session(
         raise ValueError("config.training must be an object")
     exploration_spec = resolve_exploration_spec(training_config.get("exploration"))
     training_config["exploration"] = exploration_spec
+    if not isinstance(safe_exploration, bool):
+        raise ValueError("safe_exploration must be a boolean")
+    if n_step not in {1, 4}:
+        raise ValueError("n_step must be 1 or 4")
+    retention_spec = resolve_retention_spec(retention_spec)
+    adaptation_triggers = tuple(adaptation_triggers)
+    allowed_adaptation_triggers = {
+        "suicide", "retention", "q_capability", "dqn_capability",
+    }
+    unknown_triggers = sorted(set(adaptation_triggers) - allowed_adaptation_triggers)
+    if unknown_triggers:
+        raise ValueError(
+            "Unknown adaptation trigger(s): " + ", ".join(unknown_triggers)
+        )
+    if len(set(adaptation_triggers)) != len(adaptation_triggers):
+        raise ValueError("Adaptation triggers must be unique")
+    action_budget_config = action_budget_config or {
+        "target_stage_action_steps": None, "min_rounds": 1,
+    }
+    training_config["safe_exploration"] = safe_exploration
+    training_config["n_step"] = n_step
+    training_config["retention"] = retention_spec
+    training_config["action_budget"] = action_budget_config
     expanded["training"] = training_config
+    expanded["adaptation_triggers"] = list(adaptation_triggers)
     evaluation_config = expanded.get("evaluation", {})
     if not isinstance(evaluation_config, dict):
         raise ValueError("config.evaluation must be an object")
@@ -707,8 +749,9 @@ def run_agent_session(
             raise ValueError("Device config section must be an object")
         requested_device = section.get("device", "auto" if training else "cpu")
         device_info = resolve_device(algorithm, mode, requested_device)
-    configured_id = expanded.get("feature_id")
-    configured_legacy = expanded.get("feature_version")
+    configured_id = feature_id_override or expanded.get("feature_id")
+    configured_legacy = (
+        None if feature_id_override is not None else expanded.get("feature_version"))
     requested_feature_id = (
         None if configured_id is None and configured_legacy is None
         else normalize_feature_id(configured_id, configured_legacy)
@@ -718,8 +761,9 @@ def run_agent_session(
     configured_algorithm = expanded.get("algorithm")
     if configured_algorithm not in (None, algorithm):
         raise ValueError("Configured algorithm does not match the selected agent")
-    configured_reward_id = expanded.get("reward_id")
-    legacy_reward_id = expanded.get("reward_version")
+    configured_reward_id = reward_id_override or expanded.get("reward_id")
+    legacy_reward_id = (
+        None if reward_id_override is not None else expanded.get("reward_version"))
     if (
         configured_reward_id is not None
         and legacy_reward_id is not None
@@ -777,6 +821,11 @@ def run_agent_session(
     metadata["agent_seed"] = agent_seed
     metadata["checkpoint_schema"] = CHECKPOINT_SCHEMA_VERSION
     metadata["exploration_spec"] = exploration_spec
+    metadata["safe_exploration"] = bool(safe_exploration and training)
+    metadata["n_step"] = n_step
+    metadata["retention_spec"] = retention_spec
+    metadata["training_budget"] = action_budget_config
+    metadata["adaptation_triggers"] = list(adaptation_triggers)
     metadata["feature_id"] = contract.feature_id
     metadata["feature_schema"] = contract.feature_schema
     metadata["feature_version"] = (
@@ -830,6 +879,8 @@ def run_agent_session(
             "BOMBERMAN_REWARD_ID", "BOMBERMAN_REWARD_VERSION",
             "BOMBERMAN_TORCH_DEVICE", "BOMBERMAN_AGENT_SEED",
             "BOMBERMAN_EXPLORATION_SPEC",
+            "BOMBERMAN_SAFE_EXPLORATION", "BOMBERMAN_N_STEP",
+            "BOMBERMAN_RETENTION_SPEC", "BOMBERMAN_TRAINING_BUDGET",
         )
     }
     try:
@@ -847,6 +898,13 @@ def run_agent_session(
         os.environ["BOMBERMAN_EXPLORATION_SPEC"] = json.dumps(
             exploration_spec, sort_keys=True, separators=(",", ":")
         )
+        os.environ["BOMBERMAN_SAFE_EXPLORATION"] = (
+            "true" if training and safe_exploration else "false")
+        os.environ["BOMBERMAN_N_STEP"] = str(n_step)
+        os.environ["BOMBERMAN_RETENTION_SPEC"] = json.dumps(
+            retention_spec, sort_keys=True, separators=(",", ":"))
+        os.environ["BOMBERMAN_TRAINING_BUDGET"] = json.dumps(
+            action_budget_config, sort_keys=True, separators=(",", ":"))
         # Task 1 isolates coin navigation. Keep its action space free of bombs
         # for both training and frozen evaluation so agents are compared under
         # the same curriculum constraint.
@@ -897,10 +955,20 @@ def run_agent_session(
             )
             if training and early_stopping_config is not None else None
         )
+        action_budget = (
+            TrainingActionBudget(
+                output / "training.csv",
+                action_budget_config["target_stage_action_steps"],
+                action_budget_config["min_rounds"],
+            )
+            if training and action_budget_config["target_stage_action_steps"] is not None
+            else None
+        )
+        stopping = CompositeTrainingStop(early_stopping, action_budget)
         completed_rounds = world_controller(
             world, n_rounds, gui=None, every_step=False, turn_based=False,
             make_video=False, update_interval=0.0, show_progress=True,
-            stop_condition=early_stopping,
+            stop_condition=stopping if stopping.conditions else None,
         )
         if training and not checkpoint.is_file():
             raise RuntimeError(f"Training did not write checkpoint: {checkpoint}")
@@ -915,12 +983,30 @@ def run_agent_session(
                     checkpoint_metadata.get("peak_cuda_memory_bytes", 0)
                 )
         metadata["ended_at"] = _utc_now()
+        final_stage_steps = _last_training_integer(
+            output / "training.csv", "stage_action_steps") if training else None
+        budget_reached = (
+            action_budget_config["target_stage_action_steps"] is None
+            or (
+                final_stage_steps is not None
+                and final_stage_steps >= action_budget_config["target_stage_action_steps"]
+                and completed_rounds >= action_budget_config["min_rounds"]
+            )
+        )
         metadata["termination"] = {
             "completed_rounds": completed_rounds,
             "cumulative_completed_rounds": parent_cumulative + completed_rounds,
             "early_stopping": None if early_stopping is None else early_stopping.result,
             "local_completed_rounds": completed_rounds,
             "requested_rounds": n_rounds,
+            "stage_action_steps": final_stage_steps,
+            "action_budget": action_budget_config,
+            "action_budget_reached": budget_reached,
+            "completion_reason": (
+                "stage_action_target_reached"
+                if action_budget is not None and action_budget.result is not None
+                else "round_cap_reached"
+            ),
         }
         metadata["status"] = (
             "early_stopped" if early_stopping is not None and early_stopping.result
@@ -959,6 +1045,8 @@ def run_agent_evaluation(
     replay_interval: int = DEFAULT_REPLAY_INTERVAL,
     *,
     device_info: dict[str, Any] | None = None,
+    feature_id_override: str | None = None,
+    reward_id_override: str | None = None,
 ) -> Path:
     if device_info is None:
         device_info = resolve_device(_algorithm_name(agent), "evaluate", "cpu")
@@ -969,6 +1057,8 @@ def run_agent_evaluation(
         run_session=run_agent_session, analyze_runs=analyze_runs,
         write_json=_write_json,
         device_info=device_info,
+        feature_id_override=feature_id_override,
+        reward_id_override=reward_id_override,
     )
 
 
@@ -978,10 +1068,25 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--mode", required=True, choices=("train", "evaluate"))
     parser.add_argument("--task", required=True, type=int, choices=TASKS)
     parser.add_argument("--agent", required=True)
+    parser.add_argument("--feature-id")
+    parser.add_argument("--reward-id")
     seed_group = parser.add_mutually_exclusive_group()
     seed_group.add_argument("--seed", type=int)
     seed_group.add_argument("--seeds", nargs="+", type=int)
     parser.add_argument("--n-rounds", type=int)
+    parser.add_argument(
+        "--target-stage-action-steps", type=int,
+        help="Stop training after this cumulative action count within the Task",
+    )
+    parser.add_argument(
+        "--min-rounds", type=int,
+        help="Minimum local rounds before an action target may stop training",
+    )
+    parser.add_argument(
+        "--adaptation-trigger", action="append", default=[],
+        choices=("suicide", "retention", "q_capability", "dqn_capability"),
+        help="Round-3 failure signal recorded in metadata; repeat as needed",
+    )
     parser.add_argument("--opponents", nargs="*")
     parser.add_argument("--checkpoint", type=Path)
     parser.add_argument(
@@ -1027,6 +1132,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         else:
             if args.resume_from is not None:
                 raise ValueError("--resume-from is only valid with --mode train")
+            if args.adaptation_trigger:
+                raise ValueError(
+                    "--adaptation-trigger is only valid with --mode train")
             run_evaluation_mode(
                 args, config, configured_seeds, configured_rounds,
                 task_name, scenario, opponents, project_root=PROJECT_ROOT,

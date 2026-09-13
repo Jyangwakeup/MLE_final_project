@@ -10,6 +10,7 @@ from unittest.mock import Mock, patch
 from agent_code.q_learning_agent.callbacks import (
     FEATURE_ID,
     FEATURE_VERSION,
+    HYPERPARAMETERS,
     ResumeCompatibilityError,
     _features_for,
     setup,
@@ -17,11 +18,40 @@ from agent_code.q_learning_agent.callbacks import (
 from agent_code.team_agent.feature_system import feature_schema_contract
 from agent_code.team_agent.rewards import resolve_reward_spec
 from agent_code.q_learning_agent.features import legal_actions
+from agent_code.q_learning_agent.train import (
+    end_of_round, game_events_occurred, setup_training,
+)
 from agent_code.learning_common.temporal_reward import temporal_reward_context
 from tests.test_danger import make_game_state
 
 
 class QLearningAgentConfigurationTestCase(unittest.TestCase):
+    def test_last_step_is_updated_once_as_terminal(self):
+        with tempfile.TemporaryDirectory() as directory:
+            agent = SimpleNamespace(train=True, logger=Mock())
+            with (
+                patch.dict(os.environ, {
+                    "BOMBERMAN_CHECKPOINT": str(Path(directory) / "final.pkl"),
+                    "BOMBERMAN_RUN_DIR": directory,
+                }, clear=True),
+            ):
+                setup(agent)
+                setup_training(agent)
+                state = make_game_state()
+                state.update(round=1, step=4)
+                next_state = make_game_state(position=(3, 4))
+                next_state.update(round=1, step=5)
+                game_events_occurred(agent, state, "WAIT", next_state, [])
+                end_of_round(agent, state, "WAIT", [])
+
+            self.assertEqual(agent.training_steps, 0)
+            self.assertEqual(len(agent.q_table), 1)
+            values = next(iter(agent.q_table.values()))
+            self.assertAlmostEqual(float(values[4]), -0.0015)
+            with (Path(directory) / "training.csv").open() as file:
+                row = next(__import__("csv").DictReader(file))
+            self.assertAlmostEqual(float(row["reward"]), -0.01)
+
     def test_legacy_reward_checkpoint_is_frozen_only(self):
         legacy_spec = {
             "step": -0.01,
@@ -221,10 +251,17 @@ class QLearningAgentConfigurationTestCase(unittest.TestCase):
                     "reward_version": "r1",
                     "reward_id": "r1",
                     "reward_spec": resolve_reward_spec("r1"),
-                    "checkpoint_schema": "training-resume-v4",
+                    "checkpoint_schema": "training-resume-v5",
+                    "network_spec": None,
+                    "hyperparameters": HYPERPARAMETERS,
                     "agent_rng_state": random.Random(0).getstate(),
                     "q_table": expected_table,
                     "training_steps": 123,
+                    "total_action_steps": 123,
+                    "stage_action_steps": 123,
+                    "safe_exploration_decisions": 17,
+                    "safe_exploration_fallbacks": 2,
+                    "n_step_state": {"n_step": 1, "gamma": 0.95, "pending": []},
                     "training_task": "task1",
                 }, file)
             agent = SimpleNamespace(train=True, logger=Mock())
@@ -237,6 +274,8 @@ class QLearningAgentConfigurationTestCase(unittest.TestCase):
 
         self.assertEqual(agent.q_table, expected_table)
         self.assertEqual(agent.training_steps, 123)
+        self.assertEqual(agent.total_action_steps, 123)
+        self.assertEqual(agent.stage_action_steps, 0)
         self.assertEqual(agent.training_task, "task2")
 
     def test_explicit_evaluation_checkpoint_must_exist(self):

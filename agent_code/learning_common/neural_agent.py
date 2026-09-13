@@ -10,17 +10,24 @@ import numpy as np
 import torch
 
 from agent_code.team_agent.rewards import reward_from_events
+from agent_code.team_agent.exploration import epsilon_at, survivable_exploration_mask
+from .action_history import (
+    action_history_state, init_action_history, load_action_history_state,
+    record_selected_action,
+)
 from .neural import Transition
 from .runtime import (
-    CHECKPOINT_SCHEMA, adopt_checkpoint_reward, effective_legal_mask, epsilon_at,
+    CHECKPOINT_SCHEMA, adopt_checkpoint_reward, effective_legal_mask,
     load_common_configuration, save_checkpoint_atomic, validate_checkpoint,
 )
 from .temporal_reward import reset_temporal_reward_state, temporal_reward_context
 
 
 TRAINING_FIELDS = (
-    "schema_version", "algorithm", "round", "reward", "action_steps", "epsilon",
-    "q_states", "loss", "updates", "replay_size", "checkpoint",
+    "schema_version", "algorithm", "round", "reward", "action_steps",
+    "stage_action_steps", "epsilon", "q_states", "loss", "updates",
+    "replay_size", "safe_exploration_decisions", "safe_exploration_fallbacks",
+    "checkpoint",
 )
 
 
@@ -40,9 +47,20 @@ def setup_neural_agent(
             training=self.train, training_task=self.training_task,
         )
         self.model.load_checkpoint(checkpoint, training=self.train)
-        self.action_steps = int(checkpoint["action_steps"])
+        self.total_action_steps = int(checkpoint.get(
+            "total_action_steps", checkpoint["action_steps"]))
+        same_task = checkpoint.get("training_task") == self.training_task
+        self.stage_action_steps = int(checkpoint.get(
+            "stage_action_steps", self.total_action_steps)) if same_task else 0
+        self.action_steps = self.total_action_steps
+        self.safe_exploration_decisions = int(checkpoint.get(
+            "safe_exploration_decisions", 0))
+        self.safe_exploration_fallbacks = int(checkpoint.get(
+            "safe_exploration_fallbacks", 0))
         if self.train:
             self.rng.setstate(checkpoint["agent_rng_state"])
+            if same_task:
+                load_action_history_state(self, checkpoint.get("action_history_state"))
         self.logger.info("Loaded %s checkpoint from %s", algorithm, self.model_file)
     elif self.train:
         self.logger.info("Starting a new %s model", algorithm)
@@ -66,15 +84,37 @@ def act_neural(self, game_state, *, actions, hyperparameters, extractor, state_v
         features.legal_mask, actions, self.curriculum_allows_bomb)
     legal_indices = np.flatnonzero(legal).tolist()
     if self.train:
-        epsilon = epsilon_at(self.action_steps, hyperparameters)
-        self.action_steps += 1
+        stage_steps = int(getattr(
+            self, "stage_action_steps", getattr(self, "action_steps", 0)))
+        total_steps = int(getattr(
+            self, "total_action_steps", getattr(self, "action_steps", 0)))
+        epsilon = epsilon_at(
+            stage_steps, getattr(self, "exploration_spec", None))
+        self.stage_action_steps = stage_steps
+        self.total_action_steps = total_steps
+        self.stage_action_steps += 1
+        self.total_action_steps += 1
+        self.action_steps = self.total_action_steps
         if self.rng.random() < epsilon:
-            return actions[self.rng.choice(legal_indices)]
+            if getattr(self, "safe_exploration", False):
+                legal, fallback = survivable_exploration_mask(
+                    game_state, legal,
+                    allow_bomb=self.curriculum_allows_bomb)
+                legal_indices = np.flatnonzero(legal).tolist()
+                self.safe_exploration_decisions = int(getattr(
+                    self, "safe_exploration_decisions", 0)) + 1
+                self.safe_exploration_fallbacks = int(getattr(
+                    self, "safe_exploration_fallbacks", 0)) + int(fallback)
+            action = actions[self.rng.choice(legal_indices)]
+            record_selected_action(self, game_state, action)
+            return action
     q_values = self.model.q_values(state_value(features))
     q_values[~legal] = -np.inf
     best = max(float(q_values[index]) for index in legal_indices)
     tied = [index for index in legal_indices if float(q_values[index]) == best]
-    return actions[self.rng.choice(tied) if self.train else tied[0]]
+    action = actions[self.rng.choice(tied) if self.train else tied[0]]
+    record_selected_action(self, game_state, action)
+    return action
 
 
 def setup_neural_training(self):
@@ -114,7 +154,8 @@ def neural_game_events(self, old_game_state, self_action, new_game_state, events
         self, self_action, old_game_state, new_game_state, events)
     reward = reward_from_events(
         events, self.reward_id, old_game_state=old_game_state,
-        new_game_state=new_game_state, terminal=False, **reward_context)
+        new_game_state=new_game_state, terminal=False, action=self_action,
+        **reward_context)
     self.pending = (key, _transition(
         self, old_game_state, self_action, reward, new_game_state, False,
         actions=actions, extractor=extractor, state_value=state_value))
@@ -130,7 +171,7 @@ def neural_end_round(self, last_game_state, last_action, events, *, actions,
                 _submit(self, self.pending[1])
             reward = reward_from_events(
                 events, self.reward_id, old_game_state=last_game_state,
-                new_game_state=None, terminal=True)
+                new_game_state=None, terminal=True, action=last_action)
             _submit(self, _transition(
                 self, last_game_state, last_action, reward, None, True,
                 actions=actions, extractor=extractor, state_value=state_value))
@@ -139,6 +180,16 @@ def neural_end_round(self, last_game_state, last_action, events, *, actions,
         _submit(self, self.pending[1])
     self.pending = None
     reset_temporal_reward_state(self)
+    init_action_history(self)
+    self.total_action_steps = int(getattr(
+        self, "total_action_steps", getattr(self, "action_steps", 0)))
+    self.stage_action_steps = int(getattr(
+        self, "stage_action_steps", self.total_action_steps))
+    self.safe_exploration = bool(getattr(self, "safe_exploration", False))
+    self.safe_exploration_decisions = int(getattr(
+        self, "safe_exploration_decisions", 0))
+    self.safe_exploration_fallbacks = int(getattr(
+        self, "safe_exploration_fallbacks", 0))
     checkpoint = self.model.checkpoint()
     checkpoint.update({
         "checkpoint_schema": CHECKPOINT_SCHEMA, "algorithm": algorithm,
@@ -146,10 +197,24 @@ def neural_end_round(self, last_game_state, last_action, events, *, actions,
         "feature_schema": feature_schema, "reward_id": self.reward_id,
         "reward_version": self.reward_id, "reward_spec": self.reward_spec,
         "hyperparameters": hyperparameters, "network_spec": network_spec,
-        "action_steps": self.action_steps, "agent_rng_state": self.rng.getstate(),
+        "action_steps": self.total_action_steps,
+        "total_action_steps": self.total_action_steps,
+        "stage_action_steps": self.stage_action_steps,
+        "agent_rng_state": self.rng.getstate(),
         "agent_seed": getattr(self, "agent_seed", 0),
         "exploration_spec": getattr(self, "exploration_spec", {}),
-        "training_task": self.training_task,
+        "safe_exploration": self.safe_exploration,
+        "safe_exploration_decisions": self.safe_exploration_decisions,
+        "safe_exploration_fallbacks": self.safe_exploration_fallbacks,
+        "action_history_state": action_history_state(self),
+        "n_step": int(getattr(self, "n_step", 1)),
+        "n_step_state": {
+            "n_step": int(getattr(self, "n_step", 1)),
+            "gamma": hyperparameters["gamma"], "pending": []},
+        "retention_spec": getattr(self, "retention_spec", {}),
+        "training_budget": getattr(self, "training_budget", {
+            "target_stage_action_steps": None, "min_rounds": 1}),
+        "training_task": getattr(self, "training_task", None),
     })
     save_checkpoint_atomic(self.model_file, checkpoint, torch.save)
     _append_metrics(self, last_game_state, algorithm, hyperparameters)
@@ -169,10 +234,13 @@ def _append_metrics(self, last_game_state, algorithm, hyperparameters):
     record = {
         "schema_version": "training-v1", "algorithm": algorithm,
         "round": "" if last_game_state is None else last_game_state.get("round", ""),
-        "reward": self.round_reward, "action_steps": self.action_steps,
-        "epsilon": epsilon_at(self.action_steps, hyperparameters), "q_states": "",
+        "reward": self.round_reward, "action_steps": self.total_action_steps,
+        "stage_action_steps": self.stage_action_steps,
+        "epsilon": epsilon_at(self.stage_action_steps, self.exploration_spec), "q_states": "",
         "loss": "" if self.last_loss is None else self.last_loss,
         "updates": self.model.updates, "replay_size": len(self.model.replay),
+        "safe_exploration_decisions": self.safe_exploration_decisions,
+        "safe_exploration_fallbacks": self.safe_exploration_fallbacks,
         "checkpoint": str(self.model_file),
     }
     write_header = not path.exists()

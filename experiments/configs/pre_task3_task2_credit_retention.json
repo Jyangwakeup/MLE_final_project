@@ -1,0 +1,18 @@
+{
+  "algorithm": null,
+  "feature_id": "discrete-objective-v1",
+  "feature_version": null,
+  "reward_id": "r7_safe_credit_potential",
+  "reward_version": "r7_safe_credit_potential",
+  "seed": null,
+  "checkpoint": null,
+  "evaluation": {"device": "cpu", "seeds": [10000, 10001, 10002, 10003, 10004, 10005, 10006, 10007, 10008, 10009, 10010, 10011, 10012, 10013, 10014, 10015, 10016, 10017, 10018, 10019], "n_rounds": 1, "navigation_diagnostics": true},
+  "training": {
+    "device": "cpu", "n_rounds": 2000,
+    "target_stage_action_steps": 150000, "min_rounds": 500,
+    "safe_exploration": true, "n_step": 4,
+    "exploration": {"version": "linear-v1", "start": 0.3, "end": 0.05, "decay_action_steps": 120000},
+    "retention": {"parent_fraction": 0.75, "distillation_weight": 2.0, "temperature": 1.0, "per_task_capacity": 20000, "current_warmup": 2000},
+    "early_stopping": {"enabled": false}
+  }
+}

@@ -48,6 +48,15 @@ def analyze_training(run_directory: Path) -> dict[str, object]:
     summary = {
         "schema_version": "training-summary-v1", "algorithm": rows[-1]["algorithm"],
         "rounds": len(rows), "final_action_steps": steps[-1], "final_epsilon": epsilons[-1],
+        "final_stage_action_steps": (
+            int(rows[-1]["stage_action_steps"])
+            if rows[-1].get("stage_action_steps") else steps[-1]),
+        "safe_exploration_decisions": (
+            int(rows[-1]["safe_exploration_decisions"])
+            if rows[-1].get("safe_exploration_decisions") else 0),
+        "safe_exploration_fallbacks": (
+            int(rows[-1]["safe_exploration_fallbacks"])
+            if rows[-1].get("safe_exploration_fallbacks") else 0),
         "mean_reward": mean(rewards), "mean_reward_last_100": mean(rewards[-tail_size:]),
         "best_round_reward": max(rewards), "best_round": rounds[rewards.index(max(rewards))],
         "final_q_states": int(rows[-1]["q_states"]) if rows[-1].get("q_states") else None,
@@ -144,8 +153,11 @@ def _load_training_run(run_directory: Path) -> dict[str, Any]:
     episodes = _read_episodes(required["episodes.jsonl"])
     if [row["round"] for row in training_rows] != [row["round"] for row in episodes]:
         raise ValueError(f"Training and episode round identifiers differ: {run_directory}")
-    if len(training_rows) != termination["requested_rounds"]:
-        raise ValueError(f"Completed rounds do not match requested round budget: {run_directory}")
+    completed_rounds = termination.get(
+        "local_completed_rounds", termination.get(
+            "completed_rounds", termination["requested_rounds"]))
+    if not isinstance(completed_rounds, int) or len(training_rows) != completed_rounds:
+        raise ValueError(f"Completed rounds do not match termination metadata: {run_directory}")
     rows = []
     for training, episode in zip(training_rows, episodes, strict=True):
         rows.append({"run_id": str(metadata.get("run_id", run_directory.name)), "algorithm": algorithm, "seed": seed,
@@ -155,7 +167,8 @@ def _load_training_run(run_directory: Path) -> dict[str, Any]:
                      "action_steps": training["action_steps"]})
     return {"directory": run_directory, "algorithm": algorithm, "seed": seed, "task": str(metadata["task"]),
             "feature_version": str(metadata["feature_version"]), "reward_version": str(metadata["reward_version"]),
-            "round_budget": termination["requested_rounds"], "rows": rows}
+            "round_budget": termination["requested_rounds"],
+            "completed_rounds": completed_rounds, "rows": rows}
 
 
 def _read_training_rows(path: Path, expected_algorithm: str) -> list[dict[str, Any]]:

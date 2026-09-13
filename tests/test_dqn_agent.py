@@ -12,12 +12,14 @@ import torch
 
 from agent_code.dqn_agent.callbacks import (
     FEATURE_VERSION,
+    HYPERPARAMETERS,
     INPUT_SIZE,
     _features_for,
     act,
     legal_actions,
     setup,
     state_to_features,
+    network_spec,
 )
 from agent_code.dqn_agent.model import DQN, Transition
 from agent_code.dqn_agent.train import (
@@ -114,7 +116,14 @@ class DQNTrainingTaskTestCase(unittest.TestCase):
         ):
             setup(agent)
 
-        model_type.assert_called_once_with(INPUT_SIZE, 6, seed=17, device="cpu")
+        model_type.assert_called_once_with(
+            INPUT_SIZE, 6, seed=17, device="cpu", training_task=None,
+            retention_spec={
+                "parent_fraction": 0.5, "distillation_weight": 1.0,
+                "temperature": 1.0, "per_task_capacity": 20_000,
+                "current_warmup": 2_000,
+            },
+        )
         self.assertEqual(agent.agent_seed, 17)
         self.assertEqual(agent.rng.getstate(), random.Random(17).getstate())
         self.assertEqual(agent.exploration_spec["decay_action_steps"], 1_920_000)
@@ -155,11 +164,18 @@ class DQNTrainingTaskTestCase(unittest.TestCase):
                 "actions": ["UP", "RIGHT", "DOWN", "LEFT", "WAIT", "BOMB"],
                 "reward_id": "r1",
                 "reward_version": "r1",
-                "checkpoint_schema": "training-resume-v4",
+                "checkpoint_schema": "training-resume-v5",
+                "network_spec": network_spec(INPUT_SIZE),
+                "hyperparameters": HYPERPARAMETERS,
                 "feature_version": FEATURE_VERSION,
                 "reward_version": "r1",
                 "reward_spec": resolve_reward_spec("r1"),
                 "action_steps": 123,
+                "total_action_steps": 123,
+                "stage_action_steps": 123,
+                "safe_exploration_decisions": 17,
+                "safe_exploration_fallbacks": 2,
+                "n_step_state": {"n_step": 1, "gamma": 0.95, "pending": []},
                 "training_task": "task1",
                 "agent_rng_state": random.Random(0).getstate(),
             })
@@ -174,6 +190,8 @@ class DQNTrainingTaskTestCase(unittest.TestCase):
                 setup(agent)
 
         self.assertEqual(agent.action_steps, 123)
+        self.assertEqual(agent.total_action_steps, 123)
+        self.assertEqual(agent.stage_action_steps, 0)
         self.assertEqual(agent.training_task, "task2")
         self.assertTrue(torch.equal(
             next(agent.model.policy.parameters()).detach(),
@@ -258,8 +276,14 @@ class DQNTransitionTestCase(unittest.TestCase):
         new_state = make_game_state(position=(3, 4))
         new_state.update(round=1, step=5)
 
-        game_events_occurred(agent, old_state, "WAIT", new_state, [e.WAITED])
-        end_of_round(agent, old_state, "WAIT", [e.WAITED, e.SURVIVED_ROUND])
+        recorded_rewards = []
+        with patch(
+            "agent_code.dqn_agent.train._append_training_metrics",
+            side_effect=lambda owner, _state: recorded_rewards.append(
+                owner.round_reward),
+        ):
+            game_events_occurred(agent, old_state, "WAIT", new_state, [e.WAITED])
+            end_of_round(agent, old_state, "WAIT", [e.WAITED, e.SURVIVED_ROUND])
 
         agent.model.observe.assert_called_once()
         transition = agent.model.observe.call_args.args[0]
@@ -267,6 +291,7 @@ class DQNTransitionTestCase(unittest.TestCase):
         self.assertTrue(transition.done)
         self.assertIsNone(transition.next_state)
         self.assertAlmostEqual(transition.reward, -0.01)
+        self.assertEqual(recorded_rewards, [-0.01])
 
 
 class DQNCheckpointTestCase(unittest.TestCase):

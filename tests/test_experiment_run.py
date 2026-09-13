@@ -171,6 +171,61 @@ class ExperimentRunTest(unittest.TestCase):
         self.assertEqual(rows[0]["algorithm"], "q_learning")
         self.assertEqual(rows[0]["round"], "1")
 
+    def test_cli_overrides_feature_reward_and_stops_at_stage_action_budget(self):
+        output = self.output("objective-budget")
+        with patch.object(s, "MAX_STEPS", 3):
+            result = experiment_main([
+                "--config", str(PROJECT_ROOT / "experiments/configs/pre_task3_task1.json"),
+                "--mode", "train", "--task", "1",
+                "--agent", "q_learning_agent", "--feature-id", "discrete-objective-v1",
+                "--reward-id", "r5_coin_potential", "--n-rounds", "5",
+                "--target-stage-action-steps", "2", "--min-rounds", "1",
+                "--seed", "11", "--device", "cpu", "--output", str(output),
+                "--replay-policy", "none",
+            ])
+        self.assertEqual(result, 0)
+        metadata = json.loads((output / "metadata.json").read_text())
+        self.assertEqual(metadata["feature_id"], "discrete-objective-v1")
+        self.assertEqual(metadata["feature_schema"]["vector_shape"], [60])
+        self.assertEqual(metadata["reward_id"], "r5_coin_potential")
+        self.assertTrue(metadata["termination"]["action_budget_reached"])
+        self.assertEqual(
+            metadata["termination"]["completion_reason"],
+            "stage_action_target_reached",
+        )
+        self.assertLess(metadata["termination"]["completed_rounds"], 5)
+        with (output / "checkpoints" / "final.pkl").open("rb") as file:
+            checkpoint = pickle.load(file)
+        self.assertEqual(checkpoint["checkpoint_schema"], "training-resume-v5")
+        self.assertTrue(checkpoint["safe_exploration"])
+
+    def test_objective_dqn_runner_writes_a_v5_60_dimensional_checkpoint(self):
+        output = self.output("objective-dqn")
+        checkpoint = output / "checkpoints" / "final.pt"
+        with patch.object(s, "MAX_STEPS", 3):
+            run_agent_session(
+                PROJECT_ROOT / "experiments/configs/pre_task3_task1.json",
+                "train", 11, output, "dqn_agent", (), "coin-heaven", 1,
+                checkpoint, "coin_navigation", "none", 1,
+                action_budget_config={
+                    "target_stage_action_steps": 2, "min_rounds": 1},
+                safe_exploration=True,
+                feature_id_override="discrete-objective-v1",
+                reward_id_override="r5_coin_potential",
+            )
+
+        import torch
+        payload = torch.load(checkpoint, map_location="cpu", weights_only=True)
+        self.assertEqual(payload["checkpoint_schema"], "training-resume-v5")
+        self.assertEqual(payload["feature_schema"]["vector_shape"], [60])
+        self.assertEqual(payload["policy"]["layers.0.weight"].shape[1], 60)
+        self.assertEqual(payload["network_spec"]["input_shape"], [60])
+        self.assertEqual(payload["hyperparameters"]["batch_size"], 64)
+        self.assertEqual(payload["reward_id"], "r5_coin_potential")
+        self.assertTrue(payload["safe_exploration"])
+        metadata = json.loads((output / "metadata.json").read_text())
+        self.assertEqual(metadata["feature_id"], "discrete-objective-v1")
+
     def test_training_can_resume_into_an_immutable_child_run(self):
         parent = self.output("resume-parent")
         child = self.output("resume-child")
