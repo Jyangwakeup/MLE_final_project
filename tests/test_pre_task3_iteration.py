@@ -215,7 +215,7 @@ class CreditAndRetentionTests(unittest.TestCase):
     def test_task_partitioned_replay_samples_half_parent_half_current(self):
         replay = ReplayBuffer(20, seed=13)
         state = np.zeros(4, dtype=np.float32)
-        legal = np.ones(6, dtype=bool)
+        legal = np.asarray([True, False, True, False, True, False])
         replay.configure("coin_navigation")
         for index in range(8):
             replay.append(DQNTransition(
@@ -239,10 +239,13 @@ class CreditAndRetentionTests(unittest.TestCase):
             4, 6, seed=7, batch_size=4, warmup=4,
             training_task="coin_navigation", retention_spec=retention)
         state = np.zeros(4, dtype=np.float32)
-        legal = np.ones(6, dtype=bool)
+        # Real Bomberman states almost always mask some movement/BOMB actions;
+        # the KL implementation must remain finite when teacher probability is
+        # exactly zero on those actions.
+        legal = np.asarray([True, False, True, False, True, False])
         for index in range(4):
             parent.replay.append(DQNTransition(
-                state + index, index, 1.0, state + index + 1, False,
+                state + index, 0, 1.0, state + index + 1, False,
                 legal, legal, "coin_navigation", 1))
         checkpoint = parent.checkpoint()
         checkpoint["training_task"] = "coin_navigation"
@@ -257,7 +260,7 @@ class CreditAndRetentionTests(unittest.TestCase):
         loss = None
         for index in range(4):
             loss = child.observe(DQNTransition(
-                state + 10 + index, index, 0.5, state + 11 + index,
+                state + 10 + index, 0, 0.5, state + 11 + index,
                 False, legal, legal, "crate_navigation", 1))
         self.assertTrue(np.isfinite(loss))
         for key, value in child.teacher.state_dict().items():

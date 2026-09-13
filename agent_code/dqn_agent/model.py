@@ -310,9 +310,14 @@ class DQN:
             temperature = float(self.retention_spec["temperature"])
             legal = torch.as_tensor(
                 batch["state_legal"], dtype=torch.bool, device=self.device)[parent_rows]
-            student_q = self.policy(states[parent_rows]).masked_fill(~legal, -torch.inf)
+            if not bool(legal.any(dim=1).all()):
+                raise ValueError("A replay state has no physically legal action")
+            student_q = self.policy(states[parent_rows])
+            mask_value = torch.finfo(student_q.dtype).min
+            student_q = student_q.masked_fill(~legal, mask_value)
             with torch.no_grad():
-                teacher_q = self.teacher(states[parent_rows]).masked_fill(~legal, -torch.inf)
+                teacher_q = self.teacher(states[parent_rows]).masked_fill(
+                    ~legal, mask_value)
                 teacher_probabilities = torch.softmax(teacher_q / temperature, dim=1)
             distillation = nn.functional.kl_div(
                 torch.log_softmax(student_q / temperature, dim=1),
