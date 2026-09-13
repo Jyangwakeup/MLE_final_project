@@ -110,20 +110,17 @@
 |---|---|---|---|
 | `experiments/run.py` / C | Task、Agent、模式、配置、输出目录 → 训练或评估报告 | 官方世界类、自有与官方智能体 | `train`/`evaluate` 独立；四个 Task 自动选择场景和默认对手；各运行隔离 |
 | `experiments/analyze.py` / C | 运行目录列表 → CSV 汇总和 PNG 图 | JSON、NumPy、Matplotlib | 正确区别独占第一、并列第一、零分平局；图能从原始数据生成 |
-<<<<<<< HEAD
-| `experiments/configs/base.json`、`formal_training.json`、`stage_gate.json`、`main_validation.json`、`final_test.json` / C | 工程默认与正式训练/评估数据集 | 第 6–8 节约定 | CPU、`v1`、`r1`、预定 seed 和局数均可校验 |
+| `experiments/configs/base.json`、`formal_training.json`、`formal_training_coin3.json`、`stage_gate.json`、`main_validation.json`、`final_test.json` / C | 工程默认与正式训练/评估数据集 | 第 6–8 节约定 | CPU、冻结 Feature/Reward 契约、预定 seed 和局数均可校验 |
 | `agent_code/legal_random_agent/` / C | 官方状态 → 从同一合法掩码均匀抽样 | 共享特征、独立 RNG | Task 1 诊断基线可固定 seed 重现，不包含学习状态 |
 | `experiments/resume.py`、`devices.py` / C | 原子完整恢复、CPU/CUDA 设备解析 | 标准库、NumPy、可选 PyTorch | v3 合同和两代回退可验证；评估强制 CPU |
-| 待实现：消融配置 / A、C | `v1_no_danger`、`r1_no_crate` 的独立完整课程 | 已版本化特征与奖励 | 各只改变一个因素并从零训练 |
+| 待实现：消融配置 / A、C | `v1_no_danger`、`r1_coin3_no_crate` 的独立完整课程 | 已版本化特征与奖励 | 各只改变一个因素并从零训练 |
 | 待实现：打包工具和最终依赖清单 / C | 胜出 checkpoint → 单一可提交 Agent 包 | 最终模型存储格式 | 在原版框架、Docker、CPU 上独立加载后才标记完成 |
-=======
 | `experiments/configs/reward_r2_balanced.json` / C | R2 奖励、评估 seeds、默认局数 | 第 6–8 节约定 | 不自动分配四阶段预算；每次运行显式选择 Task 和局数 |
 | `experiments/configs/q_learning.json`、`dqn.json` / C | 两算法配置 | Reward 配置对应的完整展开值 | 第一轮除算法外信息、奖励和运行条件一致 |
 | `experiments/configs/dqn_no_danger.json`、`dqn_no_crate_reward.json` / C | 两个固定消融配置 | A/B 定义消融含义 | 各只改变一个实验因素，分别重新训练 |
 | `tools/package_agent.py` / C | 指定检查点和展开配置 → 可独立加载的智能体目录及 zip | 存储格式、自有目录 | 只打包选中模型，重新加载检查通过后才输出成功 |
 | `requirements.txt` / C | 项目直接依赖清单 | 实际实现与兼容性结果 | 记录验证过的版本；不照抄旧项目整套依赖 |
 | `agent_code/team_agent/requirements.txt` / C | 参赛包依赖 | 所选算法 | Q 表包无需 PyTorch；DQN 包包含 PyTorch 依赖 |
->>>>>>> e6253fd1 (add more feature id, reward id, and model)
 
 配置使用标准 JSON，不做隐式配置继承。实验运行保存完整展开值和源配置 SHA256。公共 `Features` 契约放在 `features.py`，各算法的转移和模型状态留在自己包内。
 
@@ -237,7 +234,7 @@ CPU 模式固定 PyTorch 单线程；Q 表路径延迟导入或完全不导入 P
 
 | 项目 | 初始值 |
 |---|---:|
-| `COIN_COLLECTED` 每次 | +1 |
+| `COIN_COLLECTED` 每次 | `r1`: +1；`r1_coin3`: +3 |
 | `KILLED_OPPONENT` 每次 | +5 |
 | `CRATE_DESTROYED` 每次 | +0.2 |
 | 存在 `KILLED_SELF` 或 `GOT_KILLED` | 合计 −10，一次 |
@@ -246,8 +243,10 @@ CPU 模式固定 PyTorch 单线程；Q 表路径延迟导入或完全不导入 P
 
 不对 BOMB_DROPPED、COIN_FOUND、SURVIVED_ROUND 单独加分，不给预测击杀大额奖励。事件列表可能有多次炸箱/击杀，不能转换成 set 后再统一求和；只有死亡使用布尔去重。合法动作仍可能因其他智能体先行动而失败，故保留无效动作处理。
 
-返回奖励分项，分别记录真实游戏得分和训练奖励。奖励版本为 `r1`；兼容名称
-`r1_no_crate` 当前采用金币 `+3`、炸箱 `0`，因此不再是相对 `r1` 的严格单因素消融。
+返回奖励分项，分别记录真实游戏得分和训练奖励。`r1` 保持金币 +1；本轮正式课程使用
+`r1_coin3`，它只把金币改为 +3。对应的严格单因素炸箱消融分别为
+`r1_no_crate` 和 `r1_coin3_no_crate`。任何 Reward ID 或完整奖励表变化都必须从 Task 1
+重新训练。
 
 ### 6.5 配置、存档与恢复
 
@@ -259,7 +258,7 @@ CPU 模式固定 PyTorch 单线程；Q 表路径延迟导入或完全不导入 P
 - Q 表保存整数键数组和浮点 Q 数组到 NPZ（读取禁用对象 pickle），附 JSON 元数据；DQN 保存 `state_dict`，不 pickle 整个模型对象。
 - 完整训练检查点包含策略网络、目标网络、优化器、回放池、自有 RNG 状态、NumPy Generator 状态、CPU/CUDA Torch RNG 状态、训练设备、动作步数、更新步数、阶段与探索进度；Q 表保存对应适用状态。新建 DQN 前按模型种子设置 Torch RNG；恢复时在网络和优化器构造完成后恢复 RNG，避免初始化消耗改变后续随机序列。GPU 训练启用确定性算法，正式评估始终映射到 CPU。
 - 每个完整回合的训练回调成功返回后保存一代 resume 快照。先写临时 generation，校验文件 SHA256 后原子发布，再原子更新 `latest.json`；只保留最新和上一代。最新一代损坏时自动回退上一代，并在子 run 谱系中记录原因所对应的丢失局数。
-- `--resume-from` 只接受父 run 根目录，并始终创建新的子 run。只允许同 Task 或 `1→2→3→4` 的直接晋级；算法、训练 seed/Agent seed、动作顺序、特征版本、奖励版本、完整探索配置、训练设备和 checkpoint schema 必须一致。当前完整恢复 schema 为 `training-resume-v3`。`--n-rounds` 表示子 run 新增局数。v1/v2 resume 和旧 `final.pkl`/`final.pt` 只允许冻结评估。
+- `--resume-from` 只接受父 run 根目录，并始终创建新的子 run。只允许同 Task 或 `1→2→3→4` 的直接晋级；算法、训练 seed/Agent seed、动作顺序、特征版本、奖励版本、完整奖励表、完整探索配置、训练设备和 checkpoint schema 必须一致。当前完整恢复 schema 为 `training-resume-v4`。`--n-rounds` 表示子 run 新增局数。v1/v2/v3 resume 和旧 `final.pkl`/`final.pt` 只允许冻结评估。
 - 同 Task 只在回合边界精确恢复，包含学习器、世界 RNG、全局 Python/NumPy RNG、下一回合编号和早停历史；早停配置也必须一致。下一 Task 保留学习器完整状态与探索进度，但清空回调 pending/终局去重状态、重置早停，并使用同一训练 seed 重建环境与官方对手随机流。跨机器/库版本不承诺逐位一致，记录环境差异。
 - 旧 `final.pkl`/`final.pt` 仍可用于冻结评估；缺少 resume schema 的旧 checkpoint 不能用于精确续训。
 - 参赛导出仅保留推理权重、配置和所选算法依赖，不包含优化器、回放池、训练日志或本机绝对路径。
@@ -327,7 +326,11 @@ runs/<run_id>/
 
 GPU/CPU smoke 只证明工程链路，不进入正式训练谱系或模型比较。Task 1、seed 11 的留存证据为：Q-learning CPU 100 局约 349.95 秒，39,040 次动作、50 个 Q 状态；其 5 局 CPU 冻结评估共收集 158 枚金币。DQN A100 100 局约 1,183.42 秒、36,358 次 optimizer update、峰值显存约 65.2 MiB；其 5 局 CPU 冻结评估共收集 94 枚金币。DQN CPU 前 20 局约 120 秒，而 GPU 同阶段约 130 秒，因此正式训练选择 CPU。所有 smoke 均未在 Task 1 使用 `BOMB`，且未发现超时或硬错误。
 
-正式开训前必须满足：完整测试、`py_compile` 和 `git diff --check` 通过；代码、配置和本指南冻结为干净提交；六条主链的 `source_commit`、`source_hash` 与源配置 hash 一致。正式配置固定 CPU、`v1`、`r1`、sampled replay 和关闭 early stopping。硬错误或行为修复改变源码后，所有受影响的公平对照链从 Task 1 重训，不跨 commit 续训。
+已有六条 500 局 Task 1 run 保持原始 `r1 + discrete-v1` 身份，作为冻结评估证据。
+它们的 v3 snapshots 不得作为 `r1_coin3` 课程的恢复来源，也不改写原始 metadata、
+checkpoint 或训练记录。
+
+正式开训前必须满足：完整测试、`py_compile` 和 `git diff --check` 通过；代码、配置和本指南冻结为干净提交；六条主链的 `source_commit`、`source_hash` 与源配置 hash 一致。专用配置 `formal_training_coin3.json` 固定 CPU、`discrete-v1`、`r1_coin3`、sampled replay 和关闭 early stopping。硬错误或行为修复改变源码后，所有受影响的公平对照链从 Task 1 重训，不跨 commit 续训。
 
 ### 8.2 六条独立课程链
 
@@ -342,7 +345,9 @@ Q-learning 与 DQN 各使用训练 seeds 11、22、33，共六条链。最多启
 
 Task 3 同时使用两名弱对手，是团队对官方 SHOULD 课程路线的合并实现；不是两个可互换的单对手实验。每阶段默认保存第 1 局及 10% 进度回放，每回合仍提交两代完整 resume generation。中断后按已完成局数补足本阶段预算，修复后新 run 使用 `_retryN`，不得覆盖旧目录。
 
-命名模板为 `formal_<q|dqn>_v1_r1_s<seed>_t<task>_r<local-rounds>`；同配置追加可增加 `_cont<rounds>`，故障重跑增加 `_retryN`。名称只作索引，累计局数和谱系以 metadata 为准。
+新 coin +3 课程的命名模板为
+`formal_<q|dqn>_discrete_v1_r1_coin3_s<seed>_t<task>_r<local-rounds>`；同配置追加可增加
+`_cont<rounds>`，故障重跑增加 `_retryN`。名称只作索引，累计局数和谱系以 metadata 为准。
 
 ### 8.3 每阶段 20-seed 门槛
 
@@ -366,7 +371,7 @@ Task 3 同时使用两名弱对手，是团队对官方 SHOULD 课程路线的�
 - 9 月 13 日：Task 1–2 训练与阶段门槛。
 - 9 月 14–15 日：Task 3–4 训练与阶段门槛。
 - 9 月 16 日：选择最早合格的 Task 4 checkpoint，完成原版框架、Docker、CPU、三 random/三 rule-based 兼容检查并生成预测试包。若无合格 Task 4，依次降级为表现最佳的失败 Task 4、合格 Task 3、合格 Task 2，并明确标记保底候选。
-- 9 月 17 日预测试后：DQN 的 `v1_no_danger` 与 `r1_no_crate` 分别从零运行 seed 11 的完整课程。其 100-seed `mean_score` 相对基础 DQN 的变化满足 `abs(variant-base) / max(abs(base), 1) >= 10%` 时，才复制 seeds 22/33；完成同等验证后方可参与最终模型族选择。
+- 9 月 17 日预测试后：DQN 的 `v1_no_danger` 与 `r1_coin3_no_crate` 分别从零运行 seed 11 的完整课程。其 100-seed `mean_score` 相对基础 DQN 的变化满足 `abs(variant-base) / max(abs(base), 1) >= 10%` 时，才复制 seeds 22/33；完成同等验证后方可参与最终模型族选择。
 - 9 月 20 日：冻结最终 Agent；预留一天处理 9 月 21 日提交。
 
 原计划未完成必须标为未完成，不能把较短预算当成相同预算比较。训练可在自有智能体死亡后按官方训练规则结束；阶段门槛、主验证和最终测试必须让整局正常结束。
@@ -453,26 +458,16 @@ conda run --no-capture-output -n mle python -m unittest discover -s tests -p "te
 并行启动六条链前，在每个训练终端设置 `OMP_NUM_THREADS=1` 与 `MKL_NUM_THREADS=1`；DQN
 自身还会调用 `torch.set_num_threads(1)`。每条命令只启动一条链，绝不并行启动同一链的两个阶段。
 
-<<<<<<< HEAD
 以下以 Q-learning seed 11 演示一条链；DQN 仅将 `q_learning_agent`/`q` 替换为 `dqn_agent`/`dqn`。Task 1 必须从零开始，后续 Task 必须引用直接父 run：
 
 ```bash
-conda run --no-capture-output -n mle python experiments/run.py --config experiments/configs/formal_training.json --mode train --device cpu --task 1 --agent q_learning_agent --n-rounds 500 --seed 11 --run-id formal_q_v1_r1_s11_t1_r500
+conda run --no-capture-output -n mle python experiments/run.py --config experiments/configs/formal_training_coin3.json --mode train --device cpu --task 1 --agent q_learning_agent --n-rounds 500 --seed 11 --run-id formal_q_discrete_v1_r1_coin3_s11_t1_r500
 
-conda run --no-capture-output -n mle python experiments/run.py --config experiments/configs/formal_training.json --mode train --device cpu --task 2 --agent q_learning_agent --n-rounds 1000 --seed 11 --resume-from runs/formal_q_v1_r1_s11_t1_r500 --run-id formal_q_v1_r1_s11_t2_r1000
+conda run --no-capture-output -n mle python experiments/run.py --config experiments/configs/formal_training_coin3.json --mode train --device cpu --task 2 --agent q_learning_agent --n-rounds 1000 --seed 11 --resume-from runs/formal_q_discrete_v1_r1_coin3_s11_t1_r500 --run-id formal_q_discrete_v1_r1_coin3_s11_t2_r1000
 
-conda run --no-capture-output -n mle python experiments/run.py --config experiments/configs/formal_training.json --mode train --device cpu --task 3 --agent q_learning_agent --n-rounds 1500 --seed 11 --resume-from runs/formal_q_v1_r1_s11_t2_r1000 --run-id formal_q_v1_r1_s11_t3_r1500
+conda run --no-capture-output -n mle python experiments/run.py --config experiments/configs/formal_training_coin3.json --mode train --device cpu --task 3 --agent q_learning_agent --n-rounds 1500 --seed 11 --resume-from runs/formal_q_discrete_v1_r1_coin3_s11_t2_r1000 --run-id formal_q_discrete_v1_r1_coin3_s11_t3_r1500
 
-conda run --no-capture-output -n mle python experiments/run.py --config experiments/configs/formal_training.json --mode train --device cpu --task 4 --agent q_learning_agent --n-rounds 3000 --seed 11 --resume-from runs/formal_q_v1_r1_s11_t3_r1500 --run-id formal_q_v1_r1_s11_t4_r3000
-=======
-```powershell
-python -m unittest discover -s tests -p "test_*.py"
-python experiments/run.py --config experiments/configs/reward_r2_balanced.json --mode train --task 1 --agent q_learning_agent --n-rounds 10000 --seed 11 --run-id q_task1_s11
-python experiments/run.py --config experiments/configs/reward_r2_balanced.json --mode train --task 3 --agent dqn_agent --n-rounds 10000 --seed 11 --run-id dqn_task3_s11
-python experiments/run.py --config experiments/configs/reward_r2_balanced.json --mode evaluate --task 3 --agent dqn_agent --checkpoint runs/dqn_task3_s11/checkpoints/final.pt --run-id dqn_task3_validation
-python experiments/analyze.py --runs runs/q_learning_s11_validation runs/dqn_s11_validation --output results/model_comparison
-python tools/package_agent.py --config runs/selected/config.json --checkpoint runs/selected/checkpoint --output final-project-agent-code.zip
->>>>>>> e6253fd1 (add more feature id, reward id, and model)
+conda run --no-capture-output -n mle python experiments/run.py --config experiments/configs/formal_training_coin3.json --mode train --device cpu --task 4 --agent q_learning_agent --n-rounds 3000 --seed 11 --resume-from runs/formal_q_discrete_v1_r1_coin3_s11_t3_r1500 --run-id formal_q_discrete_v1_r1_coin3_s11_t4_r3000
 ```
 
 Task 3 会固定加入 `peaceful_agent` 和 `coin_collector_agent`；Task 4 默认加入三名 `rule_based_agent`，无需手写 `--opponents`。另外五条链分别使用 Q-learning seeds 22/33 和 DQN seeds 11/22/33，可在独立终端作为单线程进程并行启动。
@@ -482,7 +477,7 @@ Task 1 合法均匀随机诊断基线与候选阶段门槛示例：
 ```bash
 conda run --no-capture-output -n mle python experiments/run.py --config experiments/configs/stage_gate.json --mode evaluate --task 1 --agent legal_random_agent --checkpoint agent_code/legal_random_agent/baseline.json --run-id gate_legal_random_t1
 
-conda run --no-capture-output -n mle python experiments/run.py --config experiments/configs/stage_gate.json --mode evaluate --task 1 --agent q_learning_agent --checkpoint runs/formal_q_v1_r1_s11_t1_r500/checkpoints/final.pkl --run-id gate_formal_q_v1_r1_s11_t1
+conda run --no-capture-output -n mle python experiments/run.py --config experiments/configs/stage_gate.json --mode evaluate --task 1 --agent q_learning_agent --checkpoint runs/formal_q_discrete_v1_r1_coin3_s11_t1_r500/checkpoints/final.pkl --run-id gate_formal_q_discrete_v1_r1_coin3_s11_t1
 ```
 
 主验证改用 `main_validation.json`，且 Task 4 对三名规则对手运行；冻结唯一胜者后才改用 `final_test.json`。配置已分别固定 10000–10099 和 20000–20099，每个 seed 一局，不再使用“5 seeds×20 局”。正式训练不使用 `--silence-errors`，也不在本轮指南更新时自动启动。

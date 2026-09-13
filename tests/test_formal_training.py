@@ -7,6 +7,7 @@ from unittest.mock import Mock, patch
 
 from agent_code.legal_random_agent.callbacks import act, setup
 from agent_code.team_agent.features import ACTIONS, extract_features
+from agent_code.team_agent.rewards import resolve_reward_spec
 from tests.test_danger import make_game_state
 
 
@@ -15,6 +16,29 @@ CONFIG_ROOT = PROJECT_ROOT / "experiments" / "configs"
 
 
 class FormalConfigurationTestCase(unittest.TestCase):
+    def test_existing_formal_configs_preserve_r1(self):
+        for name in (
+            "base.json",
+            "formal_training.json",
+            "stage_gate.json",
+            "main_validation.json",
+            "final_test.json",
+        ):
+            with self.subTest(name=name):
+                config = json.loads((CONFIG_ROOT / name).read_text())
+                self.assertEqual(config["reward_version"], "r1")
+                self.assertEqual(
+                    resolve_reward_spec(config["reward_version"])["coin_collected"], 1.0)
+
+    def test_coin3_training_is_an_explicit_frozen_feature_variant(self):
+        config = json.loads(
+            (CONFIG_ROOT / "formal_training_coin3.json").read_text())
+        self.assertEqual(config["feature_id"], "discrete-v1")
+        self.assertEqual(config["feature_version"], "v1")
+        self.assertEqual(config["reward_id"], "r1_coin3")
+        self.assertEqual(
+            resolve_reward_spec(config["reward_id"])["coin_collected"], 3.0)
+
     def test_formal_training_budget_and_exploration_are_pre_registered(self):
         config = json.loads((CONFIG_ROOT / "formal_training.json").read_text())
 

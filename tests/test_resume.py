@@ -28,6 +28,14 @@ EXPLORATION_SPEC = {
     "end": 0.05,
     "decay_action_steps": 1_920_000,
 }
+REWARD_SPEC = {
+    "step": -0.01,
+    "coin_collected": 1.0,
+    "killed_opponent": 5.0,
+    "crate_destroyed": 0.2,
+    "death": -10.0,
+    "invalid_action": -0.1,
+}
 
 
 class ResumeProtocolTestCase(unittest.TestCase):
@@ -38,11 +46,13 @@ class ResumeProtocolTestCase(unittest.TestCase):
                 "algorithm": "q_learning",
                 "actions": ["UP", "RIGHT", "DOWN", "LEFT", "WAIT", "BOMB"],
                 "feature_version": "v1",
+                "feature_id": "discrete-v1",
+                "feature_schema": feature_schema_contract("discrete-v1"),
+                "network_spec": None,
+                "hyperparameters": {},
+                "reward_id": "r1",
                 "reward_version": "r1",
-                "reward_spec": {
-                    "step": -0.01, "coin": 1.0, "kill": 5.0,
-                    "crate": 0.2, "death": -10.0, "invalid": -0.1,
-                },
+                "reward_spec": REWARD_SPEC,
                 "training_device_type": "cpu",
                 "training_device_name": None,
                 "agent_seed": 11,
@@ -97,6 +107,7 @@ class ResumeProtocolTestCase(unittest.TestCase):
         parent = {
             "algorithm": "q_learning", "seed": 11, "task": "crate_navigation",
             "feature_version": "v1", "reward_version": "r1",
+            "reward_spec": REWARD_SPEC,
             "checkpoint_schema": CHECKPOINT_SCHEMA_VERSION,
             "training_device_type": "cpu", "training_device_name": None,
             "agent_seed": 11, "exploration_spec": EXPLORATION_SPEC,
@@ -112,6 +123,11 @@ class ResumeProtocolTestCase(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "reward_version"):
             validate_resume_transition(parent, {
                 **parent, "reward_version": "r1_no_crate",
+            }, parent_status="completed")
+        with self.assertRaisesRegex(ValueError, "reward_spec"):
+            validate_resume_transition(parent, {
+                **parent,
+                "reward_spec": {**REWARD_SPEC, "coin_collected": 3.0},
             }, parent_status="completed")
         self.assertEqual(
             validate_resume_transition(parent, dict(parent), parent_status="running"),
@@ -169,11 +185,13 @@ class ResumeProtocolTestCase(unittest.TestCase):
                 "algorithm": "dqn",
                 "actions": ["UP", "RIGHT", "DOWN", "LEFT", "WAIT", "BOMB"],
                 "feature_version": "v1",
+                "feature_id": "discrete-v1",
+                "feature_schema": feature_schema_contract("discrete-v1"),
+                "network_spec": None,
+                "hyperparameters": {},
+                "reward_id": "r1",
                 "reward_version": "r1",
-                "reward_spec": {
-                    "step": -0.01, "coin": 1.0, "kill": 5.0,
-                    "crate": 0.2, "death": -10.0, "invalid": -0.1,
-                },
+                "reward_spec": REWARD_SPEC,
                 "training_task": "coin_navigation",
                 "training_device_type": "cuda",
                 "training_device_name": "NVIDIA A100-PCIE-40GB",
@@ -198,7 +216,7 @@ class ResumeProtocolTestCase(unittest.TestCase):
             materialize_learner_checkpoint(loaded, destination)
             restored = torch.load(destination, map_location="cpu", weights_only=True)
             self.assertEqual(restored["checkpoint_schema"], CHECKPOINT_SCHEMA_VERSION)
-            self.assertEqual(CHECKPOINT_SCHEMA_VERSION, "training-resume-v3")
+            self.assertEqual(CHECKPOINT_SCHEMA_VERSION, "training-resume-v4")
             self.assertIn("replay", restored)
 
 

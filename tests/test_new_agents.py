@@ -19,6 +19,7 @@ from agent_code.learning_common.replay import (
     encode_board,
 )
 from agent_code.learning_common.runtime import effective_legal_mask, epsilon_at
+from agent_code.team_agent.rewards import resolve_reward_spec
 from agent_code.double_q_compact_agent import callbacks as dq_callbacks
 from agent_code.double_q_compact_agent import train as dq_train
 from agent_code.double_q_compact_agent.features import canonical_legal_mask
@@ -273,13 +274,16 @@ class CheckpointTests(unittest.TestCase):
             root = Path(directory)
             checkpoint = root / "checkpoint.pkl"
             payload = {
-                "checkpoint_schema": "training-resume-v1",
+                "checkpoint_schema": "training-resume-v4",
                 "algorithm": "double_q_learning", "actions": list(dq_callbacks.ACTIONS),
                 "feature_id": dq_callbacks.FEATURE_ID,
                 "feature_schema": dq_callbacks.FEATURE_SCHEMA,
-                "reward_id": "r1", "reward_version": "r1", "reward_spec": {},
+                "reward_id": "r1", "reward_version": "r1",
+                "reward_spec": resolve_reward_spec("r1"),
                 "training_task": "coin_navigation", "network_spec": None,
                 "hyperparameters": dq_callbacks.HYPERPARAMETERS,
+                "agent_seed": 11, "exploration_spec": {},
+                "training_device_name": None, "training_device_type": "cpu",
                 "q_table_a": {(1,) * 12: np.ones(6, dtype=np.float32)},
                 "q_table_b": {(2,) * 12: np.full(6, 2, dtype=np.float32)},
             }
