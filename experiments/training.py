@@ -9,13 +9,9 @@ from typing import Any, Callable, Sequence
 
 import numpy as np
 
-<<<<<<< HEAD
-from agent_code.team_agent.features import ACTIONS, FEATURE_VERSION
+from agent_code.team_agent.feature_system import ACTIONS, normalize_feature_id
 from agent_code.team_agent.exploration import resolve_exploration_spec
-=======
-from agent_code.team_agent.features import ACTIONS
->>>>>>> e6253fd1 (add more feature id, reward id, and model)
-from agent_code.team_agent.rewards import REWARD_VERSION
+from agent_code.team_agent.rewards import REWARD_VERSION, resolve_reward_spec
 from experiments.devices import resolve_device
 from experiments.resume import (
     CHECKPOINT_SCHEMA_VERSION,
@@ -150,7 +146,14 @@ def run_training_mode(
     checkpoint = output / "checkpoints" / checkpoint_name(args.agent)
     replay_interval = args.replay_interval or replay_progress_interval(n_rounds)
     stopping_config = early_stopping_config(training)
-    algorithm = "dqn" if "dqn" in args.agent.lower() else "q_learning"
+    configured_id = config.get("feature_id")
+    configured_legacy = config.get("feature_version")
+    requested_feature_id = (
+        None if configured_id is None and configured_legacy is None
+        else normalize_feature_id(configured_id, configured_legacy)
+    )
+    agent_contract = resolve_agent_contract(args.agent, requested_feature_id)
+    algorithm = agent_contract.algorithm
     requested_device = args.device or training.get("device", "auto")
     device_info = resolve_device(algorithm, "train", requested_device)
     positional = (
@@ -172,11 +175,7 @@ def run_training_mode(
         raise ValueError("Parent run is missing metadata.json")
     import json
     parent_metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
-<<<<<<< HEAD
-=======
-    agent_contract = resolve_agent_contract(args.agent)
-    algorithm = agent_contract.algorithm
->>>>>>> e6253fd1 (add more feature id, reward id, and model)
+    reward_id = config.get("reward_id", config.get("reward_version", REWARD_VERSION))
     child_contract = {
         "algorithm": algorithm,
         "seed": seed,
@@ -185,23 +184,19 @@ def run_training_mode(
         "feature_schema": agent_contract.feature_schema,
         "feature_version": (
             "v1" if agent_contract.feature_id == "discrete-v1" else None),
-        "reward_id": config.get(
-            "reward_id", config.get("reward_version", REWARD_VERSION)),
-        "reward_version": config.get(
-            "reward_id", config.get("reward_version", REWARD_VERSION)),
+        "reward_id": reward_id,
+        "reward_version": reward_id,
+        "reward_spec": resolve_reward_spec(reward_id),
         "checkpoint_schema": CHECKPOINT_SCHEMA_VERSION,
         "actions": list(ACTIONS),
-<<<<<<< HEAD
         "training_device_name": device_info["name"],
         "training_device_type": device_info["type"],
         "agent_seed": seed,
         "exploration_spec": resolve_exploration_spec(training.get("exploration")),
         "source_commit": source_commit,
         "source_hash": source_hash,
-=======
         "network_spec": agent_contract.network_spec,
         "hyperparameters": agent_contract.hyperparameters,
->>>>>>> e6253fd1 (add more feature id, reward id, and model)
     }
     parent_status = parent_metadata.get("status", "unknown")
     resume_kind = validate_resume_transition(

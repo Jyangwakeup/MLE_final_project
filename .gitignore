@@ -127,12 +127,5 @@ runs/
 checkpoints/
 
 # Local Agent configuration and in-progress Agent artifacts
-# /AGENTS.md
-# /Agent/
-=======
 /AGENTS.md
 /Agent/
-
-tmp/pdfs/
-output
->>>>>>> d4057d32 (q learning)

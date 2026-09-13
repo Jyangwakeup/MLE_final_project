@@ -147,6 +147,8 @@ def neural_end_round(self, last_game_state, last_action, events, *, actions,
         "reward_version": self.reward_id, "reward_spec": self.reward_spec,
         "hyperparameters": hyperparameters, "network_spec": network_spec,
         "action_steps": self.action_steps, "agent_rng_state": self.rng.getstate(),
+        "agent_seed": getattr(self, "agent_seed", 0),
+        "exploration_spec": getattr(self, "exploration_spec", {}),
         "training_task": self.training_task,
     })
     save_checkpoint_atomic(self.model_file, checkpoint, torch.save)

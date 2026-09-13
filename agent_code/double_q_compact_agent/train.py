@@ -126,6 +126,9 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
         "q_table_a": self.q_table_a, "q_table_b": self.q_table_b,
         "training_steps": self.action_steps, "action_steps": self.action_steps,
         "rng_state": self.rng.getstate(), "agent_rng_state": self.rng.getstate(),
+        "agent_seed": getattr(self, "agent_seed", 0),
+        "exploration_spec": getattr(self, "exploration_spec", {}),
+        "training_device_name": None, "training_device_type": "cpu",
         "training_task": self.training_task,
     }
     save_checkpoint_atomic(self.model_file, checkpoint, _save_pickle)

@@ -22,7 +22,7 @@ from agent_code.team_agent.feature_system import (
 )
 
 
-CHECKPOINT_SCHEMA_VERSION = "training-resume-v3"
+CHECKPOINT_SCHEMA_VERSION = "training-resume-v4"
 TASK_ORDER = ("coin_navigation", "crate_navigation", "weak_opponents", "full_match")
 RETAINED_GENERATIONS = 2
 TABLE_ALGORITHMS = frozenset(("q_learning", "double_q_learning"))
@@ -60,19 +60,17 @@ class LoadedSnapshot:
             "feature_version": metadata.get("feature_version"),
             "reward_id": metadata.get("reward_id", metadata["reward_version"]),
             "reward_version": metadata["reward_version"],
+            "reward_spec": metadata["reward_spec"],
             "checkpoint_schema": metadata["checkpoint_schema"],
             "training_device_name": metadata["training_device_name"],
             "training_device_type": metadata["training_device_type"],
             "actions": metadata["actions"],
-<<<<<<< HEAD
             "agent_seed": metadata["agent_seed"],
             "exploration_spec": metadata["exploration_spec"],
             "source_commit": self.source_commit,
             "source_hash": self.source_hash,
-=======
             "network_spec": metadata.get("network_spec"),
             "hyperparameters": metadata.get("hyperparameters", {}),
->>>>>>> e6253fd1 (add more feature id, reward id, and model)
         }
 
 
@@ -176,15 +174,10 @@ def commit_training_snapshot(
     try:
         learner = _read_checkpoint_metadata(checkpoint, algorithm)
         required = {
-<<<<<<< HEAD
-            "checkpoint_schema", "algorithm", "actions", "feature_version",
-            "reward_version", "reward_spec", "training_task",
-            "training_device_name", "training_device_type",
-            "agent_seed", "exploration_spec",
-=======
-            "checkpoint_schema", "algorithm", "actions", "reward_spec",
-            "training_task",
->>>>>>> e6253fd1 (add more feature id, reward id, and model)
+            "checkpoint_schema", "algorithm", "actions", "feature_id",
+            "feature_schema", "reward_id", "reward_version", "reward_spec",
+            "training_task", "training_device_name", "training_device_type",
+            "agent_seed", "exploration_spec", "network_spec", "hyperparameters",
         }
         missing = sorted(required.difference(learner))
         if missing:
@@ -238,15 +231,10 @@ def commit_training_snapshot(
             "contract": {
                 "actions": list(learner["actions"]),
                 "checkpoint_schema": CHECKPOINT_SCHEMA_VERSION,
-<<<<<<< HEAD
-                "feature_version": learner["feature_version"],
                 "agent_seed": learner["agent_seed"],
                 "exploration_spec": learner["exploration_spec"],
-                "reward_spec": learner["reward_spec"],
-                "reward_version": learner["reward_version"],
                 "training_device_name": learner["training_device_name"],
                 "training_device_type": learner["training_device_type"],
-=======
                 "feature_id": feature_id,
                 "feature_schema": feature_schema,
                 "feature_version": learner.get("feature_version"),
@@ -255,7 +243,6 @@ def commit_training_snapshot(
                 "reward_version": learner["reward_version"],
                 "network_spec": learner.get("network_spec"),
                 "hyperparameters": learner.get("hyperparameters", {}),
->>>>>>> e6253fd1 (add more feature id, reward id, and model)
             },
             "cumulative_completed_rounds": (
                 int(round_index)
@@ -417,15 +404,11 @@ def validate_resume_transition(
     parent: dict[str, Any], child: dict[str, Any], *, parent_status: str
 ) -> str:
     """Validate curriculum and compatibility contracts; return resume kind."""
-<<<<<<< HEAD
     for field in (
-        "algorithm", "seed", "feature_version", "reward_version", "checkpoint_schema",
+        "algorithm", "seed", "checkpoint_schema", "reward_spec",
         "training_device_type", "training_device_name", "agent_seed", "exploration_spec",
         "source_commit", "source_hash",
     ):
-=======
-    for field in ("algorithm", "seed", "checkpoint_schema"):
->>>>>>> e6253fd1 (add more feature id, reward id, and model)
         if parent.get(field) != child.get(field):
             raise ValueError(f"Resume {field} must match the parent run")
     try:

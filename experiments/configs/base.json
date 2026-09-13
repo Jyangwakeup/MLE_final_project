@@ -1,0 +1,32 @@
+{
+  "algorithm": null,
+  "feature_id": null,
+  "feature_version": null,
+  "reward_id": "r1",
+  "reward_version": "r1",
+  "seed": null,
+  "checkpoint": null,
+  "evaluation": {
+    "device": "cpu",
+    "seeds": [10001, 10002, 10003, 10004, 10005],
+    "n_rounds": 20
+  },
+  "training": {
+    "device": "auto",
+    "n_rounds": null,
+    "exploration": {
+      "version": "linear-v1",
+      "start": 1.0,
+      "end": 0.05,
+      "decay_action_steps": 1920000
+    },
+    "early_stopping": {
+      "enabled": true,
+      "window": 100,
+      "patience": 100,
+      "min_rounds": 300,
+      "min_delta": 0.1,
+      "target_reward": null
+    }
+  }
+}

@@ -18,10 +18,22 @@ def resolve_device(algorithm: str, mode: str, requested: str) -> dict[str, Any]:
     """Validate a requested device and return metadata for the actual device."""
     if requested not in DEVICE_CHOICES:
         raise ValueError(f"device must be one of {', '.join(DEVICE_CHOICES)}")
-    if algorithm in {"q_learning", "legal_random"}:
+    if algorithm in {"q_learning", "double_q_learning", "legal_random"}:
         if requested == "cuda":
-            label = "Q-learning" if algorithm == "q_learning" else "Legal random"
+            labels = {
+                "q_learning": "Q-learning",
+                "double_q_learning": "Double Q-learning",
+                "legal_random": "Legal random",
+            }
+            label = labels[algorithm]
             raise ValueError(f"{label} always runs on CPU; CUDA is not applicable")
+        return _metadata(requested, "cpu")
+    cpu_neural = {
+        "double_dqn", "cnn_double_dqn", "hybrid_dueling_double_dqn",
+    }
+    if algorithm in cpu_neural:
+        if requested == "cuda":
+            raise ValueError(f"{algorithm} currently supports CPU only")
         return _metadata(requested, "cpu")
     if algorithm != "dqn":
         raise ValueError(f"Unsupported algorithm: {algorithm!r}")
