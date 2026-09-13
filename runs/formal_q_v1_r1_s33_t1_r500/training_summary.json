@@ -1,0 +1,15 @@
+{
+  "algorithm": "q_learning",
+  "best_round": 483,
+  "best_round_reward": 39.990000000000066,
+  "checkpoint": "/export/data/sfan/MLE_final_project/runs/formal_q_v1_r1_s33_t1_r500/checkpoints/final.pkl",
+  "final_action_steps": 200000,
+  "final_epsilon": 0.9010416666666666,
+  "final_loss": null,
+  "final_q_states": 50,
+  "final_updates": null,
+  "mean_reward": 19.997999999999884,
+  "mean_reward_last_100": 22.709999999999816,
+  "rounds": 500,
+  "schema_version": "training-summary-v1"
+}

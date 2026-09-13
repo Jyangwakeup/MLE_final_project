@@ -1,0 +1,160 @@
+{
+  "agent_seed": 22,
+  "algorithm": "q_learning",
+  "checkpoint_schema": "training-resume-v3",
+  "config_path": "/export/data/sfan/MLE_final_project/experiments/configs/formal_training.json",
+  "config_sha256": "291b3023fef8a5ab7f95bddb22c016a412ac40a36c0640e086a63a6e8ef98a63",
+  "config_source_sha256": "1e83a4a7a9550cb9be3df16c4493361030b3fe66871e586efbf834f663284a01",
+  "dependencies": {
+    "numpy": "2.2.6",
+    "pygame": null,
+    "tqdm": "4.70.0"
+  },
+  "device": {
+    "actual": "cpu",
+    "cuda_version": "11.8",
+    "cuda_visible_devices": null,
+    "name": null,
+    "requested": "cpu",
+    "torch_version": "2.5.1",
+    "type": "cpu"
+  },
+  "ended_at": "2026-09-12T21:59:59.904019+00:00",
+  "error": null,
+  "expanded_config": {
+    "algorithm": "q_learning",
+    "checkpoint": null,
+    "curriculum": {
+      "retry_rounds": {
+        "1": 125,
+        "2": 250,
+        "3": 375,
+        "4": 750
+      },
+      "rounds": {
+        "1": 500,
+        "2": 1000,
+        "3": 1500,
+        "4": 3000
+      },
+      "training_seeds": [
+        11,
+        22,
+        33
+      ]
+    },
+    "evaluation": {
+      "device": "cpu",
+      "n_rounds": 1,
+      "seeds": [
+        10000,
+        10001,
+        10002,
+        10003,
+        10004,
+        10005,
+        10006,
+        10007,
+        10008,
+        10009,
+        10010,
+        10011,
+        10012,
+        10013,
+        10014,
+        10015,
+        10016,
+        10017,
+        10018,
+        10019
+      ]
+    },
+    "execution": {
+      "agent": "q_learning_agent",
+      "allow_bomb": false,
+      "checkpoint": "/export/data/sfan/MLE_final_project/runs/formal_q_v1_r1_s22_t1_r500/checkpoints/final.pkl",
+      "device": {
+        "actual": "cpu",
+        "cuda_version": "11.8",
+        "cuda_visible_devices": null,
+        "name": null,
+        "requested": "cpu",
+        "torch_version": "2.5.1",
+        "type": "cpu"
+      },
+      "n_rounds": 500,
+      "opponents": [],
+      "replay_interval": 50,
+      "replay_policy": "sampled",
+      "scenario": "coin-heaven",
+      "task": "coin_navigation"
+    },
+    "feature_version": "v1",
+    "resolved_rewards": {
+      "coin_collected": 1.0,
+      "crate_destroyed": 0.2,
+      "death": -10.0,
+      "invalid_action": -0.1,
+      "killed_opponent": 5.0,
+      "step": -0.01
+    },
+    "reward_version": "r1",
+    "seed": 22,
+    "training": {
+      "device": "cpu",
+      "early_stopping": {
+        "enabled": false
+      },
+      "exploration": {
+        "decay_action_steps": 1920000,
+        "end": 0.05,
+        "start": 1.0,
+        "version": "linear-v1"
+      },
+      "n_rounds": null
+    }
+  },
+  "exploration_spec": {
+    "decay_action_steps": 1920000,
+    "end": 0.05,
+    "start": 1.0,
+    "version": "linear-v1"
+  },
+  "feature_version": "v1",
+  "hardware": {
+    "cpu_count": 64,
+    "machine": "x86_64",
+    "processor": "x86_64"
+  },
+  "lineage": null,
+  "mode": "train",
+  "python_version": "3.10.21",
+  "reward_version": "r1",
+  "rewards": {
+    "coin_collected": 1.0,
+    "crate_destroyed": 0.2,
+    "death": -10.0,
+    "invalid_action": -0.1,
+    "killed_opponent": 5.0,
+    "step": -0.01
+  },
+  "run_id": "formal_q_v1_r1_s22_t1_r500",
+  "seed": 22,
+  "seeds": {
+    "environment_seed": 1022,
+    "experiment_seed": 22,
+    "official_opponent_seed": 3022
+  },
+  "source_commit": "1fb6d180a44636dc8477a777cbc809e3389bd86e",
+  "source_hash": "f0fbaf4d8d47ba0a414b21edb0a5ecd929a037a8dd2d256fe48ab6e097a31f13",
+  "started_at": "2026-09-12T21:32:01.296600+00:00",
+  "status": "completed",
+  "task": "coin_navigation",
+  "termination": {
+    "completed_rounds": 500,
+    "cumulative_completed_rounds": 500,
+    "early_stopping": null,
+    "local_completed_rounds": 500,
+    "requested_rounds": 500
+  }
+}
