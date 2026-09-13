@@ -10,11 +10,12 @@ from typing import Any
 import numpy as np
 
 from agent_code.team_agent.feature_system import validate_checkpoint_feature_contract
+from agent_code.team_agent.exploration import exploration_from_environment
 from agent_code.team_agent.rewards import resolve_reward_spec
 from .temporal_reward import init_temporal_reward_state
 
 
-CHECKPOINT_SCHEMA = "training-resume-v1"
+CHECKPOINT_SCHEMA = "training-resume-v4"
 DEFAULT_REWARD_ID = "r1"
 CHECKPOINT_ENV = "BOMBERMAN_CHECKPOINT"
 FEATURE_ID_ENV = "BOMBERMAN_FEATURE_ID"
@@ -57,6 +58,7 @@ def load_common_configuration(self, *, feature_id: str, default_model: Path) -> 
     self.curriculum_allows_bomb = _flag(ALLOW_BOMB_ENV, True)
     self.agent_seed = int(os.getenv(AGENT_SEED_ENV, "0"))
     self.rng = random.Random(self.agent_seed)
+    self.exploration_spec = exploration_from_environment()
     configured_checkpoint = os.getenv(CHECKPOINT_ENV)
     self.model_file = (
         Path(configured_checkpoint).expanduser().resolve()
@@ -111,8 +113,15 @@ def validate_checkpoint(
     network_spec: dict[str, Any] | None, training: bool,
     training_task: str | None,
 ) -> None:
-    if payload.get("checkpoint_schema") != CHECKPOINT_SCHEMA:
+    checkpoint_schema = payload.get("checkpoint_schema")
+    frozen_schemas = {
+        "training-resume-v1", "training-resume-v2",
+        "training-resume-v3", CHECKPOINT_SCHEMA,
+    }
+    if checkpoint_schema not in frozen_schemas:
         raise ValueError("checkpoint uses an incompatible checkpoint schema")
+    if training and checkpoint_schema != CHECKPOINT_SCHEMA:
+        raise ValueError("legacy checkpoint schemas are frozen-evaluation only")
     if payload.get("algorithm") != algorithm:
         raise ValueError("checkpoint uses an incompatible algorithm")
     board_contract = feature_schema.get("board_shape")
@@ -126,6 +135,11 @@ def validate_checkpoint(
         raise ValueError("checkpoint uses an incompatible feature schema")
     if payload.get("reward_id", payload.get("reward_version")) != reward_id:
         raise ValueError("checkpoint uses an incompatible reward ID")
+    if (
+        checkpoint_schema == CHECKPOINT_SCHEMA
+        and payload.get("reward_spec") != resolve_reward_spec(reward_id)
+    ):
+        raise ValueError("checkpoint uses an incompatible reward specification")
     if tuple(payload.get("actions", ())) != actions:
         raise ValueError("checkpoint uses an incompatible action order")
     if payload.get("hyperparameters") != hyperparameters:

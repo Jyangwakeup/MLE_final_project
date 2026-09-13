@@ -79,7 +79,7 @@ def build_submission(agent: str, checkpoint: Path, output: Path) -> Path:
         team = vendor / "team_agent"
         team.mkdir()
         for name in (
-            "__init__.py", "danger.py", "features.py", "rewards.py",
+            "__init__.py", "danger.py", "exploration.py", "features.py", "rewards.py",
             "temporal_safety_features.py",
         ):
             shutil.copy2(PROJECT_ROOT / "agent_code" / "team_agent" / name, team / name)

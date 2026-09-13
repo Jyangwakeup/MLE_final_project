@@ -7,7 +7,9 @@ from importlib import import_module
 from typing import Any
 
 import settings as s
-from agent_code.team_agent.feature_system import ACTIONS, feature_schema_contract
+from agent_code.team_agent.feature_system import (
+    ACTIONS, feature_schema_contract, normalize_feature_id,
+)
 
 
 @dataclass(frozen=True)
@@ -24,31 +26,53 @@ class AgentContract:
 _BASELINES = {
     "q_learning_agent": ("q_learning", "discrete-q-v2", "final.pkl", None),
     "dqn_agent": ("dqn", "discrete-q-v2", "final.pt", None),
+    "legal_random_agent": ("legal_random", "discrete-v1", "baseline.json", None),
 }
 _NEW_AGENTS = {
     "double_q_compact_agent", "double_dqn_continuous_agent",
     "cnn_double_dqn_agent", "hybrid_dueling_double_dqn_agent",
 }
+_BASELINE_FEATURE_IDS = {"discrete-v1", "discrete-q-v2"}
 
 
-def resolve_agent_contract(agent: str) -> AgentContract:
+def resolve_agent_contract(
+    agent: str, feature_id: str | None = None,
+) -> AgentContract:
     if agent in _BASELINES:
-        algorithm, feature_id, checkpoint, network = _BASELINES[agent]
-        board_shape = None
+        algorithm, default_feature_id, checkpoint, network = _BASELINES[agent]
+        resolved_feature_id = normalize_feature_id(feature_id or default_feature_id)
+        allowed = (
+            {"discrete-v1"}
+            if agent == "legal_random_agent" else _BASELINE_FEATURE_IDS
+        )
+        if resolved_feature_id not in allowed:
+            raise ValueError(
+                f"{agent} only supports {sorted(allowed)}; "
+                f"got {resolved_feature_id!r}")
         return AgentContract(
-            agent, algorithm, feature_id, checkpoint,
-            feature_schema_contract(feature_id, board_shape), network, {},
+            agent, algorithm, resolved_feature_id, checkpoint,
+            feature_schema_contract(resolved_feature_id), network, {},
         )
     if agent not in _NEW_AGENTS:
         raise ValueError(f"experiments do not define a learning contract for {agent!r}")
     module = import_module(f"agent_code.{agent}.callbacks")
     metadata = module.AGENT_METADATA
-    feature_id = metadata["feature_id"]
-    board_shape = (s.COLS, s.ROWS) if feature_id in {"board-v1", "hybrid-v1"} else None
+    fixed_feature_id = metadata["feature_id"]
+    requested_feature_id = normalize_feature_id(feature_id or fixed_feature_id)
+    if requested_feature_id != fixed_feature_id:
+        raise ValueError(
+            f"{agent} requires feature ID {fixed_feature_id!r}; "
+            f"got {requested_feature_id!r}")
+    board_shape = (
+        (s.COLS, s.ROWS)
+        if fixed_feature_id in {"board-v1", "hybrid-v1"} else None
+    )
     contract = AgentContract(
-        agent=agent, algorithm=metadata["algorithm"], feature_id=feature_id,
+        agent=agent,
+        algorithm=metadata["algorithm"],
+        feature_id=fixed_feature_id,
         checkpoint_name=metadata["checkpoint_name"],
-        feature_schema=feature_schema_contract(feature_id, board_shape),
+        feature_schema=feature_schema_contract(fixed_feature_id, board_shape),
         network_spec=metadata["network_spec"],
         hyperparameters=dict(metadata["hyperparameters"]),
     )

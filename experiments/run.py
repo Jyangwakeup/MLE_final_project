@@ -46,8 +46,7 @@ from experiments.training import (
     run_training_mode,
 )
 from main import world_controller
-from agent_code.team_agent.features import ACTIONS
-from agent_code.team_agent.feature_system import normalize_feature_id
+from agent_code.team_agent.feature_system import ACTIONS, normalize_feature_id
 from agent_code.team_agent.rewards import REWARD_VERSION, resolve_reward_spec
 from experiments.agent_contracts import resolve_agent_contract
 
@@ -90,6 +89,34 @@ def _write_json(path: Path, value: dict[str, Any]) -> None:
 def _append_json_line(path: Path, value: dict[str, Any]) -> None:
     with path.open("a", encoding="utf-8") as file:
         file.write(json.dumps(value, sort_keys=True) + "\n")
+
+
+def _checkpoint_reward_contract(
+    checkpoint: Path, algorithm: str,
+) -> dict[str, Any]:
+    """Read reward provenance without changing frozen checkpoint behavior."""
+    if algorithm not in {"q_learning", "dqn"}:
+        return {"reward_version": None, "reward_spec": None}
+    if algorithm == "q_learning":
+        with checkpoint.open("rb") as file:
+            payload = pickle.load(file)
+    else:
+        try:
+            import torch
+        except ImportError as exception:
+            raise RuntimeError(
+                "PyTorch is required to inspect a DQN checkpoint"
+            ) from exception
+        payload = torch.load(checkpoint, map_location="cpu", weights_only=True)
+    if not isinstance(payload, dict):
+        return {"reward_version": None, "reward_spec": None}
+    embedded_version = payload.get("reward_version")
+    embedded_spec = payload.get("reward_spec")
+    return {
+        "embedded_reward_version": embedded_version,
+        "reward_version": payload.get("reward_id", embedded_version),
+        "reward_spec": embedded_spec,
+    }
 
 
 class ExperimentWorld(BombeRLeWorld):
@@ -581,13 +608,7 @@ def _checkpoint_name(agent: str) -> str:
 
 
 def _algorithm_name(agent: str) -> str:
-<<<<<<< HEAD
-    if agent == "legal_random_agent":
-        return "legal_random"
-    return "dqn" if "dqn" in agent.lower() else "q_learning"
-=======
     return resolve_agent_contract(agent).algorithm
->>>>>>> e6253fd1 (add more feature id, reward id, and model)
 
 
 def _close_output_log_handlers(output: Path) -> None:
@@ -644,7 +665,6 @@ def run_agent_session(
     specs = _custom_agents(agent, opponents, training)
     checkpoint = checkpoint.resolve()
     expanded = _read_config(config_path)
-<<<<<<< HEAD
     algorithm = _algorithm_name(agent)
     training_config = expanded.get("training", {})
     if not isinstance(training_config, dict):
@@ -659,23 +679,17 @@ def run_agent_session(
             raise ValueError("Device config section must be an object")
         requested_device = section.get("device", "auto" if training else "cpu")
         device_info = resolve_device(algorithm, mode, requested_device)
-=======
-    contract = resolve_agent_contract(agent)
+    configured_id = expanded.get("feature_id")
+    configured_legacy = expanded.get("feature_version")
+    requested_feature_id = (
+        None if configured_id is None and configured_legacy is None
+        else normalize_feature_id(configured_id, configured_legacy)
+    )
+    contract = resolve_agent_contract(agent, requested_feature_id)
     algorithm = contract.algorithm
->>>>>>> e6253fd1 (add more feature id, reward id, and model)
     configured_algorithm = expanded.get("algorithm")
     if configured_algorithm not in (None, algorithm):
         raise ValueError("Configured algorithm does not match the selected agent")
-    configured_id = expanded.get("feature_id")
-    configured_legacy = expanded.get("feature_version")
-    configured_feature_id = (
-        contract.feature_id if configured_id is None and configured_legacy is None
-        else normalize_feature_id(configured_id, configured_legacy)
-    )
-    if configured_feature_id != contract.feature_id:
-        raise ValueError(
-            f"Configured feature_id {configured_feature_id!r} does not match "
-            f"the selected agent ({contract.feature_id!r})")
     configured_reward_id = expanded.get("reward_id")
     legacy_reward_id = expanded.get("reward_version")
     if (
@@ -692,6 +706,9 @@ def run_agent_session(
         raise ValueError("Resume snapshot and resume kind must be provided together")
     if not training and not checkpoint.is_file():
         raise FileNotFoundError(f"Evaluation checkpoint does not exist: {checkpoint}")
+    checkpoint_reward_contract = (
+        None if training else _checkpoint_reward_contract(checkpoint, algorithm)
+    )
     output.mkdir(parents=True, exist_ok=False)
     if training:
         checkpoint.parent.mkdir(parents=True, exist_ok=True)
@@ -721,27 +738,21 @@ def run_agent_session(
         "replay_policy": replay_policy,
         "scenario": scenario,
         "task": task_name,
-<<<<<<< HEAD
         "device": device_info,
-=======
         "curriculum_action_mask": {"BOMB": task_name != "coin_navigation"},
->>>>>>> e6253fd1 (add more feature id, reward id, and model)
+        "checkpoint_reward_contract": checkpoint_reward_contract,
     }
     metadata["expanded_config"] = expanded
     metadata["agent"] = agent
     metadata["algorithm"] = algorithm
     metadata["agent_seed"] = agent_seed
     metadata["checkpoint_schema"] = CHECKPOINT_SCHEMA_VERSION
-<<<<<<< HEAD
-    metadata["feature_version"] = FEATURE_VERSION
     metadata["exploration_spec"] = exploration_spec
-=======
     metadata["feature_id"] = contract.feature_id
     metadata["feature_schema"] = contract.feature_schema
     metadata["feature_version"] = (
         "v1" if contract.feature_id == "discrete-v1" else None)
     metadata["reward_id"] = reward_version
->>>>>>> e6253fd1 (add more feature id, reward id, and model)
     metadata["reward_version"] = reward_version
     metadata["action_order"] = list(ACTIONS)
     metadata["checkpoint"] = str(checkpoint)
@@ -751,12 +762,10 @@ def run_agent_session(
         "BOMB": task_name != "coin_navigation"
     }
     metadata["rewards"] = resolved_rewards
+    metadata["checkpoint_reward_contract"] = checkpoint_reward_contract
     metadata["task"] = task_name
-<<<<<<< HEAD
     metadata["device"] = device_info
-=======
     metadata["exploration_disabled"] = not training
->>>>>>> e6253fd1 (add more feature id, reward id, and model)
     parent_cumulative = 0
     if resume_snapshot is not None:
         parent_cumulative = int(
@@ -788,15 +797,10 @@ def run_agent_session(
         for name in (
             "BOMBERMAN_CHECKPOINT", "BOMBERMAN_CONFIG", "BOMBERMAN_RUN_DIR",
             "BOMBERMAN_RUN_ID", "BOMBERMAN_TRAINING_TASK",
-<<<<<<< HEAD
-            "BOMBERMAN_ALLOW_BOMB", "BOMBERMAN_REWARD_VERSION",
-            "BOMBERMAN_TORCH_DEVICE", "BOMBERMAN_AGENT_SEED",
-            "BOMBERMAN_EXPLORATION_SPEC",
-=======
             "BOMBERMAN_ALLOW_BOMB", "BOMBERMAN_FEATURE_ID",
             "BOMBERMAN_REWARD_ID", "BOMBERMAN_REWARD_VERSION",
-            "BOMBERMAN_AGENT_SEED",
->>>>>>> e6253fd1 (add more feature id, reward id, and model)
+            "BOMBERMAN_TORCH_DEVICE", "BOMBERMAN_AGENT_SEED",
+            "BOMBERMAN_EXPLORATION_SPEC",
         )
     }
     try:
@@ -809,15 +813,11 @@ def run_agent_session(
         os.environ["BOMBERMAN_FEATURE_ID"] = contract.feature_id
         os.environ["BOMBERMAN_REWARD_ID"] = reward_version
         os.environ["BOMBERMAN_REWARD_VERSION"] = reward_version
-<<<<<<< HEAD
         os.environ["BOMBERMAN_TORCH_DEVICE"] = device_info["actual"]
         os.environ["BOMBERMAN_AGENT_SEED"] = str(agent_seed)
         os.environ["BOMBERMAN_EXPLORATION_SPEC"] = json.dumps(
             exploration_spec, sort_keys=True, separators=(",", ":")
         )
-=======
-        os.environ["BOMBERMAN_AGENT_SEED"] = str(seed)
->>>>>>> e6253fd1 (add more feature id, reward id, and model)
         # Task 1 isolates coin navigation. Keep its action space free of bombs
         # for both training and frozen evaluation so agents are compared under
         # the same curriculum constraint.

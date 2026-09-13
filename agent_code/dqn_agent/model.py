@@ -173,47 +173,25 @@ class DQN:
         return self._learn()
 
     def _learn(self):
-<<<<<<< HEAD
-        batch = self.replay.sample(self.batch_size)
-        states = torch.as_tensor(
-            np.stack([t.state for t in batch]), dtype=torch.float32, device=self.device
-        )
-        actions = torch.as_tensor(
-            [t.action for t in batch], dtype=torch.long, device=self.device
-        ).unsqueeze(1)
-        rewards = torch.as_tensor(
-            [t.reward for t in batch], dtype=torch.float32, device=self.device
-        )
-        dones = torch.as_tensor(
-            [t.done for t in batch], dtype=torch.bool, device=self.device
-        )
-=======
         batch = self.replay.sample_batch(self.batch_size)
-        states = torch.as_tensor(batch["states"], dtype=torch.float32)
-        actions = torch.as_tensor(batch["actions"], dtype=torch.long).unsqueeze(1)
-        rewards = torch.as_tensor(batch["rewards"], dtype=torch.float32)
-        dones = torch.as_tensor(batch["dones"], dtype=torch.bool)
->>>>>>> e6253fd1 (add more feature id, reward id, and model)
+        states = torch.as_tensor(
+            batch["states"], dtype=torch.float32, device=self.device)
+        actions = torch.as_tensor(
+            batch["actions"], dtype=torch.long, device=self.device).unsqueeze(1)
+        rewards = torch.as_tensor(
+            batch["rewards"], dtype=torch.float32, device=self.device)
+        dones = torch.as_tensor(
+            batch["dones"], dtype=torch.bool, device=self.device)
 
         current_q = self.policy(states).gather(1, actions).squeeze(1)
         next_values = torch.zeros(
-            self.batch_size, dtype=torch.float32, device=self.device
-        )
+            self.batch_size, dtype=torch.float32, device=self.device)
         nonterminal = ~dones
         if nonterminal.any():
-<<<<<<< HEAD
             next_states = torch.as_tensor(
-                np.stack([t.next_state for t in batch if not t.done]),
-                dtype=torch.float32, device=self.device,
-            )
+                batch["next_states"], dtype=torch.float32, device=self.device)
             legal = torch.as_tensor(
-                np.stack([t.next_legal for t in batch if not t.done]),
-                dtype=torch.bool, device=self.device,
-            )
-=======
-            next_states = torch.as_tensor(batch["next_states"], dtype=torch.float32)
-            legal = torch.as_tensor(batch["next_legal"], dtype=torch.bool)
->>>>>>> e6253fd1 (add more feature id, reward id, and model)
+                batch["next_legal"], dtype=torch.bool, device=self.device)
             with torch.no_grad():
                 next_q = self.target(next_states).masked_fill(~legal, -torch.inf)
                 next_values[nonterminal] = next_q.max(dim=1).values

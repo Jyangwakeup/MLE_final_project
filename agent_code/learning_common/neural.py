@@ -113,6 +113,8 @@ class DoubleDQNLearner:
             "policy": self.policy.state_dict(), "target": self.target.state_dict(),
             "optimizer": self.optimizer.state_dict(), "replay": self.replay.state_dict(),
             "torch_rng_state": torch.get_rng_state(), "updates": self.updates,
+            "training_device_name": None,
+            "training_device_type": self.device.type,
         }
 
     def load_checkpoint(self, checkpoint: dict[str, Any], *, training: bool) -> None:

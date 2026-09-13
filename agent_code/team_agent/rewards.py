@@ -5,8 +5,10 @@ from __future__ import annotations
 from math import exp
 from typing import Sequence
 
-import events as e
 import numpy as np
+
+import events as e
+
 
 REWARD_VERSION = "r1"
 REWARD_SPECS = {
@@ -20,7 +22,7 @@ REWARD_SPECS = {
     },
     "r1_no_crate": {
         "step": -0.01,
-        "coin_collected": 3.0,
+        "coin_collected": 1.0,
         "killed_opponent": 5.0,
         "crate_destroyed": 0.0,
         "death": -10.0,
@@ -82,8 +84,15 @@ def resolve_reward_spec(version: str = REWARD_VERSION) -> dict[str, float]:
         raise ValueError(f"Unknown reward version: {version!r}") from exception
 
 
+def identify_checkpoint_reward_version(
+    version: str | None, spec: dict[str, float] | None,
+) -> str | None:
+    """Return the embedded reward ID; retained for metadata compatibility."""
+    return version
+
+
 def _event_reward(events: Sequence[str], spec: dict[str, float]) -> float:
-    """Calculate the event component while preserving the frozen r1 semantics."""
+    """Calculate event rewards, counting a transition death at most once."""
     if "death" in spec:
         event_rewards = {
             e.COIN_COLLECTED: spec["coin_collected"],
@@ -109,8 +118,6 @@ def _event_reward(events: Sequence[str], spec: dict[str, float]) -> float:
     reward = spec["step"]
     for event, event_reward in event_rewards.items():
         reward += events.count(event) * event_reward
-    # The framework can report both death events for one transition. Apply one
-    # penalty, preferring the more specific self-kill classification.
     if e.KILLED_SELF in events:
         reward += spec["killed_self"]
     elif e.GOT_KILLED in events:
@@ -128,25 +135,20 @@ def _state_potential(game_state: dict, spec: dict[str, float]) -> float:
     position = game_state["self"][3]
     blocked = navigation_blocked(game_state)
     value = 0.0
-
     coin_distances = distance_to_targets(blocked, tuple(game_state["coins"]))
     coin_distance = float(coin_distances[position])
     if np.isfinite(coin_distance):
-        closeness = exp(-coin_distance / 4.0)
-        value += spec["potential_coin_weight"] * closeness
+        value += spec["potential_coin_weight"] * exp(-coin_distance / 4.0)
     else:
         crate_distances = distance_to_targets(
             blocked, crate_frontiers(game_state, blocked))
         crate_distance = float(crate_distances[position])
         if np.isfinite(crate_distance):
-            closeness = exp(-crate_distance / 4.0)
-            value += spec["potential_crate_weight"] * closeness
+            value += spec["potential_crate_weight"] * exp(-crate_distance / 4.0)
 
     danger = predict_danger(game_state, horizon=HORIZON).danger
     dangerous_steps = np.flatnonzero(danger[1:, position[0], position[1]])
-    earliest = (
-        HORIZON + 1 if dangerous_steps.size == 0 else int(dangerous_steps[0]) + 1
-    )
+    earliest = HORIZON + 1 if dangerous_steps.size == 0 else int(dangerous_steps[0]) + 1
     safety = 1.0 if earliest > HORIZON else max(0.0, earliest - 1) / HORIZON
     value += spec["potential_safety_weight"] * safety
     return float(value)
@@ -162,11 +164,7 @@ def reward_from_events(
     repeated_oscillation: bool = False,
     idle_streak: int = 0,
 ) -> float:
-    """Convert framework events into a versioned scalar reward.
-
-    Repeated objective events are counted separately. Death is counted once
-    when either or both framework death events are present.
-    """
+    """Convert framework events and optional temporal context into a scalar."""
     spec = resolve_reward_spec(version)
     reward = _event_reward(events, spec)
     if version in {"r3_potential", "r4_anti_oscillation"} and old_game_state is not None:
