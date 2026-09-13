@@ -5,13 +5,22 @@ import random
 import numpy as np
 import torch
 
+from agent_code.team_agent.feature_system import (
+    normalize_feature_id,
+    validate_checkpoint_feature_contract,
+)
 from agent_code.team_agent.rewards import REWARD_VERSION, resolve_reward_spec
+<<<<<<< HEAD
 from agent_code.team_agent.exploration import (
     agent_seed_from_environment,
     epsilon_at,
     exploration_from_environment,
 )
 from .features import ACTIONS, FEATURE_DIM, FEATURE_VERSION, features_for_state
+=======
+from agent_code.learning_common.temporal_reward import init_temporal_reward_state
+from .features import ACTIONS, FEATURE_DIM, FEATURE_ID, FEATURE_VERSION, features_for_state
+>>>>>>> e6253fd1 (add more feature id, reward id, and model)
 from .model import DQN
 
 
@@ -22,7 +31,12 @@ SEED = 0
 TRAINING_TASK_ENV = "BOMBERMAN_TRAINING_TASK"
 ALLOW_BOMB_ENV = "BOMBERMAN_ALLOW_BOMB"
 REWARD_VERSION_ENV = "BOMBERMAN_REWARD_VERSION"
+<<<<<<< HEAD
 TORCH_DEVICE_ENV = "BOMBERMAN_TORCH_DEVICE"
+=======
+FEATURE_ID_ENV = "BOMBERMAN_FEATURE_ID"
+REWARD_ID_ENV = "BOMBERMAN_REWARD_ID"
+>>>>>>> e6253fd1 (add more feature id, reward id, and model)
 
 
 def _env_flag(name: str, default: bool) -> bool:
@@ -60,11 +74,25 @@ def setup(self):
     )
     self.allow_bomb = _env_flag(ALLOW_BOMB_ENV, True)
     self.training_task = _training_task()
-    self.reward_version = os.getenv(REWARD_VERSION_ENV, REWARD_VERSION)
+    configured_feature_id = normalize_feature_id(
+        os.getenv(FEATURE_ID_ENV) or FEATURE_ID, FEATURE_VERSION)
+    if configured_feature_id != FEATURE_ID:
+        raise ValueError(
+            f"dqn_agent only supports feature ID {FEATURE_ID!r}; "
+            f"got {configured_feature_id!r}")
+    self.feature_id = configured_feature_id
+    reward_id = os.getenv(REWARD_ID_ENV)
+    legacy_reward_id = os.getenv(REWARD_VERSION_ENV)
+    if reward_id and legacy_reward_id and reward_id != legacy_reward_id:
+        raise ValueError("BOMBERMAN_REWARD_ID conflicts with BOMBERMAN_REWARD_VERSION")
+    configured_reward_id = reward_id or legacy_reward_id
+    self.reward_version = configured_reward_id or REWARD_VERSION
+    self.reward_id = self.reward_version
     self.reward_spec = resolve_reward_spec(self.reward_version)
     self.action_steps = 0
     self._feature_cache_key = None
     self._feature_cache_value = None
+    init_temporal_reward_state(self)
     configured_checkpoint = os.getenv(CHECKPOINT_ENV)
     self.model_file = (
         Path(configured_checkpoint).expanduser().resolve()
@@ -73,28 +101,24 @@ def setup(self):
     )
     if self.model_file.exists():
         checkpoint = torch.load(self.model_file, map_location="cpu", weights_only=True)
-        checkpoint_version = checkpoint.get("feature_version")
-        if checkpoint_version != FEATURE_VERSION:
-            message = (
-                f"DQN checkpoint uses feature version {checkpoint_version!r}; "
-                f"expected {FEATURE_VERSION!r}"
-            )
-            if not self.train:
-                raise ValueError(message)
-            self.logger.warning("%s; starting with a new network", message)
-        else:
-            if (
-                self.train
-                and "checkpoint_schema" in checkpoint
-                and checkpoint.get("reward_version") != self.reward_version
-            ):
-                raise ValueError("Cannot continue DQN with a different reward version")
-            self.model.load_checkpoint(checkpoint, training=self.train)
-            self.action_steps = int(checkpoint.get("action_steps", 0))
-            previous_task = checkpoint.get("training_task")
-            if self.train and "agent_rng_state" in checkpoint:
-                self.rng.setstate(checkpoint["agent_rng_state"])
-            self.logger.info("Loaded DQN checkpoint from %s", self.model_file)
+        validate_checkpoint_feature_contract(checkpoint, FEATURE_ID, ACTIONS)
+        checkpoint_reward_id = checkpoint.get(
+            "reward_id", checkpoint.get("reward_version"))
+        if checkpoint_reward_id is None:
+            raise ValueError("DQN checkpoint has no reward ID")
+        if configured_reward_id and configured_reward_id != checkpoint_reward_id:
+            raise ValueError(
+                "Configured reward ID does not match the checkpoint: "
+                f"{configured_reward_id!r} != {checkpoint_reward_id!r}")
+        self.reward_version = checkpoint_reward_id
+        self.reward_id = checkpoint_reward_id
+        self.reward_spec = resolve_reward_spec(checkpoint_reward_id)
+        self.model.load_checkpoint(checkpoint, training=self.train)
+        self.action_steps = int(checkpoint.get("action_steps", 0))
+        previous_task = checkpoint.get("training_task")
+        if self.train and "agent_rng_state" in checkpoint:
+            self.rng.setstate(checkpoint["agent_rng_state"])
+        self.logger.info("Loaded DQN checkpoint from %s", self.model_file)
     elif configured_checkpoint and not self.train:
         raise FileNotFoundError(
             f"Evaluation checkpoint does not exist: {self.model_file}"
@@ -150,6 +174,7 @@ def _features_for(self, game_state: dict):
         return None
     key = (game_state.get("round"), game_state.get("step"))
     if key != self._feature_cache_key:
-        self._feature_cache_value = features_for_state(game_state)
+        self._feature_cache_value = features_for_state(
+            game_state, getattr(self, "previous_action", None))
         self._feature_cache_key = key
     return self._feature_cache_value

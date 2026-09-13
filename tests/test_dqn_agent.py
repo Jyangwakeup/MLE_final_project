@@ -27,7 +27,8 @@ from agent_code.dqn_agent.train import (
     setup_training,
 )
 from agent_code.q_learning_agent.features import features_for_state as q_features_for_state
-from agent_code.team_agent.features import FEATURE_DIM
+from agent_code.dqn_agent.features import FEATURE_DIM
+from agent_code.team_agent.feature_system import feature_schema_contract
 from agent_code.team_agent.rewards import reward_from_events as shared_reward_from_events
 from tests.test_danger import make_game_state
 
@@ -106,7 +107,12 @@ class DQNTrainingTaskTestCase(unittest.TestCase):
             model = DQN(INPUT_SIZE, 6)
             checkpoint = model.checkpoint()
             checkpoint.update({
+                "feature_id": "discrete-q-v2",
                 "feature_version": FEATURE_VERSION,
+                "feature_schema": feature_schema_contract("discrete-q-v2"),
+                "actions": ["UP", "RIGHT", "DOWN", "LEFT", "WAIT", "BOMB"],
+                "reward_id": "r1",
+                "reward_version": "r1",
                 "action_steps": 123,
                 "training_task": "task1",
             })
@@ -147,7 +153,7 @@ class DQNSharedFeatureTestCase(unittest.TestCase):
         legal = legal_actions(state)
 
         self.assertEqual(INPUT_SIZE, FEATURE_DIM)
-        self.assertEqual(vector.shape, (40,))
+        self.assertEqual(vector.shape, (50,))
         self.assertEqual(vector.dtype, np.float32)
         self.assertEqual(legal.shape, (6,))
         self.assertTrue(legal[-1])
@@ -239,9 +245,10 @@ class DQNCheckpointTestCase(unittest.TestCase):
         original_loss = model.observe(next_transition)
         restored_loss = restored.observe(next_transition)
         self.assertAlmostEqual(original_loss, restored_loss)
-        for original, resumed in zip(
-            model.policy.parameters(), restored.policy.parameters(), strict=True
-        ):
+        original_parameters = list(model.policy.parameters())
+        restored_parameters = list(restored.policy.parameters())
+        self.assertEqual(len(original_parameters), len(restored_parameters))
+        for original, resumed in zip(original_parameters, restored_parameters):
             self.assertTrue(torch.equal(original, resumed))
         for name, value in model.target.state_dict().items():
             self.assertTrue(torch.equal(value, restored.target.state_dict()[name]))

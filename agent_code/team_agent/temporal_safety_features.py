@@ -1,4 +1,5 @@
-from collections import deque, namedtuple
+from collections import namedtuple
+from dataclasses import dataclass
 
 import numpy as np
 
@@ -27,6 +28,18 @@ BombFeatures = namedtuple('BombFeatures', (
 TemporalSafetyAnalysis = namedtuple('TemporalSafetyAnalysis', (
     'move_features', 'bomb_features'
 ))
+
+
+@dataclass(frozen=True)
+class ReachabilityResult:
+    """Result of a time-expanded search after fixing the first action."""
+
+    legal: bool
+    safe_next: bool
+    survives_horizon: bool
+    safe_horizon: int
+    reachable_positions: frozenset
+    reachable_area: int
 
 
 def _bomb_explosion_time(timer: int) -> int:
@@ -82,6 +95,11 @@ def _temporal_maps(game_state: dict, horizon: int, hypothetical_bomb: bool):
     return prediction.danger, blocked
 
 
+def temporal_maps(game_state: dict, horizon: int, hypothetical_bomb: bool):
+    """Public shared danger/occupancy maps for versioned feature extractors."""
+    return _temporal_maps(game_state, horizon, hypothetical_bomb)
+
+
 def _in_bounds(position: tuple, shape: tuple) -> bool:
     """Check whether a board position can be indexed."""
     x, y = position
@@ -111,11 +129,21 @@ def _advance(position: tuple, action: str, time_step: int, danger: np.ndarray, b
     return next_position
 
 
-def _reachable_after_first_step(position: tuple, first_action: str, danger: np.ndarray, blocked: np.ndarray):
-    """Search safe position-time states after a fixed first action."""
+def detailed_reachability_after_first_step(
+        position: tuple,
+        first_action: str,
+        danger: np.ndarray,
+        blocked: np.ndarray,
+) -> ReachabilityResult:
+    """Search safe position-time states and retain the last safe frontier."""
+    if first_action not in ACTIONS:
+        raise ValueError(f'unsupported first action: {first_action!r}')
+
+    legal = first_action == 'WAIT' or _can_enter(
+        _next_position(position, first_action), 1, blocked)
     first_position = _advance(position, first_action, 1, danger, blocked)
     if first_position is None:
-        return 0, set()
+        return ReachabilityResult(legal, False, False, 0, frozenset(), 0)
 
     horizon = danger.shape[0] - 1
     current = {first_position}
@@ -128,11 +156,84 @@ def _reachable_after_first_step(position: tuple, first_action: str, danger: np.n
                 if next_position is not None:
                     following.add(next_position)
         if not following:
-            return safe_horizon, set()
+            positions = frozenset(current)
+            return ReachabilityResult(
+                legal, True, False, safe_horizon, positions, len(positions))
         current = following
         safe_horizon = time_step
 
-    return safe_horizon, current
+    positions = frozenset(current)
+    return ReachabilityResult(
+        legal, True, True, safe_horizon, positions, len(positions))
+
+
+def detailed_reachability_all_first_steps(
+        position: tuple,
+        danger: np.ndarray,
+        blocked: np.ndarray,
+) -> dict[str, ReachabilityResult]:
+    """Evaluate all five first actions in one equivalent grid propagation.
+
+    The first-step legality rules and the special WAIT occupancy semantics are
+    identical to :func:`detailed_reachability_after_first_step`.  Batching only
+    removes repeated Python traversal of the same time-indexed board.
+    """
+    width, height = blocked.shape[1:]
+    frontiers = np.zeros((len(ACTIONS), width, height), dtype=bool)
+    legal = np.zeros(len(ACTIONS), dtype=bool)
+    alive = np.zeros(len(ACTIONS), dtype=bool)
+    safe_horizons = np.zeros(len(ACTIONS), dtype=np.int16)
+    last_frontiers = np.zeros_like(frontiers)
+
+    for index, action in enumerate(ACTIONS):
+        legal[index] = action == 'WAIT' or _can_enter(
+            _next_position(position, action), 1, blocked)
+        first_position = _advance(position, action, 1, danger, blocked)
+        if first_position is not None:
+            frontiers[index, first_position[0], first_position[1]] = True
+            last_frontiers[index] = frontiers[index]
+            alive[index] = True
+            safe_horizons[index] = 1
+
+    horizon = danger.shape[0] - 1
+    for time_step in range(2, horizon + 1):
+        if not alive.any():
+            break
+        moved = np.zeros_like(frontiers)
+        moved[:, :, :-1] |= frontiers[:, :, 1:]
+        moved[:, 1:, :] |= frontiers[:, :-1, :]
+        moved[:, :, 1:] |= frontiers[:, :, :-1]
+        moved[:, :-1, :] |= frontiers[:, 1:, :]
+        safe = ~danger[time_step]
+        following = (frontiers & safe) | (
+            moved & safe & ~blocked[time_step])
+        following[~alive] = False
+        has_following = following.reshape(len(ACTIONS), -1).any(axis=1)
+        survivors = alive & has_following
+        last_frontiers[survivors] = following[survivors]
+        safe_horizons[survivors] = time_step
+        alive &= has_following
+        frontiers = following
+
+    results = {}
+    for index, action in enumerate(ACTIONS):
+        coordinates = frozenset(
+            (int(x), int(y)) for x, y in np.argwhere(last_frontiers[index]))
+        safe_horizon = int(safe_horizons[index])
+        results[action] = ReachabilityResult(
+            bool(legal[index]), safe_horizon >= 1,
+            safe_horizon == horizon, safe_horizon,
+            coordinates, len(coordinates),
+        )
+    return results
+
+
+def _reachable_after_first_step(position: tuple, first_action: str, danger: np.ndarray, blocked: np.ndarray):
+    """Legacy search result, preserving the original failed-escape semantics."""
+    result = detailed_reachability_after_first_step(
+        position, first_action, danger, blocked)
+    final_positions = set(result.reachable_positions) if result.survives_horizon else set()
+    return result.safe_horizon, final_positions
 
 
 def _move_features(position: tuple, action: str, danger: np.ndarray, blocked: np.ndarray) -> MoveFeatures:
@@ -174,10 +275,10 @@ def _bomb_features(game_state: dict, horizon: int) -> BombFeatures:
     )
 
 
-def temporal_safety_features(game_state: dict, horizon=None):
-    """Return objective time-aware movement and bomb safety features."""
+def _temporal_safety_features_with_danger(game_state: dict, horizon=None):
+    """Internal analysis that also exposes the already-computed danger map."""
     if game_state is None:
-        return None
+        return None, None
     if horizon is None:
         horizon = HORIZON
     if horizon <= 0:
@@ -185,8 +286,25 @@ def temporal_safety_features(game_state: dict, horizon=None):
 
     position = game_state['self'][3]
     danger, blocked = _temporal_maps(game_state, horizon, hypothetical_bomb=False)
+    reachability = detailed_reachability_all_first_steps(
+        position, danger, blocked)
     move_features = {
-        action: _move_features(position, action, danger, blocked)
-        for action in ACTIONS
+        action: MoveFeatures(
+            result.legal,
+            result.safe_next,
+            result.survives_horizon,
+            result.reachable_area if result.survives_horizon else 0,
+            result.safe_horizon,
+        )
+        for action, result in reachability.items()
     }
-    return TemporalSafetyAnalysis(move_features, _bomb_features(game_state, horizon))
+    return (
+        TemporalSafetyAnalysis(move_features, _bomb_features(game_state, horizon)),
+        danger,
+    )
+
+
+def temporal_safety_features(game_state: dict, horizon=None):
+    """Return objective time-aware movement and bomb safety features."""
+    analysis, _ = _temporal_safety_features_with_danger(game_state, horizon)
+    return analysis

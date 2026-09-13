@@ -5,6 +5,39 @@
 本目录是实验编排层。其接口来自 `PROJECT_REQUIREMENTS.md` 与
 `IMPLEMENTATION_GUIDE.md`；特征和学习模块的实现细节仍分别由 A 与 B 负责。
 
+六个 Agent 当前推荐的完整训练、续训和冻结评估命令集中记录在
+[`docs/training-commands.md`](../docs/training-commands.md)。新训练只使用 `r2_balanced` 或
+`r3_potential`。
+
+## 可选学习 Agent
+
+实验入口使用显式 Agent contract，不再根据目录名猜测算法：
+
+| Agent | Algorithm | Feature | Checkpoint |
+| --- | --- | --- | --- |
+| `q_learning_agent` | `q_learning` | `discrete-v1` | `final.pkl` |
+| `double_q_compact_agent` | `double_q_learning` | `discrete-compact-v1` | `final.pkl` |
+| `dqn_agent` | `dqn` | `discrete-v1` | `final.pt` |
+| `double_dqn_continuous_agent` | `double_dqn` | `continuous-v1` | `final.pt` |
+| `cnn_double_dqn_agent` | `cnn_double_dqn` | `board-v1` | `final.pt` |
+| `hybrid_dueling_double_dqn_agent` | `hybrid_dueling_double_dqn` | `hybrid-v1` | `final.pt` |
+
+`reward_r2_balanced.json` 的 algorithm/feature 留空时由所选 Agent 契约填充；显式填写但不一致会在
+启动 World 前失败。Task 1 的禁炸弹是单独记录的 curriculum action mask，Feature 返回的
+`legal_mask` 仍只描述物理合法性。
+
+训练 checkpoint 保存完整可恢复状态。生成最终单目录提交包使用：
+
+```bash
+python3 -m experiments.package_agent \
+  --agent hybrid_dueling_double_dqn_agent \
+  --checkpoint runs/<run>/checkpoints/final.pt \
+  --output dist/final-project-agent-code.zip
+```
+
+构建器校验算法、Feature schema、动作顺序、网络和超参数，并在生成目录中 vendor 公共
+Feature/reward/学习运行时；不会在四个开发目录中维护四份公共源码，也不会覆盖已有 zip。
+
 ## 代码结构与协作边界
 
 实验命令保持单一入口，但训练与评估分别开发：
@@ -16,9 +49,13 @@ experiments/
   evaluation.py          单 seed / 多 seed 冻结评估调度
   analyze_training.py    训练指标汇总与训练曲线
   analyze.py             评估指标汇总与对比图
+<<<<<<< HEAD
   resume.py              两代原子完整恢复及课程约束
   devices.py             CPU/CUDA 设备解析与元数据
   configs/               工程默认、正式训练、阶段门槛、验证和最终测试
+=======
+  configs/reward_r2_balanced.json  R2 balanced 实验配置
+>>>>>>> e6253fd1 (add more feature id, reward id, and model)
 ```
 
 `run.py` 是唯一的命令行入口，通过 `--mode train|evaluate` 分发到
@@ -39,17 +76,18 @@ C 负责实验编排、评估、原始结果记录、分析、可复现性、消
 
 ### A/C seam
 
-特征接口由 `agent_code/team_agent/features.py` 负责。C 可以使用：
+特征接口由 `agent_code/team_agent/feature_system/` 负责；
+`agent_code/team_agent/features.py` 是冻结 `discrete-v1` 的旧路径兼容层。C 可以使用：
 
-- 当前为 `v1` 的 `FEATURE_VERSION`；
-- `Features` 和 `extract_features(game_state)`；
-- `Features.legal_mask`；
-- 40 维特征向量；以及
+- 当前 Agent 的 `FEATURE_ID = "discrete-v1"` 和旧别名 `FEATURE_VERSION = "v1"`；
+- registry 的 `extract_features(game_state, feature_id)` 与 `get_feature_schema()`；
+- 各输出 dataclass 的 `legal_mask`；
+- `discrete-v1` 的 14 元 state / 40 维向量；以及
 - 固定六动作顺序的 `ACTIONS`。
 
 C 不复制这些定义、不改变特征语义，也不依赖特征实现细节。新的特征变体（包括危险
 消融）必须由 A 通过相同特征接口提供并版本化。在实验配置选用计划中的
-`v1_no_danger` 之前，必须**与 A 确认**其可用性。
+其他 Feature ID 之前，必须确认相应 Agent 模型输入结构已经实现。
 
 ### B/C seam
 
@@ -113,8 +151,9 @@ runs/<run_id>/
   replays/                 # 按回放策略可选生成
 ```
 
-`metadata.json` 记录展开后的配置、代码/源码身份、依赖、硬件、种子、模式、时间戳和
-终态状态；`termination` 进一步记录计划局数、实际完成局数及早停结果。JSONL 文件是
+`metadata.json` 记录展开后的配置、代码/源码身份、依赖、硬件、种子、模式、时间戳、
+`algorithm`、`feature_id`、完整 `feature_schema`、`reward_id`、`action_order`、checkpoint
+和终态状态；`termination` 进一步记录计划局数、实际完成局数及早停结果。JSONL 文件是
 追加式原始记录。`official_stats.json` 是用于交叉检查的官方
 框架导出。`checkpoints/`、`resume/` 与 `replays/` 只属于对应运行。运行目录不得覆盖已有运行。
 
@@ -251,12 +290,17 @@ runs/q_task1_eval/
 ```
 
 `_s10001` 和 `_s10002` 来自 `--seeds`；如果没有显式传入 `--seeds`，则来自
-`base.json` 的 `evaluation.seeds`。`summary.csv` 中的 `run_id=AVERAGE` 是跨 seed
+`reward_r2_balanced.json` 的 `evaluation.seeds`。`summary.csv` 中的 `run_id=AVERAGE` 是跨 seed
 平均值所在的数据行，不是另一个运行目录。
 
 训练 checkpoint 固定放在该训练目录的 `checkpoints/` 中。Q-learning 默认命名为
 `final.pkl`，名称中包含 `dqn` 的 Agent 默认命名为 `final.pt`。评估不会复制或改写
 checkpoint，只在 `metadata.json` 和 `fixed_evaluation.json` 中记录其绝对路径。
+
+训练热路径默认启用不改变学习语义的 I/O 优化：训练 CSV 只增量读取新增行，逐步 timing
+记录复用文件流，神经 replay 以列式 Tensor 写入 checkpoint，两代神经恢复快照在同一文件
+系统上使用硬链接固定原子 checkpoint 的 inode（不支持时回退复制）。checkpoint 仍在每个
+完整回合边界生成，恢复粒度与更新频率不变。
 
 `run-id` 只能是一个目录名称，不能包含 `/`，也不能是 `.` 或 `..`。已有同名目录时运行器
 会拒绝覆盖，因此重新运行时需要使用新名称，例如在末尾增加 `_v2`。
@@ -296,7 +340,11 @@ Task 1 共 500 局；实验运行器会自动禁止放炸弹：
 
 ```bash
 python3 experiments/run.py \
+<<<<<<< HEAD
   --config experiments/configs/formal_training.json \
+=======
+  --config experiments/configs/reward_r2_balanced.json \
+>>>>>>> e6253fd1 (add more feature id, reward id, and model)
   --mode train \
   --device cpu \
   --task 1 \
@@ -335,7 +383,11 @@ reward 与 epsilon 的变化。
 
 ```bash
 python3 experiments/run.py \
+<<<<<<< HEAD
   --config experiments/configs/formal_training.json \
+=======
+  --config experiments/configs/reward_r2_balanced.json \
+>>>>>>> e6253fd1 (add more feature id, reward id, and model)
   --mode train \
   --device cpu \
   --task 1 \
@@ -383,7 +435,11 @@ checkpoint 仍可评估，但不能替代 `--resume-from`。
 
 ```bash
 python3 experiments/run.py \
+<<<<<<< HEAD
   --config experiments/configs/formal_training.json \
+=======
+  --config experiments/configs/reward_r2_balanced.json \
+>>>>>>> e6253fd1 (add more feature id, reward id, and model)
   --mode train \
   --device cpu \
   --task 2 \
@@ -401,7 +457,11 @@ python3 experiments/run.py \
 
 ```bash
 python3 experiments/run.py \
+<<<<<<< HEAD
   --config experiments/configs/stage_gate.json \
+=======
+  --config experiments/configs/reward_r2_balanced.json \
+>>>>>>> e6253fd1 (add more feature id, reward id, and model)
   --mode evaluate \
   --task 1 \
   --agent q_learning_agent \
@@ -424,7 +484,11 @@ Task 1 还必须运行使用同一合法动作掩码的确定性均匀随机诊�
 
 ```bash
 python3 experiments/run.py \
+<<<<<<< HEAD
   --config experiments/configs/stage_gate.json \
+=======
+  --config experiments/configs/reward_r2_balanced.json \
+>>>>>>> e6253fd1 (add more feature id, reward id, and model)
   --mode evaluate \
   --task 1 \
   --agent legal_random_agent \
@@ -432,8 +496,13 @@ python3 experiments/run.py \
   --run-id gate_legal_random_t1
 ```
 
+<<<<<<< HEAD
 阶段门槛使用 `stage_gate.json` 的 10000–10019，主验证使用 `main_validation.json` 的
 10000–10099，最终测试只使用一次 `final_test.json` 的 20000–20099；三者都是每 seed 一局。
+=======
+默认 seeds 和每个 seed 的测试局数来自 `reward_r2_balanced.json` 的 `evaluation`。也可用
+`--seeds 10001 10002` 和 `--n-rounds 5` 临时覆盖。
+>>>>>>> e6253fd1 (add more feature id, reward id, and model)
 
 ### 单 Seed 快速测试
 
@@ -441,7 +510,7 @@ python3 experiments/run.py \
 
 ```bash
 python3 experiments/run.py \
-  --config experiments/configs/base.json \
+  --config experiments/configs/reward_r2_balanced.json \
   --mode evaluate \
   --task 1 \
   --agent q_learning_agent \
@@ -458,7 +527,7 @@ python3 experiments/run.py \
 
 ```bash
 python3 experiments/run.py \
-  --config experiments/configs/base.json \
+  --config experiments/configs/reward_r2_balanced.json \
   --mode evaluate \
   --task 4 \
   --agent dqn_agent \
@@ -473,7 +542,11 @@ DQN 使用相同正式配置，只需更换 Agent 名称。checkpoint 扩展名�
 
 ```bash
 python3 experiments/run.py \
+<<<<<<< HEAD
   --config experiments/configs/formal_training.json \
+=======
+  --config experiments/configs/reward_r2_balanced.json \
+>>>>>>> e6253fd1 (add more feature id, reward id, and model)
   --mode train \
   --device cpu \
   --task 1 \
@@ -507,12 +580,54 @@ Q-learning 与 DQN agent 都会据此屏蔽炸弹。Task 2–4 会自动允许�
 
 ## 基础配置
 
-`configs/base.json` 是完整 JSON 文档，不是继承片段。`algorithm`、`seed` 和
+`configs/reward_r2_balanced.json` 是完整 JSON 文档，不是继承片段。`algorithm`、`seed` 和
 `checkpoint` 为 `null`，表示具体运行可通过命令行显式选择值。训练过程使用
 `training-v1` CSV schema，固定评估的逐局记录使用 `episode-v1`，决策耗时使用
 `timing-v1`。
+<<<<<<< HEAD
 
 `configs/formal_training.json` 固定 CPU、`v1`、`r1`、关闭 early stopping、共享
 `linear-v1` 探索（1.0→0.05，1,920,000 动作步）及六链预算。`stage_gate.json`、
 `main_validation.json`、`final_test.json` 分别固定 20-seed 阶段门槛、100-seed 主验证和
 100-seed 最终留出测试。smoke run 只用于工程验证，不得成为正式链父节点或参与选模。
+=======
+奖励实验使用独立配置文件：
+
+```text
+experiments/configs/reward_r2_balanced.json  R2 balanced
+experiments/configs/reward_r3_potential.json 状态势能塑形
+```
+
+Reward ID 是 checkpoint 与 resume 契约的一部分。更换 Reward 必须开始新的训练链，不能把不同 Reward 的 checkpoint 当作同配置续训。
+新训练只使用 `r2_balanced` 或 `r3_potential`。`r1` 和 `r1_no_crate` 仅保留在 registry
+中读取历史 checkpoint，不再提供新实验配置或推荐命令。
+
+| Reward ID | 定位 | 建议用途 |
+|---|---|---|
+| `r1` | 金币 +1、击杀 +5、炸箱 +0.2 的历史冻结基线 | 仅加载和解释旧实验，不再新训 |
+| `r1_no_crate` | 金币 +3、炸箱 0 的历史兼容方案 | 仅加载旧实验，不再新训 |
+| `r2_balanced` | 金币 +3，并重新平衡发现、炸箱、死亡、存活和非法动作 | Task 2–4 的事件奖励实验 |
+| `r3_potential` | `r2_balanced` 加金币/箱子路径与安全势能 | Task 1 导航和循环问题，或需要密集反馈的实验 |
+
+完整数值、势能公式和边界语义见
+[`agent_code/team_agent/README.md`](../agent_code/team_agent/README.md#公共奖励)。不同 Reward 的
+训练 reward 尺度不同，不能仅按曲线高低选模型，应统一做冻结评估。
+
+使用默认 `r2_balanced`：
+
+```bash
+python3 -m experiments.run \
+  --config experiments/configs/reward_r2_balanced.json --mode train --task 1 \
+  --agent double_q_compact_agent --seed 11 --n-rounds 2000 \
+  --run-id double_q_r2_t1
+```
+
+使用 `r3_potential` 时换用对应配置，并使用新的 run ID：
+
+```bash
+python3 -m experiments.run \
+  --config experiments/configs/reward_r3_potential.json --mode train --task 1 \
+  --agent double_q_compact_agent --seed 11 --n-rounds 2000 \
+  --run-id double_q_r3_t1
+```
+>>>>>>> e6253fd1 (add more feature id, reward id, and model)

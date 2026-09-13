@@ -19,6 +19,7 @@ from experiments.resume import (
     materialize_learner_checkpoint,
     validate_resume_transition,
 )
+from agent_code.team_agent.feature_system import feature_schema_contract
 
 
 EXPLORATION_SPEC = {
@@ -134,6 +135,22 @@ class ResumeProtocolTestCase(unittest.TestCase):
                     validate_resume_transition(
                         parent, {**parent, field: value}, parent_status="completed"
                     )
+
+    def test_resume_rejects_new_feature_schema_mismatch(self):
+        parent = {
+            "algorithm": "q_learning", "seed": 11, "task": "coin_navigation",
+            "feature_id": "discrete-v1", "feature_version": "v1",
+            "feature_schema": feature_schema_contract("discrete-v1"),
+            "reward_id": "r1", "reward_version": "r1",
+            "checkpoint_schema": CHECKPOINT_SCHEMA_VERSION,
+            "actions": ["UP", "RIGHT", "DOWN", "LEFT", "WAIT", "BOMB"],
+        }
+        child = dict(parent)
+        child["feature_schema"] = {
+            **parent["feature_schema"], "vector_shape": [41],
+        }
+        with self.assertRaisesRegex(ValueError, "schema/shape"):
+            validate_resume_transition(parent, child, parent_status="running")
 
     def test_legacy_checkpoint_directory_is_not_a_resume_source(self):
         with tempfile.TemporaryDirectory() as directory:

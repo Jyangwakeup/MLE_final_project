@@ -1,169 +1,143 @@
-# team_agent 公共模块说明
+# team_agent 公共特征与奖励
 
-本目录存放团队学习型 agent 共用的特征和基础奖励接口。它目前还不是一个完整可运行的 agent，因为目录里还没有 `callbacks.py` 和 `train.py`。这里的代码主要定义统一的状态表示与基础奖励，供不同模型和实验变体复用。
+本目录包含可版本化的公共 Feature System 和已有奖励接口。Q-learning 与 DQN 的
+`discrete-v1`（旧名 `v1`）特征仍保持冻结；历史 `r1` checkpoint 继续兼容，但新训练只使用
+`r2_balanced` 或 `r3_potential`。
+
+公共 registry 还服务于四个新学习型调用方：`double_q_compact_agent` 使用
+`discrete-compact-v1`，`double_dqn_continuous_agent` 使用 `continuous-v1`，
+`cnn_double_dqn_agent` 使用 `board-v1`，`hybrid_dueling_double_dqn_agent` 使用
+`hybrid-v1`。各 Agent 只保留薄适配层；训练代码不会回写 Feature 输出，最终提交由构建器
+将本公共包 vendor 到单个 Agent 目录。
+
+详细的字段、通道、归一化、危险时间及 checkpoint 契约见 [`feature_system/README.md`](feature_system/README.md)。初代方案的历史固化记录见 [`docs/research/initial-feature-reward-scheme.md`](../../docs/research/initial-feature-reward-scheme.md)。
+
+## Feature API
+
+```python
+from agent_code.team_agent.feature_system import (
+    available_feature_ids, extract_features, get_feature_schema,
+)
+
+features = extract_features(game_state, "continuous-v1")
+schema = get_feature_schema("continuous-v1", game_state["field"].shape)
+```
+
+| Feature ID | 适用模型 | 输出 | 理论离散状态数 | 旧 checkpoint |
+|---|---|---|---:|---|
+| `discrete-v1` | 历史 DQN / Q-learning | 14 state / 40 vector | 1,399,680 | 兼容旧 `v1` |
+| `discrete-q-v2` | Q-learning / DQN | 16 state / 50 vector | 34,992,000 | 不兼容 |
+| `discrete-compact-v1` | Q-learning / Double Q | 12 state / 38 vector | 622,080 | 不兼容 |
+| `continuous-v1` | MLP Double DQN | 70 vector | — | 不兼容 |
+| `board-v1` | CNN | `12×W×H` | — | 不兼容 |
+| `hybrid-v1` | CNN + MLP | `12×W×H + 70` | — | 不兼容 |
+
+固定动作顺序为 `UP, RIGHT, DOWN, LEFT, WAIT, BOMB`。所有类型都包含 `(6,) bool legal_mask`；它只表示物理合法性，不过滤危险动作。数值数组为 `float32`，提取确定且不修改输入。
+
+旧 import 路径继续可用：
+
+```python
+from agent_code.team_agent.features import (
+    ACTIONS, FEATURE_ID, FEATURE_VERSION, extract_features,
+)
+```
+
+这个兼容层固定返回 `discrete-v1`，供 DQN 和旧调用方继续使用。Q-learning v2 通过 registry
+明确选择 `discrete-q-v2`。
+
+## 1–3 步危险
+
+新表示明确区分准确未来时刻：
+
+- `danger_t1`：下一步该格危险；
+- `danger_t2`：两步后该格危险；
+- `danger_t3`：三步后该格危险。
+
+`continuous-v1` 对六个动作分别提供三项；`board-v1` 提供三张全棋盘通道；`discrete-compact-v1` 提供当前位置三个位；`hybrid-v1` 同时包含 board 和 continuous。冻结的 `discrete-v1` 继续使用“下一步 / 两步及以后”的旧聚合类别。
+
+固定格危险只回答“如果仍在动作后位置，该时刻是否危险”。`safe_horizon` 和 `safe_area` 允许第一步以后继续移动，分别表达安全路径能维持多久、最后安全时刻能到达多少格，两者不能混用。
+
+## 表示类型边界
+
+- 原始结构化棋盘通道：`board-v1` 中的墙、箱子、金币、角色、炸弹、爆炸和危险图。
+- 手工摘要特征：离散方案和 `continuous-v1` 中的 BFS 距离变化、时间展开生存、放弹覆盖等人工统计。
+- 物理合法 mask：只防止执行撞墙、进入箱子/炸弹/Agent 格或不可用炸弹等非法动作。
+- 人工决策规则：Feature System 不包含，不输出最佳动作或确定性策略。
+
+所以当前方案是“手工特征 + 学习策略”，不是端到端表示学习，也不是手写规则 Agent。
+
+## 公共奖励
+
+`rewards.py` 当前注册五个 Reward，其中 `r1` 和 `r1_no_crate` 只为历史兼容保留。所有方案每条 transition 都先计一次 step cost；表中的
+“—”表示该事件没有额外奖励。
+
+| Reward ID | step | 收金币 | 发现金币 | 击杀 | 炸箱 | 自杀 | 被杀 | 存活 | 非法动作 |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| `r1` | -0.01 | +1.0 | — | +5.0 | +0.2 | -10.0 | -10.0 | — | -0.1 |
+| `r1_no_crate` | -0.01 | +3.0 | — | +5.0 | 0.0 | -10.0 | -10.0 | — | -0.1 |
+| `r2_balanced` | -0.01 | +3.0 | +0.25 | +5.0 | +0.1 | -7.0 | -5.0 | +0.25 | -0.2 |
+| `r3_potential` | -0.01 | +3.0 | +0.25 | +5.0 | +0.1 | -7.0 | -5.0 | +0.25 | -0.2 |
+| `r4_anti_oscillation` | -0.01 | +3.0 | +0.25 | +5.0 | +0.1 | -7.0 | -5.0 | +0.25 | -0.2 |
+
+### `r1`：历史冻结基线
+
+奖励尺度最接近官方分数：金币 +1、击杀 +5。它只用于解释或加载已有实验和 checkpoint，
+不再用于新训练。其导航信号稀疏；普通移动只有 step cost，表格 Agent 可能难以把远处金币
+奖励传播回来。
+
+### `r1_no_crate`：历史金币优先且不奖励炸箱方案
+
+收金币提高到 +3，炸箱为 0。由于金币值也不同于 `r1`，它不是“只关闭炸箱”的严格单因素
+消融。当前只为读取历史记录保留，不再用于新训练，也不再提供独立实验配置。
+
+### `r2_balanced`：重新平衡事件结果
+
+收金币为 +3、发现金币为 +0.25、炸箱降至 +0.1。它区分自杀 -7 与被对手击杀 -5，并给
+存活 +0.25、非法动作 -0.2。相比 `r1`，它更适合包含箱子和对手的任务，但仍没有逐步接近
+目标的密集反馈。
+
+### `r3_potential`：平衡事件奖励加状态势能
+
+事件部分与 `r2_balanced` 相同，并增加：
+
+```text
+F(s,s') = 0.95 * Phi(s') - Phi(s)
+```
+
+`Phi` 优先使用最近可达金币的 `0.5 * exp(-distance/4)`；没有可达金币时使用箱子 frontier
+的 `0.25 * exp(-distance/4)`，再加最多 0.25 的当前位置安全度。终局下一状态势能固定为
+0。它只比较前后状态，不按动作名称直接指定策略，适合缓解稀疏奖励下的原地等待或往返循环。
+代价是训练时需要额外计算路径和危险上下文。
+
+### `r4_anti_oscillation`：距离势能加连续反转惩罚
+
+继承 `r3_potential`，并在出现第三个动作构成 `LEFT-RIGHT-LEFT`、
+`RIGHT-LEFT-RIGHT`、`UP-DOWN-UP` 或 `DOWN-UP-DOWN`，且最近金币距离没有缩短时增加
+`-0.08`。连续安全空等从第二次起额外增加 `-0.04`，随后为 `-0.08`、`-0.12` 并封顶；
+有未来爆炸危险或没有可达目标时不触发。一次正常回头、首次等待、避弹转向或伴随金币
+收集的移动不触发额外惩罚。
+
+实验默认 Reward 是 `r2_balanced`。底层 registry 仍以 `r1` 作为无配置旧调用的兼容回退，
+但正式训练必须通过 `experiments.run` 或环境变量明确选择 `r2_balanced`/`r3_potential`。
+Feature 与 Reward 是独立契约；metadata/checkpoint 同时记录 `feature_id` 与 `reward_id`。
+更换 Reward 必须开启新的训练链，不能接续其他 Reward 的 checkpoint。训练 reward 的数值
+尺度不同，不能直接横向比较；最终应比较冻结评估中的正式得分、金币、击杀、存活率和非法
+动作数。
 
 ## 文件职责
 
-| 文件 | 作用 |
+| 路径 | 职责 |
 |---|---|
-| `features.py` | 对外公开的特征接口，把安全、金币、对手三类信息组合成统一表示。 |
-| `danger.py` | 根据当前炸弹、当前爆炸和可选的假设炸弹，预测未来爆炸危险格。 |
-| `temporal_safety_features.py` | 在时间维度上模拟移动安全性和逃生路径。 |
-| `rewards.py` | 将框架事件转换为团队统一的基础标量奖励。 |
-| `__init__.py` | Python 包标记文件。 |
+| `features.py` | 冻结 `discrete-v1` 的旧 import 兼容层 |
+| `feature_system/` | 类型、registry、共享上下文、对称变换和五种表示 |
+| `danger.py` | 公共爆炸范围与未来危险图 |
+| `temporal_safety_features.py` | 公共时间展开搜索，并保留旧接口 |
+| `rewards.py` | 五个版本化奖励的 registry |
 
-## 对外接口
+## 版本规则
 
-主要使用 `features.py` 里的 `extract_features(game_state)`：
-
-```python
-from agent_code.team_agent.features import ACTIONS, FEATURE_VERSION, extract_features
-
-features = extract_features(game_state)
-state_key = features.state_key
-vector = features.vector
-legal_mask = features.legal_mask
-```
-
-返回值是：
-
-```python
-Features(state_key, vector, legal_mask)
-```
-
-三个字段的含义：
-
-- `state_key`：14 个离散值组成的 tuple，适合作为 tabular Q-learning 的 Q-table key。
-- `vector`：长度为 40 的 `float32` one-hot 向量，适合 DQN 或其他向量模型。
-- `legal_mask`：固定动作顺序下的布尔合法动作 mask。
-
-固定动作顺序是：
-
-```python
-('UP', 'RIGHT', 'DOWN', 'LEFT', 'WAIT', 'BOMB')
-```
-
-当前特征版本是：
-
-```python
-FEATURE_VERSION = 'v1'
-```
-
-训练出的模型或 Q-table 应该保存这个版本号。加载 checkpoint 时，如果版本不一致，应该拒绝加载或重置模型，避免把旧特征训练出的参数误用于新特征。
-
-## 特征结构
-
-`FEATURE_CATEGORY_COUNTS` 定义每个离散字段的类别数：
-
-```python
-(3, 3, 3, 3, 3, 3, 3, 2, 2, 2, 2, 5, 4, 2)
-```
-
-因此：
-
-- `STATE_KEY_SIZE = 14`
-- `FEATURE_DIM = 40`
-
-14 个 `state_key` 字段含义如下：
-
-| 索引 | 分组 | 含义 | 类别数 |
-|---:|---|---|---:|
-| 0-3 | 移动安全 | 对 `UP`、`RIGHT`、`DOWN`、`LEFT` 分别编码：非法 / 合法但没有完整逃生路线 / 合法且有逃生路线 | 每项 3 |
-| 4 | 当前危险 | 当前格安全 / 下一步危险 / 之后会危险 | 3 |
-| 5 | 放弹安全 | 不能放弹 / 能放但放后逃不掉 / 能放且放后能逃 | 3 |
-| 6 | 炸箱覆盖 | 当前放弹可炸 0 / 1 / 2 个及以上箱子 | 3 |
-| 7-10 | 金币导航 | 对四个移动方向分别编码：该方向是否更接近最近可达金币 | 每项 2 |
-| 11 | 对手方向 | 无对手 / 上 / 右 / 下 / 左，按主导位移方向编码 | 5 |
-| 12 | 对手距离 | 无对手 / 相邻 / 较近 / 较远 | 4 |
-| 13 | 对手爆炸覆盖 | 当前放弹的爆炸范围是否能覆盖某个对手 | 2 |
-
-`vector` 是这些离散类别拼接后的 one-hot 表示：
-
-- 安全相关：7 个字段 x 3 类 = 21 维
-- 金币导航：4 个字段 x 2 类 = 8 维
-- 对手相关：5 + 4 + 2 = 11 维
-- 总计：40 维
-
-## 安全判断语义
-
-这里的安全特征比简单的“这个格子会不会被炸”更保守，也更适合学习放弹和逃生。
-
-`danger.py` 使用如下时间范围预测未来危险：
-
-```python
-HORIZON = settings.BOMB_TIMER + settings.EXPLOSION_TIMER + 1
-```
-
-它会标记：
-
-- `explosion_map` 中已经存在的爆炸
-- 当前场上炸弹未来爆炸时覆盖的格子
-- 可选的“如果我现在放一颗炸弹”产生的未来危险
-
-`temporal_safety_features.py` 在此基础上构建按时间展开的可通行地图。它会考虑：
-
-- 墙和箱子阻挡
-- 其他 agent 占位阻挡
-- 炸弹在爆炸前阻挡所在格
-- 箱子被预测炸毁后变为可通行
-- 每个未来时间步的危险格
-
-对每个第一步动作，它会检查：执行这个动作后，agent 能不能在整个预测时间范围内持续找到安全位置。这个结果就是 `features.py` 中“是否存在逃生路线”的来源。
-
-## legal_mask 的含义
-
-`legal_mask` 只表示物理合法性，不会因为动作危险就把它标为非法。
-
-规则是：
-
-- 移动到墙、箱子、炸弹或其他 agent 所在格是非法的。
-- `WAIT` 总是物理合法。
-- `BOMB` 只有在 `game_state['self'][2]` 表示可以放弹时才合法。
-
-危险动作仍然可能是合法动作。例如站在即将爆炸的格子上选择 `WAIT`，物理上可以等待，但策略上很危险。这个危险信息由安全特征告诉模型，而不是从 `legal_mask` 里删除。这样可以把“动作是否能执行”和“动作是否聪明”分开。
-
-## 和其他 agent 的关系
-
-`q_learning_agent` 和 `dqn_agent` 都通过很薄的兼容包装复用本目录的团队特征接口：
-
-- `state_to_features(game_state)` 返回 `extract_features(game_state).state_key`
-- DQN 的 `state_to_features(game_state)` 返回 `extract_features(game_state).vector`
-- 两者的 `legal_actions(game_state)` 都来自 `extract_features(game_state).legal_mask`
-
-兼容包装不复制任何特征计算。以后修改本目录的 `extract_features`（并按约定更新
-`FEATURE_VERSION`），Q-learning 和 DQN 会同时采用新实现。这样两种算法可以在同一套
-特征语义下比较，避免“算法不同”和“特征不同”混在一起，导致实验结论不清楚。
-
-## 公共基础奖励接口
-
-`rewards.py` 提供版本化的基础奖励函数：
-
-```python
-from agent_code.team_agent.rewards import REWARD_VERSION, reward_from_events
-
-reward = reward_from_events(events)
-```
-
-当前版本为 `REWARD_VERSION = 'base-v1'`，Q-learning 与 DQN 的训练模块都直接导入此
-函数，不维护各自的奖励副本。奖励规则如下：
-
-| 条件或事件 | 奖励 |
-|---|---:|
-| 每一步 | `-0.01` |
-| `COIN_COLLECTED` | `+1.0` |
-| `KILLED_OPPONENT` | `+5.0` |
-| `CRATE_DESTROYED` | `+0.2` |
-| `SURVIVED_ROUND` | `+1.0` |
-| `INVALID_ACTION` | `-0.2` |
-| `KILLED_SELF` 或 `GOT_KILLED` | `-10.0`，同一次死亡只计算一次 |
-
-同一步中的可重复事件会分别累计。公共奖励只描述环境结果，不根据某个方向是否“正确”直接奖励动作。Q-learning 已使用该接口；其他模型如果采用不同奖励，应显式记录奖励版本或变体名称，避免把模型差异和奖励差异混在一起。
-
-## 开发约定
-
-- 不要在不更新 `FEATURE_VERSION` 的情况下改变 `ACTIONS`、`STATE_KEY_SIZE`、`FEATURE_CATEGORY_COUNTS` 或任何已有字段语义。
-- 不要在不更新 `REWARD_VERSION` 的情况下改变已有基础奖励的数值或语义。
-- `extract_features(game_state)` 必须保持确定性：同一个输入状态应产生同一个输出。
-- 不要修改传入的 `game_state`。
-- 新特征变体应显式版本化，或者放在清晰命名的变体中，让实验配置能记录 `feature_version`。
-- 如果某个实验只想测试一个因素，例如去掉危险特征或去掉炸箱奖励，应尽量只改变这个因素，保持其他编码不变。
+- Feature 字段、类别、shape、通道顺序或语义变化时创建新 Feature ID。
+- Reward 数值或语义变化时创建新 Reward ID。
+- 新 checkpoint 严格校验 Feature ID、schema/shape 和动作顺序；只有明确旧 `v1` 可映射到 `discrete-v1`。
+- `hybrid-v1` 必须组合 board/continuous 公共实现，不能复制危险与路径逻辑。
+- `legal_mask`、手工状态摘要与最终 policy 始终分离。

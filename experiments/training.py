@@ -9,8 +9,12 @@ from typing import Any, Callable, Sequence
 
 import numpy as np
 
+<<<<<<< HEAD
 from agent_code.team_agent.features import ACTIONS, FEATURE_VERSION
 from agent_code.team_agent.exploration import resolve_exploration_spec
+=======
+from agent_code.team_agent.features import ACTIONS
+>>>>>>> e6253fd1 (add more feature id, reward id, and model)
 from agent_code.team_agent.rewards import REWARD_VERSION
 from experiments.devices import resolve_device
 from experiments.resume import (
@@ -18,6 +22,7 @@ from experiments.resume import (
     load_training_snapshot,
     validate_resume_transition,
 )
+from experiments.agent_contracts import resolve_agent_contract
 
 
 DEFAULT_REPLAY_PROGRESS_PERCENT = 10
@@ -167,20 +172,36 @@ def run_training_mode(
         raise ValueError("Parent run is missing metadata.json")
     import json
     parent_metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+<<<<<<< HEAD
+=======
+    agent_contract = resolve_agent_contract(args.agent)
+    algorithm = agent_contract.algorithm
+>>>>>>> e6253fd1 (add more feature id, reward id, and model)
     child_contract = {
         "algorithm": algorithm,
         "seed": seed,
         "task": task_name,
-        "feature_version": FEATURE_VERSION,
-        "reward_version": config.get("reward_version", REWARD_VERSION),
+        "feature_id": agent_contract.feature_id,
+        "feature_schema": agent_contract.feature_schema,
+        "feature_version": (
+            "v1" if agent_contract.feature_id == "discrete-v1" else None),
+        "reward_id": config.get(
+            "reward_id", config.get("reward_version", REWARD_VERSION)),
+        "reward_version": config.get(
+            "reward_id", config.get("reward_version", REWARD_VERSION)),
         "checkpoint_schema": CHECKPOINT_SCHEMA_VERSION,
         "actions": list(ACTIONS),
+<<<<<<< HEAD
         "training_device_name": device_info["name"],
         "training_device_type": device_info["type"],
         "agent_seed": seed,
         "exploration_spec": resolve_exploration_spec(training.get("exploration")),
         "source_commit": source_commit,
         "source_hash": source_hash,
+=======
+        "network_spec": agent_contract.network_spec,
+        "hyperparameters": agent_contract.hyperparameters,
+>>>>>>> e6253fd1 (add more feature id, reward id, and model)
     }
     parent_status = parent_metadata.get("status", "unknown")
     resume_kind = validate_resume_transition(

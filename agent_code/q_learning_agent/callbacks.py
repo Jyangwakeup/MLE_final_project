@@ -8,18 +8,28 @@ import random
 
 import numpy as np
 
+from agent_code.team_agent.feature_system import (
+    normalize_feature_id,
+    validate_checkpoint_feature_contract,
+)
 from agent_code.team_agent.rewards import REWARD_VERSION, resolve_reward_spec
+<<<<<<< HEAD
 from agent_code.team_agent.exploration import (
     agent_seed_from_environment,
     epsilon_at,
     exploration_from_environment,
 )
 from .features import ACTIONS, FEATURE_VERSION, features_for_state
+=======
+from .features import ACTIONS, FEATURE_ID, FEATURE_VERSION, features_for_state
+>>>>>>> e6253fd1 (add more feature id, reward id, and model)
 MODEL_FILE = Path(__file__).with_name("final.pkl")
 CHECKPOINT_ENV = "BOMBERMAN_CHECKPOINT"
 SEED = 0
 TRAINING_TASK_ENV = "BOMBERMAN_TRAINING_TASK"
 REWARD_VERSION_ENV = "BOMBERMAN_REWARD_VERSION"
+FEATURE_ID_ENV = "BOMBERMAN_FEATURE_ID"
+REWARD_ID_ENV = "BOMBERMAN_REWARD_ID"
 
 
 class ResumeCompatibilityError(RuntimeError):
@@ -65,12 +75,28 @@ def setup(self):
     else:
         self.allow_bomb = _env_flag("Q_LEARNING_ALLOW_BOMB", True)
     self.training_task = _training_task()
-    self.reward_version = os.getenv(REWARD_VERSION_ENV, REWARD_VERSION)
+    configured_feature_id = normalize_feature_id(
+        os.getenv(FEATURE_ID_ENV) or FEATURE_ID, FEATURE_VERSION)
+    if configured_feature_id != FEATURE_ID:
+        raise ValueError(
+            f"q_learning_agent only supports feature ID {FEATURE_ID!r}; "
+            f"got {configured_feature_id!r}")
+    self.feature_id = configured_feature_id
+    reward_id = os.getenv(REWARD_ID_ENV)
+    legacy_reward_id = os.getenv(REWARD_VERSION_ENV)
+    if reward_id and legacy_reward_id and reward_id != legacy_reward_id:
+        raise ValueError("BOMBERMAN_REWARD_ID conflicts with BOMBERMAN_REWARD_VERSION")
+    configured_reward_id = reward_id or legacy_reward_id
+    self.reward_version = configured_reward_id or REWARD_VERSION
+    self.reward_id = self.reward_version
     self.reward_spec = resolve_reward_spec(self.reward_version)
     self.q_table = {}
     self.training_steps = 0
     self._feature_cache_key = None
     self._feature_cache_value = None
+    self.previous_action = None
+    self.move_history = []
+    self.stationary_streak = 0
     self.logger.info("Bomb actions enabled: %s", self.allow_bomb)
 
     configured_checkpoint = os.getenv(CHECKPOINT_ENV)
@@ -84,32 +110,31 @@ def setup(self):
             with self.model_file.open("rb") as file:
                 payload = pickle.load(file)
             if isinstance(payload, dict) and "q_table" in payload:
+                validate_checkpoint_feature_contract(payload, FEATURE_ID, ACTIONS)
                 self.q_table = payload["q_table"]
                 self.training_steps = int(payload.get("training_steps", 0))
                 previous_task = payload.get("training_task")
-                previous_feature_version = payload.get("feature_version")
-                previous_reward_version = payload.get("reward_version")
-            else:  # backwards-compatible with a directly pickled Q table
-                self.q_table = payload
-                previous_task = None
-                previous_feature_version = None
-                previous_reward_version = None
-            if previous_feature_version != FEATURE_VERSION:
-                self.logger.warning(
-                    "Ignoring Q table trained with feature version %r; expected %r",
-                    previous_feature_version,
-                    FEATURE_VERSION,
-                )
-                self.q_table = {}
-                self.training_steps = 0
-            if self.train and "agent_rng_state" in payload:
-                if previous_reward_version != self.reward_version:
+                checkpoint_reward_id = payload.get(
+                    "reward_id", payload.get("reward_version"))
+                if checkpoint_reward_id is None:
+                    raise ValueError("Q-learning checkpoint has no reward ID")
+                if (
+                    configured_reward_id is not None
+                    and configured_reward_id != checkpoint_reward_id
+                ):
                     raise ResumeCompatibilityError(
-                        "Cannot continue Q-learning with a different reward version"
-                    )
+                        "Configured reward ID does not match the checkpoint: "
+                        f"{configured_reward_id!r} != {checkpoint_reward_id!r}")
+                self.reward_version = checkpoint_reward_id
+                self.reward_id = checkpoint_reward_id
+                self.reward_spec = resolve_reward_spec(checkpoint_reward_id)
+            else:
+                raise ValueError(
+                    "Q-learning checkpoint has no explicit feature contract")
+            if self.train and "agent_rng_state" in payload:
                 self.rng.setstate(payload["agent_rng_state"])
             self.logger.info("Loaded Q table with %d states", len(self.q_table))
-        except (OSError, pickle.PickleError, EOFError, TypeError, ValueError) as exc:
+        except (OSError, pickle.PickleError, EOFError, TypeError) as exc:
             self.logger.warning("Could not load Q table (%s); starting fresh", exc)
             self.q_table = {}
     elif configured_checkpoint and not self.train:
@@ -151,7 +176,8 @@ def _features_for(self, game_state: dict):
     """Extract shared features once for each round-step state."""
     key = (game_state.get("round"), game_state.get("step"))
     if key != self._feature_cache_key:
-        self._feature_cache_value = features_for_state(game_state)
+        self._feature_cache_value = features_for_state(
+            game_state, getattr(self, "previous_action", None))
         self._feature_cache_key = key
     return self._feature_cache_value
 

@@ -110,11 +110,20 @@
 |---|---|---|---|
 | `experiments/run.py` / C | Task、Agent、模式、配置、输出目录 → 训练或评估报告 | 官方世界类、自有与官方智能体 | `train`/`evaluate` 独立；四个 Task 自动选择场景和默认对手；各运行隔离 |
 | `experiments/analyze.py` / C | 运行目录列表 → CSV 汇总和 PNG 图 | JSON、NumPy、Matplotlib | 正确区别独占第一、并列第一、零分平局；图能从原始数据生成 |
+<<<<<<< HEAD
 | `experiments/configs/base.json`、`formal_training.json`、`stage_gate.json`、`main_validation.json`、`final_test.json` / C | 工程默认与正式训练/评估数据集 | 第 6–8 节约定 | CPU、`v1`、`r1`、预定 seed 和局数均可校验 |
 | `agent_code/legal_random_agent/` / C | 官方状态 → 从同一合法掩码均匀抽样 | 共享特征、独立 RNG | Task 1 诊断基线可固定 seed 重现，不包含学习状态 |
 | `experiments/resume.py`、`devices.py` / C | 原子完整恢复、CPU/CUDA 设备解析 | 标准库、NumPy、可选 PyTorch | v3 合同和两代回退可验证；评估强制 CPU |
 | 待实现：消融配置 / A、C | `v1_no_danger`、`r1_no_crate` 的独立完整课程 | 已版本化特征与奖励 | 各只改变一个因素并从零训练 |
 | 待实现：打包工具和最终依赖清单 / C | 胜出 checkpoint → 单一可提交 Agent 包 | 最终模型存储格式 | 在原版框架、Docker、CPU 上独立加载后才标记完成 |
+=======
+| `experiments/configs/reward_r2_balanced.json` / C | R2 奖励、评估 seeds、默认局数 | 第 6–8 节约定 | 不自动分配四阶段预算；每次运行显式选择 Task 和局数 |
+| `experiments/configs/q_learning.json`、`dqn.json` / C | 两算法配置 | Reward 配置对应的完整展开值 | 第一轮除算法外信息、奖励和运行条件一致 |
+| `experiments/configs/dqn_no_danger.json`、`dqn_no_crate_reward.json` / C | 两个固定消融配置 | A/B 定义消融含义 | 各只改变一个实验因素，分别重新训练 |
+| `tools/package_agent.py` / C | 指定检查点和展开配置 → 可独立加载的智能体目录及 zip | 存储格式、自有目录 | 只打包选中模型，重新加载检查通过后才输出成功 |
+| `requirements.txt` / C | 项目直接依赖清单 | 实际实现与兼容性结果 | 记录验证过的版本；不照抄旧项目整套依赖 |
+| `agent_code/team_agent/requirements.txt` / C | 参赛包依赖 | 所选算法 | Q 表包无需 PyTorch；DQN 包包含 PyTorch 依赖 |
+>>>>>>> e6253fd1 (add more feature id, reward id, and model)
 
 配置使用标准 JSON，不做隐式配置继承。实验运行保存完整展开值和源配置 SHA256。公共 `Features` 契约放在 `features.py`，各算法的转移和模型状态留在自己包内。
 
@@ -237,7 +246,8 @@ CPU 模式固定 PyTorch 单线程；Q 表路径延迟导入或完全不导入 P
 
 不对 BOMB_DROPPED、COIN_FOUND、SURVIVED_ROUND 单独加分，不给预测击杀大额奖励。事件列表可能有多次炸箱/击杀，不能转换成 set 后再统一求和；只有死亡使用布尔去重。合法动作仍可能因其他智能体先行动而失败，故保留无效动作处理。
 
-返回奖励分项，分别记录真实游戏得分和训练奖励。奖励版本为 `r1`，关闭炸箱奖励的消融是 `r1_no_crate`。
+返回奖励分项，分别记录真实游戏得分和训练奖励。奖励版本为 `r1`；兼容名称
+`r1_no_crate` 当前采用金币 `+3`、炸箱 `0`，因此不再是相对 `r1` 的严格单因素消融。
 
 ### 6.5 配置、存档与恢复
 
@@ -443,6 +453,7 @@ conda run --no-capture-output -n mle python -m unittest discover -s tests -p "te
 并行启动六条链前，在每个训练终端设置 `OMP_NUM_THREADS=1` 与 `MKL_NUM_THREADS=1`；DQN
 自身还会调用 `torch.set_num_threads(1)`。每条命令只启动一条链，绝不并行启动同一链的两个阶段。
 
+<<<<<<< HEAD
 以下以 Q-learning seed 11 演示一条链；DQN 仅将 `q_learning_agent`/`q` 替换为 `dqn_agent`/`dqn`。Task 1 必须从零开始，后续 Task 必须引用直接父 run：
 
 ```bash
@@ -453,6 +464,15 @@ conda run --no-capture-output -n mle python experiments/run.py --config experime
 conda run --no-capture-output -n mle python experiments/run.py --config experiments/configs/formal_training.json --mode train --device cpu --task 3 --agent q_learning_agent --n-rounds 1500 --seed 11 --resume-from runs/formal_q_v1_r1_s11_t2_r1000 --run-id formal_q_v1_r1_s11_t3_r1500
 
 conda run --no-capture-output -n mle python experiments/run.py --config experiments/configs/formal_training.json --mode train --device cpu --task 4 --agent q_learning_agent --n-rounds 3000 --seed 11 --resume-from runs/formal_q_v1_r1_s11_t3_r1500 --run-id formal_q_v1_r1_s11_t4_r3000
+=======
+```powershell
+python -m unittest discover -s tests -p "test_*.py"
+python experiments/run.py --config experiments/configs/reward_r2_balanced.json --mode train --task 1 --agent q_learning_agent --n-rounds 10000 --seed 11 --run-id q_task1_s11
+python experiments/run.py --config experiments/configs/reward_r2_balanced.json --mode train --task 3 --agent dqn_agent --n-rounds 10000 --seed 11 --run-id dqn_task3_s11
+python experiments/run.py --config experiments/configs/reward_r2_balanced.json --mode evaluate --task 3 --agent dqn_agent --checkpoint runs/dqn_task3_s11/checkpoints/final.pt --run-id dqn_task3_validation
+python experiments/analyze.py --runs runs/q_learning_s11_validation runs/dqn_s11_validation --output results/model_comparison
+python tools/package_agent.py --config runs/selected/config.json --checkpoint runs/selected/checkpoint --output final-project-agent-code.zip
+>>>>>>> e6253fd1 (add more feature id, reward id, and model)
 ```
 
 Task 3 会固定加入 `peaceful_agent` 和 `coin_collector_agent`；Task 4 默认加入三名 `rule_based_agent`，无需手写 `--opponents`。另外五条链分别使用 Q-learning seeds 22/33 和 DQN seeds 11/22/33，可在独立终端作为单线程进程并行启动。

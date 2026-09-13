@@ -2,16 +2,17 @@
 
 import numpy as np
 
-from agent_code.team_agent.features import (
-    ACTIONS,
-    FEATURE_VERSION,
-    extract_features,
+from agent_code.team_agent.feature_system.common import ACTIONS
+from agent_code.team_agent.feature_system.discrete_q_v2 import (
+    FEATURE_ID, extract as extract_features,
 )
 
+FEATURE_VERSION = None
 
-def features_for_state(game_state: dict):
+
+def features_for_state(game_state: dict, previous_action=None):
     """Return all shared features so callers can reuse one extraction."""
-    return extract_features(game_state)
+    return extract_features(game_state, previous_action)
 
 
 def legal_actions(game_state: dict, allow_bomb: bool = True) -> np.ndarray:
