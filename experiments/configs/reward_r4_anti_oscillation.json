@@ -1,22 +1,16 @@
 {
   "algorithm": null,
-  "feature_version": "v1",
-  "reward_version": "r1",
+  "feature_id": null,
+  "feature_version": null,
+  "reward_id": "r4_anti_oscillation",
+  "reward_version": "r4_anti_oscillation",
   "seed": null,
   "checkpoint": null,
   "evaluation": {
-    "device": "cpu",
     "seeds": [10001, 10002, 10003, 10004, 10005],
     "n_rounds": 20
   },
   "training": {
-    "device": "auto",
-    "exploration": {
-      "version": "linear-v1",
-      "start": 1.0,
-      "end": 0.05,
-      "decay_action_steps": 1920000
-    },
     "n_rounds": null,
     "early_stopping": {
       "enabled": true,

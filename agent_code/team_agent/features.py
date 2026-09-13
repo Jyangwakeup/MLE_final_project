@@ -4,11 +4,13 @@ import numpy as np
 import settings as s
 
 from .danger import blast_coords, predict_danger
-from .temporal_safety_features import temporal_safety_features
+from .feature_system.types import DiscreteFeatures, IDENTITY_ACTION_TRANSFORM
+from .temporal_safety_features import _temporal_safety_features_with_danger
 
 
 ACTIONS = ('UP', 'RIGHT', 'DOWN', 'LEFT', 'WAIT', 'BOMB')
 FEATURE_VERSION = 'v1'
+FEATURE_ID = 'discrete-v1'
 STATE_KEY_SIZE = 14
 FEATURE_CATEGORY_COUNTS = (
     3, 3, 3, 3, 3, 3, 3,
@@ -25,7 +27,7 @@ DIRECTIONS = {
 }
 FREE = 0
 
-Features = namedtuple('Features', ('state_key', 'vector', 'legal_mask'))
+Features = DiscreteFeatures
 SafetyFeatures = namedtuple('SafetyFeatures', ('state_key', 'vector', 'legal_mask'))
 CoinFeatures = namedtuple('CoinFeatures', ('state_key', 'vector'))
 OpponentFeatures = namedtuple('OpponentFeatures', ('state_key', 'vector'))
@@ -127,8 +129,7 @@ def _distances(origin: tuple, blocked: np.ndarray) -> dict:
     frontier = deque([origin])
     while frontier:
         x, y = frontier.popleft()
-        for dx, dy in DIRECTIONS.values():
-            position = x + dx, y + dy
+        for position in ((x, y - 1), (x + 1, y), (x, y + 1), (x - 1, y)):
             if (
                 _in_bounds(position, blocked.shape)
                 and not blocked[position[0], position[1]]
@@ -222,26 +223,29 @@ def opponent_features(game_state: dict):
     return OpponentFeatures(state_key, _opponent_one_hot(state_key))
 
 
-def coin_features(game_state: dict):
-    """Return objective static-distance features for the nearest reachable coin."""
+def _coin_features_with_distance(game_state: dict):
+    """Return frozen coin features and the distance already found by their BFS."""
     if game_state is None:
-        return None
+        return None, np.inf
 
     position = game_state['self'][3]
+    # Lazy import avoids a package-initialisation cycle with compatibility
+    # feature adapters that import this frozen baseline extractor.
+    from .feature_system.common import distance_to_targets
     blocked = _navigation_blocked(game_state)
-    from_self = _distances(position, blocked)
+    from_self = distance_to_targets(blocked, (position,))
     candidates = [
-        (from_self[coin], coin[0], coin[1])
+        (float(from_self[coin]), coin[0], coin[1])
         for coin in game_state['coins']
-        if coin in from_self
+        if np.isfinite(from_self[coin])
     ]
     if not candidates:
         state_key = (0, 0, 0, 0)
-        return CoinFeatures(state_key, _coin_one_hot(state_key))
+        return CoinFeatures(state_key, _coin_one_hot(state_key)), np.inf
 
-    _, target_x, target_y = min(candidates)
+    nearest_distance, target_x, target_y = min(candidates)
     target = target_x, target_y
-    to_target = _distances(target, blocked)
+    to_target = distance_to_targets(blocked, (target,))
     current_distance = to_target[position]
     legal_mask = _legal_mask(game_state)
 
@@ -251,13 +255,19 @@ def coin_features(game_state: dict):
         candidate = position[0] + dx, position[1] + dy
         is_closer = (
             legal_mask[index]
-            and candidate in to_target
+            and np.isfinite(to_target[candidate])
             and to_target[candidate] < current_distance
         )
         state_key.append(int(is_closer))
 
     state_key = tuple(state_key)
-    return CoinFeatures(state_key, _coin_one_hot(state_key))
+    return CoinFeatures(state_key, _coin_one_hot(state_key)), nearest_distance
+
+
+def coin_features(game_state: dict):
+    """Return objective static-distance features for the nearest reachable coin."""
+    features, _ = _coin_features_with_distance(game_state)
+    return features
 
 
 def safety_features(game_state: dict):
@@ -265,13 +275,19 @@ def safety_features(game_state: dict):
     if game_state is None:
         return None
 
-    analysis = temporal_safety_features(game_state)
+    analysis, danger = _temporal_safety_features_with_danger(game_state)
     legal_mask = _legal_mask(game_state)
     movement = tuple(
         _movement_category(legal_mask[index], analysis.move_features[action].escape_exists)
         for index, action in enumerate(MOVE_ACTIONS)
     )
-    current_danger = _current_danger_category(game_state)
+    x, y = game_state['self'][3]
+    if danger[1, x, y]:
+        current_danger = 1
+    elif danger[2:, x, y].any():
+        current_danger = 2
+    else:
+        current_danger = 0
     bomb = _bomb_category(
         analysis.bomb_features.can_drop_bomb,
         analysis.bomb_features.escape_after_bomb,
@@ -282,14 +298,26 @@ def safety_features(game_state: dict):
     return SafetyFeatures(state_key, _one_hot(state_key), legal_mask)
 
 
-def extract_features(game_state: dict):
-    """Return the formal feature representation composed from all feature groups."""
+def _extract_features_with_coin_distance(game_state: dict):
+    """Build the frozen representation and retain its already-computed distance."""
     if game_state is None:
-        return None
+        return None, np.inf
 
     safety = safety_features(game_state)
-    coins = coin_features(game_state)
+    coins, coin_distance = _coin_features_with_distance(game_state)
     opponents = opponent_features(game_state)
     state_key = safety.state_key + coins.state_key + opponents.state_key
     vector = np.concatenate((safety.vector, coins.vector, opponents.vector))
-    return Features(state_key, vector, safety.legal_mask)
+    return Features(
+        feature_id=FEATURE_ID,
+        state_key=state_key,
+        vector=vector,
+        legal_mask=safety.legal_mask,
+        action_transform=IDENTITY_ACTION_TRANSFORM,
+    ), coin_distance
+
+
+def extract_features(game_state: dict):
+    """Return the formal feature representation composed from all feature groups."""
+    features, _ = _extract_features_with_coin_distance(game_state)
+    return features

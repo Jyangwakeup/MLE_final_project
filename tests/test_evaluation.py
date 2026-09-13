@@ -121,6 +121,33 @@ class ExperimentAnalysisTest(unittest.TestCase):
             self.assertEqual(summary_rows[-1]["agent_name"], "a")
             self.assertEqual(float(summary_rows[-1]["mean_score"]), 2.0)
 
+    def test_task1_completion_and_loop_rates_are_aggregated(self):
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            first_agent = _agent("a", 50, coins=50)
+            first_agent.update({
+                "all_coins": True, "max_steps": False,
+                "long_wait_loop": False, "long_ping_pong_loop": False,
+            })
+            second_agent = _agent("a", 12, coins=12)
+            second_agent.update({
+                "all_coins": False, "max_steps": True,
+                "long_wait_loop": True, "long_ping_pong_loop": False,
+            })
+            episodes = [
+                {**_episode("task1", 1, [first_agent], round_steps=120),
+                 "exploration_disabled": True},
+                {**_episode("task1", 2, [second_agent], round_steps=400),
+                 "exploration_disabled": True},
+            ]
+            run = self._write_run(temporary_directory, "task1", episodes)
+            row = summarize_runs([run])[0]
+            self.assertEqual(row["mean_coins"], 31.0)
+            self.assertEqual(row["all_coins_rate"], 0.5)
+            self.assertEqual(row["max_steps_rate"], 0.5)
+            self.assertEqual(row["long_wait_loop_rate"], 0.5)
+            self.assertEqual(row["long_ping_pong_loop_rate"], 0.0)
+            self.assertTrue(row["exploration_disabled"])
+
     def test_missing_or_malformed_episodes_fail_clearly(self):
         with tempfile.TemporaryDirectory() as temporary_directory:
             missing = Path(temporary_directory) / "missing"

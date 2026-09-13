@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 import hashlib
 import json
+import os
 from pathlib import Path
 import pickle
 import random
@@ -14,10 +15,20 @@ from typing import Any
 
 import numpy as np
 
+from agent_code.team_agent.feature_system import (
+    feature_schema_contract,
+    normalize_feature_id,
+    validate_checkpoint_feature_contract,
+)
+
 
 CHECKPOINT_SCHEMA_VERSION = "training-resume-v3"
 TASK_ORDER = ("coin_navigation", "crate_navigation", "weak_opponents", "full_match")
 RETAINED_GENERATIONS = 2
+TABLE_ALGORITHMS = frozenset(("q_learning", "double_q_learning"))
+TORCH_ALGORITHMS = frozenset((
+    "dqn", "double_dqn", "cnn_double_dqn", "hybrid_dueling_double_dqn",
+))
 
 
 @dataclass(frozen=True)
@@ -44,16 +55,24 @@ class LoadedSnapshot:
             "algorithm": self.algorithm,
             "seed": self.seed,
             "task": self.task,
-            "feature_version": metadata["feature_version"],
+            "feature_id": metadata.get("feature_id", "discrete-v1"),
+            "feature_schema": metadata.get("feature_schema"),
+            "feature_version": metadata.get("feature_version"),
+            "reward_id": metadata.get("reward_id", metadata["reward_version"]),
             "reward_version": metadata["reward_version"],
             "checkpoint_schema": metadata["checkpoint_schema"],
             "training_device_name": metadata["training_device_name"],
             "training_device_type": metadata["training_device_type"],
             "actions": metadata["actions"],
+<<<<<<< HEAD
             "agent_seed": metadata["agent_seed"],
             "exploration_spec": metadata["exploration_spec"],
             "source_commit": self.source_commit,
             "source_hash": self.source_hash,
+=======
+            "network_spec": metadata.get("network_spec"),
+            "hyperparameters": metadata.get("hyperparameters", {}),
+>>>>>>> e6253fd1 (add more feature id, reward id, and model)
         }
 
 
@@ -106,11 +125,21 @@ def _sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
+def _link_or_copy(source: Path, destination: Path) -> None:
+    """Snapshot an atomically replaced checkpoint without duplicating its bytes."""
+    try:
+        os.link(source, destination)
+    except OSError:
+        # Cross-device filesystems and platforms without hard links retain the
+        # previous portable behaviour.
+        shutil.copy2(source, destination)
+
+
 def _read_checkpoint_metadata(checkpoint: Path, algorithm: str) -> dict[str, Any]:
-    if algorithm == "q_learning":
+    if algorithm in TABLE_ALGORITHMS:
         with checkpoint.open("rb") as file:
             return pickle.load(file)
-    if algorithm == "dqn":
+    if algorithm in TORCH_ALGORITHMS:
         try:
             import torch
         except ImportError as exception:
@@ -147,10 +176,15 @@ def commit_training_snapshot(
     try:
         learner = _read_checkpoint_metadata(checkpoint, algorithm)
         required = {
+<<<<<<< HEAD
             "checkpoint_schema", "algorithm", "actions", "feature_version",
             "reward_version", "reward_spec", "training_task",
             "training_device_name", "training_device_type",
             "agent_seed", "exploration_spec",
+=======
+            "checkpoint_schema", "algorithm", "actions", "reward_spec",
+            "training_task",
+>>>>>>> e6253fd1 (add more feature id, reward id, and model)
         }
         missing = sorted(required.difference(learner))
         if missing:
@@ -161,26 +195,50 @@ def commit_training_snapshot(
             raise ValueError("Checkpoint uses an incompatible resume schema")
         if learner["algorithm"] != algorithm or learner["training_task"] != task:
             raise ValueError("Checkpoint algorithm/task does not match the run")
+        feature_id = normalize_feature_id(
+            learner.get("feature_id"), learner.get("feature_version"))
+        feature_schema = learner.get(
+            "feature_schema", feature_schema_contract(feature_id))
+        board_contract = feature_schema.get("board_shape")
+        board_shape = (
+            None if board_contract is None
+            or any(value is None for value in board_contract[1:])
+            else tuple(board_contract[1:])
+        )
+        validate_checkpoint_feature_contract(
+            learner, feature_id, tuple(learner["actions"]),
+            board_shape=board_shape)
+        reward_id = learner.get("reward_id", learner["reward_version"])
+        if reward_id != learner["reward_version"]:
+            raise ValueError("Checkpoint reward_id conflicts with reward_version")
 
         learner_files: list[str]
-        if algorithm == "q_learning":
-            q_table = learner.pop("q_table")
-            keys = np.asarray(list(q_table), dtype=np.int16)
-            values = (
-                np.stack([np.asarray(q_table[key], dtype=np.float32) for key in q_table])
-                if q_table else np.empty((0, len(learner["actions"])), dtype=np.float32)
-            )
-            np.savez_compressed(temporary / "q_table.npz", keys=keys, values=values)
+        if algorithm in TABLE_ALGORITHMS:
+            table_names = ("q_table",) if algorithm == "q_learning" else (
+                "q_table_a", "q_table_b")
+            arrays = {}
+            for table_name in table_names:
+                table = learner.pop(table_name)
+                arrays[table_name + "_keys"] = np.asarray(list(table), dtype=np.int16)
+                arrays[table_name + "_values"] = (
+                    np.stack([np.asarray(table[key], dtype=np.float32) for key in table])
+                    if table else np.empty((0, len(learner["actions"])), dtype=np.float32)
+                )
+            np.savez_compressed(temporary / "q_table.npz", **arrays)
             (temporary / "learner.json").write_bytes(_json_bytes(learner))
             learner_files = ["learner.json", "q_table.npz"]
         else:
-            shutil.copy2(checkpoint, temporary / "learner.pt")
+            # Agent checkpoint writers publish by atomic replace.  A hard link
+            # therefore pins this immutable inode even when the working path is
+            # replaced after the next round.
+            _link_or_copy(checkpoint, temporary / "learner.pt")
             learner_files = ["learner.pt"]
 
         runner_state = {
             "contract": {
                 "actions": list(learner["actions"]),
                 "checkpoint_schema": CHECKPOINT_SCHEMA_VERSION,
+<<<<<<< HEAD
                 "feature_version": learner["feature_version"],
                 "agent_seed": learner["agent_seed"],
                 "exploration_spec": learner["exploration_spec"],
@@ -188,6 +246,16 @@ def commit_training_snapshot(
                 "reward_version": learner["reward_version"],
                 "training_device_name": learner["training_device_name"],
                 "training_device_type": learner["training_device_type"],
+=======
+                "feature_id": feature_id,
+                "feature_schema": feature_schema,
+                "feature_version": learner.get("feature_version"),
+                "reward_id": reward_id,
+                "reward_spec": learner["reward_spec"],
+                "reward_version": learner["reward_version"],
+                "network_spec": learner.get("network_spec"),
+                "hyperparameters": learner.get("hyperparameters", {}),
+>>>>>>> e6253fd1 (add more feature id, reward id, and model)
             },
             "cumulative_completed_rounds": (
                 int(round_index)
@@ -263,15 +331,18 @@ def _load_generation(
     algorithm = manifest["algorithm"]
     payload = None
     learner_path = None
-    if algorithm == "q_learning":
+    if algorithm in TABLE_ALGORITHMS:
         payload = _decode(json.loads((directory / "learner.json").read_text()))
         with np.load(directory / "q_table.npz", allow_pickle=False) as archive:
-            keys = archive["keys"]
-            values = archive["values"]
-        payload["q_table"] = {
-            tuple(int(item) for item in key): value.astype(np.float32, copy=True)
-            for key, value in zip(keys, values)
-        }
+            table_names = ("q_table",) if algorithm == "q_learning" else (
+                "q_table_a", "q_table_b")
+            for table_name in table_names:
+                keys = archive[table_name + "_keys"]
+                values = archive[table_name + "_values"]
+                payload[table_name] = {
+                    tuple(int(item) for item in key): value.astype(np.float32, copy=True)
+                    for key, value in zip(keys, values)
+                }
     else:
         learner_path = directory / "learner.pt"
     return LoadedSnapshot(
@@ -333,7 +404,7 @@ def materialize_learner_checkpoint(snapshot: LoadedSnapshot, destination: Path) 
     """Create the child run's working checkpoint from a validated snapshot."""
     destination.parent.mkdir(parents=True, exist_ok=True)
     temporary = destination.with_name(destination.name + ".tmp")
-    if snapshot.algorithm == "q_learning":
+    if snapshot.algorithm in TABLE_ALGORITHMS:
         with temporary.open("wb") as file:
             pickle.dump(snapshot.learner_payload, file, protocol=pickle.HIGHEST_PROTOCOL)
     else:
@@ -346,16 +417,47 @@ def validate_resume_transition(
     parent: dict[str, Any], child: dict[str, Any], *, parent_status: str
 ) -> str:
     """Validate curriculum and compatibility contracts; return resume kind."""
+<<<<<<< HEAD
     for field in (
         "algorithm", "seed", "feature_version", "reward_version", "checkpoint_schema",
         "training_device_type", "training_device_name", "agent_seed", "exploration_spec",
         "source_commit", "source_hash",
     ):
+=======
+    for field in ("algorithm", "seed", "checkpoint_schema"):
+>>>>>>> e6253fd1 (add more feature id, reward id, and model)
         if parent.get(field) != child.get(field):
             raise ValueError(f"Resume {field} must match the parent run")
+    try:
+        parent_feature = normalize_feature_id(
+            parent.get("feature_id"), parent.get("feature_version"))
+        child_feature = normalize_feature_id(
+            child.get("feature_id"), child.get("feature_version"))
+    except ValueError as exception:
+        raise ValueError(
+            f"Resume feature_version/feature_id is incompatible: {exception}") from exception
+    if parent_feature != child_feature:
+        raise ValueError("Resume feature_version/feature_id must match the parent run")
+    parent_schema = parent.get("feature_schema")
+    child_schema = child.get("feature_schema")
+    if parent_schema is not None or child_schema is not None:
+        expected_schema = feature_schema_contract(parent_feature)
+        if parent_schema is None:
+            parent_schema = expected_schema
+        if child_schema is None:
+            child_schema = expected_schema
+        if parent_schema != child_schema:
+            raise ValueError("Resume feature schema/shape must match the parent run")
+    parent_reward = parent.get("reward_id", parent.get("reward_version"))
+    child_reward = child.get("reward_id", child.get("reward_version"))
+    if parent_reward != child_reward:
+        raise ValueError("Resume reward_version/reward_id must match the parent run")
     if parent.get("actions") is not None and child.get("actions") is not None:
         if list(parent["actions"]) != list(child["actions"]):
             raise ValueError("Resume action order must match the parent run")
+    for field in ("network_spec", "hyperparameters"):
+        if parent.get(field) != child.get(field):
+            raise ValueError(f"Resume {field} must match the parent run")
     try:
         parent_index = TASK_ORDER.index(parent["task"])
         child_index = TASK_ORDER.index(child["task"])

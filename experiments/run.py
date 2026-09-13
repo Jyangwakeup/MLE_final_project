@@ -46,8 +46,10 @@ from experiments.training import (
     run_training_mode,
 )
 from main import world_controller
-from agent_code.team_agent.features import ACTIONS, FEATURE_VERSION
+from agent_code.team_agent.features import ACTIONS
+from agent_code.team_agent.feature_system import normalize_feature_id
 from agent_code.team_agent.rewards import REWARD_VERSION, resolve_reward_spec
+from experiments.agent_contracts import resolve_agent_contract
 
 
 RUNS_ROOT = PROJECT_ROOT / "runs"
@@ -103,6 +105,10 @@ class ExperimentWorld(BombeRLeWorld):
         self._timing_path = output / "timing.jsonl"
         self._episodes_path.touch(exist_ok=False)
         self._timing_path.touch(exist_ok=False)
+        self._episodes_file = self._episodes_path.open(
+            "a", encoding="utf-8", buffering=1)
+        self._timing_file = self._timing_path.open(
+            "a", encoding="utf-8", buffering=1)
         self._experiment_run_id = run_id
         self._environment_seed = environment_seed
         self._stage = stage
@@ -110,6 +116,9 @@ class ExperimentWorld(BombeRLeWorld):
         self._replay_policy = replay_policy
         self._replay_interval = replay_interval
         self._snapshot_config = snapshot_config
+        self._training_rewards: list[float] = []
+        self._training_csv_offset = 0
+        self._training_reward_column: int | None = None
         self._death_steps: dict[str, int] = {}
         self._death_causes: dict[str, list[dict[str, str]]] = {}
         super().__init__(args, agents)
@@ -151,9 +160,8 @@ class ExperimentWorld(BombeRLeWorld):
         available_before: float,
         available_after: float,
     ) -> None:
-        _append_json_line(
-            self._timing_path,
-            {
+        self._timing_file.write(
+            json.dumps({
                 "schema_version": TIMING_SCHEMA_VERSION,
                 "run_id": self._experiment_run_id,
                 "round_index": int(self.round),
@@ -166,7 +174,7 @@ class ExperimentWorld(BombeRLeWorld):
                 "timed_out": timed_out,
                 "available_before": available_before,
                 "available_after": available_after,
-            },
+            }, sort_keys=True) + "\n"
         )
 
     def poll_and_run_agents(self) -> None:
@@ -199,7 +207,7 @@ class ExperimentWorld(BombeRLeWorld):
                     requested_action = "ERROR"
                     think_time = float("inf")
 
-                self.logger.info(
+                self.logger.debug(
                     f"Agent <{agent.name}> chose action {action} in {think_time:.2f}s."
                 )
                 if think_time > available_before:
@@ -215,12 +223,12 @@ class ExperimentWorld(BombeRLeWorld):
                     agent.trophies.append(Trophy.time_trophy)
                     agent.available_think_time = next_think_time
                 else:
-                    self.logger.info(
+                    self.logger.debug(
                         f"Agent <{agent.name}> stayed within acceptable think time."
                     )
                     agent.available_think_time = agent.base_timeout
             else:
-                self.logger.info(
+                self.logger.debug(
                     f"Skipping agent <{agent.name}> because of last slow think time."
                 )
                 skipped = True
@@ -250,6 +258,20 @@ class ExperimentWorld(BombeRLeWorld):
             death_causes = self._death_causes.get(agent.name, [])
             killed_by_opponent = any(cause["type"] == "opponent_bomb" for cause in death_causes)
             killed_by_self = any(cause["type"] == "self_bomb" for cause in death_causes)
+            actions = self.replay["actions"].get(agent.name, [])
+            longest_wait = wait_streak = 0
+            longest_ping_pong = ping_pong_streak = 0
+            previous_action = None
+            opposites = {"UP": "DOWN", "DOWN": "UP", "LEFT": "RIGHT", "RIGHT": "LEFT"}
+            for action in actions:
+                wait_streak = wait_streak + 1 if action == "WAIT" else 0
+                longest_wait = max(longest_wait, wait_streak)
+                if action in opposites and previous_action == opposites[action]:
+                    ping_pong_streak = ping_pong_streak + 1 if ping_pong_streak else 2
+                else:
+                    ping_pong_streak = 1 if action in opposites else 0
+                longest_ping_pong = max(longest_ping_pong, ping_pong_streak)
+                previous_action = action
             agents.append(
                 {
                     "name": agent.name,
@@ -266,6 +288,12 @@ class ExperimentWorld(BombeRLeWorld):
                     "death_causes": death_causes,
                     "killed_by_self": killed_by_self or bool(suicides),
                     "killed_by_opponent": killed_by_opponent,
+                    "all_coins": int(statistics.get("coins", 0)) >= 50,
+                    "max_steps": int(self.step) >= int(s.MAX_STEPS),
+                    "longest_wait_streak": longest_wait,
+                    "longest_ping_pong_streak": longest_ping_pong,
+                    "long_wait_loop": longest_wait >= 10,
+                    "long_ping_pong_loop": longest_ping_pong >= 10,
                 }
             )
 
@@ -298,9 +326,8 @@ class ExperimentWorld(BombeRLeWorld):
                 },
             )
 
-        _append_json_line(
-            self._episodes_path,
-            {
+        self._episodes_file.write(
+            json.dumps({
                 "schema_version": EPISODE_SCHEMA_VERSION,
                 "run_id": self._experiment_run_id,
                 "round_index": int(self.round),
@@ -309,15 +336,14 @@ class ExperimentWorld(BombeRLeWorld):
                 "scenario": self.args.scenario,
                 "stage": self._stage,
                 "round_steps": int(self.step),
+                "exploration_disabled": self._stage.endswith("_evaluate"),
                 "agents": agents,
-            },
+            }, sort_keys=True) + "\n"
         )
         if self._snapshot_config is not None:
             training_path = self._output / "training.csv"
-            local_rewards: list[float] = []
-            if training_path.is_file():
-                with training_path.open(newline="", encoding="utf-8") as file:
-                    local_rewards = [float(row["reward"]) for row in csv.DictReader(file)]
+            self._read_new_training_rewards(training_path)
+            local_rewards = self._training_rewards
             inherited = self._snapshot_config.get("inherited_rewards", [])
             commit_training_snapshot(
                 self._output,
@@ -337,6 +363,35 @@ class ExperimentWorld(BombeRLeWorld):
                 ),
                 early_stopping_config=self._snapshot_config["early_stopping_config"],
             )
+
+    def end(self) -> None:
+        """Close buffered experiment streams after the official world stops."""
+        try:
+            super().end()
+        finally:
+            self._episodes_file.close()
+            self._timing_file.close()
+
+    def _read_new_training_rewards(self, training_path: Path) -> None:
+        """Consume only CSV rows appended since the previous round."""
+        if not training_path.is_file():
+            return
+        with training_path.open(newline="", encoding="utf-8") as file:
+            if self._training_reward_column is None:
+                header = next(csv.reader([file.readline()]))
+                try:
+                    self._training_reward_column = header.index("reward")
+                except ValueError as exception:
+                    raise ValueError(
+                        "training.csv is missing the reward column") from exception
+                self._training_csv_offset = file.tell()
+            else:
+                file.seek(self._training_csv_offset)
+            rows = file.readlines()
+            self._training_csv_offset = file.tell()
+        for row in csv.reader(rows):
+            self._training_rewards.append(
+                float(row[self._training_reward_column]))
 
 
 def _source_commit() -> str | None:
@@ -522,13 +577,17 @@ def _training_seeds(experiment_seed: int) -> dict[str, int]:
 
 
 def _checkpoint_name(agent: str) -> str:
-    return "final.pt" if "dqn" in agent.lower() else "final.pkl"
+    return resolve_agent_contract(agent).checkpoint_name
 
 
 def _algorithm_name(agent: str) -> str:
+<<<<<<< HEAD
     if agent == "legal_random_agent":
         return "legal_random"
     return "dqn" if "dqn" in agent.lower() else "q_learning"
+=======
+    return resolve_agent_contract(agent).algorithm
+>>>>>>> e6253fd1 (add more feature id, reward id, and model)
 
 
 def _close_output_log_handlers(output: Path) -> None:
@@ -585,6 +644,7 @@ def run_agent_session(
     specs = _custom_agents(agent, opponents, training)
     checkpoint = checkpoint.resolve()
     expanded = _read_config(config_path)
+<<<<<<< HEAD
     algorithm = _algorithm_name(agent)
     training_config = expanded.get("training", {})
     if not isinstance(training_config, dict):
@@ -599,13 +659,32 @@ def run_agent_session(
             raise ValueError("Device config section must be an object")
         requested_device = section.get("device", "auto" if training else "cpu")
         device_info = resolve_device(algorithm, mode, requested_device)
+=======
+    contract = resolve_agent_contract(agent)
+    algorithm = contract.algorithm
+>>>>>>> e6253fd1 (add more feature id, reward id, and model)
     configured_algorithm = expanded.get("algorithm")
     if configured_algorithm not in (None, algorithm):
         raise ValueError("Configured algorithm does not match the selected agent")
-    configured_features = expanded.get("feature_version", FEATURE_VERSION)
-    if configured_features != FEATURE_VERSION:
-        raise ValueError("Configured feature_version does not match the agent")
-    reward_version = expanded.get("reward_version", REWARD_VERSION)
+    configured_id = expanded.get("feature_id")
+    configured_legacy = expanded.get("feature_version")
+    configured_feature_id = (
+        contract.feature_id if configured_id is None and configured_legacy is None
+        else normalize_feature_id(configured_id, configured_legacy)
+    )
+    if configured_feature_id != contract.feature_id:
+        raise ValueError(
+            f"Configured feature_id {configured_feature_id!r} does not match "
+            f"the selected agent ({contract.feature_id!r})")
+    configured_reward_id = expanded.get("reward_id")
+    legacy_reward_id = expanded.get("reward_version")
+    if (
+        configured_reward_id is not None
+        and legacy_reward_id is not None
+        and configured_reward_id != legacy_reward_id
+    ):
+        raise ValueError("Configured reward_id conflicts with reward_version")
+    reward_version = configured_reward_id or legacy_reward_id or REWARD_VERSION
     resolved_rewards = resolve_reward_spec(reward_version)
     if resume_snapshot is not None and not training:
         raise ValueError("Resume snapshots are only valid in training mode")
@@ -625,7 +704,10 @@ def run_agent_session(
     source_hash = _source_hash()
     metadata["source_hash"] = source_hash
     expanded["algorithm"] = algorithm
-    expanded["feature_version"] = FEATURE_VERSION
+    expanded["feature_id"] = contract.feature_id
+    expanded["feature_version"] = (
+        "v1" if contract.feature_id == "discrete-v1" else None)
+    expanded["reward_id"] = reward_version
     expanded["reward_version"] = reward_version
     expanded["resolved_rewards"] = resolved_rewards
     expanded["seed"] = seed
@@ -639,18 +721,42 @@ def run_agent_session(
         "replay_policy": replay_policy,
         "scenario": scenario,
         "task": task_name,
+<<<<<<< HEAD
         "device": device_info,
+=======
+        "curriculum_action_mask": {"BOMB": task_name != "coin_navigation"},
+>>>>>>> e6253fd1 (add more feature id, reward id, and model)
     }
     metadata["expanded_config"] = expanded
+    metadata["agent"] = agent
     metadata["algorithm"] = algorithm
     metadata["agent_seed"] = agent_seed
     metadata["checkpoint_schema"] = CHECKPOINT_SCHEMA_VERSION
+<<<<<<< HEAD
     metadata["feature_version"] = FEATURE_VERSION
     metadata["exploration_spec"] = exploration_spec
+=======
+    metadata["feature_id"] = contract.feature_id
+    metadata["feature_schema"] = contract.feature_schema
+    metadata["feature_version"] = (
+        "v1" if contract.feature_id == "discrete-v1" else None)
+    metadata["reward_id"] = reward_version
+>>>>>>> e6253fd1 (add more feature id, reward id, and model)
     metadata["reward_version"] = reward_version
+    metadata["action_order"] = list(ACTIONS)
+    metadata["checkpoint"] = str(checkpoint)
+    metadata["network_spec"] = contract.network_spec
+    metadata["hyperparameters"] = contract.hyperparameters
+    metadata["curriculum_action_mask"] = {
+        "BOMB": task_name != "coin_navigation"
+    }
     metadata["rewards"] = resolved_rewards
     metadata["task"] = task_name
+<<<<<<< HEAD
     metadata["device"] = device_info
+=======
+    metadata["exploration_disabled"] = not training
+>>>>>>> e6253fd1 (add more feature id, reward id, and model)
     parent_cumulative = 0
     if resume_snapshot is not None:
         parent_cumulative = int(
@@ -682,9 +788,15 @@ def run_agent_session(
         for name in (
             "BOMBERMAN_CHECKPOINT", "BOMBERMAN_CONFIG", "BOMBERMAN_RUN_DIR",
             "BOMBERMAN_RUN_ID", "BOMBERMAN_TRAINING_TASK",
+<<<<<<< HEAD
             "BOMBERMAN_ALLOW_BOMB", "BOMBERMAN_REWARD_VERSION",
             "BOMBERMAN_TORCH_DEVICE", "BOMBERMAN_AGENT_SEED",
             "BOMBERMAN_EXPLORATION_SPEC",
+=======
+            "BOMBERMAN_ALLOW_BOMB", "BOMBERMAN_FEATURE_ID",
+            "BOMBERMAN_REWARD_ID", "BOMBERMAN_REWARD_VERSION",
+            "BOMBERMAN_AGENT_SEED",
+>>>>>>> e6253fd1 (add more feature id, reward id, and model)
         )
     }
     try:
@@ -694,12 +806,18 @@ def run_agent_session(
         os.environ["BOMBERMAN_RUN_DIR"] = str(output.resolve())
         os.environ["BOMBERMAN_RUN_ID"] = output.name
         os.environ["BOMBERMAN_TRAINING_TASK"] = task_name
+        os.environ["BOMBERMAN_FEATURE_ID"] = contract.feature_id
+        os.environ["BOMBERMAN_REWARD_ID"] = reward_version
         os.environ["BOMBERMAN_REWARD_VERSION"] = reward_version
+<<<<<<< HEAD
         os.environ["BOMBERMAN_TORCH_DEVICE"] = device_info["actual"]
         os.environ["BOMBERMAN_AGENT_SEED"] = str(agent_seed)
         os.environ["BOMBERMAN_EXPLORATION_SPEC"] = json.dumps(
             exploration_spec, sort_keys=True, separators=(",", ":")
         )
+=======
+        os.environ["BOMBERMAN_AGENT_SEED"] = str(seed)
+>>>>>>> e6253fd1 (add more feature id, reward id, and model)
         # Task 1 isolates coin navigation. Keep its action space free of bombs
         # for both training and frozen evaluation so agents are compared under
         # the same curriculum constraint.

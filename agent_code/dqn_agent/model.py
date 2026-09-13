@@ -13,6 +13,7 @@ from torch import nn
 
 
 Transition = namedtuple("Transition", ("state", "action", "reward", "next_state", "done", "next_legal"))
+REPLAY_CHECKPOINT_FORMAT = "vector-replay-columnar-v1"
 
 
 class QNetwork(nn.Module):
@@ -41,44 +42,91 @@ class ReplayBuffer:
     def sample(self, size: int):
         return self.random.sample(self.memory, size)
 
+    def sample_batch(self, size: int):
+        items = self.random.sample(self.memory, size)
+        nonterminal = [item for item in items if not item.done]
+        return {
+            "states": np.stack([item.state for item in items]),
+            "actions": np.fromiter(
+                (item.action for item in items), dtype=np.int64, count=size),
+            "rewards": np.fromiter(
+                (item.reward for item in items), dtype=np.float32, count=size),
+            "dones": np.fromiter(
+                (item.done for item in items), dtype=bool, count=size),
+            "next_states": None if not nonterminal else np.stack([
+                item.next_state for item in nonterminal]),
+            "next_legal": None if not nonterminal else np.stack([
+                item.next_legal for item in nonterminal]),
+        }
+
     def __len__(self):
         return len(self.memory)
 
     def state_dict(self):
+        items = list(self.memory)
+        if not items:
+            return {
+                "format": REPLAY_CHECKPOINT_FORMAT,
+                "count": 0,
+                "rng_state": self.random.getstate(),
+            }
+        states = np.stack([item.state for item in items]).astype(np.float32, copy=False)
+        next_states = np.stack([
+            np.zeros_like(item.state) if item.next_state is None else item.next_state
+            for item in items
+        ]).astype(np.float32, copy=False)
         return {
-            "transitions": [
-                {
-                    "state": torch.as_tensor(item.state, dtype=torch.float32),
-                    "action": int(item.action),
-                    "reward": float(item.reward),
-                    "next_state": (
-                        None if item.next_state is None
-                        else torch.as_tensor(item.next_state, dtype=torch.float32)
-                    ),
-                    "done": bool(item.done),
-                    "next_legal": (
-                        None if item.next_legal is None
-                        else torch.as_tensor(item.next_legal, dtype=torch.bool)
-                    ),
-                }
-                for item in self.memory
-            ],
+            "format": REPLAY_CHECKPOINT_FORMAT,
+            "count": len(items),
+            "states": torch.as_tensor(states, dtype=torch.float32),
+            "next_states": torch.as_tensor(next_states, dtype=torch.float32),
+            "actions": torch.as_tensor(
+                [item.action for item in items], dtype=torch.int64),
+            "rewards": torch.as_tensor(
+                [item.reward for item in items], dtype=torch.float64),
+            "dones": torch.as_tensor(
+                [item.done for item in items], dtype=torch.bool),
+            "next_legal": torch.as_tensor(np.stack([
+                np.zeros(6, dtype=bool) if item.next_legal is None else item.next_legal
+                for item in items
+            ]), dtype=torch.bool),
             "rng_state": self.random.getstate(),
         }
 
     def load_state_dict(self, state):
         self.memory.clear()
-        self.memory.extend(
-            Transition(
-                item["state"].cpu().numpy(),
-                item["action"],
-                item["reward"],
-                None if item["next_state"] is None else item["next_state"].cpu().numpy(),
-                item["done"],
-                None if item["next_legal"] is None else item["next_legal"].cpu().numpy(),
+        if state.get("format") == REPLAY_CHECKPOINT_FORMAT:
+            count = int(state.get("count", 0))
+            if count:
+                states = state["states"].cpu().numpy()
+                next_states = state["next_states"].cpu().numpy()
+                actions = state["actions"].cpu().numpy()
+                rewards = state["rewards"].cpu().numpy()
+                dones = state["dones"].cpu().numpy()
+                next_legal = state["next_legal"].cpu().numpy()
+                self.memory.extend(
+                    Transition(
+                        states[index].copy(), int(actions[index]),
+                        float(rewards[index]),
+                        None if bool(dones[index]) else next_states[index].copy(),
+                        bool(dones[index]),
+                        None if bool(dones[index]) else next_legal[index].copy(),
+                    )
+                    for index in range(count)
+                )
+        else:
+            # Backward-compatible loader for existing baseline checkpoints.
+            self.memory.extend(
+                Transition(
+                    item["state"].cpu().numpy(), item["action"], item["reward"],
+                    None if item["next_state"] is None
+                    else item["next_state"].cpu().numpy(),
+                    item["done"],
+                    None if item["next_legal"] is None
+                    else item["next_legal"].cpu().numpy(),
+                )
+                for item in state.get("transitions", ())
             )
-            for item in state.get("transitions", ())
-        )
         if "rng_state" in state:
             self.random.setstate(state["rng_state"])
 
@@ -125,6 +173,7 @@ class DQN:
         return self._learn()
 
     def _learn(self):
+<<<<<<< HEAD
         batch = self.replay.sample(self.batch_size)
         states = torch.as_tensor(
             np.stack([t.state for t in batch]), dtype=torch.float32, device=self.device
@@ -138,6 +187,13 @@ class DQN:
         dones = torch.as_tensor(
             [t.done for t in batch], dtype=torch.bool, device=self.device
         )
+=======
+        batch = self.replay.sample_batch(self.batch_size)
+        states = torch.as_tensor(batch["states"], dtype=torch.float32)
+        actions = torch.as_tensor(batch["actions"], dtype=torch.long).unsqueeze(1)
+        rewards = torch.as_tensor(batch["rewards"], dtype=torch.float32)
+        dones = torch.as_tensor(batch["dones"], dtype=torch.bool)
+>>>>>>> e6253fd1 (add more feature id, reward id, and model)
 
         current_q = self.policy(states).gather(1, actions).squeeze(1)
         next_values = torch.zeros(
@@ -145,6 +201,7 @@ class DQN:
         )
         nonterminal = ~dones
         if nonterminal.any():
+<<<<<<< HEAD
             next_states = torch.as_tensor(
                 np.stack([t.next_state for t in batch if not t.done]),
                 dtype=torch.float32, device=self.device,
@@ -153,6 +210,10 @@ class DQN:
                 np.stack([t.next_legal for t in batch if not t.done]),
                 dtype=torch.bool, device=self.device,
             )
+=======
+            next_states = torch.as_tensor(batch["next_states"], dtype=torch.float32)
+            legal = torch.as_tensor(batch["next_legal"], dtype=torch.bool)
+>>>>>>> e6253fd1 (add more feature id, reward id, and model)
             with torch.no_grad():
                 next_q = self.target(next_states).masked_fill(~legal, -torch.inf)
                 next_values[nonterminal] = next_q.max(dim=1).values

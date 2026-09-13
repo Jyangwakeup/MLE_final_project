@@ -40,6 +40,16 @@ def run_multi_seed_evaluation(
     analyze_runs(run_directories, summary)
     write_json(summary / "fixed_evaluation.json", {
         "agent": agent, "checkpoint": str(checkpoint),
+        "exploration_disabled": True,
+        "task1_metrics": {
+            "all_coins_target": 50,
+            "long_loop_threshold_steps": 10,
+            "max_round_steps": 400,
+            "reported": [
+                "mean_coins", "all_coins_rate", "max_steps_rate",
+                "long_wait_loop_rate", "long_ping_pong_loop_rate",
+            ],
+        },
         "n_rounds_per_seed": n_rounds, "opponents": list(opponents),
         "replay_interval": replay_interval, "replay_policy": replay_policy,
         "scenario": scenario, "seeds": list(seeds), "task": task_name,

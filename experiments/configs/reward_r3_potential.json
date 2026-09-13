@@ -1,0 +1,24 @@
+{
+  "algorithm": null,
+  "feature_id": null,
+  "feature_version": null,
+  "reward_id": "r3_potential",
+  "reward_version": "r3_potential",
+  "seed": null,
+  "checkpoint": null,
+  "evaluation": {
+    "seeds": [10001, 10002, 10003, 10004, 10005],
+    "n_rounds": 20
+  },
+  "training": {
+    "n_rounds": null,
+    "early_stopping": {
+      "enabled": true,
+      "window": 100,
+      "patience": 100,
+      "min_rounds": 300,
+      "min_delta": 0.1,
+      "target_reward": null
+    }
+  }
+}

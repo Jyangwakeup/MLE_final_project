@@ -31,7 +31,7 @@ from experiments.training import (
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 RUNNER = PROJECT_ROOT / "experiments" / "run.py"
-BASE_CONFIG = PROJECT_ROOT / "experiments" / "configs" / "base.json"
+BASE_CONFIG = PROJECT_ROOT / "experiments" / "configs" / "reward_r2_balanced.json"
 BASE_EARLY_STOPPING = json.loads(BASE_CONFIG.read_text())["training"]["early_stopping"]
 RUNS_ROOT = PROJECT_ROOT / "runs"
 
@@ -117,6 +117,14 @@ class ExperimentRunTest(unittest.TestCase):
             )
 
         self.assertTrue(checkpoint.is_file())
+        with checkpoint.open("rb") as file:
+            checkpoint_payload = pickle.load(file)
+        self.assertEqual(checkpoint_payload["feature_id"], "discrete-q-v2")
+        self.assertEqual(checkpoint_payload["feature_schema"]["state_shape"], [16])
+        self.assertEqual(checkpoint_payload["actions"], [
+            "UP", "RIGHT", "DOWN", "LEFT", "WAIT", "BOMB",
+        ])
+        self.assertEqual(checkpoint_payload["reward_id"], "r2_balanced")
         self.assertTrue((output / "training_summary.json").is_file())
         self.assertTrue((output / "training_progress.png").is_file())
         self.assertTrue((output / "replays" / "round_00001.pt").is_file())
@@ -126,6 +134,7 @@ class ExperimentRunTest(unittest.TestCase):
         self.assertEqual(metadata["expanded_config"]["execution"]["replay_policy"], "sampled")
         self.assertEqual(metadata["expanded_config"]["execution"]["replay_interval"], 500)
         self.assertFalse(metadata["expanded_config"]["execution"]["allow_bomb"])
+<<<<<<< HEAD
         self.assertEqual(metadata["reward_version"], "r1")
         self.assertEqual(metadata["rewards"]["invalid_action"], -0.1)
         self.assertEqual(metadata["agent_seed"], 11)
@@ -139,6 +148,19 @@ class ExperimentRunTest(unittest.TestCase):
             metadata["expanded_config"]["training"]["exploration"],
             metadata["exploration_spec"],
         )
+=======
+        self.assertEqual(metadata["reward_version"], "r2_balanced")
+        self.assertEqual(metadata["feature_id"], "discrete-q-v2")
+        self.assertEqual(metadata["feature_schema"]["state_shape"], [16])
+        self.assertEqual(metadata["feature_schema"]["vector_shape"], [50])
+        self.assertEqual(
+            metadata["action_order"],
+            ["UP", "RIGHT", "DOWN", "LEFT", "WAIT", "BOMB"],
+        )
+        self.assertEqual(metadata["reward_id"], "r2_balanced")
+        self.assertEqual(metadata["checkpoint"], str(checkpoint.resolve()))
+        self.assertEqual(metadata["rewards"]["invalid_action"], -0.2)
+>>>>>>> e6253fd1 (add more feature id, reward id, and model)
         self.assertEqual(len(metadata["source_hash"]), 64)
         self.assertEqual(
             metadata["config_source_sha256"],

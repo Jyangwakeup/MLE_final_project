@@ -32,6 +32,15 @@ SUMMARY_FIELDS = (
     "score_std",
     "coins",
     "mean_coins",
+    "all_coins_count",
+    "all_coins_rate",
+    "max_steps_count",
+    "max_steps_rate",
+    "long_wait_loop_count",
+    "long_wait_loop_rate",
+    "long_ping_pong_loop_count",
+    "long_ping_pong_loop_rate",
+    "exploration_disabled",
     "kills",
     "mean_kills",
     "suicides",
@@ -267,6 +276,18 @@ def _summary_row(
         "score_std": pstdev(scores),
         "coins": sum(sample["coins"] for sample in samples),
         "mean_coins": sum(sample["coins"] for sample in samples) / episode_count,
+        "all_coins_count": sum(sample["all_coins"] for sample in samples),
+        "all_coins_rate": mean(sample["all_coins"] for sample in samples),
+        "max_steps_count": sum(sample["max_steps"] for sample in samples),
+        "max_steps_rate": mean(sample["max_steps"] for sample in samples),
+        "long_wait_loop_count": sum(sample["long_wait_loop"] for sample in samples),
+        "long_wait_loop_rate": mean(sample["long_wait_loop"] for sample in samples),
+        "long_ping_pong_loop_count": sum(
+            sample["long_ping_pong_loop"] for sample in samples),
+        "long_ping_pong_loop_rate": mean(
+            sample["long_ping_pong_loop"] for sample in samples),
+        "exploration_disabled": all(
+            sample["exploration_disabled"] for sample in samples),
         "kills": sum(sample["kills"] for sample in samples),
         "mean_kills": sum(sample["kills"] for sample in samples) / episode_count,
         "suicides": sum(sample["suicides"] for sample in samples),
@@ -325,6 +346,13 @@ def summarize_runs(run_directories: Iterable[Path]) -> list[dict[str, Any]]:
                     {
                         "score": float(agent["score"]),
                         "coins": float(agent["coins"]),
+                        "all_coins": float(agent.get("all_coins", agent["coins"] >= 50)),
+                        "max_steps": float(agent.get("max_steps", episode["round_steps"] >= 400)),
+                        "long_wait_loop": float(agent.get("long_wait_loop", False)),
+                        "long_ping_pong_loop": float(
+                            agent.get("long_ping_pong_loop", False)),
+                        "exploration_disabled": bool(
+                            episode.get("exploration_disabled", False)),
                         "kills": float(agent["kills"]),
                         "suicides": float(agent["suicides"]),
                         "crates": float(agent["crates"]),
@@ -414,6 +442,20 @@ def _average_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
                 "score_std": pstdev(mean_scores) if len(mean_scores) > 1 else 0.0,
                 "coins": sum(float(row["coins"]) for row in agent_rows),
                 "mean_coins": _weighted_mean(agent_rows, "mean_coins"),
+                "all_coins_count": sum(float(row["all_coins_count"]) for row in agent_rows),
+                "all_coins_rate": _weighted_mean(agent_rows, "all_coins_rate"),
+                "max_steps_count": sum(float(row["max_steps_count"]) for row in agent_rows),
+                "max_steps_rate": _weighted_mean(agent_rows, "max_steps_rate"),
+                "long_wait_loop_count": sum(
+                    float(row["long_wait_loop_count"]) for row in agent_rows),
+                "long_wait_loop_rate": _weighted_mean(
+                    agent_rows, "long_wait_loop_rate"),
+                "long_ping_pong_loop_count": sum(
+                    float(row["long_ping_pong_loop_count"]) for row in agent_rows),
+                "long_ping_pong_loop_rate": _weighted_mean(
+                    agent_rows, "long_ping_pong_loop_rate"),
+                "exploration_disabled": all(
+                    bool(row["exploration_disabled"]) for row in agent_rows),
                 "kills": sum(float(row["kills"]) for row in agent_rows),
                 "mean_kills": _weighted_mean(agent_rows, "mean_kills"),
                 "suicides": sum(float(row["suicides"]) for row in agent_rows),
