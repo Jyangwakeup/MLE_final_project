@@ -10,5 +10,7 @@ dependencies:
   - scikit-learn
   - matplotlib=3.9
   - tqdm
+  - jupyterlab
+  - ipykernel
   - pytorch=2.5.1
   - pytorch-cuda=11.8

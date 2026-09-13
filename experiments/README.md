@@ -376,6 +376,36 @@ runs/formal_q_v1_r1_s11_t1_r500/
 最终步数、平均 reward、最近 100 局平均 reward 和最佳回合，`training_progress.png` 展示
 reward 与 epsilon 的变化。
 
+### Task 1 多 seed 训练分析
+
+`analyze_training.py` 的 `analyze_training(run_directory)` 保留为单 run 的训练结束报告。
+跨 seed 分析只读取完整 run 的 `metadata.json`、`episodes.jsonl` 和 `training.csv`，绝不
+修改 `runs/`。例如六条 Task 1 正式训练记录可以这样聚合：
+
+```bash
+python experiments/analyze_training.py \
+  --runs \
+    runs/formal_q_v1_r1_s11_t1_r500 \
+    runs/formal_q_v1_r1_s22_t1_r500 \
+    runs/formal_q_v1_r1_s33_t1_r500 \
+    runs/formal_dqn_v1_r1_s11_t1_r500 \
+    runs/formal_dqn_v1_r1_s22_t1_r500 \
+    runs/formal_dqn_v1_r1_s33_t1_r500 \
+  --output results/task1_analysis \
+  --rolling-window 25
+```
+
+报告目录包含逐局的 `round_metrics.csv`、每个 seed 的 `run_summary.csv`、以 seed 为
+重复单位的 `algorithm_summary.csv`，以及记录输入、版本、预算、窗口和统计口径的
+`analysis_metadata.json`。其 PNG 均从逐局原始记录重新生成。rolling mean 是包含当前局的
+尾随窗口；算法均值和 sample SD 先在每个 seed 内汇总，**不会**把所有 round 当作独立训练
+样本。Task 1 的 `score` 与 `coins` 相同，故只绘制“每局结束时的 coins”，不把它误写成
+局内逐 step 的金币曲线。
+
+输入会验证 round 对齐、有限数值、Task、feature/reward version、预算以及
+`(algorithm, seed)` 唯一性。可选的 `--evaluation-runs` 会在输出目录下另存冻结评估汇总；
+训练曲线仅用于诊断，是否进入下一 Task 仍必须由独立的 stage-gate evaluation 决定。
+
 ### 续训与课程晋级
 
 `--resume-from` 指向父训练 run 的根目录，并总是写入一个新的子 run。`--n-rounds`
