@@ -26,6 +26,7 @@ from .training_spec import (
 CHECKPOINT_SCHEMA = "training-resume-v7"
 DEFAULT_REWARD_ID = "r1"
 CHECKPOINT_ENV = "BOMBERMAN_CHECKPOINT"
+INIT_CHECKPOINT_ENV = "BOMBERMAN_INIT_CHECKPOINT"
 FEATURE_ID_ENV = "BOMBERMAN_FEATURE_ID"
 REWARD_ID_ENV = "BOMBERMAN_REWARD_ID"
 REWARD_VERSION_ENV = "BOMBERMAN_REWARD_VERSION"
@@ -196,6 +197,31 @@ def validate_checkpoint(
             raise ValueError("checkpoint uses an unknown curriculum task") from exception
         if current != previous + 1:
             raise ValueError("checkpoint uses an incompatible curriculum task")
+
+
+def validate_warm_start_checkpoint(
+    payload: dict[str, Any], *, algorithm: str, feature_id: str,
+    feature_schema: dict[str, Any], actions: tuple[str, ...],
+    network_spec: dict[str, Any] | None,
+) -> None:
+    """Validate only contracts required to reuse neural policy weights."""
+    if payload.get("algorithm") != algorithm:
+        raise ValueError("warm-start checkpoint uses an incompatible algorithm")
+    board_contract = feature_schema.get("board_shape")
+    board_shape = (
+        None if board_contract is None or any(value is None for value in board_contract[1:])
+        else tuple(board_contract[1:])
+    )
+    validate_checkpoint_feature_contract(
+        payload, feature_id, actions, board_shape=board_shape)
+    if payload.get("feature_schema") != feature_schema:
+        raise ValueError("warm-start checkpoint uses an incompatible feature schema")
+    if tuple(payload.get("actions", ())) != actions:
+        raise ValueError("warm-start checkpoint uses an incompatible action order")
+    if payload.get("network_spec") != network_spec:
+        raise ValueError("warm-start checkpoint uses an incompatible network architecture")
+    if "policy" not in payload:
+        raise ValueError("warm-start checkpoint has no policy weights")
 
 
 def save_checkpoint_atomic(path: Path, payload: dict[str, Any], saver) -> None:

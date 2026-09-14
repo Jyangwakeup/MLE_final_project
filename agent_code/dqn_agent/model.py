@@ -401,3 +401,8 @@ class DQN:
             torch.set_rng_state(checkpoint["torch_rng_state"])
         if training and self.device.type == "cuda" and "cuda_rng_state_all" in checkpoint:
             torch.cuda.set_rng_state_all(checkpoint["cuda_rng_state_all"])
+
+    def load_policy_weights(self, checkpoint):
+        """Warm-start from policy weights while retaining fresh training state."""
+        self.policy.load_state_dict(checkpoint["policy"])
+        self.target.load_state_dict(checkpoint["policy"])
