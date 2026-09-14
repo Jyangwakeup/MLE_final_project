@@ -430,14 +430,24 @@ Task 2 联合门槛全部同时满足：`mean_coins ≥ 2`、`mean_crates ≥ 5`
 
 运行命名固定为 `iter_r<round>_<agent>_<feature>_<reward>_s<seed>_t<task>_a<target>_<commit>`；已有目录追加 `_retryN`。`--target-stage-action-steps` 是阶段累计目标，`--min-rounds` 是本地最小局数，`--n-rounds` 是本次子 run 的硬上限。旧 v4 run 不能成为父节点。
 
-结果按下表填写；“未运行”不能写成失败或通过：
+2026-09-14 的预注册执行结果如下。实现冻结提交为 `8f35ca2`；首次 DQN Task 2 暴露出非法动作 `-inf` logits 在蒸馏 KL 中产生 `0×inf=NaN`，修复提交 `03fbd1b` 改用有限最小值掩码，并从零重建所有第二、三轮父谱系。当前有效的第二、三轮 run 均记录 `source_commit=03fbd1b`。两组 r6 Task 1 父模型与对应基础奖励父模型的 750 局 episode、动作、学习器参数及 RNG 状态完全一致；差异仅为奖励合同字段，满足数值等价检查。
+
+下表的 Task 2 数值均来自 seeds 10000–10019 的 20 个冻结回合；括号内依次为 coins、crates、suicide。保留率是同一开发 seed 上子模型相对 Task 1 父模型的总 `mean_score` 比率：
 
 | 轮次 | Agent/Feature/Reward | seed | Task 1 coins/循环 | Task 2 coins/crates/suicide | Task 1 保留率 | 联合门槛 | 失败触发/后续 |
 |---|---|---:|---|---|---:|---|---|
-| 1 | 待运行 | 11 | — | — | — | — | — |
-| 2 | 待运行 | 11 | — | — | — | — | — |
-| 2 复制 | 待运行 | 22/33 | — | — | — | — | — |
-| 3（如触发） | 待运行 | 11/22/33 | — | — | — | — | — |
+| 1 | Q / `discrete-v1` / `r5_coin_potential` | 11 | 50.00；全金币率 100%；WAIT 0.20%，立即反向 7.07% | — | — | Task 1 通过 | 作为第二轮基础父模型 |
+| 1 | DQN / `discrete-v1` / `r1_coin3` | 11 | 45.90；全金币率 75%；WAIT 25.77%，立即反向 20.60% | — | — | Task 1 通过 | 作为第二轮基础父模型 |
+| 2 | Q / `discrete-v1` / `r5_coin_potential` | 11 | 50.00 | 0.05 / 2.30 / 50% | 92.00% | 失败；仅 34090/150000 动作 | `suicide,q_capability` |
+| 2 | Q / `discrete-v1` / `r6_safe_potential` | 11 | 50.00 | 0.00 / 0.50 / 25% | 10.00% | 失败 | `suicide,q_capability`；冻结策略 WAIT 99.55% |
+| 2 | DQN / `discrete-v1` / `r1_coin3` | 11 | 45.90 | 0.20 / 4.65 / 80% | 85.29% | 失败；仅 61050/150000 动作 | `suicide,retention,dqn_capability` |
+| 2 | DQN / `discrete-v1` / `r6_safe_sparse` | 11 | 45.90 | 0.10 / 2.50 / 30% | 72.88% | 失败 | `suicide,retention,dqn_capability` |
+| 3 | Double Q / `discrete-objective-v1` / `r7_safe_credit_potential` | 11 | 47.90；全金币率 90%；WAIT 3.60% | 0.60 / 16.10 / 20% | 24.95% | 失败 | 最佳 Q 失败模型；不复制、不晋级 |
+| 3 | Double DQN / `continuous-v2` / `r7_safe_credit_sparse` | 11 | 49.90；全金币率 95%；WAIT 12.96% | 5.45 / 76.65 / 30% | 98.70% | 仅自杀率失败 | 最佳总体失败模型；不复制、不晋级 |
+
+第三轮 10000 次配对 bootstrap（RNG seed 20260913）的关键 95% 区间为：Double Q Task 2 coins `0.60 [0.25,0.95]`、crates `16.10 [11.15,22.50]`、相对父模型 crates 增量 `13.40 [8.35,19.85]`、suicide `20% [5%,40%]`、Task 1 保留率 `24.95% [17.80%,33.09%]`；Double DQN 分别为 `5.45 [4.30,6.55]`、`76.65 [62.15,90.15]`、`74.80 [60.15,88.40]`、`30% [10%,50%]`、`98.70% [96.49%,100.20%]`。保留率区间上界略高于 100% 来自 bootstrap 重采样时父/子均值比率的分母波动。
+
+所有有效第二、三轮训练 run 均通过 v5 两代 snapshot/hash、CPU checkpoint 加载、有限 loss、无异常/timeout/skipped action、invalid rate 0%、训练 `act` P95<50 ms 且最大值<500 ms 的工程检查。达到 Task 2 动作目标的安全 Q、Double Q、安全 DQN、Double DQN 分别在 1971、978、1742、742 局停止。三轮后没有模型满足 `suicide≤5%` 的全部联合门槛，因此 seeds 22/33 复制和 seeds 11000–11099 主验证均按协议未运行；seeds 20000–20099 仍未使用，Task 3 不得启动。
 
 三轮后仍无联合合格模型时，冻结排序最高的失败模型并明确标记“无 Task 3 晋级资格”；不得用接近门槛、训练奖励或单个 seed 替代联合验收。
 
