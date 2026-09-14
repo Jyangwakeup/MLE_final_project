@@ -29,7 +29,7 @@ TRAINING_FIELDS = (
     "schema_version", "algorithm", "round", "reward", "action_steps",
     "stage_action_steps", "epsilon", "q_states", "loss", "updates",
     "replay_size", "safe_exploration_decisions", "safe_exploration_fallbacks",
-    "checkpoint",
+    "safety_decisions", "safety_interventions", "safety_fallbacks", "checkpoint",
 )
 
 
@@ -141,6 +141,12 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
         "safe_exploration": self.safe_exploration,
         "safe_exploration_decisions": self.safe_exploration_decisions,
         "safe_exploration_fallbacks": self.safe_exploration_fallbacks,
+        "safety_spec": getattr(self, "safety_spec", {
+            "version": "survival-mask-v1", "mode": "off", "horizon": 7,
+            "fallback": "physical_q"}),
+        "safety_decisions": int(getattr(self, "safety_decisions", 0)),
+        "safety_interventions": int(getattr(self, "safety_interventions", 0)),
+        "safety_fallbacks": int(getattr(self, "safety_fallbacks", 0)),
         "action_history_state": action_history_state(self),
         "n_step": self.n_step,
         "n_step_state": self.n_step_accumulator.state_dict(),
@@ -179,6 +185,9 @@ def _append_training_metrics(self, last_game_state) -> None:
         "replay_size": len(self.model.replay),
         "safe_exploration_decisions": self.safe_exploration_decisions,
         "safe_exploration_fallbacks": self.safe_exploration_fallbacks,
+        "safety_decisions": int(getattr(self, "safety_decisions", 0)),
+        "safety_interventions": int(getattr(self, "safety_interventions", 0)),
+        "safety_fallbacks": int(getattr(self, "safety_fallbacks", 0)),
         "checkpoint": str(self.model_file),
     }
     write_header = not path.exists()

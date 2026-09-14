@@ -17,6 +17,9 @@ schema = get_feature_schema("discrete-q-v2", game_state["field"].shape)
 | `discrete-q-v2` | Q-learning / DQN 默认 | 16 项状态、50 维向量 | 不兼容 v1 |
 | `discrete-compact-v1` | Double Q | 12 项状态、38 维向量 | 独立契约 |
 | `continuous-v1` | MLP Double DQN | 70 维向量 | 独立契约 |
+| `continuous-v2` | Double DQN 安全消融基线 | 目标连续性与位置历史，84 维 | v6 新谱系 |
+| `continuous-v2-legacy78` | 旧 Double DQN | 距离增量与动作历史，78 维 | 仅冻结加载 |
+| `continuous-v3` | Double DQN 安全候选 | v2 加逐动作生存、逃生余量/分支和自身炸弹事实，107 维 | v6 新谱系 |
 | `board-v1` | CNN Double DQN | `12×W×H` | 独立契约 |
 | `hybrid-v1` | Hybrid Dueling Double DQN | `12×W×H + 70` | 独立契约 |
 
@@ -43,7 +46,16 @@ schema = get_feature_schema("discrete-q-v2", game_state["field"].shape)
 
 `r1_coin3` 相对 `r1` 只改变金币奖励；`r1_coin3_no_crate` 相对它只关闭炸箱奖励，因此可作为严格单因素消融。`r3_potential` 在 `r2_balanced` 事件奖励上增加状态势能；`r4_anti_oscillation` 再增加旧的连续反向移动和安全空等惩罚。`r5_conditional_loop` 从 `r3_potential` 分叉，改用条件式循环和可避免 WAIT 惩罚，不叠加 `r4` 的旧惩罚。
 
-Feature 与 Reward 是独立契约。metadata、final checkpoint 和 `training-resume-v4` 快照同时记录 ID 与完整 schema/spec；任何语义变化必须创建新 ID，跨契约不得续训。v1–v3 resume 只允许冻结评估。
+| `r5_coin_potential` | -0.01 | +3.0 | — | +5.0 | +0.2 | -10.0 | -10.0 | — | -0.1 |
+| `r6_safe_sparse` | -0.01 | +3.0 | — | +5.0 | +0.2 | -20.0 | -10.0 | — | -0.1 |
+| `r6_safe_potential` | -0.01 | +3.0 | — | +5.0 | +0.2 | -20.0 | -10.0 | — | -0.1 |
+| `r7_safe_credit_sparse` | -0.01 | +3.0 | — | +5.0 | +0.2 | -20.0 | -10.0 | — | -0.1 |
+| `r7_safe_credit_potential` | -0.01 | +3.0 | — | +5.0 | +0.2 | -20.0 | -10.0 | — | -0.1 |
+| `r8_safe_constrained` | -0.01 | +3.0 | — | +5.0 | +0.2 | -20.0 | -10.0 | — | -0.1 |
+
+`r5` 使用金币路径势；r6 增加箱区/危险势、可逃有收益放弹信用和不可逃放弹 −10；r7 将不可逃放弹改为 −20。r8 删除预测 useful-bomb 正奖励，对有安全替代的必死动作即时扣 20，并在自杀同帧抑制金币、炸箱和击杀正奖励。势函数统一使用 `γΦ(s')−Φ(s)`，不直接奖励移动、等待、普通放弹、发现或存活事件。
+
+Feature、Reward 与 Safety 是独立契约。`survival-mask-v1/all` 对探索、贪心、冻结推理和 Double DQN target 使用同一 H=7 生存集合；无安全动作时回退物理合法 Q argmax。metadata、final checkpoint 和 `training-resume-v6` 快照记录完整 schema/spec；v1–v5 只允许冻结评估。
 
 ## 开发约定
 

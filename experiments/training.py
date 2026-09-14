@@ -12,6 +12,7 @@ import numpy as np
 from agent_code.team_agent.feature_system import ACTIONS, normalize_feature_id
 from agent_code.team_agent.exploration import resolve_exploration_spec
 from agent_code.team_agent.rewards import REWARD_VERSION, resolve_reward_spec
+from agent_code.team_agent.safety import resolve_safety_spec
 from experiments.devices import resolve_device
 from experiments.resume import (
     CHECKPOINT_SCHEMA_VERSION,
@@ -237,6 +238,14 @@ def run_training_mode(
     safe_exploration = training.get("safe_exploration", False)
     if not isinstance(safe_exploration, bool):
         raise ValueError("config.training.safe_exploration must be a boolean")
+    configured_safety = config.get("safety")
+    if configured_safety is not None and "safe_exploration" in training:
+        raise ValueError("config.safety conflicts with training.safe_exploration")
+    safety_spec = resolve_safety_spec(
+        configured_safety,
+        legacy_safe_exploration=(
+            safe_exploration if configured_safety is None else None),
+    )
     n_step = training.get("n_step", 1)
     if n_step not in {1, 4}:
         raise ValueError("config.training.n_step must be 1 or 4")
@@ -265,6 +274,7 @@ def run_training_mode(
             *positional, device_info=device_info,
             action_budget_config=budget_config,
             safe_exploration=safe_exploration,
+            safety_spec=safety_spec,
             n_step=n_step,
             retention_spec=retention_spec,
             adaptation_triggers=adaptation_triggers,
@@ -302,6 +312,7 @@ def run_training_mode(
         "agent_seed": seed,
         "exploration_spec": resolve_exploration_spec(training.get("exploration")),
         "safe_exploration": safe_exploration,
+        "safety_spec": safety_spec,
         "n_step": n_step,
         "retention_spec": retention_spec,
         "training_budget": budget_config,
@@ -327,6 +338,7 @@ def run_training_mode(
         device_info=device_info,
         action_budget_config=budget_config,
         safe_exploration=safe_exploration,
+        safety_spec=safety_spec,
         n_step=n_step,
         retention_spec=retention_spec,
         adaptation_triggers=adaptation_triggers,

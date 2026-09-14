@@ -13,6 +13,7 @@ from agent_code.team_agent.feature_system import validate_checkpoint_feature_con
 from agent_code.team_agent.exploration import (
     exploration_from_environment, safe_exploration_from_environment,
 )
+from agent_code.team_agent.safety import resolve_safety_spec, safety_from_environment
 from agent_code.team_agent.rewards import resolve_reward_spec
 from .temporal_reward import init_temporal_reward_state
 from .action_history import init_action_history
@@ -22,7 +23,7 @@ from .training_spec import (
 )
 
 
-CHECKPOINT_SCHEMA = "training-resume-v5"
+CHECKPOINT_SCHEMA = "training-resume-v6"
 DEFAULT_REWARD_ID = "r1"
 CHECKPOINT_ENV = "BOMBERMAN_CHECKPOINT"
 FEATURE_ID_ENV = "BOMBERMAN_FEATURE_ID"
@@ -66,7 +67,12 @@ def load_common_configuration(self, *, feature_id: str, default_model: Path) -> 
     self.agent_seed = int(os.getenv(AGENT_SEED_ENV, "0"))
     self.rng = random.Random(self.agent_seed)
     self.exploration_spec = exploration_from_environment()
-    self.safe_exploration = safe_exploration_from_environment()
+    self.safety_spec, self.safety_spec_configured = safety_from_environment()
+    if not self.safety_spec_configured:
+        legacy_safe = safe_exploration_from_environment()
+        self.safety_spec = resolve_safety_spec(
+            legacy_safe_exploration=legacy_safe)
+    self.safe_exploration = self.safety_spec["mode"] in {"exploration", "all"}
     self.n_step = n_step_from_environment()
     self.retention_spec = retention_from_environment()
     self.training_budget = training_budget_from_environment()
@@ -80,6 +86,9 @@ def load_common_configuration(self, *, feature_id: str, default_model: Path) -> 
     self.stage_action_steps = 0
     self.safe_exploration_decisions = 0
     self.safe_exploration_fallbacks = 0
+    self.safety_decisions = 0
+    self.safety_interventions = 0
+    self.safety_fallbacks = 0
     self._feature_cache_key = None
     self._feature_cache_value = None
     init_temporal_reward_state(self)
@@ -99,6 +108,17 @@ def adopt_checkpoint_reward(self, payload: dict[str, Any]) -> None:
     self.reward_id = checkpoint_reward_id
     self.reward_version = checkpoint_reward_id
     self.reward_spec = resolve_reward_spec(checkpoint_reward_id)
+
+
+def adopt_checkpoint_safety(self, payload: dict[str, Any]) -> None:
+    """Use an embedded v6 policy unless an evaluation explicitly overrides it."""
+    embedded = payload.get("safety_spec")
+    if embedded is None:
+        return
+    embedded = resolve_safety_spec(embedded)
+    if not getattr(self, "safety_spec_configured", False):
+        self.safety_spec = embedded
+        self.safe_exploration = embedded["mode"] in {"exploration", "all"}
 
 
 def effective_legal_mask(legal_mask: np.ndarray, actions: tuple[str, ...],
@@ -127,12 +147,13 @@ def validate_checkpoint(
     feature_schema: dict[str, Any], actions: tuple[str, ...],
     reward_id: str, hyperparameters: dict[str, Any],
     network_spec: dict[str, Any] | None, training: bool,
-    training_task: str | None,
+    training_task: str | None, safety_spec: dict[str, Any] | None = None,
 ) -> None:
     checkpoint_schema = payload.get("checkpoint_schema")
     frozen_schemas = {
         "training-resume-v1", "training-resume-v2",
-        "training-resume-v3", "training-resume-v4", CHECKPOINT_SCHEMA,
+        "training-resume-v3", "training-resume-v4", "training-resume-v5",
+        CHECKPOINT_SCHEMA,
     }
     if checkpoint_schema not in frozen_schemas:
         raise ValueError("checkpoint uses an incompatible checkpoint schema")
@@ -162,6 +183,11 @@ def validate_checkpoint(
         raise ValueError("checkpoint uses incompatible hyperparameters")
     if payload.get("network_spec") != network_spec:
         raise ValueError("checkpoint uses an incompatible network architecture")
+    if (
+        training and payload.get("safety_spec")
+        != resolve_safety_spec(safety_spec)
+    ):
+        raise ValueError("checkpoint uses an incompatible safety specification")
     if training and payload.get("training_task") != training_task:
         try:
             previous = TASK_ORDER.index(payload.get("training_task"))

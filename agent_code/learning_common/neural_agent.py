@@ -17,7 +17,7 @@ from .action_history import (
 )
 from .neural import Transition
 from .runtime import (
-    CHECKPOINT_SCHEMA, adopt_checkpoint_reward, effective_legal_mask,
+    CHECKPOINT_SCHEMA, adopt_checkpoint_reward, adopt_checkpoint_safety, effective_legal_mask,
     load_common_configuration, save_checkpoint_atomic, validate_checkpoint,
 )
 from .temporal_reward import (
@@ -45,11 +45,13 @@ def setup_neural_agent(
     if self.model_file.exists():
         checkpoint = torch.load(self.model_file, map_location="cpu", weights_only=True)
         adopt_checkpoint_reward(self, checkpoint)
+        adopt_checkpoint_safety(self, checkpoint)
         validate_checkpoint(
             checkpoint, algorithm=algorithm, feature_id=feature_id,
             feature_schema=feature_schema, actions=actions, reward_id=self.reward_id,
             hyperparameters=hyperparameters, network_spec=network_spec,
             training=self.train, training_task=self.training_task,
+            safety_spec=self.safety_spec,
         )
         self.model.load_checkpoint(checkpoint, training=self.train)
         self.total_action_steps = int(checkpoint.get(
@@ -62,6 +64,9 @@ def setup_neural_agent(
             "safe_exploration_decisions", 0))
         self.safe_exploration_fallbacks = int(checkpoint.get(
             "safe_exploration_fallbacks", 0))
+        self.safety_decisions = int(checkpoint.get("safety_decisions", 0))
+        self.safety_interventions = int(checkpoint.get("safety_interventions", 0))
+        self.safety_fallbacks = int(checkpoint.get("safety_fallbacks", 0))
         if self.train:
             self.rng.setstate(checkpoint["agent_rng_state"])
             if same_task:
@@ -226,6 +231,12 @@ def neural_end_round(self, last_game_state, last_action, events, *, actions,
         "safe_exploration": self.safe_exploration,
         "safe_exploration_decisions": self.safe_exploration_decisions,
         "safe_exploration_fallbacks": self.safe_exploration_fallbacks,
+        "safety_spec": getattr(self, "safety_spec", {
+            "version": "survival-mask-v1", "mode": "off", "horizon": 7,
+            "fallback": "physical_q"}),
+        "safety_decisions": int(getattr(self, "safety_decisions", 0)),
+        "safety_interventions": int(getattr(self, "safety_interventions", 0)),
+        "safety_fallbacks": int(getattr(self, "safety_fallbacks", 0)),
         "action_history_state": action_history_state(self),
         "n_step": int(getattr(self, "n_step", 1)),
         "n_step_state": {

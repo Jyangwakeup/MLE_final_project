@@ -18,6 +18,7 @@ from experiments.agent_contracts import resolve_agent_contract
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 SUPPORTED = {
     "double_q_compact_agent", "double_dqn_continuous_agent",
+    "double_dqn_continuous_v2_agent", "double_dqn_continuous_v3_agent",
     "cnn_double_dqn_agent", "hybrid_dueling_double_dqn_agent",
 }
 
@@ -80,7 +81,7 @@ def build_submission(agent: str, checkpoint: Path, output: Path) -> Path:
         team.mkdir()
         for name in (
             "__init__.py", "danger.py", "exploration.py", "features.py", "rewards.py",
-            "temporal_safety_features.py",
+            "safety.py", "temporal_safety_features.py",
         ):
             shutil.copy2(PROJECT_ROOT / "agent_code" / "team_agent" / name, team / name)
         shutil.copytree(

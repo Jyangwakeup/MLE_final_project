@@ -56,6 +56,11 @@ SUMMARY_FIELDS = (
     "killed_by_opponent_rate",
     "crates",
     "mean_crates",
+    "mean_bombs",
+    "zero_bomb_round_rate",
+    "bombs_resolved",
+    "bombs_survived",
+    "survived_bomb_rate",
     "invalid_actions",
     "invalid_action_rate",
     "survival_rate",
@@ -87,6 +92,11 @@ SUMMARY_FIELDS = (
     "median_longest_wait_streak",
     "min_longest_wait_streak",
     "max_longest_wait_streak",
+    "safety_decisions",
+    "safety_interventions",
+    "safety_intervention_rate",
+    "safety_fallbacks",
+    "safety_fallback_rate",
     "navigation_decisions",
     "coin_distance_comparable_count",
     "coin_target_observation_count",
@@ -420,6 +430,14 @@ def _summary_row(
         "killed_by_opponent_rate": sum(sample["killed_by_opponent"] for sample in samples) / episode_count,
         "crates": sum(sample["crates"] for sample in samples),
         "mean_crates": sum(sample["crates"] for sample in samples) / episode_count,
+        "mean_bombs": sum(sample["bombs"] for sample in samples) / episode_count,
+        "zero_bomb_round_rate": mean(sample["bombs"] == 0 for sample in samples),
+        "bombs_resolved": sum(sample["bombs_resolved"] for sample in samples),
+        "bombs_survived": sum(sample["bombs_survived"] for sample in samples),
+        "survived_bomb_rate": (
+            sum(sample["bombs_survived"] for sample in samples)
+            / sum(sample["bombs_resolved"] for sample in samples)
+            if sum(sample["bombs_resolved"] for sample in samples) else None),
         "invalid_actions": sum(sample["invalid"] for sample in samples),
         "invalid_action_rate": (
             sum(sample["invalid"] for sample in samples)
@@ -453,6 +471,15 @@ def _summary_row(
             median(wait_streaks) if wait_streaks else None),
         "min_longest_wait_streak": min(wait_streaks) if wait_streaks else None,
         "max_longest_wait_streak": max(wait_streaks) if wait_streaks else None,
+        "safety_decisions": timing.get("safety_decisions", 0),
+        "safety_interventions": timing.get("safety_interventions", 0),
+        "safety_intervention_rate": (
+            timing.get("safety_interventions", 0) / timing.get("safety_decisions", 0)
+            if timing.get("safety_decisions", 0) else None),
+        "safety_fallbacks": timing.get("safety_fallbacks", 0),
+        "safety_fallback_rate": (
+            timing.get("safety_fallbacks", 0) / timing.get("safety_decisions", 0)
+            if timing.get("safety_decisions", 0) else None),
         "navigation_decisions": navigation_decisions,
         "coin_distance_comparable_count": comparable,
         "coin_target_observation_count": target_observations,
@@ -508,6 +535,8 @@ def summarize_runs(run_directories: Iterable[Path]) -> list[dict[str, Any]]:
             "action_counts": defaultdict(int),
             "actions_by_round": defaultdict(list),
             "longest_wait_streaks": [],
+            "safety_decisions": 0, "safety_interventions": 0,
+            "safety_fallbacks": 0,
         }
     )
     q_by_agent: dict[tuple[str, str], dict[str, float]] = defaultdict(
@@ -539,6 +568,9 @@ def summarize_runs(run_directories: Iterable[Path]) -> list[dict[str, Any]]:
                         "kills": float(agent["kills"]),
                         "suicides": float(agent["suicides"]),
                         "crates": float(agent["crates"]),
+                        "bombs": float(agent.get("bombs", 0)),
+                        "bombs_resolved": float(agent.get("bombs_resolved", 0)),
+                        "bombs_survived": float(agent.get("bombs_survived", 0)),
                         "invalid": float(agent["invalid"]),
                         "survived": float(agent["survived"]),
                         "killed_by_opponent": float(agent.get("killed_by_opponent", False)),
@@ -567,6 +599,12 @@ def summarize_runs(run_directories: Iterable[Path]) -> list[dict[str, Any]]:
                 bucket["timeout_count"] += 1
             if record["skipped"]:
                 bucket["skipped_count"] += 1
+            safety = record.get("safety")
+            if safety is not None:
+                bucket["safety_decisions"] += 1
+                bucket["safety_interventions"] += int(
+                    safety.get("intervened", False))
+                bucket["safety_fallbacks"] += int(safety.get("fallback", False))
             navigation = record.get("navigation")
             if navigation is not None:
                 bucket["navigation_decisions"] += 1

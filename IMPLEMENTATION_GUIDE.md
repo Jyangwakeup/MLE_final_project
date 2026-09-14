@@ -4,7 +4,7 @@
 >
 > 本文只记录团队派生的技术方案、实验计划与分工，不是课程要求的权威来源。课程硬约束、提交和报告要求统一见 [`PROJECT_REQUIREMENTS.md`](PROJECT_REQUIREMENTS.md)。
 >
-> Q-learning、DQN、实验入口、完整恢复和 GPU/CPU smoke 已实现并有测试证据；正式六链训练、阶段门槛、消融、选模和提交仍是待执行工作。文中的计划不得当作已完成结果。
+> Q-learning、DQN、实验入口、完整恢复和 GPU/CPU smoke 已实现。旧 v4/v5 结果只作历史证据；第 8.7 节定义的 v6 生存约束消融是当前有效的 Task 3 前门槛。未写入结果栏的计划不得当作已完成结果。
 >
 > **证据驱动同步规则：**实现可以在明确分析并通过相关测试后改进本文的旧方案，但实现、接口约定、理由和检查项必须在同一可运行变更中同步。不得保留无说明的代码—文档差异，也不得通过改写本文掩盖实现缺陷。
 
@@ -16,8 +16,8 @@
 - 三人经验与投入接近，第一轮实现阶段各按约 24 小时安排，共 72 人时；无人值守训练另计。
 - 优先完成正确性、原始数据、核心实验和独立交付，不预先保证比赛名次或某个胜率。
 - `q_learning_agent` 与 `dqn_agent` 是两个独立可运行 Agent，共用 `team_agent` 的特征、奖励和探索协议。三人都服务于两个模型，不按“一人一个模型”分工；选模后只打包胜出的一个目录及其共享运行依赖。
-- 统一过滤物理非法动作；保留危险但合法的动作，让模型使用危险特征进行权衡。
-- 第一版不做 CNN、Dueling、Double DQN、自我对弈或复杂奖励搜索。对称增强只在核心工作完成后开展。
+- 物理合法性与时域生存性保持两个合同。当前 Double DQN 安全实验用 `survival-mask-v1/all` 对探索、训练贪心、冻结推理和 bootstrap 一致否决可证明必死的动作；模型仍在剩余动作中决策。
+- 当前只迭代已表现出高金币/炸箱能力的 Double DQN，不引入规则动作标签、自我对弈或 Task 3。
 - 实现期间同步记录方法、图表、失败案例与作者，供正式报告复用。
 
 ### 1.1 课程要求入口
@@ -258,8 +258,8 @@ CPU 模式固定 PyTorch 单线程；Q 表路径延迟导入或完全不导入 P
 - Q 表保存整数键数组和浮点 Q 数组到 NPZ（读取禁用对象 pickle），附 JSON 元数据；DQN 保存 `state_dict`，不 pickle 整个模型对象。
 - 完整训练检查点包含策略网络、目标网络、优化器、回放池、自有 RNG 状态、NumPy Generator 状态、CPU/CUDA Torch RNG 状态、训练设备、动作步数、更新步数、阶段与探索进度；Q 表保存对应适用状态。新建 DQN 前按模型种子设置 Torch RNG；恢复时在网络和优化器构造完成后恢复 RNG，避免初始化消耗改变后续随机序列。GPU 训练启用确定性算法，正式评估始终映射到 CPU。
 - 每个完整回合的训练回调成功返回后保存一代 resume 快照。先写临时 generation，校验文件 SHA256 后原子发布，再原子更新 `latest.json`；只保留最新和上一代。最新一代损坏时自动回退上一代，并在子 run 谱系中记录原因所对应的丢失局数。
-- `--resume-from` 只接受父 run 根目录，并始终创建新的子 run。只允许同 Task 或 `1→2→3→4` 的直接晋级；算法、训练 seed/Agent seed、动作顺序、特征版本、奖励版本、完整奖励表、完整探索配置、训练设备和 checkpoint schema 必须一致。当前完整恢复 schema 为 `training-resume-v4`。`--n-rounds` 表示子 run 新增局数。v1/v2/v3 resume 和旧 `final.pkl`/`final.pt` 只允许冻结评估。
-- 同 Task 只在回合边界精确恢复，包含学习器、世界 RNG、全局 Python/NumPy RNG、下一回合编号和早停历史；早停配置也必须一致。下一 Task 保留学习器完整状态与探索进度，但清空回调 pending/终局去重状态、重置早停，并使用同一训练 seed 重建环境与官方对手随机流。跨机器/库版本不承诺逐位一致，记录环境差异。
+- `--resume-from` 只接受父 run 根目录，并始终创建新的子 run。只允许同 Task 或 `1→2→3→4` 的直接晋级；算法、seed、动作顺序、Feature/Reward/Safety 完整契约、设备、源码身份和 checkpoint schema 必须一致。当前完整恢复 schema 为 `training-resume-v6`；v1–v5 和旧 `final.pkl`/`final.pt` 只允许冻结评估。
+- 同 Task 回合边界恢复必须保持探索、n-step、回放保留和最小局数配置，动作目标只能提高；阶段动作计数、动作历史、n-step 队列及全部 RNG 原样恢复。直接进入下一 Task 时可按预注册配置重置阶段 ε、n-step 与回放/蒸馏比例，同时保留全局动作数、Q/网络、optimizer、target、分区 replay、父网络和 Agent RNG；清空回合 pending 与早停并按同一 seed 重建环境。
 - 旧 `final.pkl`/`final.pt` 仍可用于冻结评估；缺少 resume schema 的旧 checkpoint 不能用于精确续训。
 - 参赛导出仅保留推理权重、配置和所选算法依赖，不包含优化器、回放池、训练日志或本机绝对路径。
 
@@ -393,6 +393,61 @@ Task 1 coin3 checkpoint 与合法均匀随机基线均使用专用
 - 9 月 20 日：冻结最终 Agent；预留一天处理 9 月 21 日提交。
 
 原计划未完成必须标为未完成，不能把较短预算当成相同预算比较。训练可在自有智能体死亡后按官方训练规则结束；阶段门槛、主验证和最终测试必须让整局正常结束。
+
+### 8.6 当前有效的 Task 1–2 安全迭代（Task 3 前置门槛）
+
+本节取代 8.2–8.5 中关于“直接沿旧六链进入 Task 3”的安排；Task 3/4 的后续课程仍保留，但只有本节联合门槛合格后才能启动。触发原因是上一轮 `b66a0c8` 结果：Q-learning 主要陷入 `WAIT`/往返，DQN Task 1 已有约 31–38 枚金币但仍循环；DQN Task 2 训练自杀率为 100%，仅约 9500 个有效动作，冻结评估约 0.05–0.10 金币、1.8–3.6 箱、15%–60% 自杀，Task 1 保留率约 39%–81%。因此本轮不再提高金币事件奖励，而修复目标表达、安全探索、炸弹信用和跨 Task 遗忘。
+
+所有分支在 [`experiments/pre_task3_iteration.json`](experiments/pre_task3_iteration.json) 中预注册，最多三轮：
+
+1. seed 11 对 Q-learning、DQN 分别运行 `discrete-v1/discrete-objective-v1 × r1_coin3/r5_coin_potential`，共 8 条链。每条先达到 100000 个 Task 1 动作或 500 局上限；按硬门槛、mean coins、全金币率、较低 WAIT/立即反向、act P95、run ID 顺序各保留前两名，再以同 Task 子 run 累计到 200000 动作，总局数最多 750。开发集固定 seeds 10000–10019，Task 1 晋级要求 `mean_coins ≥ 35`。
+2. 对达标算法保留基础奖励链；另用数值等价的 `r6_safe_sparse` 或 `r6_safe_potential` 从零重建同 seed Task 1 父模型。Task 1 的轨迹和学习器状态必须与对应基础版一致，否则视为实现错误。两者分别进入 Task 2：至少 500 局且达到 150000 个阶段动作，最多 2000 局。每个子模型同时评估父模型在 Task 2 的基线、子模型 Task 2 能力及子模型 Task 1 回测。
+3. 从对应 Task 1 父谱系重新建立子链，不续训失败的 Task 2。自杀率失败用 r7 与 4-step return；DQN 保留率失败改 75% 父回放/25% 当前回放且蒸馏 λ=2；Q 能力失败切 `double_q_agent + discrete-objective-v1`；DQN 能力失败切 `double_dqn_continuous_v2_agent + continuous-v2`。多项失败同时应用，并为每一项重复传入 `--adaptation-trigger suicide|retention|q_capability|dqn_capability`；Runner 将有序列表写入 expanded config 和 metadata。第三轮后不再增加预算或修改设计。
+
+Task 2 联合门槛全部同时满足：`mean_coins ≥ 2`、`mean_crates ≥ 5`、相对同 seed 父模型 `mean_crates` 增加至少 0.5、Task 1 `mean_score` 保留率至少 90%、自杀率不超过 5%、无效动作率不超过 1%。排序依次为：是否全门槛通过、较低自杀率、较高 `min(coins/2, crates/5)`、金币、保留率、run ID。硬门槛仍要求 checkpoint 可加载、v5 两代 snapshot/hash 有效、Q 表非空或 DQN updates>0、loss 有限、无异常/timeout/skipped action、act P95<50 ms 且最大值<500 ms；动作上限命中但动作目标不足也是硬失败。
+
+每项父子差异按相同 seed 配对，使用 10000 次 bootstrap、RNG seed 20260913 报告 2.5%/97.5% 分位区间。复制 seeds 22/33 后按 60 个开发回合选择单一 checkpoint，再且仅再用 seeds 11000–11099 做一次主验证并重新满足全部联合门槛。seeds 20000–20099 仍封存为最终测试，本轮不得使用。
+
+运行命名固定为 `iter_r<round>_<agent>_<feature>_<reward>_s<seed>_t<task>_a<target>_<commit>`；已有目录追加 `_retryN`。`--target-stage-action-steps` 是阶段累计目标，`--min-rounds` 是本地最小局数，`--n-rounds` 是本次子 run 的硬上限。旧 v4 run 不能成为父节点。
+
+2026-09-14 的预注册执行结果如下。实现冻结提交为 `8f35ca2`；首次 DQN Task 2 暴露出非法动作 `-inf` logits 在蒸馏 KL 中产生 `0×inf=NaN`，修复提交 `03fbd1b` 改用有限最小值掩码，并从零重建所有第二、三轮父谱系。当前有效的第二、三轮 run 均记录 `source_commit=03fbd1b`。两组 r6 Task 1 父模型与对应基础奖励父模型的 750 局 episode、动作、学习器参数及 RNG 状态完全一致；差异仅为奖励合同字段，满足数值等价检查。
+
+下表的 Task 2 数值均来自 seeds 10000–10019 的 20 个冻结回合；括号内依次为 coins、crates、suicide。保留率是同一开发 seed 上子模型相对 Task 1 父模型的总 `mean_score` 比率：
+
+| 轮次 | Agent/Feature/Reward | seed | Task 1 coins/循环 | Task 2 coins/crates/suicide | Task 1 保留率 | 联合门槛 | 失败触发/后续 |
+|---|---|---:|---|---|---:|---|---|
+| 1 | Q / `discrete-v1` / `r5_coin_potential` | 11 | 50.00；全金币率 100%；WAIT 0.20%，立即反向 7.07% | — | — | Task 1 通过 | 作为第二轮基础父模型 |
+| 1 | DQN / `discrete-v1` / `r1_coin3` | 11 | 45.90；全金币率 75%；WAIT 25.77%，立即反向 20.60% | — | — | Task 1 通过 | 作为第二轮基础父模型 |
+| 2 | Q / `discrete-v1` / `r5_coin_potential` | 11 | 50.00 | 0.05 / 2.30 / 50% | 92.00% | 失败；仅 34090/150000 动作 | `suicide,q_capability` |
+| 2 | Q / `discrete-v1` / `r6_safe_potential` | 11 | 50.00 | 0.00 / 0.50 / 25% | 10.00% | 失败 | `suicide,q_capability`；冻结策略 WAIT 99.55% |
+| 2 | DQN / `discrete-v1` / `r1_coin3` | 11 | 45.90 | 0.20 / 4.65 / 80% | 85.29% | 失败；仅 61050/150000 动作 | `suicide,retention,dqn_capability` |
+| 2 | DQN / `discrete-v1` / `r6_safe_sparse` | 11 | 45.90 | 0.10 / 2.50 / 30% | 72.88% | 失败 | `suicide,retention,dqn_capability` |
+| 3 | Double Q / `discrete-objective-v1` / `r7_safe_credit_potential` | 11 | 47.90；全金币率 90%；WAIT 3.60% | 0.60 / 16.10 / 20% | 24.95% | 失败 | 最佳 Q 失败模型；不复制、不晋级 |
+| 3 | Double DQN / `continuous-v2` / `r7_safe_credit_sparse` | 11 | 49.90；全金币率 95%；WAIT 12.96% | 5.45 / 76.65 / 30% | 98.70% | 仅自杀率失败 | 最佳总体失败模型；不复制、不晋级 |
+
+第三轮 10000 次配对 bootstrap（RNG seed 20260913）的关键 95% 区间为：Double Q Task 2 coins `0.60 [0.25,0.95]`、crates `16.10 [11.15,22.50]`、相对父模型 crates 增量 `13.40 [8.35,19.85]`、suicide `20% [5%,40%]`、Task 1 保留率 `24.95% [17.80%,33.09%]`；Double DQN 分别为 `5.45 [4.30,6.55]`、`76.65 [62.15,90.15]`、`74.80 [60.15,88.40]`、`30% [10%,50%]`、`98.70% [96.49%,100.20%]`。保留率区间上界略高于 100% 来自 bootstrap 重采样时父/子均值比率的分母波动。
+
+所有有效第二、三轮训练 run 均通过 v5 两代 snapshot/hash、CPU checkpoint 加载、有限 loss、无异常/timeout/skipped action、invalid rate 0%、训练 `act` P95<50 ms 且最大值<500 ms 的工程检查。达到 Task 2 动作目标的安全 Q、Double Q、安全 DQN、Double DQN 分别在 1971、978、1742、742 局停止。三轮后没有模型满足 `suicide≤5%` 的全部联合门槛，因此 seeds 22/33 复制和 seeds 11000–11099 主验证均按协议未运行；seeds 20000–20099 仍未使用，Task 3 不得启动。
+
+三轮后仍无联合合格模型时，冻结排序最高的失败模型并明确标记“无 Task 3 晋级资格”；不得用接近门槛、训练奖励或单个 seed 替代联合验收。
+
+### 8.7 Double DQN v6 生存约束消融（当前执行协议）
+
+第 8.6 节最强的 `continuous-v2 + r7` 候选已有 `49.90` 个 Task 1 金币、Task 2 `5.45` 金币和 `76.65` 箱，但 20 个开发 seed 中自杀 6 次。逐步重放表明六次均是安全放弹后选择了必死移动或等待，其中五次发生在放弹后的第一个动作；当时均存在安全替代动作。根因是 v5 只约束随机探索，未约束贪心、冻结推理或 Double DQN target。详细证据见 [`docs/research/task2-double-dqn-suicide-mitigation.md`](docs/research/task2-double-dqn-suicide-mitigation.md)。
+
+当前 Safety 合同固定为 `survival-mask-v1`：`mode=all`、`horizon=7`、无安全动作时 `fallback=physical_q`。它只从物理合法集合中移除无法存活至预测终点的动作，不给出推荐方向；Q 网络仍在剩余动作中排序。统一 mask 用于 ε 随机、训练贪心、冻结推理和 replay 中 Double DQN policy argmax。每步记录 raw argmax、最终动作、介入/回退、各动作安全时长和逃生空间。领域术语见 [`CONTEXT.md`](CONTEXT.md)，取舍见 [`docs/adr/0001-veto-only-survival-mask.md`](docs/adr/0001-veto-only-survival-mask.md)。
+
+`continuous-v3` 在远程 84 维 v2 上加入六动作各自的 `survives_horizon`、逃生余量和下一步可继续存活动作比例，把 `safe_area` 改成 `log1p(area)/log1p(board_area)`，再加入全局安全动作比例及自身炸弹承担/可见/倒计时/爆炸轴事实，总计 107 维。旧 78 维 v2 只通过内部 legacy 适配器读取冻结 checkpoint。动作和炸弹历史在回合开始清空，并进入 checkpoint。
+
+`r8_safe_constrained` 保留 r7 sparse 的 step、coin、kill、crate、死亡、箱区/危险势和不可逃放弹惩罚，删除预测 useful-bomb 正奖励；只有“当前动作必死且存在安全替代”时即时扣 20。`KILLED_SELF` 与金币、炸箱或击杀同帧时抑制这些正奖励。Task 1 禁止放弹，因此相同 feature/seed 下 r8 与 r7 的数值和轨迹必须一致。
+
+所有条件已在 [`experiments/task2_safety_ablation.json`](experiments/task2_safety_ablation.json) 预注册。先对既有 v5 checkpoint 在 seeds 10000–10019 做冻结 `all` mask 诊断；自杀率高于 5% 时停止训练并审计动力学。诊断通过后，在一个干净 v6 提交上并行建立三条 seed 11 独立链：`v2+r7+all`、`v3+r7+all`、`v3+r8+all`。每条 Task 1 从零达到 200000 动作、最多 750 局；Task 2 从对应 v6 父 snapshot 晋级，至少 500 局且达到 150000 阶段动作、最多 2000 局，保持 4-step、75% 父回放和蒸馏 λ=2。
+
+开发门槛同时要求：Task 1 `mean_coins≥35`；Task 2 `mean_coins≥2`、`mean_crates≥5`、相对父模型 crates 增加至少 0.5；Task 1 保留率至少 90%；`suicide≤5%`、零放弹局率不超过 10%、存活炸弹率至少 95%、invalid 不超过 1%；checkpoint/v6 两代 snapshot 完整，loss 有限，无异常/timeout/skipped，act P95<50 ms 且最大值<500 ms。多候选依次按自杀率、零放弹率、存活炸弹率、`min(coins/2,crates/5)`、金币、保留率、时延和 run ID 排序。
+
+seed 11 优胜配置才从零复制 seeds 22/33。三训练 seed × 20 开发 seed 汇总后只选一个 checkpoint，在 seeds 11000–11099 一次性做父 Task 1、子 Task 1、父 Task 2、子 Task 2 主验证，并用 10000 次配对 bootstrap（RNG `20260913`）报告 95% 区间。主验证失败即停止，不回看次优模型。seeds 20000–20099 保持封存，本轮不得启动 Task 3。
+
+当前完整恢复协议为 `training-resume-v6`，绑定 Safety/Feature/Reward/网络/训练合同、动作与自身炸弹历史、实际 replay mask 及全部 RNG；v5 及更早 checkpoint 只允许冻结评估。
 
 ## 9. 核心实验如何分配和解释
 

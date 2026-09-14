@@ -21,8 +21,10 @@ Task 1 的最终 reward 对照使用
 | --- | --- | --- | --- |
 | `q_learning_agent` | `q_learning` | 默认 `discrete-q-v2`，可显式选 `discrete-v1` | `final.pkl` |
 | `double_q_compact_agent` | `double_q_learning` | `discrete-compact-v1` | `final.pkl` |
-| `dqn_agent` | `dqn` | 默认 `discrete-q-v2`，可显式选 `discrete-v1` | `final.pt` |
-| `double_dqn_continuous_agent` | `double_dqn` | `continuous-v2` | `final.pt` |
+| `dqn_agent` | `dqn` | 默认 `discrete-q-v2`，可选 `discrete-v1` / `discrete-objective-v1` | `final.pt` |
+| `double_dqn_continuous_agent` | `double_dqn` | `continuous-v2`，84 维安全消融基线 | `final.pt` |
+| `double_dqn_continuous_v2_agent` | `double_dqn` | 新训练使用 84 维 `continuous-v2`；自动只读兼容旧 78 维 checkpoint | `final.pt` |
+| `double_dqn_continuous_v3_agent` | `double_dqn` | `continuous-v3`，显式安全余量消融 | `final.pt` |
 | `cnn_double_dqn_agent` | `cnn_double_dqn` | `board-v1` | `final.pt` |
 | `hybrid_dueling_double_dqn_agent` | `hybrid_dueling_double_dqn` | `hybrid-v1` | `final.pt` |
 
@@ -104,7 +106,7 @@ C 需要 B 提供的最小信息是：
 - checkpoint 版本元数据；以及
 - 训练指标的输出位置。
 
-已冻结的完整恢复 schema 为 `training-resume-v4`。Runner 只校验公开 checkpoint 合同，
+当前完整恢复 schema 为 `training-resume-v6`。Runner 只校验公开 checkpoint 合同，
 不导入 `agent_code/q_learning_agent/` 或 `agent_code/dqn_agent/` 的私有学习实现。
 
 ### 运行时配置
@@ -114,6 +116,9 @@ C 需要 B 提供的最小信息是：
 - `BOMBERMAN_RUN_DIR` 指向绝对路径的运行输出目录。训练输出从该目录解析。
 - `BOMBERMAN_AGENT_SEED` 与 `BOMBERMAN_EXPLORATION_SPEC` 由 Runner 设置；直接使用官方
   框架时分别回退为 seed 0 和共享 `linear-v1` 默认值。
+- `BOMBERMAN_SAFETY_SPEC` 保存版本化 Safety 合同；旧 `BOMBERMAN_SAFE_EXPLORATION`
+  仅映射为 `mode=exploration`，新旧配置不得同时出现。`BOMBERMAN_N_STEP`、
+  `BOMBERMAN_RETENTION_SPEC` 和 `BOMBERMAN_TRAINING_BUDGET` 保存其他阶段契约。
 - 包内配置中的模型路径相对 agent 包解析。导出配置与模型路径不得包含开发机器的
   绝对路径。
 
@@ -446,9 +451,8 @@ python3 experiments/run.py \
 对手、Agent 和早停状态，回合编号连续；下一 Task 保留全部学习器状态和 epsilon 进度，
 但按同一 seed 重建环境/对手随机流、从回合 1 开始并重置早停。只允许同 Task 或
 `1→2→3→4`，且算法、训练/Agent seed、动作顺序、特征版本、奖励版本、完整奖励表、
-探索配置、训练设备、`source_commit` 和 resume schema 必须一致。`source_hash` 仍会记录用于
-审计，但显示、评估等未提交改动造成的 hash 差异不会阻止续训。
-当前 schema 为 `training-resume-v4`；v1/v2/v3 及冻结 final
+训练设备、`source_commit`、`source_hash` 和 resume schema 必须一致。探索、n-step、回放保留和预算只可按直接 Task 晋级的预注册合同改变。
+当前 schema 为 `training-resume-v6`；v1–v5 及冻结 final
 checkpoint 不能精确续训。
 同 Task 的早停配置也必须保持一致。
 
@@ -632,10 +636,7 @@ Q-learning 与 DQN agent 都会据此屏蔽炸弹。Task 2–4 会自动允许�
 `timing-v1`。
 
 `configs/formal_training.json` 保留 CPU、`discrete-v1`、`r1` 基线；
-`configs/formal_training_coin3.json` 在相同冻结特征下固定 `r1_coin3`、关闭 early stopping、共享
-`linear-v1` 探索（1.0→0.05，80,000 动作步）及六链预算。`stage_gate.json`、
-`main_validation.json`、`final_test.json` 分别固定 5-seed × 20 局阶段门槛、100-seed 主验证和
-100-seed 最终留出测试。smoke run 只用于工程验证，不得成为正式链父节点或参与选模。
+`configs/formal_training_coin3.json` 保留旧 v4 固定局数证据。`task2_safety_diagnostic.json` 对既有 v5 checkpoint 仅启用冻结 shield；`safety_ablation_*` 固定三条 v6 Task 1→2 消融。`final_test.json` 的 20000–20099 仍封存。v5 及更早 run 不得成为 v6 父节点。
 奖励实验使用独立配置文件：
 
 ```text
@@ -653,6 +654,10 @@ Reward ID 和完整 spec 都是 checkpoint 与 resume 契约的一部分。更�
 | `r1_coin3_no_crate` | 金币 +3、炸箱 0 | coin3 课程的严格炸箱消融 |
 | `r2_balanced` | 金币 +3，并重新平衡发现、炸箱、死亡、存活和非法动作 | Task 2–4 的事件奖励实验 |
 | `r3_potential` | `r2_balanced` 加金币/箱子路径与安全势能 | Task 1 导航和循环问题，或需要密集反馈的实验 |
+| `r5_coin_potential` | r1_coin3 + 金币势 | Task 1 受控矩阵 |
+| `r6_safe_sparse/potential` | 箱区/危险势、炸弹信用与分离死亡代价 | Task 2 成对安全比较 |
+| `r7_safe_credit_sparse/potential` | 不可逃放弹 −20 | 第三轮自杀失败分支 |
+| `r8_safe_constrained` | r7 sparse 去掉预测放弹正奖；可避免必死动作 −20；自杀压制同帧正奖 | 生存约束精确信用消融 |
 
 完整数值、势能公式和边界语义见
 [`agent_code/team_agent/README.md`](../agent_code/team_agent/README.md#公共奖励)。不同 Reward 的

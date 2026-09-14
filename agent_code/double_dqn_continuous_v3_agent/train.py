@@ -39,24 +39,24 @@ def setup_training(self):
 
 def _transition(self, old_state, action, reward, new_state, done):
     old = _features_for(self, old_state)
-    old_legal = effective_legal_mask(
+    old_mask = effective_legal_mask(
         old.legal_mask, ACTIONS, self.curriculum_allows_bomb)
-    old_legal, _ = mask_for_decision(
-        old_state, old_legal, self.safety_spec,
+    old_mask, _ = mask_for_decision(
+        old_state, old_mask, self.safety_spec,
         allow_bomb=self.curriculum_allows_bomb, exploring=False)
     if done:
         return Transition(
             old.vector.copy(), ACTIONS.index(action), reward, None, True, None,
-            old_legal, self.training_task, 1)
+            old_mask, self.training_task, 1)
     new = _features_for(self, new_state)
-    next_legal = effective_legal_mask(
+    next_mask = effective_legal_mask(
         new.legal_mask, ACTIONS, self.curriculum_allows_bomb)
-    next_legal, _ = mask_for_decision(
-        new_state, next_legal, self.safety_spec,
+    next_mask, _ = mask_for_decision(
+        new_state, next_mask, self.safety_spec,
         allow_bomb=self.curriculum_allows_bomb, exploring=False)
     return Transition(
         old.vector.copy(), ACTIONS.index(action), reward, new.vector.copy(),
-        False, next_legal, old_legal, self.training_task, 1)
+        False, next_mask, old_mask, self.training_task, 1)
 
 
 def _submit(self, transition):
@@ -64,6 +64,13 @@ def _submit(self, transition):
         loss = self.model.observe(aggregate)
         if loss is not None:
             self.last_loss = loss
+
+
+def _avoidable(self, state, action, features):
+    physical = effective_legal_mask(
+        features.legal_mask, ACTIONS, self.curriculum_allows_bomb)
+    return avoidable_fatal_action(
+        state, action, physical, allow_bomb=self.curriculum_allows_bomb)
 
 
 def game_events_occurred(self, old_game_state, self_action, new_game_state, events):
@@ -75,11 +82,8 @@ def game_events_occurred(self, old_game_state, self_action, new_game_state, even
     old = _features_for(self, old_game_state)
     context = temporal_reward_context(
         self, self_action, old_game_state, new_game_state, events)
-    physical = effective_legal_mask(
-        old.legal_mask, ACTIONS, self.curriculum_allows_bomb)
-    context["avoidable_fatal"] = avoidable_fatal_action(
-        old_game_state, self_action, physical,
-        allow_bomb=self.curriculum_allows_bomb)
+    context["avoidable_fatal"] = _avoidable(
+        self, old_game_state, self_action, old)
     reward = reward_from_events(
         events, self.reward_id, old_game_state=old_game_state,
         new_game_state=new_game_state, action=self_action, **context)
@@ -94,14 +98,11 @@ def end_of_round(self, last_game_state, last_action, events):
         if self.pending is not None and self.pending[0] != key:
             _submit(self, self.pending[1])
         last_features = _features_for(self, last_game_state)
-        physical = effective_legal_mask(
-            last_features.legal_mask, ACTIONS, self.curriculum_allows_bomb)
         reward = reward_from_events(
             events, self.reward_id, old_game_state=last_game_state,
             terminal=True, action=last_action,
-            avoidable_fatal=avoidable_fatal_action(
-                last_game_state, last_action, physical,
-                allow_bomb=self.curriculum_allows_bomb))
+            avoidable_fatal=_avoidable(
+                self, last_game_state, last_action, last_features))
         self.round_reward += reward
         _submit(self, _transition(
             self, last_game_state, last_action, reward, None, True))
@@ -112,22 +113,15 @@ def end_of_round(self, last_game_state, last_action, events):
     init_action_history(self)
     checkpoint = self.model.checkpoint()
     checkpoint.update({
-        "checkpoint_schema": CHECKPOINT_SCHEMA,
-        "algorithm": ALGORITHM,
-        "actions": list(ACTIONS),
-        "feature_id": FEATURE_ID,
-        "feature_version": None,
-        "feature_schema": FEATURE_SCHEMA,
-        "reward_id": self.reward_id,
-        "reward_version": self.reward_id,
-        "reward_spec": self.reward_spec,
-        "hyperparameters": HYPERPARAMETERS,
-        "network_spec": NETWORK_SPEC,
-        "action_steps": self.total_action_steps,
+        "checkpoint_schema": CHECKPOINT_SCHEMA, "algorithm": ALGORITHM,
+        "actions": list(ACTIONS), "feature_id": FEATURE_ID,
+        "feature_version": None, "feature_schema": FEATURE_SCHEMA,
+        "reward_id": self.reward_id, "reward_version": self.reward_id,
+        "reward_spec": self.reward_spec, "hyperparameters": HYPERPARAMETERS,
+        "network_spec": NETWORK_SPEC, "action_steps": self.total_action_steps,
         "total_action_steps": self.total_action_steps,
         "stage_action_steps": self.stage_action_steps,
-        "agent_seed": self.agent_seed,
-        "agent_rng_state": self.rng.getstate(),
+        "agent_seed": self.agent_seed, "agent_rng_state": self.rng.getstate(),
         "exploration_spec": self.exploration_spec,
         "safe_exploration": self.safe_exploration,
         "safe_exploration_decisions": self.safe_exploration_decisions,
@@ -137,8 +131,7 @@ def end_of_round(self, last_game_state, last_action, events):
         "safety_interventions": self.safety_interventions,
         "safety_fallbacks": self.safety_fallbacks,
         "action_history_state": action_history_state(self),
-        "n_step": self.n_step,
-        "n_step_state": self.accumulator.state_dict(),
+        "n_step": self.n_step, "n_step_state": self.accumulator.state_dict(),
         "retention_spec": self.retention_spec,
         "training_budget": self.training_budget,
         "training_task": self.training_task,
@@ -157,7 +150,7 @@ def _append_metrics(self, state):
         return
     path = os.path.join(run_dir, "training.csv")
     row = {
-        "schema_version": "training-v2", "algorithm": ALGORITHM,
+        "schema_version": "training-v3", "algorithm": ALGORITHM,
         "round": "" if state is None else state.get("round", ""),
         "reward": self.round_reward, "action_steps": self.total_action_steps,
         "stage_action_steps": self.stage_action_steps,

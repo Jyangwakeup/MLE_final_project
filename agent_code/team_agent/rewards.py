@@ -177,6 +177,21 @@ REWARD_SPECS = {
         "useful_bomb_per_crate": 0.2,
         "useful_bomb_crate_cap": 3,
     },
+    "r8_safe_constrained": {
+        "step": -0.01,
+        "coin_collected": 3.0,
+        "killed_opponent": 5.0,
+        "crate_destroyed": 0.2,
+        "killed_self": -20.0,
+        "got_killed": -10.0,
+        "invalid_action": -0.1,
+        "potential_gamma": 0.95,
+        "potential_crate_weight": 0.25,
+        "potential_danger_weight": 1.0,
+        "unsafe_bomb_penalty": -20.0,
+        "avoidable_fatal_action": -20.0,
+        "suicide_dominates_positive_events": 1.0,
+    },
 }
 DEATH_EVENTS = frozenset((e.KILLED_SELF, e.GOT_KILLED))
 
@@ -224,8 +239,13 @@ def _event_reward(events: Sequence[str], spec: dict[str, float]) -> float:
         event: spec[key] for event, key in names if key in spec
     }
     reward = spec["step"]
+    suppress_positive = (
+        e.KILLED_SELF in events
+        and bool(spec.get("suicide_dominates_positive_events", 0.0))
+    )
     for event, event_reward in event_rewards.items():
-        reward += events.count(event) * event_reward
+        if not (suppress_positive and event_reward > 0.0):
+            reward += events.count(event) * event_reward
     if e.KILLED_SELF in events and "killed_self" in spec:
         reward += spec["killed_self"]
     elif e.GOT_KILLED in events and "got_killed" in spec:
@@ -278,6 +298,8 @@ def _bomb_action_reward(game_state: dict, action: str | None, spec: dict[str, fl
     bomb = context.bomb_reachability
     if bomb is None or not bomb.survives_horizon:
         return float(spec["unsafe_bomb_penalty"])
+    if "useful_bomb_per_crate" not in spec:
+        return 0.0
     useful_crates = min(
         int(context.crates_in_blast), int(spec["useful_bomb_crate_cap"]))
     return float(spec["useful_bomb_per_crate"] * useful_crates)
@@ -296,6 +318,7 @@ def reward_from_events(
     conditional_loop: bool = False,
     avoidable_wait: bool = False,
     diagnostic: dict | None = None,
+    avoidable_fatal: bool = False,
 ) -> float:
     """Convert framework events and optional temporal context into a scalar."""
     spec = resolve_reward_spec(version)
@@ -312,6 +335,8 @@ def reward_from_events(
         reward += spec["potential_gamma"] * next_potential - old_potential
     if old_game_state is not None:
         reward += _bomb_action_reward(old_game_state, action, spec)
+    if avoidable_fatal and "avoidable_fatal_action" in spec:
+        reward += spec["avoidable_fatal_action"]
     if version == "r4_anti_oscillation" and repeated_oscillation:
         reward += spec["oscillation_penalty"]
     if version == "r4_anti_oscillation" and idle_streak >= 2:

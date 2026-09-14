@@ -42,6 +42,14 @@ class ReachabilityResult:
     reachable_area: int
 
 
+@dataclass(frozen=True)
+class SafetyMarginResult:
+    """Action-conditional escape slack and robust second-step choices."""
+
+    escape_slack: float
+    survivable_second_actions: int
+
+
 def _bomb_explosion_time(timer: int) -> int:
     """Return the future step at which an existing bomb explodes."""
     return timer + 1
@@ -165,6 +173,76 @@ def detailed_reachability_after_first_step(
     positions = frozenset(current)
     return ReachabilityResult(
         legal, True, True, safe_horizon, positions, len(positions))
+
+
+def _survives_from_frontier(
+        frontier: set[tuple[int, int]], start_time: int,
+        danger: np.ndarray, blocked: np.ndarray,
+) -> bool:
+    current = set(frontier)
+    for time_step in range(start_time, danger.shape[0]):
+        following = set()
+        for position in current:
+            for action in ACTIONS:
+                successor = _advance(position, action, time_step, danger, blocked)
+                if successor is not None:
+                    following.add(successor)
+        if not following:
+            return False
+        current = following
+    return bool(current)
+
+
+def safety_margin_after_first_step(
+        position: tuple, first_action: str,
+        danger: np.ndarray, blocked: np.ndarray,
+) -> SafetyMarginResult:
+    """Summarize escape timing after fixing one first action."""
+    first_position = _advance(position, first_action, 1, danger, blocked)
+    if first_position is None:
+        return SafetyMarginResult(-1.0, 0)
+    horizon = danger.shape[0] - 1
+    deadline = horizon + 1
+    for time_step in range(1, horizon + 1):
+        if danger[time_step, first_position[0], first_position[1]]:
+            deadline = time_step
+            break
+
+    frontier = {first_position}
+    escape_time = None
+    for time_step in range(1, horizon + 1):
+        if any(not danger[time_step:, x, y].any() for x, y in frontier):
+            escape_time = time_step
+            break
+        if time_step == horizon:
+            break
+        following = set()
+        for current in frontier:
+            for action in ACTIONS:
+                successor = _advance(
+                    current, action, time_step + 1, danger, blocked)
+                if successor is not None:
+                    following.add(successor)
+        frontier = following
+        if not frontier:
+            break
+    if escape_time is None:
+        slack = -1.0
+    else:
+        slack = float(np.clip((deadline - escape_time) / horizon, -1.0, 1.0))
+
+    second_actions = 0
+    if horizon == 1:
+        second_actions = len(ACTIONS)
+    else:
+        for action in ACTIONS:
+            second = _advance(first_position, action, 2, danger, blocked)
+            if second is not None and (
+                horizon == 2 or _survives_from_frontier(
+                    {second}, 3, danger, blocked)
+            ):
+                second_actions += 1
+    return SafetyMarginResult(slack, second_actions)
 
 
 def detailed_reachability_all_first_steps(

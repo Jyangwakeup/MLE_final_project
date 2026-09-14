@@ -293,7 +293,7 @@ class PreregistrationAndContractTests(unittest.TestCase):
             self.assertTrue(budget(2))
             self.assertEqual(budget.result["reason"], "stage_action_target_reached")
 
-    def test_v5_allows_stage_contract_changes_only_on_task_promotion(self):
+    def test_v6_allows_stage_contract_changes_only_on_task_promotion(self):
         base = {
             "algorithm": "dqn", "seed": 11, "task": "coin_navigation",
             "checkpoint_schema": CHECKPOINT_SCHEMA_VERSION,
@@ -306,6 +306,9 @@ class PreregistrationAndContractTests(unittest.TestCase):
             "training_device_type": "cpu", "training_device_name": None,
             "agent_seed": 11, "source_commit": "abc", "source_hash": "def",
             "safe_exploration": True, "n_step": 1,
+            "safety_spec": {
+                "version": "survival-mask-v1", "mode": "exploration",
+                "horizon": 7, "fallback": "physical_q"},
             "retention_spec": RETENTION,
             "training_budget": {
                 "target_stage_action_steps": 100_000, "min_rounds": 1},
@@ -339,7 +342,7 @@ class PreregistrationAndContractTests(unittest.TestCase):
         double_dqn = resolve_agent_contract("double_dqn_continuous_v2_agent")
         self.assertEqual(double_q.feature_id, "discrete-objective-v1")
         self.assertEqual(double_dqn.feature_id, "continuous-v2")
-        self.assertEqual(double_dqn.network_spec["input_shape"], [78])
+        self.assertEqual(double_dqn.network_spec["input_shape"], [84])
         self.assertTrue(double_dqn.network_spec["double_dqn"])
 
     def test_iteration_manifest_separates_dev_validation_and_final_seeds(self):

@@ -251,7 +251,7 @@ class QLearningAgentConfigurationTestCase(unittest.TestCase):
                     "reward_version": "r1",
                     "reward_id": "r1",
                     "reward_spec": resolve_reward_spec("r1"),
-                    "checkpoint_schema": "training-resume-v5",
+                    "checkpoint_schema": "training-resume-v6",
                     "network_spec": None,
                     "hyperparameters": HYPERPARAMETERS,
                     "agent_rng_state": random.Random(0).getstate(),
@@ -261,6 +261,7 @@ class QLearningAgentConfigurationTestCase(unittest.TestCase):
                     "stage_action_steps": 123,
                     "safe_exploration_decisions": 17,
                     "safe_exploration_fallbacks": 2,
+                    "safety_spec": {"version": "survival-mask-v1", "mode": "off", "horizon": 7, "fallback": "physical_q"},
                     "n_step_state": {"n_step": 1, "gamma": 0.95, "pending": []},
                     "training_task": "task1",
                 }, file)
