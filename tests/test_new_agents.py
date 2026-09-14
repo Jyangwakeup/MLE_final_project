@@ -31,6 +31,11 @@ from agent_code.cnn_double_dqn_agent import features as board_features
 from agent_code.cnn_double_dqn_agent import callbacks as cnn_callbacks
 from agent_code.cnn_double_dqn_agent import train as cnn_train
 from agent_code.cnn_double_dqn_agent.model import BoardQNetwork, build_learner as build_cnn
+from agent_code.cnn_path_double_dqn_agent.features import (
+    features_for_state as path_features, initialize_history, record_position,
+)
+from agent_code.cnn_path_double_dqn_agent.learner import PathReplay
+from agent_code.cnn_path_double_dqn_agent.model import PathBoardQNetwork
 from agent_code.hybrid_dueling_double_dqn_agent import features as hybrid_features
 from agent_code.hybrid_dueling_double_dqn_agent import callbacks as hybrid_callbacks
 from agent_code.hybrid_dueling_double_dqn_agent import train as hybrid_train
@@ -67,6 +72,24 @@ class FeatureAdapterTests(unittest.TestCase):
         self.assertEqual(hybrid.vector.shape, (70,))
         np.testing.assert_array_equal(board.board, hybrid.board)
         np.testing.assert_array_equal(continuous.vector[:70], hybrid.vector)
+
+    def test_path_board_has_objective_and_history_channels(self):
+        owner = SimpleNamespace()
+        initialize_history(owner)
+        state = game_state()
+        features = path_features(owner, state)
+        self.assertEqual(features.board.shape, (17, 17, 17))
+        self.assertEqual(features.board[12, 3, 1], 0.0)
+        self.assertEqual(features.board[12, 1, 1], 2.0 / 32.0)
+        self.assertTrue(np.all(features.board[14] == 1.0))
+        record_position(owner, state)
+        after = path_features(owner, state)
+        self.assertEqual(after.board[15, 1, 1], 1.0)
+        self.assertEqual(after.board[16, 1, 1], 1.0 / 16.0)
+        state["round"] = 2
+        record_position(owner, state)
+        reset = path_features(owner, state)
+        self.assertEqual(reset.board[16, 1, 1], 1.0 / 16.0)
 
     def test_canonical_action_mapping_is_a_bijection(self):
         features = dq_callbacks.features_for_state(game_state())
@@ -236,6 +259,22 @@ class AlgorithmTests(unittest.TestCase):
             "epsilon_decay_action_steps": 80_000,
         })
         self.assertEqual(torch.get_num_threads(), 1)
+
+    def test_path_cnn_and_compact_replay(self):
+        network = PathBoardQNetwork()
+        self.assertEqual(network(torch.zeros(3, 17, 17, 17)).shape, (3, 6))
+        replay = PathReplay(4, 7)
+        board = path_features(SimpleNamespace(cnn_path_history=()), game_state()).board
+        transition = ReplayTransition(
+            board, 1, 0.5, board, False,
+            np.array([True, True, False, False, True, False]),
+        )
+        replay.append(transition)
+        restored = PathReplay(4, 99)
+        restored.load_state_dict(replay.state_dict())
+        batch = restored.sample_batch(1)
+        np.testing.assert_allclose(batch["states"], board[None], atol=1.0 / 32.0)
+        self.assertEqual(batch["actions"].tolist(), [1])
 
 
 class CheckpointTests(unittest.TestCase):

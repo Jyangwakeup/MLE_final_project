@@ -20,6 +20,7 @@ SUPPORTED = {
     "double_q_compact_agent", "double_dqn_continuous_agent",
     "double_dqn_continuous_v2_agent", "double_dqn_continuous_v3_agent",
     "cnn_double_dqn_agent", "hybrid_dueling_double_dqn_agent",
+    "cnn_path_double_dqn_agent",
 }
 
 
