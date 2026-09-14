@@ -410,7 +410,8 @@ def select_candidate(
 
 def _write_evidence(path: Path, rows: Iterable[dict[str, Any]]) -> None:
     with Path(path).open("w", newline="", encoding="utf-8") as file:
-        writer = csv.DictWriter(file, fieldnames=EVIDENCE_FIELDS)
+        writer = csv.DictWriter(
+            file, fieldnames=EVIDENCE_FIELDS, lineterminator="\n")
         writer.writeheader()
         writer.writerows(rows)
 
