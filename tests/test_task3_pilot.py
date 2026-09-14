@@ -1,4 +1,5 @@
 import copy
+import csv
 import json
 from pathlib import Path
 import unittest
@@ -157,6 +158,43 @@ class Task3PilotTests(unittest.TestCase):
         rejected = select_candidate(self.manifest, failed)
         self.assertFalse(rejected["all_training_seeds_passed"])
         self.assertIsNone(rejected["selected"])
+
+    def test_published_pilot_failure_evidence_is_complete_and_sealed(self):
+        results_path = ROOT / "experiments" / "task3_pilot_results.json"
+        evidence_path = ROOT / "experiments" / "task3_pilot_evaluations.csv"
+        results = json.loads(results_path.read_text(encoding="utf-8"))
+        with evidence_path.open(encoding="utf-8", newline="") as file:
+            evidence = list(csv.DictReader(file))
+
+        self.assertEqual(results["designation"], "task3_pilot_failure")
+        self.assertFalse(results["all_training_seeds_passed"])
+        self.assertFalse(results["qualified_for_task4"])
+        self.assertFalse(results["main_validation_performed"])
+        self.assertIsNone(results["selected"])
+        self.assertEqual(results["training_seeds"], [11, 22, 33])
+        self.assertEqual(len(evidence), 360)
+        self.assertEqual(
+            {int(row["environment_seed"]) for row in evidence},
+            set(range(12000, 12020)),
+        )
+        self.assertEqual(
+            {(int(row["training_seed"]), row["role"]) for row in evidence},
+            {
+                (seed, role)
+                for seed in (11, 22, 33)
+                for role in (
+                    "parent_task1", "parent_task2", "parent_task3",
+                    "child_task1", "child_task2", "child_task3",
+                )
+            },
+        )
+        task1 = [row for row in evidence if row["task"] == "coin_navigation"]
+        self.assertTrue(all(float(row["score"]) == float(row["coins"]) for row in task1))
+        self.assertTrue(all(not 20000 <= int(row["environment_seed"]) <= 20099 for row in evidence))
+        self.assertEqual(
+            [item["training_seed"] for item in results["assessments"] if not item["passed"]],
+            [22],
+        )
 
 
 if __name__ == "__main__":
