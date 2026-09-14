@@ -17,6 +17,7 @@ import numpy as np
 import settings as s
 from experiments.run import (
     TASKS,
+    _checkpoint_feature_contract,
     _task_settings,
     main as experiment_main,
     run_agent_evaluation,
@@ -27,6 +28,7 @@ from experiments.training import (
     early_stopping_config,
     replay_progress_interval,
 )
+from experiments.devices import resolve_device
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -67,6 +69,21 @@ class ExperimentRunTest(unittest.TestCase):
             ("full_match", "classic", ("rule_based_agent",) * 3),
         )
 
+    def test_board_checkpoint_feature_contract_accepts_null_vector_shape(self):
+        directory = self.output("board-contract")
+        directory.mkdir()
+        checkpoint = directory / "checkpoint.pkl"
+        with checkpoint.open("wb") as file:
+            pickle.dump({
+                "feature_id": "board-v1",
+                "feature_schema": {"vector_shape": None, "board_shape": [12, 17, 17]},
+            }, file)
+
+        contract = _checkpoint_feature_contract(checkpoint, "cnn_double_dqn")
+
+        self.assertEqual(contract["feature_id"], "board-v1")
+        self.assertIsNone(contract["runtime_adapter"])
+
     def test_task_constraints_reject_wrong_opponents(self):
         with self.assertRaises(ValueError):
             _task_settings(1, ["random_agent"])
@@ -103,6 +120,19 @@ class ExperimentRunTest(unittest.TestCase):
             ])
         self.assertEqual(result, 2)
         self.assertFalse(output.exists())
+
+    def test_cnn_training_uses_requested_cuda_device_when_available(self):
+        with patch("experiments.devices.torch.cuda.is_available", return_value=True), patch(
+            "experiments.devices.torch.cuda.get_device_name", return_value="Test GPU"
+        ):
+            device = resolve_device("cnn_double_dqn", "train", "cuda")
+        self.assertEqual(device["actual"], "cuda:0")
+        self.assertEqual(device["type"], "cuda")
+        self.assertEqual(device["name"], "Test GPU")
+
+    def test_cnn_evaluation_remains_cpu_when_cuda_is_requested(self):
+        with self.assertRaisesRegex(ValueError, "evaluation is forced to CPU"):
+            resolve_device("cnn_double_dqn", "evaluate", "cuda")
 
     def test_training_writes_checkpoint_table_summary_and_chart(self):
         output = self.output("train")

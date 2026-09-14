@@ -37,7 +37,7 @@ _NEW_AGENTS = {
     "double_q_compact_agent", "double_dqn_continuous_agent",
     "cnn_double_dqn_agent", "hybrid_dueling_double_dqn_agent",
     "double_q_agent", "double_dqn_continuous_v2_agent",
-    "double_dqn_continuous_v3_agent",
+    "double_dqn_continuous_v3_agent", "cnn_path_double_dqn_agent",
 }
 _BASELINE_FEATURE_IDS = {
     "discrete-v1", "discrete-q-v2", "discrete-objective-v1",
@@ -95,7 +95,14 @@ def resolve_agent_contract(
     module = import_module(f"agent_code.{agent}.callbacks")
     metadata = module.AGENT_METADATA
     fixed_feature_id = metadata["feature_id"]
-    requested_feature_id = normalize_feature_id(feature_id or fixed_feature_id)
+    # Agent-local experimental representations need not be globally registered
+    # in team_agent.feature_system.  They publish their complete immutable
+    # schema in callback metadata instead.
+    requested_feature_id = (
+        feature_id or fixed_feature_id
+        if metadata.get("feature_schema") is not None
+        else normalize_feature_id(feature_id or fixed_feature_id)
+    )
     if requested_feature_id != fixed_feature_id:
         raise ValueError(
             f"{agent} requires feature ID {fixed_feature_id!r}; "
@@ -104,12 +111,15 @@ def resolve_agent_contract(
         (s.COLS, s.ROWS)
         if fixed_feature_id in {"board-v1", "hybrid-v1"} else None
     )
+    resolved_schema = metadata.get("feature_schema")
+    if resolved_schema is None:
+        resolved_schema = feature_schema_contract(fixed_feature_id, board_shape)
     contract = AgentContract(
         agent=agent,
         algorithm=metadata["algorithm"],
         feature_id=fixed_feature_id,
         checkpoint_name=metadata["checkpoint_name"],
-        feature_schema=feature_schema_contract(fixed_feature_id, board_shape),
+        feature_schema=resolved_schema,
         network_spec=metadata["network_spec"],
         hyperparameters=dict(metadata["hyperparameters"]),
         trainable=bool(metadata.get("trainable", True)),

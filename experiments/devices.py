@@ -31,18 +31,14 @@ def resolve_device(algorithm: str, mode: str, requested: str) -> dict[str, Any]:
             label = labels[algorithm]
             raise ValueError(f"{label} always runs on CPU; CUDA is not applicable")
         return _metadata(requested, "cpu")
-    cpu_neural = {
-        "double_dqn", "cnn_double_dqn", "hybrid_dueling_double_dqn",
+    neural_algorithms = {
+        "dqn", "double_dqn", "cnn_double_dqn", "hybrid_dueling_double_dqn",
     }
-    if algorithm in cpu_neural:
-        if requested == "cuda":
-            raise ValueError(f"{algorithm} currently supports CPU only")
-        return _metadata(requested, "cpu")
-    if algorithm != "dqn":
+    if algorithm not in neural_algorithms:
         raise ValueError(f"Unsupported algorithm: {algorithm!r}")
     if mode == "evaluate":
         if requested == "cuda":
-            raise ValueError("DQN evaluation is forced to CPU for official compatibility")
+            raise ValueError("Neural-agent evaluation is forced to CPU for official compatibility")
         return _metadata(requested, "cpu")
     if mode != "train":
         raise ValueError(f"Unsupported mode: {mode!r}")

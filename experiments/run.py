@@ -143,7 +143,8 @@ def _checkpoint_feature_contract(
         return {"feature_id": None, "feature_schema": None, "runtime_adapter": None}
     feature_id = payload.get("feature_id", payload.get("feature_version"))
     schema = payload.get("feature_schema")
-    shape = tuple(schema.get("vector_shape", ())) if isinstance(schema, dict) else ()
+    raw_shape = schema.get("vector_shape") if isinstance(schema, dict) else None
+    shape = tuple(raw_shape) if raw_shape is not None else ()
     adapter = (
         "continuous-v2-legacy78"
         if feature_id == "continuous-v2" and shape == (78,) else None
@@ -1014,6 +1015,8 @@ def run_agent_session(
             stage=f"{task_name}_{mode}",
             replay_policy=replay_policy,
             replay_interval=replay_interval,
+            # The path CNN owns an agent-local feature/checkpoint contract.
+            # It deliberately does not use shared exact-resume snapshots.
             snapshot_config=(
                 {
                     "algorithm": algorithm,
@@ -1026,7 +1029,7 @@ def run_agent_session(
                     "source_hash": source_hash,
                     "task": task_name,
                 }
-                if training else None
+                if training and agent != "cnn_path_double_dqn_agent" else None
             ),
             navigation_diagnostics=navigation_diagnostics,
         )
