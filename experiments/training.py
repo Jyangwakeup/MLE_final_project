@@ -17,7 +17,9 @@ from experiments.devices import resolve_device
 from experiments.resume import (
     CHECKPOINT_SCHEMA_VERSION,
     load_migration_snapshot,
+    load_task3_transfer_snapshot,
     load_training_snapshot,
+    validate_task3_transfer,
     validate_v6_migration,
     validate_resume_transition,
 )
@@ -209,8 +211,16 @@ def run_training_mode(
         raise ValueError("Training accepts one --seed, not --seeds")
     if args.checkpoint is not None:
         raise ValueError("Training writes its own checkpoint; do not pass --checkpoint")
-    if args.resume_from is not None and args.init_from_checkpoint is not None:
-        raise ValueError("--resume-from and --init-from-checkpoint are mutually exclusive")
+    transfer_from = getattr(args, "transfer_task3_from", None)
+    resume_sources = [
+        value for value in (
+            args.resume_from, getattr(args, "migrate_resume_from", None), transfer_from)
+        if value is not None
+    ]
+    if len(resume_sources) > 1:
+        raise ValueError("resume, migration, and Task 3 transfer are mutually exclusive")
+    if resume_sources and args.init_from_checkpoint is not None:
+        raise ValueError("resume/transfer and --init-from-checkpoint are mutually exclusive")
     training = config.get("training", {})
     if not isinstance(training, dict):
         raise ValueError("config.training must be an object")
@@ -293,7 +303,9 @@ def run_training_mode(
         replay_interval, stopping_config,
     )
     migration_from = getattr(args, "migrate_resume_from", None)
-    if args.resume_from is None and migration_from is None:
+    if args.resume_from is None and migration_from is None and transfer_from is None:
+        if getattr(args, "distillation_dataset", None) is not None:
+            raise ValueError("--distillation-dataset requires --transfer-task3-from")
         return run_session(
             *positional, init_checkpoint=init_checkpoint, device_info=device_info,
             action_budget_config=budget_config,
@@ -308,12 +320,15 @@ def run_training_mode(
         )
 
     migrating = migration_from is not None
-    parent_run = Path(migration_from if migrating else args.resume_from)
+    transferring = transfer_from is not None
+    parent_run = Path(
+        transfer_from if transferring else migration_from if migrating else args.resume_from)
     if not parent_run.is_absolute():
         parent_run = Path.cwd() / parent_run
     parent_run = parent_run.resolve()
     snapshot = (
-        load_migration_snapshot(parent_run) if migrating
+        load_task3_transfer_snapshot(parent_run) if transferring
+        else load_migration_snapshot(parent_run) if migrating
         else load_training_snapshot(parent_run)
     )
     metadata_path = parent_run / "metadata.json"
@@ -350,9 +365,17 @@ def run_training_mode(
         "source_hash": source_hash,
         "network_spec": agent_contract.network_spec,
         "hyperparameters": agent_contract.hyperparameters,
+        "transfer_contract": (
+            snapshot.contract.get("transfer_contract")
+            if not transferring else None
+        ),
     }
     parent_status = parent_metadata.get("status", "unknown")
-    if migrating:
+    if transferring:
+        validate_task3_transfer(
+            snapshot.contract, child_contract, parent_status=parent_status)
+        resume_kind = "task3_transfer"
+    elif migrating:
         validate_v6_migration(
             snapshot.contract, child_contract, parent_status=parent_status)
         resume_kind = "v6_migration"
@@ -365,6 +388,10 @@ def run_training_mode(
         and snapshot.runner_state.get("early_stopping_config") != stopping_config
     ):
         raise ValueError("Same-Task resume requires the same early-stopping config")
+    distillation_path = getattr(args, "distillation_dataset", None)
+    if transferring and distillation_path is None:
+        distillation_path = (
+            parent_run.parent / f"task3_distillation_{parent_run.name}" / "teacher.npz")
     return run_session(
         *positional,
         resume_snapshot=snapshot,
@@ -381,6 +408,8 @@ def run_training_mode(
         reward_id_override=getattr(args, "reward_id", None),
         performance_stopping=performance_stopping,
         migration=migrating,
+        task3_transfer=transferring,
+        distillation_path=distillation_path,
     )
 
 

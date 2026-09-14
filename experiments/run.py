@@ -40,6 +40,7 @@ from experiments.resume import (
     commit_training_snapshot,
     materialize_learner_checkpoint,
     materialize_migrated_checkpoint,
+    materialize_task3_transfer_checkpoint,
 )
 from experiments.performance_stopping import (
     Task1PerformanceStopping, frozen_score_assessor, load_committed_history,
@@ -171,11 +172,15 @@ class ExperimentWorld(BombeRLeWorld):
     ):
         self._episodes_path = output / "episodes.jsonl"
         self._timing_path = output / "timing.jsonl"
+        self._phase_events_path = output / "phase_events.jsonl"
         self._episodes_path.touch(exist_ok=False)
         self._timing_path.touch(exist_ok=False)
+        self._phase_events_path.touch(exist_ok=False)
         self._episodes_file = self._episodes_path.open(
             "a", encoding="utf-8", buffering=1)
         self._timing_file = self._timing_path.open(
+            "a", encoding="utf-8", buffering=1)
+        self._phase_events_file = self._phase_events_path.open(
             "a", encoding="utf-8", buffering=1)
         self._experiment_run_id = run_id
         self._environment_seed = environment_seed
@@ -193,6 +198,7 @@ class ExperimentWorld(BombeRLeWorld):
         self._death_steps: dict[str, int] = {}
         self._death_causes: dict[str, list[dict[str, str]]] = {}
         self._bomb_owners_exploded_this_step = []
+        self._latest_phase_facts: dict[str, dict[str, Any]] = {}
         super().__init__(args, agents)
 
     def new_round(self) -> None:
@@ -201,6 +207,7 @@ class ExperimentWorld(BombeRLeWorld):
         self._navigation_previous_action = {}
         self._navigation_previous_target = {}
         self._bomb_owners_exploded_this_step = []
+        self._latest_phase_facts = {}
         super().new_round()
 
     def update_bombs(self) -> None:
@@ -276,7 +283,32 @@ class ExperimentWorld(BombeRLeWorld):
             getattr(runner, "fake_self", None), "last_safety_diagnostic", None)
         if isinstance(safety, dict):
             record["safety"] = safety
+        fake_self = getattr(runner, "fake_self", None)
+        if fake_self is not None and getattr(fake_self, "feature_id", None) == "continuous-phase-v1":
+            from agent_code.team_agent.phase import phase_facts_for_owner
+            phase = phase_facts_for_owner(fake_self, game_state)
+            x, y = game_state["self"][3]
+            phase["geometric_edge"] = bool(
+                x in {1, game_state["field"].shape[0] - 2}
+                or y in {1, game_state["field"].shape[1] - 2})
+            record["phase"] = phase
+            self._latest_phase_facts[agent.name] = phase
         self._timing_file.write(json.dumps(record, sort_keys=True) + "\n")
+
+    def send_game_events(self) -> None:
+        """Persist event/phase pairs before training callbacks consume events."""
+        for agent in self.agents:
+            phase = self._latest_phase_facts.get(agent.name)
+            if phase is None:
+                continue
+            self._phase_events_file.write(json.dumps({
+                "schema_version": "phase-events-v1",
+                "run_id": self._experiment_run_id,
+                "round_index": int(self.round), "step": int(self.step),
+                "agent_name": agent.name, "phase": phase,
+                "events": list(agent.events),
+            }, sort_keys=True) + "\n")
+        super().send_game_events()
 
     def poll_and_run_agents(self) -> None:
         states: dict[str, dict[str, Any]] = {}
@@ -479,6 +511,7 @@ class ExperimentWorld(BombeRLeWorld):
         finally:
             self._episodes_file.close()
             self._timing_file.close()
+            self._phase_events_file.close()
 
     def _read_new_training_rewards(self, training_path: Path) -> None:
         """Consume only CSV rows appended since the previous round."""
@@ -674,12 +707,24 @@ def _custom_agents(agent: str, opponents: Sequence[str], training: bool):
     return [(agent, training), *((opponent, False) for opponent in opponents)]
 
 
-def _task_settings(task: int, opponents: Sequence[str] | None):
+def _task_settings(
+    task: int, opponents: Sequence[str] | None, *,
+    task3_curriculum_stage: str | None = None,
+):
     task_config = TASKS[task]
     resolved_opponents = tuple(task_config["opponents"] if opponents is None else opponents)
     if task in {1, 2} and resolved_opponents:
         raise ValueError(f"Task {task} does not use opponents")
-    if task == 3 and opponents is not None:
+    if task3_curriculum_stage is not None:
+        if task != 3:
+            raise ValueError("Task 3 opponent curriculum is only valid for Task 3")
+        stages = {
+            "stationary": ("stationary_target_agent", "stationary_target_agent"),
+            "moving": ("no_bomb_random_agent", "no_bomb_random_agent"),
+            "standard": TASKS[3]["opponents"],
+        }
+        resolved_opponents = tuple(stages[task3_curriculum_stage])
+    elif task == 3 and opponents is not None:
         raise ValueError("Task 3 opponents are fixed to peaceful_agent and coin_collector_agent")
     if task == 4 and not resolved_opponents:
         raise ValueError("Task 4 requires at least one opponent")
@@ -755,6 +800,8 @@ def run_agent_session(
     progress_leave: bool = True,
     performance_stopping: dict[str, Any] | None = None,
     migration: bool = False,
+    task3_transfer: bool = False,
+    distillation_path: Path | None = None,
 ) -> Path:
     """Run one isolated training or frozen-evaluation session."""
     training = mode == "train"
@@ -882,8 +929,33 @@ def run_agent_session(
     if training:
         assert checkpoint is not None
         checkpoint.parent.mkdir(parents=True, exist_ok=True)
+    transfer_contract = None
     if resume_snapshot is not None:
-        if migration:
+        if task3_transfer:
+            if distillation_path is None:
+                raise ValueError("Task 3 transfer requires a distillation dataset")
+            transfer_contract = materialize_task3_transfer_checkpoint(
+                resume_snapshot, checkpoint,
+                child_contract={
+                    "algorithm": algorithm, "seed": seed, "task": task_name,
+                    "feature_id": contract.feature_id,
+                    "feature_schema": contract.feature_schema,
+                    "reward_id": reward_version, "reward_spec": resolved_rewards,
+                    "checkpoint_schema": CHECKPOINT_SCHEMA_VERSION,
+                    "actions": list(ACTIONS),
+                    "training_device_name": device_info["name"],
+                    "training_device_type": device_info["type"],
+                    "agent_seed": seed, "exploration_spec": exploration_spec,
+                    "safe_exploration": safe_exploration,
+                    "safety_spec": safety_spec, "n_step": n_step,
+                    "retention_spec": retention_spec,
+                    "training_budget": action_budget_config,
+                    "network_spec": contract.network_spec,
+                    "hyperparameters": contract.hyperparameters,
+                },
+                distillation_path=distillation_path,
+            )
+        elif migration:
             materialize_migrated_checkpoint(
                 resume_snapshot, checkpoint, training_budget=action_budget_config)
         else:
@@ -932,6 +1004,7 @@ def run_agent_session(
     metadata["retention_spec"] = retention_spec
     metadata["training_budget"] = action_budget_config
     metadata["performance_stopping"] = performance_stopping
+    metadata["transfer_contract"] = transfer_contract
     metadata["adaptation_triggers"] = list(adaptation_triggers)
     metadata["feature_id"] = contract.feature_id
     metadata["feature_schema"] = contract.feature_schema
@@ -990,6 +1063,7 @@ def run_agent_session(
             }
             if migration else None
         ),
+        "task3_transfer": transfer_contract,
     }
     metadata["config_sha256"] = hashlib.sha256(
         json.dumps(expanded, sort_keys=True, separators=(",", ":")).encode("utf-8")
@@ -1010,6 +1084,7 @@ def run_agent_session(
             "BOMBERMAN_SAFE_EXPLORATION", "BOMBERMAN_N_STEP",
             "BOMBERMAN_SAFETY_SPEC",
             "BOMBERMAN_RETENTION_SPEC", "BOMBERMAN_TRAINING_BUDGET",
+            "BOMBERMAN_CAPTURE_ENVIRONMENT_SEED", "BOMBERMAN_CAPTURE_TASK_ID",
         )
     }
     try:
@@ -1043,6 +1118,12 @@ def run_agent_session(
             retention_spec, sort_keys=True, separators=(",", ":"))
         os.environ["BOMBERMAN_TRAINING_BUDGET"] = json.dumps(
             action_budget_config, sort_keys=True, separators=(",", ":"))
+        if os.getenv("BOMBERMAN_DISTILLATION_CAPTURE"):
+            os.environ["BOMBERMAN_CAPTURE_ENVIRONMENT_SEED"] = str(
+                seeds["environment_seed"])
+            os.environ["BOMBERMAN_CAPTURE_TASK_ID"] = str(
+                {"coin_navigation": 1, "crate_navigation": 2,
+                 "weak_opponents": 3, "full_match": 4}[task_name])
         # Task 1 isolates coin navigation. Keep its action space free of bombs
         # for both training and frozen evaluation so agents are compared under
         # the same curriculum constraint.
@@ -1285,6 +1366,11 @@ def _parser() -> argparse.ArgumentParser:
         help="Round-3 failure signal recorded in metadata; repeat as needed",
     )
     parser.add_argument("--opponents", nargs="*")
+    parser.add_argument(
+        "--task3-opponent-curriculum",
+        choices=("stationary", "moving", "standard"),
+        help="Preregistered Task 3 combat-only fallback stage",
+    )
     parser.add_argument("--checkpoint", type=Path)
     parser.add_argument(
         "--device", choices=("auto", "cpu", "cuda"),
@@ -1298,6 +1384,14 @@ def _parser() -> argparse.ArgumentParser:
     resume_group.add_argument(
         "--migrate-resume-from", type=Path,
         help="Complete v6 Task 1 run migrated explicitly into a v7 child",
+    )
+    resume_group.add_argument(
+        "--transfer-task3-from", type=Path,
+        help="Complete v7 Task 2 run explicitly transferred into a v8 phase agent",
+    )
+    parser.add_argument(
+        "--distillation-dataset", type=Path,
+        help="Optional Task 1/2 teacher dataset; otherwise use the parent-derived path",
     )
     parser.add_argument(
         "--init-from-checkpoint", type=Path,
@@ -1327,7 +1421,11 @@ def main(argv: Sequence[str] | None = None) -> int:
         configured_seeds, configured_rounds = _configured_evaluation(
             json.loads(json.dumps(config))
         )
-        task_name, scenario, opponents = _task_settings(args.task, args.opponents)
+        if args.task3_opponent_curriculum is not None and args.mode != "train":
+            raise ValueError("Task 3 opponent curriculum is training-only")
+        task_name, scenario, opponents = _task_settings(
+            args.task, args.opponents,
+            task3_curriculum_stage=args.task3_opponent_curriculum)
         if args.mode == "train":
             if not agent_contract.trainable:
                 raise ValueError(f"Agent {args.agent!r} does not support training")
@@ -1340,7 +1438,8 @@ def main(argv: Sequence[str] | None = None) -> int:
                 source_hash=_source_hash(),
             )
         else:
-            if args.resume_from is not None or args.migrate_resume_from is not None:
+            if (args.resume_from is not None or args.migrate_resume_from is not None
+                    or args.transfer_task3_from is not None):
                 raise ValueError("resume and migration options are only valid with --mode train")
             if args.adaptation_trigger:
                 raise ValueError(

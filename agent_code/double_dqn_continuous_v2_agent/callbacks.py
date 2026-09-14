@@ -15,6 +15,7 @@ from agent_code.learning_common.runtime import (
     load_common_configuration, validate_checkpoint,
 )
 from agent_code.team_agent.exploration import epsilon_at
+from agent_code.team_agent.distillation_capture import maybe_capture_teacher_row
 from agent_code.team_agent.safety import mask_for_decision, survival_diagnostics
 from .features import ACTIONS, FEATURE_ID, FEATURE_SCHEMA, features_for_state
 
@@ -142,6 +143,7 @@ def act(self, game_state):
     physical = effective_legal_mask(
         features.legal_mask, ACTIONS, self.curriculum_allows_bomb)
     values = self.model.q_values(features.vector)
+    maybe_capture_teacher_row(self, game_state, values, physical)
     physical_indices = np.flatnonzero(physical).tolist()
     raw_best = max(float(values[index]) for index in physical_indices)
     raw_tied = [

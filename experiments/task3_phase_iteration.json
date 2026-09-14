@@ -1,0 +1,72 @@
+{
+  "schema_version": "task3-phase-iteration-v1",
+  "designation": "task3_phase_iteration_preregistration",
+  "agent": "double_dqn_phase_agent",
+  "algorithm": "double_dqn",
+  "checkpoint_schema": "training-resume-v8",
+  "feature": {"id": "continuous-phase-v1", "dimensions": 117, "parent_prefix_dimensions": 84},
+  "parents": {
+    "11": "runs/scoreconv_ddqn_cv2_r7_s11_t2_v7_814173b",
+    "22": "runs/task2winner_replica_cv2_r7_s22_t2_v7_814173b",
+    "33": "runs/task2winner_replica_cv2_r7_s33_t2_v7_814173b"
+  },
+  "distillation": {
+    "collection_seeds": {"start": 6000, "end": 6099},
+    "maximum_rows_per_task": 10000,
+    "td_batch_size": 32,
+    "teacher_batch_size": 32,
+    "temperature": 1.0,
+    "coefficient": 2.0
+  },
+  "round1": {
+    "training_seeds": [11, 22],
+    "initial_rounds": 500,
+    "shortlist_count": 2,
+    "shortlist_rounds": 1000,
+    "conditional_final_rounds": 1500,
+    "development_seeds": {"start": 13000, "end": 13019},
+    "eliminate_suicide_rate_above": 0.10,
+    "arms": [
+      {"id": "phase_r7_v1", "config": "experiments/configs/task3_phase_r7.json", "reward_id": "r7_safe_credit_sparse", "safety_version": "survival-mask-v1"},
+      {"id": "phase_r9_resource_v1", "config": "experiments/configs/task3_phase_r9_resource.json", "reward_id": "r9_phase_resource", "safety_version": "survival-mask-v1"},
+      {"id": "phase_r9_combat_v1", "config": "experiments/configs/task3_phase_r9_combat.json", "reward_id": "r9_phase_combat", "safety_version": "survival-mask-v1"},
+      {"id": "phase_r9_full_v1", "config": "experiments/configs/task3_phase_r9_full.json", "reward_id": "r9_phase_full", "safety_version": "survival-mask-v1"}
+    ]
+  },
+  "round2": {
+    "safety_trigger": "highest-ranked arm has any seed suicide_rate > 0.05",
+    "safety_control": {"version": "survival-mask-v2", "escape_area_fraction": 0.75},
+    "combat_only_trigger": "safety, resources, and retention pass; combat alone fails",
+    "opponent_curriculum": [
+      {"rounds": 250, "opponents": ["stationary_target_agent", "stationary_target_agent"]},
+      {"rounds": 250, "opponents": ["no_bomb_random_agent", "no_bomb_random_agent"]},
+      {"rounds": 500, "opponents": ["peaceful_agent", "coin_collector_agent"]}
+    ]
+  },
+  "round3": {"policy": "combine only independently successful round2 interventions", "maximum_design_rounds": 3},
+  "confirmation": {"training_seed": 33, "seeds": {"start": 14000, "end": 14019}, "require_each_training_seed": true},
+  "main_validation": {"single_candidate": true, "seeds": {"start": 15000, "end": 15099}, "test_runner_up_on_failure": false},
+  "gates": {
+    "task3_mean_score_gain": 0.5,
+    "task3_mean_kill_gain": 0.1,
+    "task3_first_place_rate_gain": 0.05,
+    "task3_coin_retention": 0.9,
+    "task3_crate_retention": 0.9,
+    "task1_score_retention": 0.9,
+    "task2_coin_retention": 0.9,
+    "task2_crate_retention": 0.9,
+    "task2_task3_suicide_rate": 0.05,
+    "task2_task3_bomb_survival_rate": 0.95,
+    "early_weighted_coins_per_100_retention": 0.9,
+    "early_weighted_crates_per_100_retention": 0.9,
+    "late_mobility_crisis_rate": 0.05,
+    "late_mobility_crisis_relative_reduction": 0.2,
+    "invalid_action_rate": 0.01,
+    "act_p95_seconds": 0.05,
+    "act_max_seconds": 0.5
+  },
+  "ranking": ["passed_seed_count_desc", "worst_suicide", "worst_score_gain_desc", "mean_score_desc", "combat_desc", "resources_desc", "mobility_desc", "retention_desc", "latency", "run_id"],
+  "outcome": {"candidate_name": "task3_winner_candidate", "winner_name": "task3_winner", "qualified_for_task4_after_main_validation": true, "launch_task4": false},
+  "task4_entry_contract": {"feature_id": "continuous-phase-v1", "reward_id": "winning_r9_variant", "safety": "winning_survival_mask", "opponents": ["rule_based_agent", "rule_based_agent", "rule_based_agent"]},
+  "reserved_final_test_seeds": {"start": 20000, "end": 20099, "used": false}
+}

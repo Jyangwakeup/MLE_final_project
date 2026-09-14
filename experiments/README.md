@@ -25,6 +25,7 @@ Task 1 的最终 reward 对照使用
 | `double_dqn_continuous_agent` | `double_dqn` | `continuous-v2`，84 维安全消融基线 | `final.pt` |
 | `double_dqn_continuous_v2_agent` | `double_dqn` | 新训练使用 84 维 `continuous-v2`；自动只读兼容旧 78 维 checkpoint | `final.pt` |
 | `double_dqn_continuous_v3_agent` | `double_dqn` | `continuous-v3`，显式安全余量消融 | `final.pt` |
+| `double_dqn_phase_agent` | `double_dqn` | `continuous-phase-v1`，117维Task 3/4局面阶段模型 | `final.pt` |
 | `cnn_double_dqn_agent` | `cnn_double_dqn` | `board-v1` | `final.pt` |
 | `hybrid_dueling_double_dqn_agent` | `hybrid_dueling_double_dqn` | `hybrid-v1` | `final.pt` |
 
@@ -106,7 +107,7 @@ C 需要 B 提供的最小信息是：
 - checkpoint 版本元数据；以及
 - 训练指标的输出位置。
 
-当前完整恢复 schema 为 `training-resume-v7`。Runner 只校验公开 checkpoint 合同，
+当前完整恢复 schema 为 `training-resume-v8`。Runner 只校验公开 checkpoint 合同，
 不导入 `agent_code/q_learning_agent/` 或 `agent_code/dqn_agent/` 的私有学习实现。
 
 ### 运行时配置
@@ -452,7 +453,7 @@ python3 experiments/run.py \
 但按同一 seed 重建环境/对手随机流、从回合 1 开始并重置早停。只允许同 Task 或
 `1→2→3→4`，且算法、训练/Agent seed、动作顺序、特征版本、奖励版本、完整奖励表、
 训练设备、`source_commit`、`source_hash` 和 resume schema 必须一致。探索、n-step、回放保留和预算只可按直接 Task 晋级的预注册合同改变。
-当前 schema 为 `training-resume-v7`；v1–v6 及冻结 final checkpoint 默认不能精确续训。完整 v6 Task 1 run 只能通过显式 `--migrate-resume-from` 建立 v7 子 run；普通 `--resume-from` 不自动迁移。
+当前 schema 为 `training-resume-v8`；v7及更早版本和冻结 final checkpoint 默认不能精确续训。84维Task 2 v7父模型只能通过 `--transfer-task3-from` 进入117维阶段模型；普通 `--resume-from` 不跨特征或奖励合同。
 同 Task 的早停配置也必须保持一致。
 
 每回合边界发布一代完整快照，`resume/` 只保留最新两代。最新一代校验失败时自动回退
@@ -669,6 +670,12 @@ Task 3 首轮试验由 `task3_pilot.json` 预注册，并使用
 `python -m experiments.task3_pilot validate-preregistration` 检查配置，评估结束后用该工具的
 `assess` 和 `select` 子命令生成逐seed证据、门槛结果及开发集候选。开发集候选不是Task 3 winner，
 也不能直接进入Task 4。
+
+Task 3安全迭代由 `task3_phase_iteration.json` 预注册。四个首轮配置位于
+`configs/task3_phase_*.json`；先用 `collect_task3_distillation.py` 在训练专用
+seeds 6000–6099采集教师事实，再用 `--transfer-task3-from` 创建v8子链。
+动作数只控制epsilon。开发、三seed确认、主验证分别使用13000、14000和15000号段，
+20000–20099继续封存。
 奖励实验使用独立配置文件：
 
 ```text
@@ -690,6 +697,9 @@ Reward ID 和完整 spec 都是 checkpoint 与 resume 契约的一部分。更�
 | `r6_safe_sparse/potential` | 箱区/危险势、炸弹信用与分离死亡代价 | Task 2 成对安全比较 |
 | `r7_safe_credit_sparse/potential` | 不可逃放弹 −20 | 第三轮自杀失败分支 |
 | `r8_safe_constrained` | r7 sparse 去掉预测放弹正奖；可避免必死动作 −20；自杀压制同帧正奖 | 生存约束精确信用消融 |
+| `r9_phase_resource` | 按可观察局面平滑缩放金币/炸箱/击杀，加入前期资源势 | Task 3 阶段奖励第一级 |
+| `r9_phase_combat` | r9 resource 加中后期对手机动性战斗势 | Task 3 阶段奖励第二级 |
+| `r9_phase_full` | r9 combat 加后期自身机动性势 | Task 3 阶段奖励第三级 |
 
 完整数值、势能公式和边界语义见
 [`agent_code/team_agent/README.md`](../agent_code/team_agent/README.md#公共奖励)。不同 Reward 的
