@@ -18,12 +18,15 @@ def resolve_device(algorithm: str, mode: str, requested: str) -> dict[str, Any]:
     """Validate a requested device and return metadata for the actual device."""
     if requested not in DEVICE_CHOICES:
         raise ValueError(f"device must be one of {', '.join(DEVICE_CHOICES)}")
-    if algorithm in {"q_learning", "double_q_learning", "legal_random"}:
+    if algorithm in {
+        "q_learning", "double_q_learning", "legal_random", "official_baseline",
+    }:
         if requested == "cuda":
             labels = {
                 "q_learning": "Q-learning",
                 "double_q_learning": "Double Q-learning",
                 "legal_random": "Legal random",
+                "official_baseline": "Official baseline",
             }
             label = labels[algorithm]
             raise ValueError(f"{label} always runs on CPU; CUDA is not applicable")

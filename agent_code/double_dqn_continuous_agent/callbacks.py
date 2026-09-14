@@ -5,6 +5,9 @@ import numpy as np
 from agent_code.learning_common.neural_agent import (
     act_neural, cached_features, setup_neural_agent,
 )
+from agent_code.learning_common.temporal_reward import (
+    advance_frozen_temporal_state, prepare_frozen_temporal_state,
+)
 from .features import ACTIONS, FEATURE_ID, FEATURE_SCHEMA, features_for_state
 from .model import build_learner
 
@@ -19,8 +22,8 @@ HYPERPARAMETERS = {
     "epsilon_decay_action_steps": 80_000,
 }
 NETWORK_SPEC = {
-    "id": "continuous-mlp-128x2-v1", "input_shape": [70],
-    "layers": ["Linear(70,128)", "ReLU", "Linear(128,128)", "ReLU", "Linear(128,6)"],
+    "id": "continuous-mlp-128x2-v2", "input_shape": [84],
+    "layers": ["Linear(84,128)", "ReLU", "Linear(128,128)", "ReLU", "Linear(128,6)"],
     "dueling": False, "output_actions": 6,
 }
 AGENT_METADATA = {
@@ -40,10 +43,19 @@ def setup(self):
 
 
 def act(self, game_state):
-    return act_neural(
+    if not self.train:
+        prepare_frozen_temporal_state(self, game_state)
+    extractor = lambda state: features_for_state(
+        state, previous_action=getattr(self, "previous_action", None),
+        previous_position=getattr(self, "reward_previous_position", None),
+        previous_coin_target=getattr(self, "reward_previous_coin_target", None))
+    action = act_neural(
         self, game_state, actions=ACTIONS, hyperparameters=HYPERPARAMETERS,
-        extractor=features_for_state, state_value=lambda features: features.vector,
+        extractor=extractor, state_value=lambda features: features.vector,
     )
+    if not self.train:
+        advance_frozen_temporal_state(self, action, game_state)
+    return action
 
 
 def state_to_features(game_state):
@@ -57,4 +69,7 @@ def legal_actions(game_state):
 
 
 def _features_for(self, game_state):
-    return cached_features(self, game_state, features_for_state)
+    return cached_features(self, game_state, lambda state: features_for_state(
+        state, previous_action=getattr(self, "previous_action", None),
+        previous_position=getattr(self, "reward_previous_position", None),
+        previous_coin_target=getattr(self, "reward_previous_coin_target", None)))

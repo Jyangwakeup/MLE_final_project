@@ -96,7 +96,7 @@ class QLearningAgentConfigurationTestCase(unittest.TestCase):
     def test_setup_uses_runner_agent_seed_and_exploration_schedule(self):
         specification = (
             '{"version":"linear-v1","start":1.0,"end":0.05,'
-            '"decay_action_steps":1920000}'
+            '"decay_action_steps":80000}'
         )
         agent = SimpleNamespace(train=True, logger=Mock())
 
@@ -108,7 +108,7 @@ class QLearningAgentConfigurationTestCase(unittest.TestCase):
 
         self.assertEqual(agent.agent_seed, 17)
         self.assertEqual(agent.rng.getstate(), random.Random(17).getstate())
-        self.assertEqual(agent.exploration_spec["decay_action_steps"], 1_920_000)
+        self.assertEqual(agent.exploration_spec["decay_action_steps"], 80_000)
     @staticmethod
     def _checkpoint(reward_id="r4_anti_oscillation"):
         return {

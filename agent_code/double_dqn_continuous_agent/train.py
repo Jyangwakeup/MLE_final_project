@@ -16,16 +16,24 @@ def setup_training(self):
 
 
 def game_events_occurred(self, old_game_state, self_action, new_game_state, events):
+    extractor = lambda state: features_for_state(
+        state, previous_action=getattr(self, "previous_action", None),
+        previous_position=getattr(self, "reward_previous_position", None),
+        previous_coin_target=getattr(self, "reward_previous_coin_target", None))
     neural_game_events(
         self, old_game_state, self_action, new_game_state, events,
-        actions=ACTIONS, extractor=features_for_state, state_value=_state,
+        actions=ACTIONS, extractor=extractor, state_value=_state,
     )
 
 
 def end_of_round(self, last_game_state, last_action, events):
+    extractor = lambda state: features_for_state(
+        state, previous_action=getattr(self, "previous_action", None),
+        previous_position=getattr(self, "reward_previous_position", None),
+        previous_coin_target=getattr(self, "reward_previous_coin_target", None))
     neural_end_round(
         self, last_game_state, last_action, events, actions=ACTIONS,
-        extractor=features_for_state, state_value=_state, algorithm=ALGORITHM,
+        extractor=extractor, state_value=_state, algorithm=ALGORITHM,
         feature_id=FEATURE_ID, feature_schema=FEATURE_SCHEMA,
         hyperparameters=HYPERPARAMETERS, network_spec=NETWORK_SPEC,
     )

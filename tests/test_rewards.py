@@ -17,6 +17,10 @@ from agent_code.team_agent.rewards import (
     resolve_reward_spec,
     reward_from_events,
 )
+from agent_code.learning_common.temporal_reward import (
+    init_temporal_reward_state, temporal_reward_context,
+)
+from types import SimpleNamespace
 
 
 def make_state(position=(3, 3), coins=(), bombs=()):
@@ -93,7 +97,7 @@ class SharedRewardTestCase(unittest.TestCase):
     def test_coin3_and_shaped_rewards_value_collected_coin_at_three(self):
         for reward_id in (
             "r1_coin3", "r1_coin3_no_crate", "r2_balanced",
-            "r3_potential", "r4_anti_oscillation",
+            "r3_potential", "r4_anti_oscillation", "r5_conditional_loop",
         ):
             spec = REWARD_SPECS[reward_id]
             if reward_id:
@@ -103,6 +107,8 @@ class SharedRewardTestCase(unittest.TestCase):
     def test_experiment_configs_cover_active_training_rewards(self):
         paths = {
             "r2_balanced": Path("experiments/configs/reward_r2_balanced.json"),
+            "r5_conditional_loop": Path(
+                "experiments/configs/reward_r5_conditional_loop.json"),
             "r3_potential": Path("experiments/configs/reward_r3_potential.json"),
             "r4_anti_oscillation": Path(
                 "experiments/configs/reward_r4_anti_oscillation.json"),
@@ -115,6 +121,106 @@ class SharedRewardTestCase(unittest.TestCase):
         self.assertTrue({
             "r1", "r1_no_crate", "r1_coin3", "r1_coin3_no_crate",
         }.issubset(REWARD_SPECS))
+
+    def test_conditional_loop_requires_all_four_conditions(self):
+        owner = SimpleNamespace()
+        init_temporal_reward_state(owner)
+        first = make_state(position=(3, 3), coins=((8, 3),))
+        middle = make_state(position=(4, 3), coins=((8, 3),))
+        returned = make_state(position=(3, 3), coins=((8, 3),))
+
+        initial = temporal_reward_context(
+            owner, "RIGHT", first, middle, [], reward_id="r5_conditional_loop")
+        loop = temporal_reward_context(
+            owner, "LEFT", middle, returned, [], reward_id="r5_conditional_loop")
+        self.assertFalse(initial["conditional_loop"])
+        self.assertTrue(loop["conditional_loop"])
+
+        owner.reward_previous_position = (3, 3)
+        owner.reward_previous_coin_target = (8, 3)
+        changed_target = make_state(position=(4, 3), coins=((7, 3),))
+        self.assertFalse(temporal_reward_context(
+            owner, "LEFT", changed_target, returned, [],
+            reward_id="r5_conditional_loop")["conditional_loop"])
+
+        owner.reward_previous_position = (3, 3)
+        owner.reward_previous_coin_target = (8, 3)
+        danger = make_state(
+            position=(4, 3), coins=((8, 3),), bombs=(((4, 6), 0),))
+        self.assertFalse(temporal_reward_context(
+            owner, "LEFT", danger, returned, [],
+            reward_id="r5_conditional_loop")["conditional_loop"])
+
+    def test_conditional_wait_only_penalizes_safe_avoidable_wait(self):
+        owner = SimpleNamespace()
+        init_temporal_reward_state(owner)
+        safe = make_state(position=(3, 3), coins=((5, 3),))
+        context = temporal_reward_context(
+            owner, "WAIT", safe, safe, [], reward_id="r5_conditional_loop")
+        self.assertTrue(context["avoidable_wait"])
+
+        delayed_danger = make_state(
+            position=(3, 3), coins=((5, 3),), bombs=(((3, 6), 1),))
+        context = temporal_reward_context(
+            owner, "WAIT", delayed_danger, delayed_danger, [],
+            reward_id="r5_conditional_loop")
+        self.assertFalse(context["avoidable_wait"])
+
+        self.assertFalse(context["conditional_loop"])
+        self.assertTrue(context["diagnostic"]["wait_next_danger_count"])
+
+        unsafe_shortcut = make_state(
+            position=(3, 3), coins=((5, 3),), bombs=(((4, 6), 0),))
+        context = temporal_reward_context(
+            owner, "WAIT", unsafe_shortcut, unsafe_shortcut, [],
+            reward_id="r5_conditional_loop")
+        self.assertFalse(context["avoidable_wait"])
+
+    def test_conditional_reward_adds_only_explicit_flags(self):
+        baseline = reward_from_events([e.WAITED], "r5_conditional_loop")
+        spec = resolve_reward_spec("r5_conditional_loop")
+        self.assertAlmostEqual(
+            reward_from_events(
+                [e.WAITED], "r5_conditional_loop", conditional_loop=True)
+            - baseline,
+            spec["conditional_loop_penalty"],
+        )
+        self.assertAlmostEqual(
+            reward_from_events(
+                [e.WAITED], "r5_conditional_loop", avoidable_wait=True)
+            - baseline,
+            spec["avoidable_wait_penalty"],
+        )
+        with self.assertRaisesRegex(ValueError, "mutually exclusive"):
+            reward_from_events(
+                [e.WAITED], "r5_conditional_loop",
+                conditional_loop=True, avoidable_wait=True)
+
+    def test_r3_variants_preserve_the_r3_potential_contract(self):
+        baseline = resolve_reward_spec("r3_potential")
+        for reward_id in ("r4_anti_oscillation", "r5_conditional_loop"):
+            spec = resolve_reward_spec(reward_id)
+            with self.subTest(reward_id=reward_id):
+                for key, value in baseline.items():
+                    self.assertEqual(spec[key], value)
+
+    def test_task1_paired_configs_only_change_reward_contract(self):
+        baseline_path = Path(
+            "experiments/configs/task1_ddqn_continuous_r3_baseline.json")
+        candidate_path = Path(
+            "experiments/configs/task1_ddqn_continuous_r5_conditional_loop.json")
+        baseline = json.loads(baseline_path.read_text(encoding="utf-8"))
+        candidate = json.loads(candidate_path.read_text(encoding="utf-8"))
+        for config in (baseline, candidate):
+            self.assertEqual(config["algorithm"], "double_dqn")
+            self.assertEqual(config["feature_id"], "continuous-v2")
+            self.assertEqual(config["seed"], 11)
+            self.assertEqual(config["training"]["n_rounds"], 1000)
+            self.assertFalse(config["training"]["early_stopping"]["enabled"])
+        for key in ("reward_id", "reward_version"):
+            baseline.pop(key)
+            candidate.pop(key)
+        self.assertEqual(baseline, candidate)
 
     def test_r3_potential_rewards_progress_without_action_rules(self):
         old_state = make_state(position=(3, 3), coins=((5, 3),))
@@ -140,7 +246,7 @@ class SharedRewardTestCase(unittest.TestCase):
             actual, spec["step"] + spec["got_killed"]
             - _state_potential(state, spec))
 
-    def test_r4_penalizes_only_flagged_repeated_oscillation(self):
+    def test_r4_anti_oscillation_penalizes_only_flagged_reversal(self):
         old_state = make_state(position=(3, 3), coins=((8, 3),))
         new_state = make_state(position=(2, 3), coins=((8, 3),))
         baseline = reward_from_events(
@@ -154,7 +260,7 @@ class SharedRewardTestCase(unittest.TestCase):
             penalized - baseline,
             resolve_reward_spec("r4_anti_oscillation")["oscillation_penalty"])
 
-    def test_r4_idle_penalty_starts_on_second_wait_and_caps(self):
+    def test_r4_anti_oscillation_idle_penalty_starts_on_second_wait_and_caps(self):
         state = make_state(position=(3, 3), coins=((8, 3),))
         values = [reward_from_events(
             [e.WAITED], "r4_anti_oscillation",

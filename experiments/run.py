@@ -672,7 +672,7 @@ def run_agent_session(
     opponents: Sequence[str],
     scenario: str,
     n_rounds: int,
-    checkpoint: Path,
+    checkpoint: Path | None,
     task_name: str,
     replay_policy: str = "none",
     replay_interval: int = DEFAULT_REPLAY_INTERVAL,
@@ -689,6 +689,8 @@ def run_agent_session(
     adaptation_triggers: Sequence[str] = (),
     feature_id_override: str | None = None,
     reward_id_override: str | None = None,
+    show_progress: bool = True,
+    progress_leave: bool = True,
 ) -> Path:
     """Run one isolated training or frozen-evaluation session."""
     training = mode == "train"
@@ -701,7 +703,7 @@ def run_agent_session(
         raise ValueError(f"replay_policy must be one of {', '.join(REPLAY_POLICIES)}")
     replay_interval = _positive_int(replay_interval, "replay_interval")
     specs = _custom_agents(agent, opponents, training)
-    checkpoint = checkpoint.resolve()
+    checkpoint = None if checkpoint is None else checkpoint.resolve()
     expanded = _read_config(config_path)
     algorithm = _algorithm_name(agent)
     training_config = expanded.get("training", {})
@@ -776,13 +778,15 @@ def run_agent_session(
         raise ValueError("Resume snapshots are only valid in training mode")
     if (resume_snapshot is None) != (resume_kind is None):
         raise ValueError("Resume snapshot and resume kind must be provided together")
-    if not training and not checkpoint.is_file():
+    if not training and checkpoint is not None and not checkpoint.is_file():
         raise FileNotFoundError(f"Evaluation checkpoint does not exist: {checkpoint}")
     checkpoint_reward_contract = (
-        None if training else _checkpoint_reward_contract(checkpoint, algorithm)
+        None if training or checkpoint is None
+        else _checkpoint_reward_contract(checkpoint, algorithm)
     )
     output.mkdir(parents=True, exist_ok=False)
     if training:
+        assert checkpoint is not None
         checkpoint.parent.mkdir(parents=True, exist_ok=True)
     if resume_snapshot is not None:
         materialize_learner_checkpoint(resume_snapshot, checkpoint)
@@ -803,7 +807,7 @@ def run_agent_session(
     expanded["execution"] = {
         "agent": agent,
         "allow_bomb": task_name != "coin_navigation",
-        "checkpoint": str(checkpoint),
+        "checkpoint": None if checkpoint is None else str(checkpoint),
         "n_rounds": n_rounds,
         "opponents": list(opponents),
         "replay_interval": replay_interval,
@@ -833,7 +837,7 @@ def run_agent_session(
     metadata["reward_id"] = reward_version
     metadata["reward_version"] = reward_version
     metadata["action_order"] = list(ACTIONS)
-    metadata["checkpoint"] = str(checkpoint)
+    metadata["checkpoint"] = None if checkpoint is None else str(checkpoint)
     metadata["network_spec"] = contract.network_spec
     metadata["hyperparameters"] = contract.hyperparameters
     metadata["curriculum_action_mask"] = {
@@ -885,7 +889,10 @@ def run_agent_session(
     }
     try:
         (output / "logs").mkdir()
-        os.environ["BOMBERMAN_CHECKPOINT"] = str(checkpoint)
+        if checkpoint is None:
+            os.environ.pop("BOMBERMAN_CHECKPOINT", None)
+        else:
+            os.environ["BOMBERMAN_CHECKPOINT"] = str(checkpoint)
         os.environ["BOMBERMAN_CONFIG"] = str(config_path.resolve())
         os.environ["BOMBERMAN_RUN_DIR"] = str(output.resolve())
         os.environ["BOMBERMAN_RUN_ID"] = output.name
@@ -967,10 +974,11 @@ def run_agent_session(
         stopping = CompositeTrainingStop(early_stopping, action_budget)
         completed_rounds = world_controller(
             world, n_rounds, gui=None, every_step=False, turn_based=False,
-            make_video=False, update_interval=0.0, show_progress=True,
+            make_video=False, update_interval=0.0, show_progress=show_progress,
+            progress_leave=progress_leave,
             stop_condition=stopping if stopping.conditions else None,
         )
-        if training and not checkpoint.is_file():
+        if training and (checkpoint is None or not checkpoint.is_file()):
             raise RuntimeError(f"Training did not write checkpoint: {checkpoint}")
         if training:
             analyze_training(output)
@@ -1039,7 +1047,7 @@ def run_agent_evaluation(
     agent: str,
     opponents: Sequence[str],
     scenario: str,
-    checkpoint: Path,
+    checkpoint: Path | None,
     task_name: str,
     replay_policy: str = "all",
     replay_interval: int = DEFAULT_REPLAY_INTERVAL,

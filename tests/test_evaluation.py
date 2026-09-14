@@ -6,6 +6,7 @@ from pathlib import Path
 
 
 from experiments.analyze import analyze_runs, summarize_runs
+from experiments.compare_evaluations import compare_evaluations
 
 
 def _episode(run_id, round_index, agents, round_steps=10):
@@ -209,6 +210,48 @@ class ExperimentAnalysisTest(unittest.TestCase):
             self.assertEqual(row["coin_distance_reducing_rate"], 0.5)
             self.assertEqual(row["coin_target_switch_rate"], 0.5)
             self.assertEqual(row["multiple_nearest_coin_rate"], 0.5)
+            self.assertEqual(row["right_action_count"], 1)
+            self.assertEqual(row["wait_action_count"], 1)
+            self.assertEqual(row["wait_action_rate_all_actions"], 0.5)
+            self.assertEqual(row["median_longest_wait_streak"], 1)
+            self.assertEqual(row["min_longest_wait_streak"], 1)
+            self.assertEqual(row["max_longest_wait_streak"], 1)
+
+    def test_distribution_metrics_are_written_for_multi_seed_evaluations(self):
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            runs = []
+            for index, score in enumerate((1, 3, 8), 1):
+                run_id = f"seed-{index}"
+                runs.append(self._write_run(
+                    temporary_directory, run_id,
+                    [_episode(run_id, 1, [_agent("a", score, coins=score)])],
+                ))
+            output = Path(temporary_directory) / "summary"
+            analyze_runs(runs, output)
+            with (output / "summary.csv").open(newline="", encoding="utf-8") as file:
+                average = list(csv.DictReader(file))[-1]
+            self.assertEqual(float(average["median_score"]), 3.0)
+            self.assertLess(float(average["mean_score_ci95_low"]), 4.0)
+            self.assertGreater(float(average["mean_score_ci95_high"]), 4.0)
+
+    def test_paired_evaluation_comparison_matches_environment_seeds(self):
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            root = Path(temporary_directory)
+            candidate = self._write_run(
+                root, "candidate", [_episode("candidate", 1, [_agent("a", 5, coins=5)])])
+            reference = self._write_run(
+                root, "reference", [_episode("reference", 1, [_agent("b", 3, coins=3)])])
+            for directory, agent in ((candidate, "a"), (reference, "b")):
+                (directory / "metadata.json").write_text(json.dumps({
+                    "task": "coin_navigation", "agent": agent,
+                }), encoding="utf-8")
+            report = compare_evaluations(
+                [candidate], [reference], root / "comparison", bootstrap_samples=100)
+            score = next(row for row in report["metrics"] if row["metric"] == "score")
+            self.assertEqual(score["mean_difference"], 2.0)
+            self.assertEqual(score["candidate_wins"], 1)
+            self.assertEqual(report["replication_unit"], "environment_seed")
+            self.assertTrue((root / "comparison" / "paired_comparison.csv").is_file())
 
     def test_missing_or_malformed_episodes_fail_clearly(self):
         with tempfile.TemporaryDirectory() as temporary_directory:

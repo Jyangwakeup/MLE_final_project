@@ -88,16 +88,19 @@ class ObjectiveFeatureTests(unittest.TestCase):
         from agent_code.learning_common.action_history import action_history_for_state
         self.assertEqual(action_history_for_state(owner, next_round), (None, 0))
 
-    def test_continuous_v2_uses_raw_delta_and_history(self):
+    def test_continuous_v2_uses_remote_history_contract(self):
         state = make_game_state(position=(3, 3))
         state["coins"] = [(5, 3)]
         old = extract_features(state, "continuous-v1").vector
-        new = continuous_v2(state, previous_action="WAIT", wait_streak=2).vector
-        self.assertEqual(new.shape, (78,))
-        self.assertGreater(new[17], old[17])
-        self.assertEqual(new[17], 1.0)
-        self.assertEqual(new[75], 1.0)
-        self.assertAlmostEqual(float(new[77]), 2.0 / 3.0)
+        new = continuous_v2(
+            state, previous_action="WAIT", previous_position=(3, 2),
+            previous_coin_target=(5, 3),
+        ).vector
+        self.assertEqual(new.shape, (84,))
+        np.testing.assert_array_equal(new[:70], old)
+        self.assertEqual(new[74], 1.0)
+        self.assertEqual(new[77], 1.0)
+        self.assertEqual(new[78], 1.0)
 
     def test_standard_dqn_builds_a_60_input_network_for_objective_features(self):
         with tempfile.TemporaryDirectory() as directory:

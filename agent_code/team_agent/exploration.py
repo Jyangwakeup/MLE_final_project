@@ -15,7 +15,7 @@ DEFAULT_EXPLORATION_SPEC = {
     "version": EXPLORATION_VERSION,
     "start": 1.0,
     "end": 0.05,
-    "decay_action_steps": 1_920_000,
+    "decay_action_steps": 80_000,
 }
 AGENT_SEED_ENV = "BOMBERMAN_AGENT_SEED"
 EXPLORATION_SPEC_ENV = "BOMBERMAN_EXPLORATION_SPEC"

@@ -6,7 +6,8 @@ from typing import Any
 
 import numpy as np
 
-from agent_code.team_agent.feature_system.common import distance_to_targets
+from agent_code.team_agent.danger import predict_danger
+from agent_code.team_agent.feature_system.common import build_context, distance_to_targets
 
 
 MOVE_DELTAS = {
@@ -26,6 +27,8 @@ def navigation_diagnostic(
     *,
     previous_target: tuple[int, int] | None = None,
     previous_action: str | None = None,
+    previous_position: tuple[int, int] | None = None,
+    actual_position: tuple[int, int] | None = None,
 ) -> tuple[dict[str, Any], tuple[int, int] | None]:
     """Describe one chosen action without changing policy inputs or RNG state.
 
@@ -95,6 +98,39 @@ def navigation_diagnostic(
             for coin in game_state.get("coins", ())
         }
     )
+    danger = predict_danger(game_state).danger
+    current_safe = not bool(danger[1, position[0], position[1]])
+    target_continues = target is not None and target == previous_target
+    conditional_loop = bool(
+        action in MOVE_DELTAS and actual_position is not None
+        and actual_position != position
+        and previous_position is not None and actual_position == previous_position
+        and current_safe and target_continues)
+
+    wait_disposition = "not_wait"
+    avoidable_wait = False
+    if action == "WAIT":
+        if not current_safe:
+            wait_disposition = "current_danger"
+        elif danger[2, position[0], position[1]]:
+            wait_disposition = "next_danger"
+        elif target is None:
+            wait_disposition = "no_reachable_coin"
+        else:
+            context = build_context(game_state)
+            target_distances = distance_to_targets(blocked, (target,))
+            current_distance = float(target_distances[position])
+            safe_progress = any(
+                context.legal_mask[index]
+                and context.movement_reachability[move].survives_horizon
+                and float(target_distances[
+                    position[0] + MOVE_DELTAS[move][0],
+                    position[1] + MOVE_DELTAS[move][1],
+                ]) < current_distance
+                for index, move in enumerate(MOVE_DELTAS)
+            )
+            avoidable_wait = bool(safe_progress)
+            wait_disposition = "penalized" if safe_progress else "no_safe_progress_move"
     record = {
         "coin_count_before": len(game_state.get("coins", ())),
         "nearest_coin_distance_before": distance_before,
@@ -115,5 +151,8 @@ def navigation_diagnostic(
             and previous_action == OPPOSITE_ACTION[action]
         ),
         "movement_legal_in_observed_state": bool(movement_legal),
+        "conditional_loop": conditional_loop,
+        "avoidable_wait": avoidable_wait,
+        "wait_disposition": wait_disposition,
     }
     return record, target
