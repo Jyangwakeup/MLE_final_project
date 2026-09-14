@@ -13,7 +13,7 @@ cd "${SLURM_SUBMIT_DIR:?Please submit this job from the project root}"
 
 train_seed="${TRAIN_SEED:-11}"
 target_steps="${TARGET_STEPS:-100000}"
-run_id="${RUN_ID:-cnn_path_t1_e1_s${train_seed}_j${SLURM_JOB_ID}}"
+run_id="${RUN_ID:-cnn_path_t1_r7_s${train_seed}_j${SLURM_JOB_ID}}"
 
 srun .venv/bin/python - <<'PY'
 import torch
@@ -23,7 +23,7 @@ print(f"PyTorch={torch.__version__}; CUDA={torch.version.cuda}; GPU={torch.cuda.
 PY
 
 srun .venv/bin/python -u -m experiments.run \
-  --config experiments/configs/cnn_path_task1_r3.json \
+  --config experiments/configs/cnn_path_task1_r7.json \
   --mode train --task 1 --agent cnn_path_double_dqn_agent --device cuda \
   --seed "$train_seed" --n-rounds 500 \
   --target-stage-action-steps "$target_steps" --min-rounds 250 \
