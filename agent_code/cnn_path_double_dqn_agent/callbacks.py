@@ -6,11 +6,16 @@ import os
 
 import torch
 
-from agent_code.learning_common.neural_agent import act_neural
 from agent_code.learning_common.runtime import (
-    adopt_checkpoint_reward, adopt_checkpoint_safety, load_common_configuration,
+    adopt_checkpoint_reward, adopt_checkpoint_safety, effective_legal_mask,
+    load_common_configuration,
 )
+from agent_code.learning_common.action_history import record_selected_action
+from agent_code.team_agent.exploration import epsilon_at
 from agent_code.team_agent.feature_system import ACTIONS
+from agent_code.team_agent.safety import (
+    mask_for_decision, resolve_safety_spec, survival_diagnostics,
+)
 
 from .features import (
     BOARD_SHAPE, FEATURE_ID, FEATURE_SCHEMA, features_for_state,
@@ -66,6 +71,8 @@ def setup(self):
             raise ValueError(f"path CNN checkpoint has incompatible {name}")
     if checkpoint.get("reward_id", checkpoint.get("reward_version")) != self.reward_id:
         raise ValueError("path CNN checkpoint has incompatible reward ID")
+    if self.train and checkpoint.get("safety_spec") != resolve_safety_spec(self.safety_spec):
+        raise ValueError("path CNN checkpoint has incompatible safety specification")
     self.model.load_checkpoint(checkpoint, training=self.train)
     self.total_action_steps = int(checkpoint.get("total_action_steps", checkpoint["action_steps"]))
     self.stage_action_steps = int(checkpoint.get("stage_action_steps", self.total_action_steps))
@@ -75,10 +82,53 @@ def setup(self):
 
 
 def act(self, game_state):
-    action = act_neural(
-        self, game_state, actions=ACTIONS, hyperparameters=HYPERPARAMETERS,
-        extractor=_extract(self), state_value=lambda value: value.board,
-    )
+    features = features_for_state(self, game_state)
+    physical = effective_legal_mask(
+        features.legal_mask, ACTIONS, self.curriculum_allows_bomb)
+    values = self.model.q_values(features.board)
+    physical_indices = np.flatnonzero(physical).tolist()
+    raw_best = max(float(values[index]) for index in physical_indices)
+    raw_index = next(index for index in physical_indices
+                     if float(values[index]) == raw_best)
+    exploring = False
+    if self.train:
+        epsilon = epsilon_at(self.stage_action_steps, self.exploration_spec)
+        self.stage_action_steps += 1
+        self.total_action_steps += 1
+        self.action_steps = self.total_action_steps
+        exploring = self.rng.random() < epsilon
+    legal, fallback = mask_for_decision(
+        game_state, physical, self.safety_spec,
+        allow_bomb=self.curriculum_allows_bomb, exploring=exploring)
+    enabled = self.safety_spec["mode"] == "all" or (
+        self.safety_spec["mode"] == "exploration" and exploring)
+    if enabled:
+        self.safety_decisions += 1
+        self.safety_fallbacks += int(fallback)
+        if exploring:
+            self.safe_exploration_decisions += 1
+            self.safe_exploration_fallbacks += int(fallback)
+    indices = np.flatnonzero(legal).tolist()
+    if exploring:
+        selected = self.rng.choice(indices)
+    else:
+        masked = values.copy()
+        masked[~legal] = -np.inf
+        best = max(float(masked[index]) for index in indices)
+        tied = [index for index in indices if float(masked[index]) == best]
+        selected = self.rng.choice(tied) if self.train else tied[0]
+    intervention = bool(enabled and not fallback and not legal[raw_index])
+    self.safety_interventions += int(intervention)
+    action = ACTIONS[selected]
+    self.last_safety_diagnostic = {
+        "raw_action": ACTIONS[raw_index], "selected_action": action,
+        "intervened": intervention, "fallback": bool(fallback),
+        "physical_mask": physical.astype(bool).tolist(),
+        "decision_mask": legal.astype(bool).tolist(),
+        **survival_diagnostics(
+            game_state, physical, allow_bomb=self.curriculum_allows_bomb),
+    }
+    record_selected_action(self, game_state, action)
     record_position(self, game_state)
     return action
 
