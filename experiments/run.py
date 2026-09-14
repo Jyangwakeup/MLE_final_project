@@ -284,7 +284,10 @@ class ExperimentWorld(BombeRLeWorld):
         if isinstance(safety, dict):
             record["safety"] = safety
         fake_self = getattr(runner, "fake_self", None)
-        if fake_self is not None and getattr(fake_self, "feature_id", None) == "continuous-phase-v1":
+        if fake_self is not None and (
+            getattr(fake_self, "feature_id", None) == "continuous-phase-v1"
+            or self._navigation_diagnostics
+        ):
             from agent_code.team_agent.phase import phase_facts_for_owner
             phase = phase_facts_for_owner(fake_self, game_state)
             x, y = game_state["self"][3]
