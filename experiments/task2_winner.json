@@ -1,0 +1,165 @@
+{
+  "schema_version": "task2-winner-v1",
+  "designation": "task2_winner",
+  "designated_at": "2026-09-14T17:23:27Z",
+  "qualified_for_task3": true,
+  "source": {
+    "commit": "814173b618fb38990db7a5b7ee200369c8b25289",
+    "hash": "b3dafd35f05214bac1058d7e16407e8cb113322a10c590efb748a51eb6e9364e"
+  },
+  "evaluation_evidence": {
+    "schema_version": "task2-winner-evaluation-v1",
+    "path": "experiments/task2_winner_evaluations.csv",
+    "sha256": "f529b39670644461d95a6678e42cb2429b0fa4f081ca4c83052751670d9a3998",
+    "rows": 640,
+    "development_rows": 240,
+    "main_validation_rows": 400
+  },
+  "contracts": {
+    "agent": "double_dqn_continuous_v2_agent",
+    "algorithm": "double_dqn",
+    "checkpoint_schema": "training-resume-v7",
+    "feature": {
+      "id": "continuous-v2",
+      "vector_shape": [84],
+      "schema_sha256": "4e5507d4e1683b12fead285292380bb193e899447664a8c3227139356e2227de"
+    },
+    "reward": {
+      "id": "r7_safe_credit_sparse",
+      "spec": {
+        "coin_collected": 3.0,
+        "crate_destroyed": 0.2,
+        "got_killed": -10.0,
+        "invalid_action": -0.1,
+        "killed_opponent": 5.0,
+        "killed_self": -20.0,
+        "potential_crate_weight": 0.25,
+        "potential_danger_weight": 1.0,
+        "potential_gamma": 0.95,
+        "step": -0.01,
+        "unsafe_bomb_penalty": -20.0,
+        "useful_bomb_crate_cap": 3,
+        "useful_bomb_per_crate": 0.2
+      },
+      "spec_sha256": "f0d18dffc31cf6dd37c989c8e3fac4ef726256aabdb9cf3fb345eb8b5a8cfb12"
+    },
+    "safety": {
+      "version": "survival-mask-v1",
+      "mode": "all",
+      "horizon": 7,
+      "fallback": "physical_q",
+      "spec_sha256": "24430b67d9f9ade78dd23992416133b0cb6c3474f08ae12ec5aa16937448b8f4"
+    },
+    "network_spec_sha256": "e6ff120ad2c32e6d079cba03f038adc7036de61d75886daf37c4fe5a62f894ed",
+    "hyperparameters_sha256": "e089149e86f5f6e08dccc8bd1f341d0508e8aa15401395e28b245670bc00f1e8"
+  },
+  "replications": [
+    {
+      "training_seed": 11,
+      "task1": {
+        "run": "runs/scoreconv_ddqn_cv2_r7_s11_t1_v7_814173b",
+        "checkpoint": "runs/scoreconv_ddqn_cv2_r7_s11_t1_v7_814173b/checkpoints/final.pt",
+        "checkpoint_sha256": "e35a332f54207ad5c507c76304c997a773625148aec29205b72e2f19d710781e",
+        "resume_generation": "generation-00000850",
+        "resume_generation_hash": "8c961d9fad5a6f7e786fe65526205377a7ba6e298e9a2b161f91af16423d0505"
+      },
+      "task2": {
+        "run": "runs/scoreconv_ddqn_cv2_r7_s11_t2_v7_814173b",
+        "checkpoint": "runs/scoreconv_ddqn_cv2_r7_s11_t2_v7_814173b/checkpoints/final.pt",
+        "checkpoint_sha256": "91fc3d5e346768ed8928a63baf1b62f6a11bd1f2e816c1fb8d27a16ab00479f1",
+        "resume_generation": "generation-00000500",
+        "resume_generation_hash": "18b470e6484e5e396180499cfd22326defbdff688e3e0d991df78b0524d3ac08"
+      },
+      "development_runs": {
+        "parent_task1_gate": "runs/gate_scoreconv_ddqn_cv2_r7_s11_t1_814173b",
+        "child_task1": "runs/eval20_cv2_r7_backtest_t1_814173b",
+        "parent_task2": "runs/eval20_cv2_r7_parent_t2_814173b",
+        "child_task2": "runs/eval20_cv2_r7_child_t2_814173b"
+      },
+      "development": {"mean_coins": 6.3, "mean_crates": 88.45, "suicide_rate": 0.0, "task1_retention": 1.0, "balanced_capability": 3.15, "passed": true}
+    },
+    {
+      "training_seed": 22,
+      "task1": {
+        "run": "runs/task2winner_replica_cv2_r7_s22_t1_v7_814173b",
+        "checkpoint": "runs/task2winner_replica_cv2_r7_s22_t1_v7_814173b/checkpoints/final.pt",
+        "checkpoint_sha256": "cc2490bbbc0445ba3880ab6a7a656d8e5a47cc24b969910d7214e89779953d0f",
+        "resume_generation": "generation-00000300",
+        "resume_generation_hash": "22de52b9b37b5cc6606caef21e8f169a06c78df6920d39252f7a93583b28c058"
+      },
+      "task2": {
+        "run": "runs/task2winner_replica_cv2_r7_s22_t2_v7_814173b",
+        "checkpoint": "runs/task2winner_replica_cv2_r7_s22_t2_v7_814173b/checkpoints/final.pt",
+        "checkpoint_sha256": "74cf3fca33acb59f003949006c7401a5a9f58c1785dd8b294b548bd7bd307715",
+        "resume_generation": "generation-00000500",
+        "resume_generation_hash": "fb7d7147f2a8647709847110cbfa38a86379b8a4fc2bff453c275e5171ca8dcf"
+      },
+      "development_runs": {
+        "parent_task1_gate": "runs/task2winner_gate_cv2_r7_s22_t1_814173b",
+        "child_task1": "runs/task2winner_dev_cv2_r7_s22_backtest_t1_814173b",
+        "parent_task2": "runs/task2winner_dev_cv2_r7_s22_parent_t2_814173b",
+        "child_task2": "runs/task2winner_dev_cv2_r7_s22_child_t2_814173b"
+      },
+      "development": {"mean_coins": 7.15, "mean_crates": 94.55, "suicide_rate": 0.0, "task1_retention": 1.0, "balanced_capability": 3.575, "passed": true}
+    },
+    {
+      "training_seed": 33,
+      "task1": {
+        "run": "runs/task2winner_replica_cv2_r7_s33_t1_v7_814173b",
+        "checkpoint": "runs/task2winner_replica_cv2_r7_s33_t1_v7_814173b/checkpoints/final.pt",
+        "checkpoint_sha256": "7f8848ae90ab87ef38d2e53b40aa84a650170762574a0b9699125d602b8d072d",
+        "resume_generation": "generation-00000300",
+        "resume_generation_hash": "0564a86dcbeccb69fab2a7fe1324d582b04dc9e137b54549ed59193eca5a7fda"
+      },
+      "task2": {
+        "run": "runs/task2winner_replica_cv2_r7_s33_t2_v7_814173b",
+        "checkpoint": "runs/task2winner_replica_cv2_r7_s33_t2_v7_814173b/checkpoints/final.pt",
+        "checkpoint_sha256": "afa8092e2be3c1402ec634c988d3c739f1563fe62b4eb4b7b59a19ef8e21a94c",
+        "resume_generation": "generation-00000500",
+        "resume_generation_hash": "b4b73a03798b0c73b68dfd3cd9169162d62becc305f49fa7e38e8eb334a6baa3"
+      },
+      "development_runs": {
+        "parent_task1_gate": "runs/task2winner_gate_cv2_r7_s33_t1_814173b",
+        "child_task1": "runs/task2winner_dev_cv2_r7_s33_backtest_t1_814173b",
+        "parent_task2": "runs/task2winner_dev_cv2_r7_s33_parent_t2_814173b",
+        "child_task2": "runs/task2winner_dev_cv2_r7_s33_child_t2_814173b"
+      },
+      "development": {"mean_coins": 6.15, "mean_crates": 83.75, "suicide_rate": 0.0, "task1_retention": 1.0, "balanced_capability": 3.075, "passed": true}
+    }
+  ],
+  "development_validation": {
+    "evaluation_seeds": {"start": 10000, "end": 10019},
+    "total_rounds_per_evaluation_role": 60,
+    "all_training_seeds_passed": true,
+    "aggregate": {"mean_coins": 6.533333333333333, "mean_crates": 88.91666666666667, "crate_gain": 88.91666666666667, "suicide_rate": 0.0, "zero_bomb_round_rate": 0.0, "survived_bomb_rate": 1.0, "task1_retention": 1.0},
+    "ci95": {"mean_coins": [6.05, 7.0], "mean_crates": [84.31666666666666, 93.36708333333333], "crate_gain": [84.31666666666666, 93.36708333333333], "suicide_rate": [0.0, 0.0], "zero_bomb_round_rate": [0.0, 0.0], "survived_bomb_rate": [1.0, 1.0], "task1_retention": [1.0, 1.0]},
+    "selection_order": ["suicide_rate", "zero_bomb_round_rate", "survived_bomb_rate_desc", "balanced_capability_desc", "mean_coins_desc", "task1_retention_desc", "act_p95_seconds", "run_id"],
+    "checkpoint_rank": [22, 11, 33],
+    "selected_training_seed": 22
+  },
+  "winner": {
+    "training_seed": 22,
+    "task1_run": "runs/task2winner_replica_cv2_r7_s22_t1_v7_814173b",
+    "task2_run": "runs/task2winner_replica_cv2_r7_s22_t2_v7_814173b",
+    "source_checkpoint": "runs/task2winner_replica_cv2_r7_s22_t2_v7_814173b/checkpoints/final.pt",
+    "published_checkpoint": "agent_code/double_dqn_continuous_v2_agent/final.pt",
+    "checkpoint_sha256": "74cf3fca33acb59f003949006c7401a5a9f58c1785dd8b294b548bd7bd307715",
+    "resume_generation": "generation-00000500",
+    "resume_generation_hash": "fb7d7147f2a8647709847110cbfa38a86379b8a4fc2bff453c275e5171ca8dcf"
+  },
+  "main_validation": {
+    "evaluation_seeds": {"start": 11000, "end": 11099},
+    "bootstrap": {"samples": 10000, "rng_seed": 20260913, "quantiles": [0.025, 0.975]},
+    "runs": {
+      "parent_task1": "runs/task2winner_main_s22_parent_t1_814173b",
+      "child_task1": "runs/task2winner_main_s22_child_t1_814173b",
+      "parent_task2": "runs/task2winner_main_s22_parent_t2_814173b",
+      "child_task2": "runs/task2winner_main_s22_child_t2_814173b"
+    },
+    "point": {"parent_task1_mean_score": 50.0, "child_task1_mean_score": 50.0, "task1_retention": 1.0, "parent_task2_mean_coins": 0.0, "parent_task2_mean_crates": 0.0, "child_task2_mean_coins": 7.25, "child_task2_mean_crates": 100.26, "crate_gain": 100.26, "suicide_rate": 0.0, "zero_bomb_round_rate": 0.0, "survived_bomb_rate": 1.0},
+    "ci95": {"parent_task1_mean_score": [50.0, 50.0], "child_task1_mean_score": [50.0, 50.0], "task1_retention": [1.0, 1.0], "parent_task2_mean_coins": [0.0, 0.0], "parent_task2_mean_crates": [0.0, 0.0], "child_task2_mean_coins": [6.96, 7.53], "child_task2_mean_crates": [97.48, 103.02], "crate_gain": [97.48, 103.02], "suicide_rate": [0.0, 0.0], "zero_bomb_round_rate": [0.0, 0.0], "survived_bomb_rate": [1.0, 1.0]},
+    "engineering": {"invalid_action_rate": 0.0, "act_p95_seconds": 0.0063779354095458984, "act_max_seconds": 0.020582199096679688, "timeouts": 0, "skipped_actions": 0},
+    "passed": true
+  },
+  "reserved_final_test_seeds": {"start": 20000, "end": 20099, "used": false}
+}

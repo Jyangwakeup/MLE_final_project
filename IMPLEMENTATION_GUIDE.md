@@ -453,6 +453,12 @@ seed 11 优胜配置才从零复制 seeds 22/33。三训练 seed × 20 开发 se
 
 当前完整恢复协议为 `training-resume-v7`，在 v6 的 Safety/Feature/Reward/网络/历史/replay/RNG 合同上增加 Task 1 分数收敛配置与已提交评估历史。周期评估先引用不可变 generation/hash，再原子发布 assessment；评估失败或半成品不计数。普通续训拒绝 v6，显式迁移入口只接受完整 v6 Task 1 快照。
 
+### 8.8 Task 2 winner 复现与主验证结果
+
+`continuous-v2 + r7_safe_credit_sparse + survival-mask-v1/all` 在提交 `814173b` 上从零复制训练 seeds 22/33。两条 Task 1 均在第 200、250、300 局的冻结监控中连续取得 50 分，并在独立 seeds 10000–10019 上再次取得 50 分；随后两条 Task 2 均在 500 局、200000 阶段动作时完成。加上已有 seed 11，三个训练 seed 的开发集结果分别为：seed 11 `6.30` coins / `88.45` crates，seed 22 `7.15` / `94.55`，seed 33 `6.15` / `83.75`；三者自杀率均为 0%、炸弹存活率均为 100%、Task 1 保留率均为 100%。60 局汇总为 `6.53` coins、`88.92` crates，bootstrap 95% 区间分别为 `[6.05, 7.00]` 和 `[84.32, 93.37]`。
+
+按预注册顺序选择 seed 22 checkpoint 作为 **Task 2 winner candidate**，并且只对该 checkpoint 使用 seeds 11000–11099 做一次主验证。结果为 Task 2 `7.25` coins（95% CI `[6.96, 7.53]`）、`100.26` crates（`[97.48, 103.02]`）、0% 自杀、0% 零放弹局、100% 炸弹存活；Task 1 父子均为 50 分，保留率 100%。invalid、timeout 和 skipped 均为 0，完整 act P95 为 `6.38 ms`、最大值 `20.58 ms`。全部联合门槛通过，因此该 seed 22 checkpoint 正式指定为 **Task 2 winner**。仓库内可直接加载的权重位于 [`agent_code/double_dqn_continuous_v2_agent/final.pt`](agent_code/double_dqn_continuous_v2_agent/final.pt)，机器清单与 640 局精简证据分别见 [`experiments/task2_winner.json`](experiments/task2_winner.json) 和 [`experiments/task2_winner_evaluations.csv`](experiments/task2_winner_evaluations.csv)。最终测试 seeds 20000–20099 仍未使用，本轮未启动 Task 3。
+
 ## 9. 核心实验如何分配和解释
 
 | 实验 | 负责人 | 保持不变 | 唯一变化 | 要回答的问题 |
