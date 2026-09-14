@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import Callable, Optional
 
 from . import (
-    board_v1, continuous_v1, discrete_compact_v1, discrete_q_v2, discrete_v1,
+    board_v1, continuous_v1, continuous_v2, discrete_compact_v1, discrete_q_v2, discrete_v1,
     hybrid_v1,
 )
 from .types import FeatureSchema
@@ -18,6 +18,7 @@ _MODULES = {
     discrete_q_v2.FEATURE_ID: discrete_q_v2,
     discrete_compact_v1.FEATURE_ID: discrete_compact_v1,
     continuous_v1.FEATURE_ID: continuous_v1,
+    continuous_v2.FEATURE_ID: continuous_v2,
     board_v1.FEATURE_ID: board_v1,
     hybrid_v1.FEATURE_ID: hybrid_v1,
 }

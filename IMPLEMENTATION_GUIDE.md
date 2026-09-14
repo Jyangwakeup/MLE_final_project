@@ -206,7 +206,7 @@ Q(key, action) += alpha * (target - Q(key, action))
 
 DQN：40→64→64→6，隐藏层 ReLU，输出层线性。回放容量 20000，均匀采样 batch=64；累计 2000 次自身决策后开始，在每条完成转移进入模型时至多进行一次参数更新。Adam，学习率 0.0003，Huber/SmoothL1 loss；目标网络不计算梯度，每 1000 次成功参数更新硬同步。预测当前动作只 `gather` 已执行动作的 Q 值；下一状态取目标网络的合法最大值，终止样本不加下一状态价值。
 
-Q 表 α=0.15；两模型 γ=0.95。两算法共用 `linear-v1`：决策步 0 时 ε=1.0，在 1,920,000 次自身决策内线性降到 0.05，之后保持 0.05。该区间是单条课程最多 6,000×400=2,400,000 动作上界的 80%。跨 Task 保留累计决策步，不重置 ε。
+Q 表 α=0.15；两模型 γ=0.95。两算法共用 `linear-v1`：决策步 0 时 ε=1.0，在 80,000 次自身决策内线性降到 0.05，之后保持 0.05。跨 Task 保留累计决策步，不重置 ε。
 
 CPU 模式固定 PyTorch 单线程；Q 表路径延迟导入或完全不导入 PyTorch，以便导出不需要神经网络依赖的包。训练和评估速度要分别测量。
 
@@ -349,13 +349,13 @@ Task 3 同时使用两名弱对手，是团队对官方 SHOULD 课程路线的�
 `formal_<q|dqn>_discrete_v1_r1_coin3_s<seed>_t<task>_r<local-rounds>`；同配置追加可增加
 `_cont<rounds>`，故障重跑增加 `_retryN`。名称只作索引，累计局数和谱系以 metadata 为准。
 
-### 8.3 每阶段 20-seed 门槛
+### 8.3 每阶段 5-seed × 20 局门槛
 
-阶段门槛在 CPU 上使用 seeds 10000–10019，每个 seed 恰好一局；同一候选的父子比较复用完全相同的 seed 列表。
+阶段门槛在 CPU 上使用 seeds 10000–10004，每个 seed 运行 20 局；同一候选的父子比较复用完全相同的 seed 列表和局数。
 
 Task 1 coin3 checkpoint 与合法均匀随机基线均使用专用
 `stage_gate_coin3.json`，固定 `discrete-v1 + r1_coin3` 并启用只读导航诊断。主判据仍只有
-20-seed 平均金币相对同 seed 随机基线至少 `+2`；不得根据结果事后改变门槛。辅助诊断报告
+100 局平均金币相对同 seed 随机基线至少 `+2`；不得根据结果事后改变门槛。辅助诊断报告
 每 100 步金币、每枚金币步数、收完 50 枚金币的比例与完成步数、`WAIT` 率、立即反向率、
 缩短最近金币距离的动作率、仍可追踪旧目标时的目标切换率，以及多个等距最近金币的出现率。
 这些指标只用于定位失败原因，不单独决定晋级。
@@ -498,7 +498,7 @@ conda run --no-capture-output -n mle python experiments/run.py --config experime
 conda run --no-capture-output -n mle python experiments/run.py --config experiments/configs/stage_gate_coin3.json --mode evaluate --task 1 --agent q_learning_agent --checkpoint runs/formal_q_discrete_v1_r1_coin3_s11_t1_r500/checkpoints/final.pkl --run-id gate_formal_q_discrete_v1_r1_coin3_s11_t1
 ```
 
-主验证改用 `main_validation.json`，且 Task 4 对三名规则对手运行；冻结唯一胜者后才改用 `final_test.json`。配置已分别固定 10000–10099 和 20000–20099，每个 seed 一局，不再使用“5 seeds×20 局”。正式训练不使用 `--silence-errors`，也不在本轮指南更新时自动启动。
+主验证改用 `main_validation.json`，且 Task 4 对三名规则对手运行；冻结唯一胜者后才改用 `final_test.json`。主验证和最终测试配置分别固定 10000–10099 和 20000–20099，每个 seed 一局；阶段门槛使用“5 seeds × 20 局”。正式训练不使用 `--silence-errors`，也不在本轮指南更新时自动启动。
 
 最终打包工具尚未实现；在其实现并通过独立目录检查前，不得把下列官方框架手工检查当成完整打包验收。选中 Q-learning 或 DQN 后将 `<selected_agent>` 替换为唯一胜出目录：
 

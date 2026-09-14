@@ -46,8 +46,8 @@ class FormalConfigurationTestCase(unittest.TestCase):
         self.assertEqual(config["reward_id"], "r1_coin3")
         self.assertEqual(config["reward_version"], "r1_coin3")
         self.assertTrue(config["evaluation"]["navigation_diagnostics"])
-        self.assertEqual(config["evaluation"]["seeds"], list(range(10_000, 10_020)))
-        self.assertEqual(config["evaluation"]["n_rounds"], 1)
+        self.assertEqual(config["evaluation"]["seeds"], list(range(10_000, 10_005)))
+        self.assertEqual(config["evaluation"]["n_rounds"], 20)
         self.assertEqual(config["evaluation"]["device"], "cpu")
 
     def test_formal_training_budget_and_exploration_are_pre_registered(self):
@@ -61,7 +61,7 @@ class FormalConfigurationTestCase(unittest.TestCase):
             "version": "linear-v1",
             "start": 1.0,
             "end": 0.05,
-            "decay_action_steps": 1_920_000,
+            "decay_action_steps": 80_000,
         })
         self.assertEqual(config["curriculum"], {
             "training_seeds": [11, 22, 33],
@@ -69,17 +69,17 @@ class FormalConfigurationTestCase(unittest.TestCase):
             "retry_rounds": {"1": 125, "2": 250, "3": 375, "4": 750},
         })
 
-    def test_evaluation_configs_use_distinct_one_round_world_seeds(self):
+    def test_evaluation_configs_use_registered_world_seeds_and_rounds(self):
         cases = (
-            ("stage_gate.json", list(range(10_000, 10_020))),
-            ("main_validation.json", list(range(10_000, 10_100))),
-            ("final_test.json", list(range(20_000, 20_100))),
+            ("stage_gate.json", list(range(10_000, 10_005)), 20),
+            ("main_validation.json", list(range(10_000, 10_100)), 1),
+            ("final_test.json", list(range(20_000, 20_100)), 1),
         )
-        for name, expected_seeds in cases:
+        for name, expected_seeds, expected_rounds in cases:
             with self.subTest(name=name):
                 config = json.loads((CONFIG_ROOT / name).read_text())
                 self.assertEqual(config["evaluation"]["device"], "cpu")
-                self.assertEqual(config["evaluation"]["n_rounds"], 1)
+                self.assertEqual(config["evaluation"]["n_rounds"], expected_rounds)
                 self.assertEqual(config["evaluation"]["seeds"], expected_seeds)
 
 

@@ -102,7 +102,7 @@ class DQNTrainingTaskTestCase(unittest.TestCase):
         agent = SimpleNamespace(train=True, logger=Mock())
         specification = (
             '{"version":"linear-v1","start":1.0,"end":0.05,'
-            '"decay_action_steps":1920000}'
+            '"decay_action_steps":80000}'
         )
 
         with (
@@ -117,7 +117,7 @@ class DQNTrainingTaskTestCase(unittest.TestCase):
         model_type.assert_called_once_with(INPUT_SIZE, 6, seed=17, device="cpu")
         self.assertEqual(agent.agent_seed, 17)
         self.assertEqual(agent.rng.getstate(), random.Random(17).getstate())
-        self.assertEqual(agent.exploration_spec["decay_action_steps"], 1_920_000)
+        self.assertEqual(agent.exploration_spec["decay_action_steps"], 80_000)
 
     def test_shared_flag_disables_bombs_during_training_and_evaluation(self):
         for training in (True, False):

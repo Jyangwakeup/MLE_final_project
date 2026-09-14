@@ -12,7 +12,7 @@
   "training": {
     "device": "cpu",
     "n_rounds": null,
-    "exploration": {"version": "linear-v1", "start": 1.0, "end": 0.05, "decay_action_steps": 1920000},
+    "exploration": {"version": "linear-v1", "start": 1.0, "end": 0.05, "decay_action_steps": 80000},
     "early_stopping": {"enabled": false}
   }
 }

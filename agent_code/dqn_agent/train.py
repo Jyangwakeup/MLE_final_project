@@ -8,6 +8,8 @@ from typing import List
 import torch
 
 from agent_code.learning_common.temporal_reward import (
+    DIAGNOSTIC_COUNT_FIELDS, accumulate_reward_diagnostics,
+    observed_terminal_state, reset_reward_diagnostics,
     reset_temporal_reward_state, temporal_reward_context,
 )
 from agent_code.team_agent.exploration import epsilon_at, resolve_exploration_spec
@@ -21,6 +23,7 @@ from .model import Transition
 TRAINING_FIELDS = (
     "schema_version", "algorithm", "round", "reward", "action_steps",
     "epsilon", "q_states", "loss", "updates", "checkpoint",
+    *DIAGNOSTIC_COUNT_FIELDS, "conditional_loop_reward", "avoidable_wait_reward",
 )
 
 
@@ -30,6 +33,7 @@ def setup_training(self):
     self.pending = None
     self.ended_key = None
     reset_temporal_reward_state(self)
+    reset_reward_diagnostics(self)
 
 
 def game_events_occurred(self, old_game_state: dict, self_action: str,
@@ -43,7 +47,11 @@ def game_events_occurred(self, old_game_state: dict, self_action: str,
         _submit(self, self.pending[1])
     old_features = _features_for(self, old_game_state)
     reward_context = temporal_reward_context(
-        self, self_action, old_game_state, new_game_state, events)
+        self, self_action, old_game_state, new_game_state, events,
+        reward_id=getattr(self, "reward_id", REWARD_VERSION))
+    diagnostic = reward_context.pop("diagnostic")
+    if diagnostic:
+        accumulate_reward_diagnostics(self, diagnostic, self.reward_spec)
     reward = reward_from_events(
         events, getattr(self, "reward_id", REWARD_VERSION), old_game_state=old_game_state,
         new_game_state=new_game_state, terminal=False, **reward_context)
@@ -63,9 +71,18 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
         if key != self.ended_key:
             if self.pending is not None and self.pending[0] != key:
                 _submit(self, self.pending[1])
+            reward_context = {}
+            if getattr(self, "reward_id", REWARD_VERSION) == "r5_conditional_loop":
+                _features_for(self, last_game_state)
+                reward_context = temporal_reward_context(
+                    self, last_action, last_game_state,
+                    observed_terminal_state(last_game_state, last_action, events),
+                    events, reward_id=self.reward_id)
+                diagnostic = reward_context.pop("diagnostic")
+                accumulate_reward_diagnostics(self, diagnostic, self.reward_spec)
             reward = reward_from_events(
                 events, getattr(self, "reward_id", REWARD_VERSION), old_game_state=last_game_state,
-                new_game_state=None, terminal=True)
+                new_game_state=None, terminal=True, **reward_context)
             features = _features_for(self, last_game_state)
             _submit(self, Transition(
                 features.vector.copy(), ACTIONS.index(last_action), reward,
@@ -111,6 +128,7 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
 def _append_training_metrics(self, last_game_state) -> None:
     run_dir = os.getenv("BOMBERMAN_RUN_DIR")
     if not run_dir:
+        reset_reward_diagnostics(self)
         return
     path = Path(run_dir) / "training.csv"
     record = {
@@ -125,6 +143,7 @@ def _append_training_metrics(self, last_game_state) -> None:
         "loss": "" if self.last_loss is None else self.last_loss,
         "updates": self.model.updates,
         "checkpoint": str(self.model_file),
+        **self.reward_diagnostics,
     }
     write_header = not path.exists()
     with path.open("a", newline="", encoding="utf-8") as file:
@@ -132,6 +151,7 @@ def _append_training_metrics(self, last_game_state) -> None:
         if write_header:
             writer.writeheader()
         writer.writerow(record)
+    reset_reward_diagnostics(self)
 
 
 def _submit(self, transition: Transition):

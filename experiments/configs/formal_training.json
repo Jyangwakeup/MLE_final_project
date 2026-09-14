@@ -6,8 +6,8 @@
   "checkpoint": null,
   "evaluation": {
     "device": "cpu",
-    "seeds": [10000, 10001, 10002, 10003, 10004, 10005, 10006, 10007, 10008, 10009, 10010, 10011, 10012, 10013, 10014, 10015, 10016, 10017, 10018, 10019],
-    "n_rounds": 1
+    "seeds": [10000, 10001, 10002, 10003, 10004],
+    "n_rounds": 20
   },
   "training": {
     "device": "cpu",
@@ -16,7 +16,7 @@
       "version": "linear-v1",
       "start": 1.0,
       "end": 0.05,
-      "decay_action_steps": 1920000
+      "decay_action_steps": 80000
     },
     "early_stopping": {"enabled": false}
   },

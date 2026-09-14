@@ -88,6 +88,23 @@ REWARD_SPECS = {
         "idle_penalty_step": -0.04,
         "idle_penalty_cap": 3,
     },
+    "r5_conditional_loop": {
+        "step": -0.01,
+        "coin_collected": 3.0,
+        "coin_found": 0.25,
+        "killed_opponent": 5.0,
+        "crate_destroyed": 0.1,
+        "killed_self": -7.0,
+        "got_killed": -5.0,
+        "survived_round": 0.25,
+        "invalid_action": -0.2,
+        "potential_gamma": 0.95,
+        "potential_coin_weight": 0.5,
+        "potential_crate_weight": 0.25,
+        "potential_safety_weight": 0.25,
+        "conditional_loop_penalty": -0.08,
+        "avoidable_wait_penalty": -0.04,
+    },
 }
 DEATH_EVENTS = frozenset((e.KILLED_SELF, e.GOT_KILLED))
 
@@ -179,11 +196,19 @@ def reward_from_events(
     terminal: bool = False,
     repeated_oscillation: bool = False,
     idle_streak: int = 0,
+    conditional_loop: bool = False,
+    avoidable_wait: bool = False,
+    diagnostic: dict | None = None,
 ) -> float:
     """Convert framework events and optional temporal context into a scalar."""
     spec = resolve_reward_spec(version)
+    if conditional_loop and avoidable_wait:
+        raise ValueError(
+            "conditional loop and avoidable WAIT penalties are mutually exclusive")
     reward = _event_reward(events, spec)
-    if version in {"r3_potential", "r4_anti_oscillation"} and old_game_state is not None:
+    if version in {
+        "r3_potential", "r4_anti_oscillation", "r5_conditional_loop",
+    } and old_game_state is not None:
         old_potential = _state_potential(old_game_state, spec)
         next_potential = (
             0.0 if terminal or new_game_state is None
@@ -195,4 +220,8 @@ def reward_from_events(
     if version == "r4_anti_oscillation" and idle_streak >= 2:
         multiplier = min(idle_streak - 1, int(spec["idle_penalty_cap"]))
         reward += spec["idle_penalty_step"] * multiplier
+    if version == "r5_conditional_loop" and conditional_loop:
+        reward += spec["conditional_loop_penalty"]
+    if version == "r5_conditional_loop" and avoidable_wait:
+        reward += spec["avoidable_wait_penalty"]
     return float(reward)
