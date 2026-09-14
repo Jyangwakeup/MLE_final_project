@@ -115,6 +115,7 @@ class DoubleDQNLearner:
             "torch_rng_state": torch.get_rng_state(), "updates": self.updates,
             "training_device_name": None,
             "training_device_type": self.device.type,
+            "teacher": None,
         }
 
     def load_checkpoint(self, checkpoint: dict[str, Any], *, training: bool) -> None:
@@ -125,6 +126,11 @@ class DoubleDQNLearner:
             self.optimizer.load_state_dict(checkpoint["optimizer"])
             self.replay.load_state_dict(checkpoint["replay"])
             torch.set_rng_state(checkpoint["torch_rng_state"])
+
+    def load_policy_weights(self, checkpoint: dict[str, Any]) -> None:
+        """Warm-start from policy weights while retaining fresh training state."""
+        self.policy.load_state_dict(checkpoint["policy"])
+        self.target.load_state_dict(checkpoint["policy"])
 
 
 __all__ = ["DoubleDQNLearner", "Transition", "double_dqn_next_values"]

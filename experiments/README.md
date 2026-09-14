@@ -459,6 +459,31 @@ python3 experiments/run.py \
 上一代，丢失局数记录在子 run 的 `metadata.json`。`--checkpoint` 仅用于冻结评估；旧
 checkpoint 仍可评估，但不能替代 `--resume-from`。
 
+### 开发期权重初始化与严格续训
+
+开发新奖励或 Task 2–4 行为时，可用 `--init-from-checkpoint` 从已有神经网络 checkpoint
+继承**仅 policy 权重**，避免每次都重训 Task 1：
+
+```bash
+.venv/bin/python -m experiments.run \
+  --config experiments/configs/reward_r5_conditional_loop.json \
+  --mode train --device cpu --task 2 \
+  --agent double_dqn_continuous_agent --seed 11 --n-rounds 500 \
+  --init-from-checkpoint runs/ddqn_continuous_v2_r5_s11_t1_train/checkpoints/final.pt \
+  --run-id dev_ddqn_continuous_v2_r5_s11_t2_warm
+```
+
+`--init-from-checkpoint` 是开发期 warm start：允许更换 reward，但要求算法、Feature schema、
+动作顺序和网络结构兼容；policy 权重被复制到新 policy 和 target，而 optimizer、replay、
+epsilon/action steps、随机状态、早停和回合状态全部从零开始。run metadata 的 `lineage.kind`
+记录为 `warm_start`。它只支持神经网络 Agent，不能与 `--resume-from` 同时使用，也不能用于
+冻结评估。
+
+`--resume-from` 是严格续训/课程晋级：从父 run 的 resume snapshot 恢复学习器、optimizer、
+replay、探索进度和必要的运行状态，并执行完整兼容性校验。正式实验链和最终结果必须使用
+`--resume-from` 从同一配置链逐级训练；warm-start 结果只能作为开发诊断或迁移学习实验，
+不能伪装成严格连续训练结果。
+
 训练模式默认启用基于 reward 移动平均的双重条件早停；未提供配置时使用 window 200、
 patience 100、min_rounds 300、min_delta 0.1、空 target_reward，并要求 action steps 达到
 exploration 的衰减步数。可在配置中显式覆盖：

@@ -32,6 +32,9 @@ from experiments.training import (
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 RUNNER = PROJECT_ROOT / "experiments" / "run.py"
 BASE_CONFIG = PROJECT_ROOT / "experiments" / "configs" / "reward_r2_balanced.json"
+WARM_START_CONFIG = (
+    PROJECT_ROOT / "experiments" / "configs" / "reward_r5_conditional_loop.json"
+)
 BASE_EARLY_STOPPING = json.loads(BASE_CONFIG.read_text())["training"]["early_stopping"]
 RUNS_ROOT = PROJECT_ROOT / "runs"
 
@@ -253,6 +256,40 @@ class ExperimentRunTest(unittest.TestCase):
         self.assertEqual(metadata["termination"]["cumulative_completed_rounds"], 2)
         episode = json.loads((child / "episodes.jsonl").read_text().splitlines()[0])
         self.assertEqual(episode["round_index"], 2)
+
+    def test_training_can_warm_start_policy_with_a_new_reward(self):
+        import torch
+
+        parent = self.output("warm-parent")
+        child = self.output("warm-child")
+        self.outputs.remove(child)
+        source_checkpoint = parent / "checkpoints" / "final.pt"
+        with patch.object(s, "MAX_STEPS", 3):
+            run_agent_session(
+                BASE_CONFIG, "train", 11, parent,
+                "double_dqn_continuous_agent", (), "coin-heaven", 1,
+                source_checkpoint, "coin_navigation", "none", 1,
+            )
+            result = experiment_main([
+                "--config", str(WARM_START_CONFIG), "--mode", "train",
+                "--task", "2", "--agent", "double_dqn_continuous_agent",
+                "--n-rounds", "1", "--seed", "11",
+                "--init-from-checkpoint", str(source_checkpoint),
+                "--output", str(child), "--replay-policy", "none",
+            ])
+
+        self.assertEqual(result, 0)
+        self.outputs.append(child)
+        metadata = json.loads((child / "metadata.json").read_text())
+        self.assertEqual(metadata["lineage"]["kind"], "warm_start")
+        self.assertEqual(metadata["lineage"]["inherited"], ["policy_weights"])
+        self.assertEqual(metadata["reward_id"], "r5_conditional_loop")
+        child_checkpoint = torch.load(
+            child / "checkpoints" / "final.pt", map_location="cpu",
+            weights_only=True,
+        )
+        self.assertEqual(child_checkpoint["reward_id"], "r5_conditional_loop")
+        self.assertLessEqual(child_checkpoint["action_steps"], 3)
 
     def test_same_task_resume_matches_uninterrupted_next_round(self):
         continuous = self.output("continuous")

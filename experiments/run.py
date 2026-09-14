@@ -741,6 +741,7 @@ def run_agent_session(
     resume_snapshot: LoadedSnapshot | None = None,
     resume_kind: str | None = None,
     parent_metadata: dict[str, Any] | None = None,
+    init_checkpoint: Path | None = None,
     device_info: dict[str, Any] | None = None,
     action_budget_config: dict[str, Any] | None = None,
     safe_exploration: bool = False,
@@ -767,6 +768,14 @@ def run_agent_session(
     replay_interval = _positive_int(replay_interval, "replay_interval")
     specs = _custom_agents(agent, opponents, training)
     checkpoint = None if checkpoint is None else checkpoint.resolve()
+    init_checkpoint = (
+        None if init_checkpoint is None else init_checkpoint.expanduser().resolve())
+    if init_checkpoint is not None and not training:
+        raise ValueError("Warm-start checkpoints are only valid in training mode")
+    if init_checkpoint is not None and resume_snapshot is not None:
+        raise ValueError("Warm-start and resume cannot be used together")
+    if init_checkpoint is not None and not init_checkpoint.is_file():
+        raise FileNotFoundError(f"Warm-start checkpoint does not exist: {init_checkpoint}")
     expanded = _read_config(config_path)
     algorithm = _algorithm_name(agent)
     training_config = expanded.get("training", {})
@@ -897,6 +906,8 @@ def run_agent_session(
         "agent": agent,
         "allow_bomb": task_name != "coin_navigation",
         "checkpoint": None if checkpoint is None else str(checkpoint),
+        "init_from_checkpoint": (
+            None if init_checkpoint is None else str(init_checkpoint)),
         "n_rounds": n_rounds,
         "opponents": list(opponents),
         "replay_interval": replay_interval,
@@ -951,7 +962,18 @@ def run_agent_session(
         parent_cumulative = int(termination.get(
             "cumulative_completed_rounds", termination.get("completed_rounds", 0)
         ))
-    metadata["lineage"] = None if resume_snapshot is None else {
+    metadata["lineage"] = (
+        {
+            "kind": "warm_start",
+            "source_checkpoint": str(init_checkpoint),
+            "inherited": ["policy_weights"],
+            "reset": [
+                "target_network", "optimizer", "replay", "epsilon",
+                "agent_rng", "early_stopping", "round_state",
+            ],
+        }
+        if init_checkpoint is not None else None
+    ) if resume_snapshot is None else {
         "fallback_reason": resume_snapshot.fallback_reason,
         "fallback_lost_rounds": resume_snapshot.lost_rounds,
         "parent_generation": resume_snapshot.generation,
@@ -978,7 +1000,8 @@ def run_agent_session(
     previous = {
         name: os.environ.get(name)
         for name in (
-            "BOMBERMAN_CHECKPOINT", "BOMBERMAN_CONFIG", "BOMBERMAN_RUN_DIR",
+            "BOMBERMAN_CHECKPOINT", "BOMBERMAN_INIT_CHECKPOINT",
+            "BOMBERMAN_CONFIG", "BOMBERMAN_RUN_DIR",
             "BOMBERMAN_RUN_ID", "BOMBERMAN_TRAINING_TASK",
             "BOMBERMAN_ALLOW_BOMB", "BOMBERMAN_FEATURE_ID",
             "BOMBERMAN_REWARD_ID", "BOMBERMAN_REWARD_VERSION",
@@ -995,6 +1018,10 @@ def run_agent_session(
             os.environ.pop("BOMBERMAN_CHECKPOINT", None)
         else:
             os.environ["BOMBERMAN_CHECKPOINT"] = str(checkpoint)
+        if init_checkpoint is None:
+            os.environ.pop("BOMBERMAN_INIT_CHECKPOINT", None)
+        else:
+            os.environ["BOMBERMAN_INIT_CHECKPOINT"] = str(init_checkpoint)
         os.environ["BOMBERMAN_CONFIG"] = str(config_path.resolve())
         os.environ["BOMBERMAN_RUN_DIR"] = str(output.resolve())
         os.environ["BOMBERMAN_RUN_ID"] = output.name
@@ -1273,6 +1300,11 @@ def _parser() -> argparse.ArgumentParser:
         help="Complete v6 Task 1 run migrated explicitly into a v7 child",
     )
     parser.add_argument(
+        "--init-from-checkpoint", type=Path,
+        help=("Development-only neural warm start: load policy weights while "
+              "resetting optimizer, replay, epsilon, RNG, and round state"),
+    )
+    parser.add_argument(
         "--replay-policy", choices=("auto", *REPLAY_POLICIES), default="auto",
         help="Replay retention: auto, none, failures, sampled, or all",
     )
@@ -1313,6 +1345,9 @@ def main(argv: Sequence[str] | None = None) -> int:
             if args.adaptation_trigger:
                 raise ValueError(
                     "--adaptation-trigger is only valid with --mode train")
+            if args.init_from_checkpoint is not None:
+                raise ValueError(
+                    "--init-from-checkpoint is only valid with --mode train")
             run_evaluation_mode(
                 args, config, configured_seeds, configured_rounds,
                 task_name, scenario, opponents, project_root=PROJECT_ROOT,

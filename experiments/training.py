@@ -209,6 +209,8 @@ def run_training_mode(
         raise ValueError("Training accepts one --seed, not --seeds")
     if args.checkpoint is not None:
         raise ValueError("Training writes its own checkpoint; do not pass --checkpoint")
+    if args.resume_from is not None and args.init_from_checkpoint is not None:
+        raise ValueError("--resume-from and --init-from-checkpoint are mutually exclusive")
     training = config.get("training", {})
     if not isinstance(training, dict):
         raise ValueError("config.training must be an object")
@@ -274,6 +276,14 @@ def run_training_mode(
     )
     agent_contract = resolve_agent_contract(args.agent, requested_feature_id)
     algorithm = agent_contract.algorithm
+    init_checkpoint = args.init_from_checkpoint
+    if init_checkpoint is not None:
+        if algorithm not in {"dqn", "double_dqn"}:
+            raise ValueError("--init-from-checkpoint only supports neural agents")
+        init_checkpoint = Path(init_checkpoint).expanduser().resolve()
+        if not init_checkpoint.is_file():
+            raise FileNotFoundError(
+                f"Warm-start checkpoint does not exist: {init_checkpoint}")
     requested_device = args.device or training.get("device", "auto")
     device_info = resolve_device(algorithm, "train", requested_device)
     positional = (
@@ -285,7 +295,7 @@ def run_training_mode(
     migration_from = getattr(args, "migrate_resume_from", None)
     if args.resume_from is None and migration_from is None:
         return run_session(
-            *positional, device_info=device_info,
+            *positional, init_checkpoint=init_checkpoint, device_info=device_info,
             action_budget_config=budget_config,
             safe_exploration=safe_exploration,
             safety_spec=safety_spec,
