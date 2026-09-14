@@ -19,6 +19,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 SUPPORTED = {
     "double_q_compact_agent", "double_dqn_continuous_agent",
     "double_dqn_continuous_v2_agent", "double_dqn_continuous_v3_agent",
+    "double_dqn_phase_agent",
     "cnn_double_dqn_agent", "hybrid_dueling_double_dqn_agent",
 }
 
@@ -80,8 +81,9 @@ def build_submission(agent: str, checkpoint: Path, output: Path) -> Path:
         team = vendor / "team_agent"
         team.mkdir()
         for name in (
-            "__init__.py", "danger.py", "exploration.py", "features.py", "rewards.py",
-            "safety.py", "temporal_safety_features.py",
+            "__init__.py", "danger.py", "distillation_capture.py", "exploration.py",
+            "features.py", "phase.py", "rewards.py", "safety.py",
+            "temporal_safety_features.py",
         ):
             shutil.copy2(PROJECT_ROOT / "agent_code" / "team_agent" / name, team / name)
         shutil.copytree(

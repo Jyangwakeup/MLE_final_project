@@ -41,10 +41,13 @@ def record_selected_action(owner, game_state: dict, action: str) -> None:
         int(owner.feature_wait_streak) + 1 if action == "WAIT" else 0
     )
     from agent_code.team_agent.feature_system.continuous_v2 import selected_coin_target
-    owner.feature_previous_position = tuple(game_state["self"][3])
-    owner.feature_previous_coin_target = selected_coin_target(game_state)
+    owner.feature_previous_position = tuple(int(value) for value in game_state["self"][3])
+    target = selected_coin_target(game_state)
+    owner.feature_previous_coin_target = (
+        None if target is None else tuple(int(value) for value in target))
     if action == "BOMB" and bool(game_state["self"][2]):
-        owner.feature_own_bomb_position = tuple(game_state["self"][3])
+        owner.feature_own_bomb_position = tuple(
+            int(value) for value in game_state["self"][3])
         owner.feature_own_bomb_pending = True
 
 

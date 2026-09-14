@@ -55,7 +55,7 @@ schema = get_feature_schema("discrete-q-v2", game_state["field"].shape)
 
 `r5` 使用金币路径势；r6 增加箱区/危险势、可逃有收益放弹信用和不可逃放弹 −10；r7 将不可逃放弹改为 −20。r8 删除预测 useful-bomb 正奖励，对有安全替代的必死动作即时扣 20，并在自杀同帧抑制金币、炸箱和击杀正奖励。势函数统一使用 `γΦ(s')−Φ(s)`，不直接奖励移动、等待、普通放弹、发现或存活事件。
 
-Feature、Reward 与 Safety 是独立契约。`survival-mask-v1/all` 对探索、贪心、冻结推理和 Double DQN target 使用同一 H=7 生存集合；无安全动作时回退物理合法 Q argmax。metadata、final checkpoint 和 `training-resume-v7` 快照记录完整 schema/spec；v1–v6 默认只允许冻结评估，完整 v6 Task 1 run 仅可显式迁移。
+Feature、Reward 与 Safety 是独立契约。`survival-mask-v1/all` 对探索、贪心、冻结推理和 Double DQN target 使用同一 H=7 生存集合；无安全动作时回退物理合法 Q argmax。`survival-mask-v2` 只在预注册安全失败后、且自身炸弹仍有效时进一步否决低逃生余量动作。metadata、final checkpoint 和 `training-resume-v8` 快照记录完整 schema/spec；v7以前默认只允许冻结评估。
 
 ## 开发约定
 

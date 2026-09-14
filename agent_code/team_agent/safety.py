@@ -10,6 +10,7 @@ import numpy as np
 
 
 SAFETY_VERSION = "survival-mask-v1"
+SAFETY_VERSION_V2 = "survival-mask-v2"
 SAFETY_SPEC_ENV = "BOMBERMAN_SAFETY_SPEC"
 SAFETY_MODES = ("off", "exploration", "all")
 DEFAULT_SAFETY_SPEC = {
@@ -33,24 +34,35 @@ def resolve_safety_spec(
         return {**DEFAULT_SAFETY_SPEC, "mode": mode}
     if not isinstance(value, Mapping):
         raise ValueError("config.safety must be an object")
+    version = value.get("version")
     required = {"version", "mode", "horizon", "fallback"}
+    if version == SAFETY_VERSION_V2:
+        required.add("escape_area_fraction")
     if set(value) != required:
         raise ValueError(
             "config.safety must contain exactly: " + ", ".join(sorted(required)))
-    if value["version"] != SAFETY_VERSION:
+    if version not in {SAFETY_VERSION, SAFETY_VERSION_V2}:
         raise ValueError(f"Unsupported safety version: {value['version']!r}")
     if value["mode"] not in SAFETY_MODES:
         raise ValueError(f"Unsupported safety mode: {value['mode']!r}")
     if value["horizon"] != 7:
-        raise ValueError("survival-mask-v1 requires horizon=7")
+        raise ValueError(f"{version} requires horizon=7")
     if value["fallback"] != "physical_q":
-        raise ValueError("survival-mask-v1 requires fallback='physical_q'")
-    return {
-        "version": SAFETY_VERSION,
+        raise ValueError(f"{version} requires fallback='physical_q'")
+    resolved = {
+        "version": str(version),
         "mode": str(value["mode"]),
         "horizon": 7,
         "fallback": "physical_q",
     }
+    if version == SAFETY_VERSION_V2:
+        fraction = value["escape_area_fraction"]
+        if isinstance(fraction, bool) or not isinstance(fraction, (int, float)):
+            raise ValueError("survival-mask-v2 escape_area_fraction must be numeric")
+        if not 0.0 < float(fraction) <= 1.0:
+            raise ValueError("survival-mask-v2 escape_area_fraction must be in (0,1]")
+        resolved["escape_area_fraction"] = float(fraction)
+    return resolved
 
 
 def safety_from_environment() -> tuple[dict[str, Any], bool]:
@@ -94,6 +106,33 @@ def survival_mask(
     return physical, True
 
 
+def margin_preserving_mask(
+    game_state: dict,
+    physical_mask: np.ndarray,
+    *,
+    allow_bomb: bool,
+    own_bomb_pending: bool,
+    escape_area_fraction: float = 0.75,
+) -> tuple[np.ndarray, bool, bool]:
+    """Apply v1, then reject low-area actions while escaping one's own bomb.
+
+    Returns ``(mask, physical_fallback, margin_fallback)``.  The second-stage
+    fallback is deliberately the full v1 set, never a hand-picked direction.
+    """
+    first, physical_fallback = survival_mask(
+        game_state, physical_mask, allow_bomb=allow_bomb)
+    if physical_fallback or not own_bomb_pending:
+        return first, physical_fallback, False
+    diagnostics = survival_diagnostics(
+        game_state, physical_mask, allow_bomb=allow_bomb)
+    areas = np.asarray(diagnostics["escape_area"], dtype=np.float64)
+    best = float(np.max(areas[first]))
+    refined = first & (areas >= float(escape_area_fraction) * best)
+    if refined.any():
+        return refined, False, False
+    return first, False, True
+
+
 def survival_diagnostics(
     game_state: dict, physical_mask: np.ndarray, *, allow_bomb: bool,
 ) -> dict[str, list[int | bool]]:
@@ -128,6 +167,7 @@ def mask_for_decision(
     *,
     allow_bomb: bool,
     exploring: bool,
+    own_bomb_pending: bool = False,
 ) -> tuple[np.ndarray, bool]:
     """Apply the configured constraint for one behavior decision."""
     spec = resolve_safety_spec(safety_spec)
@@ -135,6 +175,13 @@ def mask_for_decision(
         spec["mode"] == "exploration" and exploring)
     if not enabled:
         return np.asarray(physical_mask, dtype=bool).copy(), False
+    if spec["version"] == SAFETY_VERSION_V2:
+        decision, physical_fallback, _ = margin_preserving_mask(
+            game_state, physical_mask, allow_bomb=allow_bomb,
+            own_bomb_pending=own_bomb_pending,
+            escape_area_fraction=float(spec["escape_area_fraction"]),
+        )
+        return decision, physical_fallback
     return survival_mask(
         game_state, physical_mask, allow_bomb=allow_bomb,
         horizon=int(spec["horizon"]))
