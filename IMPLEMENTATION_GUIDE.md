@@ -459,6 +459,16 @@ seed 11 优胜配置才从零复制 seeds 22/33。三训练 seed × 20 开发 se
 
 按预注册顺序选择 seed 22 checkpoint 作为 **Task 2 winner candidate**，并且只对该 checkpoint 使用 seeds 11000–11099 做一次主验证。结果为 Task 2 `7.25` coins（95% CI `[6.96, 7.53]`）、`100.26` crates（`[97.48, 103.02]`）、0% 自杀、0% 零放弹局、100% 炸弹存活；Task 1 父子均为 50 分，保留率 100%。invalid、timeout 和 skipped 均为 0，完整 act P95 为 `6.38 ms`、最大值 `20.58 ms`。全部联合门槛通过，因此该 seed 22 checkpoint 正式指定为 **Task 2 winner**。仓库内可直接加载的权重位于 [`agent_code/double_dqn_continuous_v2_agent/final.pt`](agent_code/double_dqn_continuous_v2_agent/final.pt)，机器清单与 640 局精简证据分别见 [`experiments/task2_winner.json`](experiments/task2_winner.json) 和 [`experiments/task2_winner_evaluations.csv`](experiments/task2_winner_evaluations.csv)。最终测试 seeds 20000–20099 仍未使用，本轮未启动 Task 3。
 
+### 8.9 Task 3 弱对手试验协议
+
+第一轮 Task 3 不修改 Feature、Reward 或 Safety：继续使用 84 维 `continuous-v2`、`r7_safe_credit_sparse` 和 `survival-mask-v1/all`，同时面对 `peaceful_agent` 与 `coin_collector_agent`。这样可以直接回答“加入弱对手训练是否有效”，不会把课程变化和奖励变化混在一起。完整预注册见 [`experiments/task3_pilot.json`](experiments/task3_pilot.json)，配置见 [`experiments/configs/task3_pilot_r7.json`](experiments/configs/task3_pilot_r7.json)，领域边界见 [`docs/adr/0004-pilot-task3-with-unchanged-r7.md`](docs/adr/0004-pilot-task3-with-unchanged-r7.md)。
+
+Task 2 三条父链属于源码提交 `814173b`，精确 v7 恢复要求源码身份相同；因此 Task 3 训练在该提交的隔离 worktree 中执行，但读取当前预注册配置并记录其 SHA256 和预注册提交。seeds 11、22、33 各自从对应父链晋级，不共享 seed 22 的公开权重。每段新增500局，累计500、1000、1500局时分别检查；一次通过即停止该链，动作数只控制 Task 3 的 `epsilon=0.30→0.05/120000 actions`，不控制停止。训练保持4-step return、75%旧Task replay、25%当前Task replay、蒸馏系数2和CPU单线程。
+
+开发 seeds 固定为12000–12019。每个父模型先分别在Task 1、2、3冻结评估；每个子checkpoint也分别评估Task 1、2、3，所有差值按相同训练seed与环境seed配对。Task 3必须同时满足：游戏分数比父模型增加至少0.5；击杀增加至少0.1或独占/并列第一率增加至少5个百分点；金币和炸箱分别保留父模型的90%。旧任务门槛为Task 1分数保留90%，以及Task 2金币和炸箱分别保留90%。Task 2/3自杀率不超过5%、炸弹存活率至少95%，Task 3零放弹局不超过10%；所有评估还要求invalid≤1%、act P95<50 ms、最大值<500 ms，并且没有异常、timeout或skipped action。
+
+只有三个训练seed全部独立通过，才按Task 3游戏分数、自杀率、击杀、第一名率、最低资源/旧任务保留率、时延和run ID选出一个 **Task 3 pilot candidate**。它只是开发集候选，`qualified_for_task4=false`；本轮不使用新的100-seed主验证，不启动Task 4，也不根据失败结果自动修改奖励。
+
 ## 9. 核心实验如何分配和解释
 
 | 实验 | 负责人 | 保持不变 | 唯一变化 | 要回答的问题 |

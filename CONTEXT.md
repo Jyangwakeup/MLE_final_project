@@ -43,3 +43,15 @@ _Avoid_: Converged, completed
 **Task 2 winner**:
 The single Task 2 checkpoint whose configuration passed independent development gates for all three training seeds and then passed the one permitted main validation. A development-selected checkpoint is only a Task 2 winner candidate.
 _Avoid_: Best training run, winner configuration, winner candidate
+
+**Task 3 parent baseline**:
+A frozen evaluation of one training seed's direct Task 2 parent on the Task 1, Task 2, and Task 3 development worlds before Task 3 learning starts.
+_Avoid_: Global baseline, published winner baseline
+
+**Task 3 pilot checkpoint**:
+A Task 3 checkpoint produced at a preregistered 500-round assessment boundary. It remains experimental until its training seed passes every capability, retention, safety, and engineering gate.
+_Avoid_: Converged model, Task 3 winner
+
+**Task 3 pilot candidate**:
+The single development-selected checkpoint from a Task 3 configuration that passed every gate independently for all three training seeds. It is not qualified for Task 4 until a later independent main validation passes.
+_Avoid_: Task 3 winner, Task 4 parent

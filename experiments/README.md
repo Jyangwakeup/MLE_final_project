@@ -661,6 +661,14 @@ Q-learning 与 DQN agent 都会据此屏蔽炸弹。Task 2–4 会自动允许�
 
 `configs/formal_training.json` 保留 CPU、`discrete-v1`、`r1` 基线；
 `configs/formal_training_coin3.json` 保留旧 v4 固定局数证据。`task2_safety_diagnostic.json` 对既有 v5 checkpoint 仅启用冻结 shield；三个 `safety_ablation_*_task1.json` 使用同步冻结分数停止：第200局起每50局在9000–9019上检查，连续三次 `mean_score≥48` 停止，累计上限1000局。10000–10019只用于独立晋级门槛。Task 2 仍使用150000动作/至少500局。`final_test.json` 的20000–20099继续封存。
+
+Task 3 首轮试验由 `task3_pilot.json` 预注册，并使用
+`configs/task3_pilot_r7.json`。它保持 Task 2 winner 的
+`continuous-v2 + r7_safe_credit_sparse + survival-mask-v1/all` 合同；每次只增加500局，
+在12000–12019上按父子同seed执行Task 1/2/3冻结评估。可用
+`python -m experiments.task3_pilot validate-preregistration` 检查配置，评估结束后用该工具的
+`assess` 和 `select` 子命令生成逐seed证据、门槛结果及开发集候选。开发集候选不是Task 3 winner，
+也不能直接进入Task 4。
 奖励实验使用独立配置文件：
 
 ```text
