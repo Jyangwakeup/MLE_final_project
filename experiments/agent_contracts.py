@@ -37,6 +37,7 @@ _NEW_AGENTS = {
     "double_q_compact_agent", "double_dqn_continuous_agent",
     "cnn_double_dqn_agent", "hybrid_dueling_double_dqn_agent",
     "double_q_agent", "double_dqn_continuous_v2_agent",
+    "double_dqn_continuous_v3_agent",
 }
 _BASELINE_FEATURE_IDS = {
     "discrete-v1", "discrete-q-v2", "discrete-objective-v1",
@@ -111,6 +112,7 @@ def resolve_agent_contract(
         feature_schema=feature_schema_contract(fixed_feature_id, board_shape),
         network_spec=metadata["network_spec"],
         hyperparameters=dict(metadata["hyperparameters"]),
+        trainable=bool(metadata.get("trainable", True)),
     )
     if tuple(contract.feature_schema["action_order"]) != ACTIONS:
         raise ValueError("agent feature schema uses an incompatible action order")

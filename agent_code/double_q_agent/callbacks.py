@@ -9,7 +9,7 @@ from agent_code.learning_common.action_history import (
     action_history_for_state, load_action_history_state, record_selected_action,
 )
 from agent_code.learning_common.runtime import (
-    CHECKPOINT_SCHEMA, adopt_checkpoint_reward,
+    CHECKPOINT_SCHEMA, adopt_checkpoint_reward, adopt_checkpoint_safety,
     load_common_configuration, validate_checkpoint,
 )
 from agent_code.team_agent.exploration import epsilon_at, survivable_exploration_mask
@@ -38,12 +38,13 @@ def setup(self):
         with self.model_file.open("rb") as file:
             checkpoint = pickle.load(file)
         adopt_checkpoint_reward(self, checkpoint)
+        adopt_checkpoint_safety(self, checkpoint)
         validate_checkpoint(
             checkpoint, algorithm=ALGORITHM, feature_id=FEATURE_ID,
             feature_schema=FEATURE_SCHEMA, actions=ACTIONS,
             reward_id=self.reward_id, hyperparameters=HYPERPARAMETERS,
             network_spec=None, training=self.train,
-            training_task=self.training_task,
+            training_task=self.training_task, safety_spec=self.safety_spec,
         )
         self.q_table_a = checkpoint["q_table_a"]
         self.q_table_b = checkpoint["q_table_b"]
@@ -57,6 +58,9 @@ def setup(self):
             "safe_exploration_decisions", 0))
         self.safe_exploration_fallbacks = int(checkpoint.get(
             "safe_exploration_fallbacks", 0))
+        self.safety_decisions = int(checkpoint.get("safety_decisions", 0))
+        self.safety_interventions = int(checkpoint.get("safety_interventions", 0))
+        self.safety_fallbacks = int(checkpoint.get("safety_fallbacks", 0))
         self._resume_n_step_state = (
             checkpoint.get("n_step_state") if same_task else None)
         if self.train:

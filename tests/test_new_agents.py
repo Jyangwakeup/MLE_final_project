@@ -332,7 +332,7 @@ class CheckpointTests(unittest.TestCase):
             root = Path(directory)
             checkpoint = root / "checkpoint.pkl"
             payload = {
-                "checkpoint_schema": "training-resume-v5",
+                "checkpoint_schema": "training-resume-v6",
                 "algorithm": "double_q_learning", "actions": list(dq_callbacks.ACTIONS),
                 "feature_id": dq_callbacks.FEATURE_ID,
                 "feature_schema": dq_callbacks.FEATURE_SCHEMA,
@@ -345,6 +345,9 @@ class CheckpointTests(unittest.TestCase):
                 "safe_exploration": True,
                 "safe_exploration_decisions": 1,
                 "safe_exploration_fallbacks": 0,
+                "safety_spec": {"version": "survival-mask-v1", "mode": "exploration", "horizon": 7, "fallback": "physical_q"},
+                "safety_decisions": 1, "safety_interventions": 0,
+                "safety_fallbacks": 0,
                 "action_history_state": {
                     "previous_action": None, "wait_streak": 0, "round": None,
                 },

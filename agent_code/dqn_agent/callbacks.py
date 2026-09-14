@@ -24,6 +24,7 @@ from agent_code.team_agent.feature_system import (
     get_feature_schema, normalize_feature_id, validate_checkpoint_feature_contract,
 )
 from agent_code.team_agent.rewards import REWARD_VERSION, resolve_reward_spec
+from agent_code.team_agent.safety import resolve_safety_spec, safety_from_environment
 from .features import ACTIONS, FEATURE_ID, features_for_state
 from .model import (
     DEFAULT_BATCH_SIZE, DEFAULT_GAMMA, DEFAULT_HIDDEN_SIZE,
@@ -42,7 +43,7 @@ REWARD_VERSION_ENV = "BOMBERMAN_REWARD_VERSION"
 TORCH_DEVICE_ENV = "BOMBERMAN_TORCH_DEVICE"
 FEATURE_ID_ENV = "BOMBERMAN_FEATURE_ID"
 REWARD_ID_ENV = "BOMBERMAN_REWARD_ID"
-CHECKPOINT_SCHEMA_VERSION = "training-resume-v5"
+CHECKPOINT_SCHEMA_VERSION = "training-resume-v6"
 
 
 def network_spec(input_size: int) -> dict:
@@ -100,6 +101,10 @@ def setup(self):
     self.agent_seed = agent_seed_from_environment(SEED)
     self.exploration_spec = exploration_from_environment()
     self.safe_exploration = safe_exploration_from_environment()
+    self.safety_spec, self.safety_spec_configured = safety_from_environment()
+    if not self.safety_spec_configured:
+        self.safety_spec = resolve_safety_spec(
+            legacy_safe_exploration=self.safe_exploration)
     self.n_step = n_step_from_environment()
     self.retention_spec = retention_from_environment()
     self.training_budget = training_budget_from_environment()
@@ -154,6 +159,9 @@ def setup(self):
     self.stage_action_steps = 0
     self.safe_exploration_decisions = 0
     self.safe_exploration_fallbacks = 0
+    self.safety_decisions = 0
+    self.safety_interventions = 0
+    self.safety_fallbacks = 0
     self._feature_cache_key = None
     self._feature_cache_value = None
     init_temporal_reward_state(self)
@@ -180,6 +188,8 @@ def setup(self):
             if checkpoint.get("hyperparameters") != self.hyperparameters:
                 raise ValueError(
                     "Cannot continue DQN with different learner hyperparameters")
+            if checkpoint.get("safety_spec") != self.safety_spec:
+                raise ValueError("Cannot continue DQN with a different safety contract")
         self.model.load_checkpoint(
             checkpoint, training=self.train, training_task=self.training_task)
         self.total_action_steps = int(checkpoint.get(
@@ -192,6 +202,9 @@ def setup(self):
             "safe_exploration_decisions", 0))
         self.safe_exploration_fallbacks = int(checkpoint.get(
             "safe_exploration_fallbacks", 0))
+        self.safety_decisions = int(checkpoint.get("safety_decisions", 0))
+        self.safety_interventions = int(checkpoint.get("safety_interventions", 0))
+        self.safety_fallbacks = int(checkpoint.get("safety_fallbacks", 0))
         self._resume_n_step_state = (
             checkpoint.get("n_step_state") if same_task else None)
         if self.train:

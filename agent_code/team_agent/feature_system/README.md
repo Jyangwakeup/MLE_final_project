@@ -70,6 +70,8 @@ danger.shape = (HORIZON + 1, width, height)
 | `discrete-compact-v1` | Q-learning / Double Q | state 12 / vector 38 | 是 | 不兼容 |
 | `continuous-v1` | MLP Double DQN | vector 70 | 是 | 不兼容 |
 | `continuous-v2` | 历史感知 MLP Double DQN | vector 84 | 是 | 不兼容 |
+| `continuous-v2-legacy78` | 旧 Double DQN 冻结适配器 | vector 78 | 是 | 仅冻结加载 |
+| `continuous-v3` | Double DQN 安全特征消融 | vector 107 | 是 | v6 新谱系 |
 | `board-v1` | CNN | board `12×W×H` | 主要为原始结构化通道 | 不兼容 |
 | `hybrid-v1` | CNN + MLP | board `12×W×H` + vector 70 | 两者组合 | 不兼容 |
 
@@ -89,6 +91,16 @@ danger.shape = (HORIZON + 1, width, height)
 | 13 | 对手在爆炸范围 | 否 / 是 |
 
 此版本不增加独立的 `danger_t1/t2/t3`，保证既有 Q-table key 和 DQN 40 维权重不变。
+
+## `discrete-objective-v1`：60 维目标事实
+
+14 个类别字段依次为四方向安全（非法/无法活过 H/可存活）、四方向相对分层目标进展（非法/无目标/变差或不可达/不变/变近）、当前危险桶、放弹结果桶、目标距离桶、目标类型、上一动作和连续等待桶。目标只按“可达金币，否则可达箱区前沿”确定，用来测量四个动作的相对变化，不输出唯一目标动作或规则分数。类别数为 `(3,3,3,3,5,5,5,5,5,5,5,3,7,3)`。
+
+动作历史由 Agent 在 `act` 返回前统一更新，训练回调和冻结评估看到相同语义；新回合清零，同 Task v6 恢复保存。
+
+## `continuous-v3`：107 维安全向量
+
+在 `continuous-v2` 上为六个动作分别追加是否活过 H=7、危险期限相对最短逃生步的归一化余量、第二步仍可延续完整生存路径的动作比例。原 `safe_area` 使用 `log1p(area)/log1p(board_area)`，另外加入全局安全动作比例和自身最近炸弹的承担、可见、倒计时与爆炸轴事实。所有字段描述可验证后果，不提供规则推荐方向。
 
 ## `continuous-v1`：70 维向量
 

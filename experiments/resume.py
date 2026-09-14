@@ -22,7 +22,7 @@ from agent_code.team_agent.feature_system import (
 )
 
 
-CHECKPOINT_SCHEMA_VERSION = "training-resume-v5"
+CHECKPOINT_SCHEMA_VERSION = "training-resume-v6"
 TASK_ORDER = ("coin_navigation", "crate_navigation", "weak_opponents", "full_match")
 RETAINED_GENERATIONS = 2
 TABLE_ALGORITHMS = frozenset(("q_learning", "double_q_learning"))
@@ -72,6 +72,7 @@ class LoadedSnapshot:
             "network_spec": metadata.get("network_spec"),
             "hyperparameters": metadata.get("hyperparameters", {}),
             "safe_exploration": metadata.get("safe_exploration", False),
+            "safety_spec": metadata.get("safety_spec"),
             "n_step": metadata.get("n_step", 1),
             "retention_spec": metadata.get("retention_spec", {}),
             "training_budget": metadata.get("training_budget", {}),
@@ -183,6 +184,8 @@ def commit_training_snapshot(
             "training_task", "training_device_name", "training_device_type",
             "agent_seed", "exploration_spec", "network_spec", "hyperparameters",
             "safe_exploration", "n_step", "retention_spec", "training_budget",
+            "safety_spec", "safety_decisions", "safety_interventions",
+            "safety_fallbacks",
             "total_action_steps", "stage_action_steps", "n_step_state",
             "agent_rng_state", "action_history_state",
             "safe_exploration_decisions", "safe_exploration_fallbacks",
@@ -261,6 +264,7 @@ def commit_training_snapshot(
                 "network_spec": learner.get("network_spec"),
                 "hyperparameters": learner.get("hyperparameters", {}),
                 "safe_exploration": learner["safe_exploration"],
+                "safety_spec": learner["safety_spec"],
                 "n_step": learner["n_step"],
                 "retention_spec": learner["retention_spec"],
                 "training_budget": learner["training_budget"],
@@ -428,7 +432,7 @@ def validate_resume_transition(
     for field in (
         "algorithm", "seed", "checkpoint_schema", "reward_spec",
         "training_device_type", "training_device_name", "agent_seed",
-        "source_commit", "safe_exploration",
+        "source_commit", "source_hash", "safe_exploration", "safety_spec",
     ):
         if parent.get(field) != child.get(field):
             raise ValueError(f"Resume {field} must match the parent run")

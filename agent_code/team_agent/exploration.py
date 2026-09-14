@@ -105,22 +105,10 @@ def survivable_exploration_mask(
     The returned boolean is true only when no survivable action existed and
     the function had to fall back to the physical curriculum mask.
     """
-    from agent_code.team_agent.feature_system.common import ACTIONS, build_safety_context
+    from agent_code.team_agent.safety import survival_mask
 
-    physical = np.asarray(legal_mask, dtype=bool).copy()
-    if not allow_bomb:
-        physical[ACTIONS.index("BOMB")] = False
-    context = build_safety_context(game_state)
-    safe = np.zeros_like(physical)
-    for index, action in enumerate(ACTIONS[:5]):
-        safe[index] = physical[index] and context.movement_reachability[
-            action].survives_horizon
-    bomb = context.bomb_reachability
-    safe[ACTIONS.index("BOMB")] = bool(
-        physical[ACTIONS.index("BOMB")] and bomb and bomb.survives_horizon)
-    if safe.any():
-        return safe, False
-    return physical, True
+    return survival_mask(
+        game_state, legal_mask, allow_bomb=allow_bomb, horizon=7)
 
 
 def _probability(value: Any, name: str) -> float:

@@ -44,6 +44,10 @@ RETENTION_SPEC = {
     "current_warmup": 2_000,
 }
 TRAINING_BUDGET = {"target_stage_action_steps": 100_000, "min_rounds": 1}
+SAFETY_SPEC = {
+    "version": "survival-mask-v1", "mode": "exploration", "horizon": 7,
+    "fallback": "physical_q",
+}
 
 
 class ResumeProtocolTestCase(unittest.TestCase):
@@ -68,6 +72,10 @@ class ResumeProtocolTestCase(unittest.TestCase):
                 "safe_exploration": True,
                 "safe_exploration_decisions": round_index,
                 "safe_exploration_fallbacks": 0,
+                "safety_spec": SAFETY_SPEC,
+                "safety_decisions": round_index,
+                "safety_interventions": 0,
+                "safety_fallbacks": 0,
                 "action_history_state": {
                     "previous_action": None, "wait_streak": 0, "round": None,
                 },
@@ -132,6 +140,7 @@ class ResumeProtocolTestCase(unittest.TestCase):
             "training_device_type": "cpu", "training_device_name": None,
             "agent_seed": 11, "exploration_spec": EXPLORATION_SPEC,
             "safe_exploration": True, "n_step": 1,
+            "safety_spec": SAFETY_SPEC,
             "retention_spec": RETENTION_SPEC,
             "training_budget": TRAINING_BUDGET,
             "source_commit": "abc123", "source_hash": "source-hash",
@@ -174,13 +183,11 @@ class ResumeProtocolTestCase(unittest.TestCase):
                         parent, {**parent, field: value}, parent_status="completed"
                     )
 
-        self.assertEqual(
+        with self.assertRaisesRegex(ValueError, "source_hash"):
             validate_resume_transition(
                 parent, {**parent, "source_hash": "different-source"},
                 parent_status="completed",
-            ),
-            "same_task",
-        )
+            )
 
     def test_resume_rejects_new_feature_schema_mismatch(self):
         parent = {
@@ -230,6 +237,10 @@ class ResumeProtocolTestCase(unittest.TestCase):
                 "safe_exploration": True,
                 "safe_exploration_decisions": 1,
                 "safe_exploration_fallbacks": 0,
+                "safety_spec": SAFETY_SPEC,
+                "safety_decisions": 1,
+                "safety_interventions": 0,
+                "safety_fallbacks": 0,
                 "action_history_state": {
                     "previous_action": None, "wait_streak": 0, "round": None,
                 },
@@ -260,7 +271,7 @@ class ResumeProtocolTestCase(unittest.TestCase):
             materialize_learner_checkpoint(loaded, destination)
             restored = torch.load(destination, map_location="cpu", weights_only=True)
             self.assertEqual(restored["checkpoint_schema"], CHECKPOINT_SCHEMA_VERSION)
-            self.assertEqual(CHECKPOINT_SCHEMA_VERSION, "training-resume-v5")
+            self.assertEqual(CHECKPOINT_SCHEMA_VERSION, "training-resume-v6")
             self.assertIn("replay", restored)
 
 

@@ -1,0 +1,25 @@
+{
+  "schema_version": "task2-safety-ablation-v1",
+  "frozen_diagnostic": {
+    "checkpoint": "runs/iter_r3_double_dqn_continuous_v2_r7_safe_credit_sparse_s11_t2_a150000_03fbd1b/checkpoints/final.pt",
+    "config": "experiments/configs/task2_safety_diagnostic.json",
+    "seeds": {"start": 10000, "end": 10019},
+    "maximum_suicide_rate": 0.05
+  },
+  "screening_seed": 11,
+  "candidates": [
+    {"agent": "double_dqn_continuous_v2_agent", "feature_id": "continuous-v2", "reward_id": "r7_safe_credit_sparse", "task1_config": "experiments/configs/safety_ablation_v2_r7_task1.json", "task2_config": "experiments/configs/safety_ablation_v2_r7_task2.json"},
+    {"agent": "double_dqn_continuous_v3_agent", "feature_id": "continuous-v3", "reward_id": "r7_safe_credit_sparse", "task1_config": "experiments/configs/safety_ablation_v3_r7_task1.json", "task2_config": "experiments/configs/safety_ablation_v3_r7_task2.json"},
+    {"agent": "double_dqn_continuous_v3_agent", "feature_id": "continuous-v3", "reward_id": "r8_safe_constrained", "task1_config": "experiments/configs/safety_ablation_v3_r8_task1.json", "task2_config": "experiments/configs/safety_ablation_v3_r8_task2.json"}
+  ],
+  "task1": {"target_action_steps": 200000, "round_cap": 750},
+  "task2": {"target_action_steps": 150000, "minimum_rounds": 500, "round_cap": 2000, "n_step": 4, "parent_fraction": 0.75, "distillation_weight": 2.0},
+  "development_seeds": {"start": 10000, "end": 10019},
+  "replication_seeds": [22, 33],
+  "main_validation_seeds": {"start": 11000, "end": 11099},
+  "reserved_final_test_seeds": {"start": 20000, "end": 20099},
+  "bootstrap": {"samples": 10000, "seed": 20260913, "interval": [0.025, 0.975]},
+  "gates": {"task1_mean_coins": 35.0, "task2_mean_coins": 2.0, "task2_mean_crates": 5.0, "task2_crate_gain": 0.5, "task1_retention": 0.9, "task2_suicide_rate": 0.05, "zero_bomb_round_rate": 0.1, "survived_bomb_rate": 0.95, "invalid_action_rate": 0.01, "act_p95_seconds": 0.05, "act_max_seconds": 0.5},
+  "selection_order": ["suicide_rate", "zero_bomb_round_rate", "survived_bomb_rate_desc", "balanced_capability_desc", "mean_coins_desc", "task1_retention_desc", "act_p95_seconds", "run_id"],
+  "task3_launch": false
+}

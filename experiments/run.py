@@ -48,6 +48,7 @@ from experiments.training import (
 from main import world_controller
 from agent_code.team_agent.feature_system import ACTIONS, normalize_feature_id
 from agent_code.team_agent.rewards import REWARD_VERSION, resolve_reward_spec
+from agent_code.team_agent.safety import resolve_safety_spec
 from experiments.agent_contracts import resolve_agent_contract
 from experiments.navigation_diagnostics import navigation_diagnostic
 from agent_code.learning_common.training_spec import resolve_retention_spec
@@ -97,9 +98,9 @@ def _checkpoint_reward_contract(
     checkpoint: Path, algorithm: str,
 ) -> dict[str, Any]:
     """Read reward provenance without changing frozen checkpoint behavior."""
-    if algorithm not in {"q_learning", "dqn"}:
+    if checkpoint.suffix not in {".pkl", ".pt"}:
         return {"reward_version": None, "reward_spec": None}
-    if algorithm == "q_learning":
+    if checkpoint.suffix == ".pkl":
         with checkpoint.open("rb") as file:
             payload = pickle.load(file)
     else:
@@ -118,6 +119,39 @@ def _checkpoint_reward_contract(
         "embedded_reward_version": embedded_version,
         "reward_version": payload.get("reward_id", embedded_version),
         "reward_spec": embedded_spec,
+    }
+
+
+def _checkpoint_feature_contract(
+    checkpoint: Path, algorithm: str,
+) -> dict[str, Any]:
+    """Read frozen feature provenance, including the 78-dimensional adapter."""
+    if checkpoint.suffix == ".pkl":
+        with checkpoint.open("rb") as file:
+            payload = pickle.load(file)
+    elif checkpoint.suffix == ".pt":
+        try:
+            import torch
+        except ImportError as exception:
+            raise RuntimeError(
+                "PyTorch is required to inspect a neural checkpoint"
+            ) from exception
+        payload = torch.load(checkpoint, map_location="cpu", weights_only=True)
+    else:
+        return {"feature_id": None, "feature_schema": None, "runtime_adapter": None}
+    if not isinstance(payload, dict):
+        return {"feature_id": None, "feature_schema": None, "runtime_adapter": None}
+    feature_id = payload.get("feature_id", payload.get("feature_version"))
+    schema = payload.get("feature_schema")
+    shape = tuple(schema.get("vector_shape", ())) if isinstance(schema, dict) else ()
+    adapter = (
+        "continuous-v2-legacy78"
+        if feature_id == "continuous-v2" and shape == (78,) else None
+    )
+    return {
+        "feature_id": feature_id,
+        "feature_schema": schema,
+        "runtime_adapter": adapter,
     }
 
 
@@ -154,6 +188,7 @@ class ExperimentWorld(BombeRLeWorld):
         self._training_reward_column: int | None = None
         self._death_steps: dict[str, int] = {}
         self._death_causes: dict[str, list[dict[str, str]]] = {}
+        self._bomb_owners_exploded_this_step = []
         super().__init__(args, agents)
 
     def new_round(self) -> None:
@@ -161,7 +196,14 @@ class ExperimentWorld(BombeRLeWorld):
         self._death_causes = {}
         self._navigation_previous_action = {}
         self._navigation_previous_target = {}
+        self._bomb_owners_exploded_this_step = []
         super().new_round()
+
+    def update_bombs(self) -> None:
+        self._bomb_owners_exploded_this_step = [
+            bomb.owner for bomb in self.bombs if bomb.timer <= 0
+        ]
+        super().update_bombs()
 
     def evaluate_explosions(self) -> None:
         alive_before = {agent.name for agent in self.active_agents if not agent.dead}
@@ -183,6 +225,11 @@ class ExperimentWorld(BombeRLeWorld):
         for agent_name in alive_before - alive_after:
             self._death_steps.setdefault(agent_name, int(self.step))
             self._death_causes.setdefault(agent_name, hits.get(agent_name, []))
+        for owner in self._bomb_owners_exploded_this_step:
+            owner.note_stat("bombs_resolved")
+            if not owner.dead:
+                owner.note_stat("bombs_survived")
+        self._bomb_owners_exploded_this_step = []
 
     def _append_timing(
         self,
@@ -220,6 +267,11 @@ class ExperimentWorld(BombeRLeWorld):
             record["navigation"] = diagnostic
             self._navigation_previous_target[agent.name] = target
             self._navigation_previous_action[agent.name] = action
+        runner = getattr(agent.backend, "runner", None)
+        safety = getattr(
+            getattr(runner, "fake_self", None), "last_safety_diagnostic", None)
+        if isinstance(safety, dict):
+            record["safety"] = safety
         self._timing_file.write(json.dumps(record, sort_keys=True) + "\n")
 
     def poll_and_run_agents(self) -> None:
@@ -329,6 +381,8 @@ class ExperimentWorld(BombeRLeWorld):
                     "suicides": int(statistics.get("suicides", 0)),
                     "crates": int(statistics.get("crates", 0)),
                     "bombs": int(statistics.get("bombs", 0)),
+                    "bombs_resolved": int(statistics.get("bombs_resolved", 0)),
+                    "bombs_survived": int(statistics.get("bombs_survived", 0)),
                     "invalid": int(statistics.get("invalid", 0)),
                     "survived": not bool(agent.dead),
                     "dead": dead,
@@ -684,6 +738,7 @@ def run_agent_session(
     device_info: dict[str, Any] | None = None,
     action_budget_config: dict[str, Any] | None = None,
     safe_exploration: bool = False,
+    safety_spec: dict[str, Any] | None = None,
     n_step: int = 1,
     retention_spec: dict[str, Any] | None = None,
     adaptation_triggers: Sequence[str] = (),
@@ -713,6 +768,22 @@ def run_agent_session(
     training_config["exploration"] = exploration_spec
     if not isinstance(safe_exploration, bool):
         raise ValueError("safe_exploration must be a boolean")
+    configured_safety = expanded.get("safety")
+    if configured_safety is not None and "safe_exploration" in training_config:
+        raise ValueError("config.safety conflicts with training.safe_exploration")
+    if safety_spec is None:
+        safety_spec = resolve_safety_spec(
+            configured_safety,
+            legacy_safe_exploration=(
+                safe_exploration if configured_safety is None and training else None),
+        )
+    else:
+        safety_spec = resolve_safety_spec(safety_spec)
+        if configured_safety is not None and resolve_safety_spec(
+            configured_safety) != safety_spec:
+            raise ValueError("resolved safety specification conflicts with config.safety")
+    safe_exploration = bool(
+        training and safety_spec["mode"] in {"exploration", "all"})
     if n_step not in {1, 4}:
         raise ValueError("n_step must be 1 or 4")
     retention_spec = resolve_retention_spec(retention_spec)
@@ -735,6 +806,7 @@ def run_agent_session(
     training_config["retention"] = retention_spec
     training_config["action_budget"] = action_budget_config
     expanded["training"] = training_config
+    expanded["safety"] = safety_spec
     expanded["adaptation_triggers"] = list(adaptation_triggers)
     evaluation_config = expanded.get("evaluation", {})
     if not isinstance(evaluation_config, dict):
@@ -784,6 +856,10 @@ def run_agent_session(
         None if training or checkpoint is None
         else _checkpoint_reward_contract(checkpoint, algorithm)
     )
+    checkpoint_feature_contract = (
+        None if training or checkpoint is None
+        else _checkpoint_feature_contract(checkpoint, algorithm)
+    )
     output.mkdir(parents=True, exist_ok=False)
     if training:
         assert checkpoint is not None
@@ -817,6 +893,7 @@ def run_agent_session(
         "device": device_info,
         "curriculum_action_mask": {"BOMB": task_name != "coin_navigation"},
         "checkpoint_reward_contract": checkpoint_reward_contract,
+        "checkpoint_feature_contract": checkpoint_feature_contract,
         "navigation_diagnostics": navigation_diagnostics,
     }
     metadata["expanded_config"] = expanded
@@ -826,6 +903,7 @@ def run_agent_session(
     metadata["checkpoint_schema"] = CHECKPOINT_SCHEMA_VERSION
     metadata["exploration_spec"] = exploration_spec
     metadata["safe_exploration"] = bool(safe_exploration and training)
+    metadata["safety_spec"] = safety_spec
     metadata["n_step"] = n_step
     metadata["retention_spec"] = retention_spec
     metadata["training_budget"] = action_budget_config
@@ -845,6 +923,7 @@ def run_agent_session(
     }
     metadata["rewards"] = resolved_rewards
     metadata["checkpoint_reward_contract"] = checkpoint_reward_contract
+    metadata["checkpoint_feature_contract"] = checkpoint_feature_contract
     metadata["task"] = task_name
     metadata["device"] = device_info
     metadata["exploration_disabled"] = not training
@@ -884,6 +963,7 @@ def run_agent_session(
             "BOMBERMAN_TORCH_DEVICE", "BOMBERMAN_AGENT_SEED",
             "BOMBERMAN_EXPLORATION_SPEC",
             "BOMBERMAN_SAFE_EXPLORATION", "BOMBERMAN_N_STEP",
+            "BOMBERMAN_SAFETY_SPEC",
             "BOMBERMAN_RETENTION_SPEC", "BOMBERMAN_TRAINING_BUDGET",
         )
     }
@@ -907,6 +987,8 @@ def run_agent_session(
         )
         os.environ["BOMBERMAN_SAFE_EXPLORATION"] = (
             "true" if training and safe_exploration else "false")
+        os.environ["BOMBERMAN_SAFETY_SPEC"] = json.dumps(
+            safety_spec, sort_keys=True, separators=(",", ":"))
         os.environ["BOMBERMAN_N_STEP"] = str(n_step)
         os.environ["BOMBERMAN_RETENTION_SPEC"] = json.dumps(
             retention_spec, sort_keys=True, separators=(",", ":"))
@@ -1124,11 +1206,14 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = _parser().parse_args(argv)
     try:
         config = _read_config(args.config)
+        agent_contract = resolve_agent_contract(args.agent, args.feature_id)
         configured_seeds, configured_rounds = _configured_evaluation(
             json.loads(json.dumps(config))
         )
         task_name, scenario, opponents = _task_settings(args.task, args.opponents)
         if args.mode == "train":
+            if not agent_contract.trainable:
+                raise ValueError(f"Agent {args.agent!r} does not support training")
             run_training_mode(
                 args, config, task_name, scenario, opponents,
                 output_directory=_output_directory,
