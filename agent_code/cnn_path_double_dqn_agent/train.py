@@ -149,9 +149,10 @@ def end_of_round(self, last_game_state, last_action, events):
     if run_dir and milestone > previous:
         snapshots = Path(run_dir) / "checkpoints" / "snapshots"
         snapshots.mkdir(exist_ok=True)
-        shutil.copy2(self.model_file, snapshots / f"policy_{milestone * 25_000:06d}.pt")
+        shutil.copy2(self.model_file, snapshots / f"policy_{action_steps:06d}.pt")
         self.cnn_path_snapshot_milestone = milestone
     reset_history(self)
+    self.cnn_observation_cache = {}
     self._feature_cache_key = None
     self._feature_cache_value = None
 

@@ -102,6 +102,32 @@ class FeatureAdapterTests(unittest.TestCase):
         self.assertIs(observed, replayed)
         self.assertEqual(replayed.board[15].sum(), 0.0)
 
+    def test_path_self_position_and_coin_order(self):
+        for coins in ([], [(3, 1)], [(3, 1), (5, 1)], [(5, 1), (3, 1)]):
+            state = game_state()
+            state["coins"] = coins
+            state["self"] = ("me", 0, True, (1, 3))
+            board = path_features(SimpleNamespace(), state).board
+            self.assertEqual(board[3].sum(), 1)
+            self.assertEqual(board[3, 1, 3], 1)
+
+    def test_path_two_states_and_new_round(self):
+        owner = SimpleNamespace()
+        first = game_state()
+        before = cached_features(owner, first)
+        record_position(owner, first)
+        second = game_state()
+        second["step"] = 2
+        second["self"] = ("me", 0, True, (3, 1))
+        after = cached_features(owner, second)
+        record_position(owner, second)
+        self.assertIs(cached_features(owner, first), before)
+        self.assertIs(cached_features(owner, second), after)
+        third = game_state()
+        third["round"] = 2
+        reset = cached_features(owner, third)
+        self.assertEqual(reset.board[15:].sum(), 0)
+
     def test_canonical_action_mapping_is_a_bijection(self):
         features = dq_callbacks.features_for_state(game_state())
         canonical = canonical_legal_mask(features)

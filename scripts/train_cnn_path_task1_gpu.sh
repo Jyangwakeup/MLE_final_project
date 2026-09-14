@@ -14,7 +14,7 @@ cd "${SLURM_SUBMIT_DIR:?Please submit this job from the project root}"
 train_seed="${TRAIN_SEED:-11}"
 target_steps="${TARGET_STEPS:-100000}"
 config="${CONFIG:-experiments/configs/cnn_path_task1_e2_r3.json}"
-run_id="${RUN_ID:-cnn_path_t1_e2_r3_s${train_seed}_j${SLURM_JOB_ID}}"
+run_id="${RUN_ID:-cnn_path_t1_v2_r3_s${train_seed}_j${SLURM_JOB_ID}}"
 
 srun .venv/bin/python - <<'PY'
 import torch
