@@ -27,3 +27,19 @@ _Avoid_: Rule action, corrected action
 **No-safe-action fallback**:
 A decision state with no horizon-survivable physical legal action, in which the learner selects its highest-valued physical legal action without a safety veto.
 _Avoid_: Random fallback, rescue action
+
+**Coin capability assessment**:
+A frozen, exploration-free Task 1 evaluation over the dedicated convergence seeds. Its primary result is mean game score; Task 1 requires every episode's score to equal its collected-coin count.
+_Avoid_: Training reward, recent training score
+
+**Task 1 score convergence**:
+Three consecutive coin capability assessments whose mean score is at least 48, with assessments separated by 50 newly trained rounds.
+_Avoid_: Action budget reached, training completed
+
+**Curriculum promotion qualification**:
+Task 1 score convergence followed by a passing, independent stage-gate evaluation and all engineering checks. Convergence alone does not authorize promotion.
+_Avoid_: Converged, completed
+
+**Task 2 winner**:
+The single Task 2 checkpoint whose configuration passed independent development gates for all three training seeds and then passed the one permitted main validation. A development-selected checkpoint is only a Task 2 winner candidate.
+_Avoid_: Best training run, winner configuration, winner candidate
