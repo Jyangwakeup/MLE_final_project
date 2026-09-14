@@ -51,10 +51,15 @@ def cached_features(owner, game_state):
     if game_state is None:
         return None
     key = (game_state.get("round"), game_state.get("step"))
-    if key != owner._feature_cache_key:
-        owner._feature_cache_key = key
-        owner._feature_cache_value = features_for_state(owner, game_state)
-    return owner._feature_cache_value
+    cache = getattr(owner, "cnn_observation_cache", {})
+    if cache and next(iter(cache))[0] != key[0]:
+        cache = {}
+    if key not in cache:
+        cache[key] = features_for_state(owner, game_state)
+        if len(cache) > 2:
+            del cache[next(iter(cache))]
+    owner.cnn_observation_cache = cache
+    return cache[key]
 
 
 def setup(self):

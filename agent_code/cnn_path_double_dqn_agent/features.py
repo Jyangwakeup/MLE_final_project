@@ -10,7 +10,7 @@ from agent_code.team_agent.feature_system import ACTIONS, extract_features
 from agent_code.team_agent.feature_system.common import build_context
 
 
-FEATURE_ID = "board-path-history-v1"
+FEATURE_ID = "board-path-history-v2"
 BASE_CHANNELS = (
     "stone_wall", "crate", "coin", "self", "opponent", "bomb_presence",
     "bomb_timer", "current_explosion", "danger_t1", "danger_t2", "danger_t3",
@@ -81,10 +81,16 @@ def _normalized_distance(values: np.ndarray) -> np.ndarray:
 def features_for_state(owner, game_state) -> PathBoardFeatures | None:
     if game_state is None:
         return None
+    if getattr(owner, "cnn_path_history_round", None) != game_state.get("round"):
+        initialize_history(owner)
+        owner.cnn_path_history_round = game_state.get("round")
     base = extract_features(game_state, "board-v1")
     context = build_context(game_state)
     board = np.zeros(BOARD_SHAPE, dtype=np.float32)
     board[:12] = base.board
+    board[3] = 0.0
+    x, y = game_state["self"][3]
+    board[3, x, y] = 1.0
     board[12] = _normalized_distance(context.coin_distance)
     board[13] = _normalized_distance(context.crate_frontier_distance)
     board[14] = _normalized_distance(context.opponent_distance)
