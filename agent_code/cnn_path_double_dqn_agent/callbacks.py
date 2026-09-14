@@ -46,8 +46,15 @@ AGENT_METADATA = {
 }
 
 
-def _extract(owner):
-    return lambda state: features_for_state(owner, state)
+def cached_features(owner, game_state):
+    """Return the exact observation used for a decision within one game step."""
+    if game_state is None:
+        return None
+    key = (game_state.get("round"), game_state.get("step"))
+    if key != owner._feature_cache_key:
+        owner._feature_cache_key = key
+        owner._feature_cache_value = features_for_state(owner, game_state)
+    return owner._feature_cache_value
 
 
 def setup(self):
@@ -82,7 +89,7 @@ def setup(self):
 
 
 def act(self, game_state):
-    features = features_for_state(self, game_state)
+    features = cached_features(self, game_state)
     physical = effective_legal_mask(
         features.legal_mask, ACTIONS, self.curriculum_allows_bomb)
     values = self.model.q_values(features.board)

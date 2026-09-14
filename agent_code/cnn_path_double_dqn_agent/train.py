@@ -21,8 +21,9 @@ from agent_code.team_agent.safety import avoidable_fatal_action, mask_for_decisi
 
 from .callbacks import (
     ALGORITHM, FEATURE_ID, FEATURE_SCHEMA, HYPERPARAMETERS, NETWORK_SPEC,
+    cached_features,
 )
-from .features import features_for_state, reset_history
+from .features import reset_history
 
 
 FIELDS = (
@@ -42,7 +43,7 @@ def setup_training(self):
 
 
 def _decision_mask(self, state):
-    features = features_for_state(self, state)
+    features = cached_features(self, state)
     physical = effective_legal_mask(
         features.legal_mask, ACTIONS, self.curriculum_allows_bomb)
     legal, _ = mask_for_decision(
@@ -151,6 +152,8 @@ def end_of_round(self, last_game_state, last_action, events):
         shutil.copy2(self.model_file, snapshots / f"policy_{milestone * 25_000:06d}.pt")
         self.cnn_path_snapshot_milestone = milestone
     reset_history(self)
+    self._feature_cache_key = None
+    self._feature_cache_value = None
 
 
 def _append_metrics(self, last_game_state):
