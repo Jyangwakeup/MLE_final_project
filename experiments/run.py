@@ -39,6 +39,10 @@ from experiments.resume import (
     LoadedSnapshot,
     commit_training_snapshot,
     materialize_learner_checkpoint,
+    materialize_migrated_checkpoint,
+)
+from experiments.performance_stopping import (
+    Task1PerformanceStopping, frozen_score_assessor, load_committed_history,
 )
 from experiments.training import (
     CompositeTrainingStop, TrainingActionBudget, TrainingEarlyStopping,
@@ -464,6 +468,8 @@ class ExperimentWorld(BombeRLeWorld):
                     self._snapshot_config["parent_cumulative"] + len(local_rewards)
                 ),
                 early_stopping_config=self._snapshot_config["early_stopping_config"],
+                performance_stopping=self._snapshot_config.get("performance_stopping"),
+                performance_history=self._snapshot_config.get("performance_history", []),
             )
 
     def end(self) -> None:
@@ -746,6 +752,8 @@ def run_agent_session(
     reward_id_override: str | None = None,
     show_progress: bool = True,
     progress_leave: bool = True,
+    performance_stopping: dict[str, Any] | None = None,
+    migration: bool = False,
 ) -> Path:
     """Run one isolated training or frozen-evaluation session."""
     training = mode == "train"
@@ -805,6 +813,7 @@ def run_agent_session(
     training_config["n_step"] = n_step
     training_config["retention"] = retention_spec
     training_config["action_budget"] = action_budget_config
+    training_config["performance_stopping"] = performance_stopping
     expanded["training"] = training_config
     expanded["safety"] = safety_spec
     expanded["adaptation_triggers"] = list(adaptation_triggers)
@@ -865,7 +874,11 @@ def run_agent_session(
         assert checkpoint is not None
         checkpoint.parent.mkdir(parents=True, exist_ok=True)
     if resume_snapshot is not None:
-        materialize_learner_checkpoint(resume_snapshot, checkpoint)
+        if migration:
+            materialize_migrated_checkpoint(
+                resume_snapshot, checkpoint, training_budget=action_budget_config)
+        else:
+            materialize_learner_checkpoint(resume_snapshot, checkpoint)
 
     seeds = _training_seeds(seed) if training else _evaluation_seeds(seed)
     metadata = _initial_metadata(config_path, mode, output.name, seeds)
@@ -907,6 +920,7 @@ def run_agent_session(
     metadata["n_step"] = n_step
     metadata["retention_spec"] = retention_spec
     metadata["training_budget"] = action_budget_config
+    metadata["performance_stopping"] = performance_stopping
     metadata["adaptation_triggers"] = list(adaptation_triggers)
     metadata["feature_id"] = contract.feature_id
     metadata["feature_schema"] = contract.feature_schema
@@ -946,6 +960,14 @@ def run_agent_session(
         "parent_source_commit": resume_snapshot.source_commit,
         "parent_source_hash": resume_snapshot.source_hash,
         "resume_kind": resume_kind,
+        "schema_migration": (
+            {
+                "from": "training-resume-v6",
+                "to": CHECKPOINT_SCHEMA_VERSION,
+                "history_initialized": "empty",
+            }
+            if migration else None
+        ),
     }
     metadata["config_sha256"] = hashlib.sha256(
         json.dumps(expanded, sort_keys=True, separators=(",", ":")).encode("utf-8")
@@ -1003,7 +1025,22 @@ def run_agent_session(
         _seed_official_rng(seeds["official_opponent_seed"])
         inherited_rewards = (
             resume_snapshot.runner_state.get("early_stopping_rewards", [])
+            if resume_snapshot is not None
+            and resume_kind in {"same_task", "v6_migration"} else []
+        )
+        snapshot_performance_history = (
+            resume_snapshot.runner_state.get("performance_history", [])
             if resume_snapshot is not None and resume_kind == "same_task" else []
+        )
+        performance_history = (
+            load_committed_history(
+                resume_snapshot.run_directory,
+                snapshot_performance_history,
+                performance_stopping,
+            )
+            if performance_stopping is not None
+            and resume_snapshot is not None and resume_kind == "same_task"
+            else []
         )
         world = ExperimentWorld(
             _world_args(output, scenario, seeds["environment_seed"], output.name),
@@ -1025,12 +1062,14 @@ def run_agent_session(
                     "source_commit": source_commit,
                     "source_hash": source_hash,
                     "task": task_name,
+                    "performance_stopping": performance_stopping,
+                    "performance_history": performance_history,
                 }
                 if training else None
             ),
             navigation_diagnostics=navigation_diagnostics,
         )
-        if resume_snapshot is not None and resume_kind == "same_task":
+        if resume_snapshot is not None and resume_kind in {"same_task", "v6_migration"}:
             runner_state = resume_snapshot.runner_state
             world.rng.bit_generator.state = runner_state["world_rng_state"]
             world.round = resume_snapshot.round_index
@@ -1053,7 +1092,33 @@ def run_agent_session(
             if training and action_budget_config["target_stage_action_steps"] is not None
             else None
         )
-        stopping = CompositeTrainingStop(early_stopping, action_budget)
+        performance_stop = None
+        if training and performance_stopping is not None:
+            assessor = frozen_score_assessor(
+                project_root=PROJECT_ROOT,
+                config_path=config_path,
+                run_directory=output,
+                agent=agent,
+                checkpoint=checkpoint,
+                seeds=performance_stopping["evaluation_seeds"],
+                rounds_per_seed=performance_stopping["rounds_per_seed"],
+            )
+            performance_stop = Task1PerformanceStopping(
+                performance_stopping,
+                run_directory=output,
+                base_cumulative_rounds=parent_cumulative,
+                assessor=assessor,
+                history=performance_history,
+            )
+            world._snapshot_config["performance_history"] = performance_stop.history
+            if migration:
+                performance_stop.assess(
+                    parent_cumulative,
+                    resume_snapshot.generation,
+                    resume_snapshot.generation_hash,
+                )
+        stopping = CompositeTrainingStop(
+            early_stopping, action_budget, performance_stop)
         completed_rounds = world_controller(
             world, n_rounds, gui=None, every_step=False, turn_based=False,
             make_video=False, update_interval=0.0, show_progress=show_progress,
@@ -1092,14 +1157,29 @@ def run_agent_session(
             "stage_action_steps": final_stage_steps,
             "action_budget": action_budget_config,
             "action_budget_reached": budget_reached,
+            "performance_stopping": (
+                None if performance_stop is None else {
+                    "result": performance_stop.result,
+                    "history": performance_stop.history,
+                    "converged": bool(
+                        performance_stop.result
+                        and performance_stop.result["reason"] == "task1_score_converged"),
+                }
+            ),
             "completion_reason": (
-                "stage_action_target_reached"
+                performance_stop.result["reason"]
+                if performance_stop is not None and performance_stop.result is not None
+                else "stage_action_target_reached"
                 if action_budget is not None and action_budget.result is not None
                 else "round_cap_reached"
             ),
         }
         metadata["status"] = (
-            "early_stopped" if early_stopping is not None and early_stopping.result
+            "not_converged"
+            if performance_stop is not None and (
+                performance_stop.result is None
+                or performance_stop.result["reason"] == "task1_score_not_converged")
+            else "early_stopped" if early_stopping is not None and early_stopping.result
             else "completed"
         )
         _write_json(metadata_path, metadata)
@@ -1183,9 +1263,14 @@ def _parser() -> argparse.ArgumentParser:
         "--device", choices=("auto", "cpu", "cuda"),
         help="DQN training device; evaluation is always resolved to CPU",
     )
-    parser.add_argument(
+    resume_group = parser.add_mutually_exclusive_group()
+    resume_group.add_argument(
         "--resume-from", type=Path,
-        help="Parent training run directory used for exact or curriculum resume",
+        help="Parent v7 training run used for exact or curriculum resume",
+    )
+    resume_group.add_argument(
+        "--migrate-resume-from", type=Path,
+        help="Complete v6 Task 1 run migrated explicitly into a v7 child",
     )
     parser.add_argument(
         "--replay-policy", choices=("auto", *REPLAY_POLICIES), default="auto",
@@ -1223,8 +1308,8 @@ def main(argv: Sequence[str] | None = None) -> int:
                 source_hash=_source_hash(),
             )
         else:
-            if args.resume_from is not None:
-                raise ValueError("--resume-from is only valid with --mode train")
+            if args.resume_from is not None or args.migrate_resume_from is not None:
+                raise ValueError("resume and migration options are only valid with --mode train")
             if args.adaptation_trigger:
                 raise ValueError(
                     "--adaptation-trigger is only valid with --mode train")

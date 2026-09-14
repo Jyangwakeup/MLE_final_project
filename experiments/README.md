@@ -106,7 +106,7 @@ C 需要 B 提供的最小信息是：
 - checkpoint 版本元数据；以及
 - 训练指标的输出位置。
 
-当前完整恢复 schema 为 `training-resume-v6`。Runner 只校验公开 checkpoint 合同，
+当前完整恢复 schema 为 `training-resume-v7`。Runner 只校验公开 checkpoint 合同，
 不导入 `agent_code/q_learning_agent/` 或 `agent_code/dqn_agent/` 的私有学习实现。
 
 ### 运行时配置
@@ -452,8 +452,7 @@ python3 experiments/run.py \
 但按同一 seed 重建环境/对手随机流、从回合 1 开始并重置早停。只允许同 Task 或
 `1→2→3→4`，且算法、训练/Agent seed、动作顺序、特征版本、奖励版本、完整奖励表、
 训练设备、`source_commit`、`source_hash` 和 resume schema 必须一致。探索、n-step、回放保留和预算只可按直接 Task 晋级的预注册合同改变。
-当前 schema 为 `training-resume-v6`；v1–v5 及冻结 final
-checkpoint 不能精确续训。
+当前 schema 为 `training-resume-v7`；v1–v6 及冻结 final checkpoint 默认不能精确续训。完整 v6 Task 1 run 只能通过显式 `--migrate-resume-from` 建立 v7 子 run；普通 `--resume-from` 不自动迁移。
 同 Task 的早停配置也必须保持一致。
 
 每回合边界发布一代完整快照，`resume/` 只保留最新两代。最新一代校验失败时自动回退
@@ -636,7 +635,7 @@ Q-learning 与 DQN agent 都会据此屏蔽炸弹。Task 2–4 会自动允许�
 `timing-v1`。
 
 `configs/formal_training.json` 保留 CPU、`discrete-v1`、`r1` 基线；
-`configs/formal_training_coin3.json` 保留旧 v4 固定局数证据。`task2_safety_diagnostic.json` 对既有 v5 checkpoint 仅启用冻结 shield；`safety_ablation_*` 固定三条 v6 Task 1→2 消融。`final_test.json` 的 20000–20099 仍封存。v5 及更早 run 不得成为 v6 父节点。
+`configs/formal_training_coin3.json` 保留旧 v4 固定局数证据。`task2_safety_diagnostic.json` 对既有 v5 checkpoint 仅启用冻结 shield；三个 `safety_ablation_*_task1.json` 使用同步冻结分数停止：第200局起每50局在9000–9019上检查，连续三次 `mean_score≥48` 停止，累计上限1000局。10000–10019只用于独立晋级门槛。Task 2 仍使用150000动作/至少500局。`final_test.json` 的20000–20099继续封存。
 奖励实验使用独立配置文件：
 
 ```text

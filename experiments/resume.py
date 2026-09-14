@@ -22,7 +22,8 @@ from agent_code.team_agent.feature_system import (
 )
 
 
-CHECKPOINT_SCHEMA_VERSION = "training-resume-v6"
+CHECKPOINT_SCHEMA_VERSION = "training-resume-v7"
+MIGRATABLE_CHECKPOINT_SCHEMA = "training-resume-v6"
 TASK_ORDER = ("coin_navigation", "crate_navigation", "weak_opponents", "full_match")
 RETAINED_GENERATIONS = 2
 TABLE_ALGORITHMS = frozenset(("q_learning", "double_q_learning"))
@@ -76,6 +77,7 @@ class LoadedSnapshot:
             "n_step": metadata.get("n_step", 1),
             "retention_spec": metadata.get("retention_spec", {}),
             "training_budget": metadata.get("training_budget", {}),
+            "performance_stopping": metadata.get("performance_stopping"),
         }
 
 
@@ -167,6 +169,8 @@ def commit_training_snapshot(
     source_hash: str | None = None,
     cumulative_completed_rounds: int | None = None,
     early_stopping_config: dict[str, Any] | None = None,
+    performance_stopping: dict[str, Any] | None = None,
+    performance_history: list[dict[str, Any]] | None = None,
 ) -> Path:
     """Atomically publish one complete round-boundary snapshot."""
     run_directory = Path(run_directory).resolve()
@@ -268,6 +272,7 @@ def commit_training_snapshot(
                 "n_step": learner["n_step"],
                 "retention_spec": learner["retention_spec"],
                 "training_budget": learner["training_budget"],
+                "performance_stopping": performance_stopping,
             },
             "cumulative_completed_rounds": (
                 int(round_index)
@@ -276,6 +281,7 @@ def commit_training_snapshot(
             ),
             "early_stopping_config": early_stopping_config,
             "early_stopping_rewards": list(early_stopping_rewards),
+            "performance_history": list(performance_history or []),
             "numpy_rng_state": numpy_rng_state,
             "python_rng_state": python_rng_state,
             "world_rng_state": world_rng_state,
@@ -327,13 +333,14 @@ def commit_training_snapshot(
 
 def _load_generation(
     run_directory: Path, generation: str, expected_manifest_hash: str | None = None,
+    *, expected_schema: str = CHECKPOINT_SCHEMA_VERSION,
 ) -> LoadedSnapshot:
     directory = run_directory / "resume" / generation
     manifest_path = directory / "manifest.json"
     if expected_manifest_hash is not None and _sha256(manifest_path) != expected_manifest_hash:
         raise ValueError("Snapshot manifest failed latest-pointer validation")
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-    if manifest.get("checkpoint_schema") != CHECKPOINT_SCHEMA_VERSION:
+    if manifest.get("checkpoint_schema") != expected_schema:
         raise ValueError("Snapshot manifest has an incompatible schema")
     for name, expected in manifest["files"].items():
         path = directory / name
@@ -373,14 +380,14 @@ def _load_generation(
     )
 
 
-def load_training_snapshot(run_directory: Path) -> LoadedSnapshot:
+def _load_training_snapshot(run_directory: Path, *, expected_schema: str) -> LoadedSnapshot:
     """Load the newest valid committed generation, falling back once if needed."""
     run_directory = Path(run_directory).resolve()
     latest_path = run_directory / "resume" / "latest.json"
     if not latest_path.is_file():
         raise ValueError("Parent run has no complete resume snapshot")
     latest = json.loads(latest_path.read_text(encoding="utf-8"))
-    if latest.get("checkpoint_schema") != CHECKPOINT_SCHEMA_VERSION:
+    if latest.get("checkpoint_schema") != expected_schema:
         raise ValueError("Resume pointer has an incompatible checkpoint schema")
     generations = latest.get("generations", [])
     if not generations:
@@ -393,6 +400,7 @@ def load_training_snapshot(run_directory: Path) -> LoadedSnapshot:
                 run_directory,
                 generation,
                 latest.get("generation_hash") if index == 0 else None,
+                expected_schema=expected_schema,
             )
             newest_round = loaded.round_index if newest_round is None else newest_round
             return LoadedSnapshot(
@@ -412,6 +420,18 @@ def load_training_snapshot(run_directory: Path) -> LoadedSnapshot:
     raise ValueError("No valid resume snapshot: " + "; ".join(failures))
 
 
+def load_training_snapshot(run_directory: Path) -> LoadedSnapshot:
+    """Load a v7 snapshot for exact continuation or curriculum promotion."""
+    return _load_training_snapshot(
+        run_directory, expected_schema=CHECKPOINT_SCHEMA_VERSION)
+
+
+def load_migration_snapshot(run_directory: Path) -> LoadedSnapshot:
+    """Load a complete v6 snapshot through the explicit one-way migration path."""
+    return _load_training_snapshot(
+        run_directory, expected_schema=MIGRATABLE_CHECKPOINT_SCHEMA)
+
+
 def materialize_learner_checkpoint(snapshot: LoadedSnapshot, destination: Path) -> None:
     """Create the child run's working checkpoint from a validated snapshot."""
     destination.parent.mkdir(parents=True, exist_ok=True)
@@ -423,6 +443,68 @@ def materialize_learner_checkpoint(snapshot: LoadedSnapshot, destination: Path) 
         assert snapshot.learner_path is not None
         shutil.copy2(snapshot.learner_path, temporary)
     temporary.replace(destination)
+
+
+def materialize_migrated_checkpoint(
+    snapshot: LoadedSnapshot,
+    destination: Path,
+    *,
+    training_budget: dict[str, Any],
+) -> None:
+    """Copy a validated v6 learner into a v7 child without touching the parent."""
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    temporary = destination.with_name(destination.name + ".tmp")
+    if snapshot.algorithm in TABLE_ALGORITHMS:
+        assert snapshot.learner_payload is not None
+        payload = dict(snapshot.learner_payload)
+        payload["checkpoint_schema"] = CHECKPOINT_SCHEMA_VERSION
+        payload["training_budget"] = dict(training_budget)
+        with temporary.open("wb") as file:
+            pickle.dump(payload, file, protocol=pickle.HIGHEST_PROTOCOL)
+    else:
+        assert snapshot.learner_path is not None
+        try:
+            import torch
+        except ImportError as exception:
+            raise RuntimeError("PyTorch is required to migrate a DQN snapshot") from exception
+        payload = torch.load(snapshot.learner_path, map_location="cpu", weights_only=True)
+        payload["checkpoint_schema"] = CHECKPOINT_SCHEMA_VERSION
+        payload["training_budget"] = dict(training_budget)
+        torch.save(payload, temporary)
+    temporary.replace(destination)
+
+
+def validate_v6_migration(
+    parent: dict[str, Any], child: dict[str, Any], *, parent_status: str,
+) -> None:
+    """Validate the narrow, explicit v6-to-v7 Task 1 migration contract."""
+    if parent.get("checkpoint_schema") != MIGRATABLE_CHECKPOINT_SCHEMA:
+        raise ValueError("Migration requires a training-resume-v6 parent")
+    if child.get("checkpoint_schema") != CHECKPOINT_SCHEMA_VERSION:
+        raise ValueError("Migration target must use training-resume-v7")
+    if parent_status != "completed":
+        raise ValueError("Migration requires a completed v6 parent run")
+    if parent.get("task") != "coin_navigation" or child.get("task") != "coin_navigation":
+        raise ValueError("v6 migration is supported only within Task 1")
+    for field in (
+        "algorithm", "seed", "reward_spec", "training_device_type",
+        "training_device_name", "agent_seed", "safe_exploration", "safety_spec",
+        "n_step", "retention_spec", "exploration_spec", "network_spec",
+        "hyperparameters",
+    ):
+        if parent.get(field) != child.get(field):
+            raise ValueError(f"Migration {field} must match the v6 parent")
+    parent_feature = normalize_feature_id(
+        parent.get("feature_id"), parent.get("feature_version"))
+    child_feature = normalize_feature_id(
+        child.get("feature_id"), child.get("feature_version"))
+    if parent_feature != child_feature or parent.get("feature_schema") != child.get("feature_schema"):
+        raise ValueError("Migration feature contract must match the v6 parent")
+    if parent.get("reward_id", parent.get("reward_version")) != child.get(
+        "reward_id", child.get("reward_version")):
+        raise ValueError("Migration reward ID must match the v6 parent")
+    if list(parent.get("actions", ())) != list(child.get("actions", ())):
+        raise ValueError("Migration action order must match the v6 parent")
 
 
 def validate_resume_transition(
@@ -472,7 +554,7 @@ def validate_resume_transition(
     except (KeyError, ValueError) as exception:
         raise ValueError("Resume task is not part of the curriculum") from exception
     if child_index == parent_index:
-        for field in ("n_step", "retention_spec"):
+        for field in ("n_step", "retention_spec", "performance_stopping"):
             if parent.get(field) != child.get(field):
                 raise ValueError(f"Same-Task resume {field} must match the parent run")
         if parent.get("exploration_spec") != child.get("exploration_spec"):
