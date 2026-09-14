@@ -34,6 +34,7 @@ from agent_code.cnn_double_dqn_agent.model import BoardQNetwork, build_learner a
 from agent_code.cnn_path_double_dqn_agent.features import (
     features_for_state as path_features, initialize_history, record_position,
 )
+from agent_code.cnn_path_double_dqn_agent.callbacks import cached_features
 from agent_code.cnn_path_double_dqn_agent.learner import PathReplay
 from agent_code.cnn_path_double_dqn_agent.model import PathBoardQNetwork
 from agent_code.hybrid_dueling_double_dqn_agent import features as hybrid_features
@@ -90,6 +91,16 @@ class FeatureAdapterTests(unittest.TestCase):
         record_position(owner, state)
         reset = path_features(owner, state)
         self.assertEqual(reset.board[16, 1, 1], 1.0 / 16.0)
+
+    def test_path_observation_is_cached_before_history_advances(self):
+        owner = SimpleNamespace(_feature_cache_key=None, _feature_cache_value=None)
+        initialize_history(owner)
+        state = game_state()
+        observed = cached_features(owner, state)
+        record_position(owner, state)
+        replayed = cached_features(owner, state)
+        self.assertIs(observed, replayed)
+        self.assertEqual(replayed.board[15].sum(), 0.0)
 
     def test_canonical_action_mapping_is_a_bijection(self):
         features = dq_callbacks.features_for_state(game_state())
