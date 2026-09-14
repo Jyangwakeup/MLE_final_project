@@ -13,9 +13,10 @@ cd "${SLURM_SUBMIT_DIR:?Please submit this job from the project root}"
 
 checkpoint="${CHECKPOINT:?Set CHECKPOINT to a completed path CNN checkpoint}"
 run_id="${RUN_ID:-cnn_path_t1_eval_j${SLURM_JOB_ID}}"
+config="${CONFIG:-experiments/configs/cnn_path_task1_r7_safety.json}"
 
 srun .venv/bin/python -u -m experiments.run \
-  --config experiments/configs/cnn_path_task1_r3.json \
+  --config "$config" \
   --mode evaluate --task 1 --agent cnn_path_double_dqn_agent --device cpu \
   --checkpoint "$checkpoint" \
   --seeds 10001 10002 10003 10004 10005 --n-rounds 20 \
