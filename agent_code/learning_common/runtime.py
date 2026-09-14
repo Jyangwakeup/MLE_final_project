@@ -23,7 +23,7 @@ from .training_spec import (
 )
 
 
-CHECKPOINT_SCHEMA = "training-resume-v6"
+CHECKPOINT_SCHEMA = "training-resume-v7"
 DEFAULT_REWARD_ID = "r1"
 CHECKPOINT_ENV = "BOMBERMAN_CHECKPOINT"
 FEATURE_ID_ENV = "BOMBERMAN_FEATURE_ID"
@@ -153,7 +153,7 @@ def validate_checkpoint(
     frozen_schemas = {
         "training-resume-v1", "training-resume-v2",
         "training-resume-v3", "training-resume-v4", "training-resume-v5",
-        CHECKPOINT_SCHEMA,
+        "training-resume-v6", CHECKPOINT_SCHEMA,
     }
     if checkpoint_schema not in frozen_schemas:
         raise ValueError("checkpoint uses an incompatible checkpoint schema")

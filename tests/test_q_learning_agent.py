@@ -251,7 +251,7 @@ class QLearningAgentConfigurationTestCase(unittest.TestCase):
                     "reward_version": "r1",
                     "reward_id": "r1",
                     "reward_spec": resolve_reward_spec("r1"),
-                    "checkpoint_schema": "training-resume-v6",
+                    "checkpoint_schema": "training-resume-v7",
                     "network_spec": None,
                     "hyperparameters": HYPERPARAMETERS,
                     "agent_rng_state": random.Random(0).getstate(),

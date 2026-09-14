@@ -14,9 +14,12 @@ except ImportError:
 
 from experiments.resume import (
     CHECKPOINT_SCHEMA_VERSION,
+    LoadedSnapshot,
     commit_training_snapshot,
     load_training_snapshot,
+    materialize_migrated_checkpoint,
     materialize_learner_checkpoint,
+    validate_v6_migration,
     validate_resume_transition,
 )
 from agent_code.team_agent.feature_system import feature_schema_contract
@@ -212,6 +215,55 @@ class ResumeProtocolTestCase(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "no complete resume snapshot"):
                 load_training_snapshot(run)
 
+    def test_explicit_v6_migration_rewrites_only_the_child_checkpoint(self):
+        parent_contract = {
+            "algorithm": "q_learning", "seed": 11, "task": "coin_navigation",
+            "feature_id": "discrete-v1", "feature_version": "v1",
+            "feature_schema": feature_schema_contract("discrete-v1"),
+            "reward_id": "r1", "reward_version": "r1", "reward_spec": REWARD_SPEC,
+            "checkpoint_schema": "training-resume-v6",
+            "actions": ["UP", "RIGHT", "DOWN", "LEFT", "WAIT", "BOMB"],
+            "training_device_type": "cpu", "training_device_name": None,
+            "agent_seed": 11, "exploration_spec": EXPLORATION_SPEC,
+            "safe_exploration": True, "safety_spec": SAFETY_SPEC,
+            "n_step": 1, "retention_spec": RETENTION_SPEC,
+            "network_spec": None, "hyperparameters": {},
+        }
+        child_contract = {
+            **parent_contract,
+            "checkpoint_schema": CHECKPOINT_SCHEMA_VERSION,
+            "training_budget": {"target_stage_action_steps": None, "min_rounds": 1},
+            "performance_stopping": {"version": "task1-frozen-score-v1"},
+        }
+        validate_v6_migration(
+            parent_contract, child_contract, parent_status="completed")
+        with tempfile.TemporaryDirectory() as directory:
+            payload = {
+                "checkpoint_schema": "training-resume-v6",
+                "training_budget": TRAINING_BUDGET,
+                "q_table": {(0,) * 14: np.ones(6, dtype=np.float32)},
+            }
+            snapshot = LoadedSnapshot(
+                run_directory=Path(directory), generation="generation-00000750",
+                generation_hash="hash", algorithm="q_learning",
+                task="coin_navigation", seed=11, round_index=750,
+                source_commit="old", source_hash="old-hash",
+                runner_state={"contract": parent_contract}, learner_payload=payload,
+                learner_path=None,
+            )
+            destination = Path(directory) / "child.pkl"
+            materialize_migrated_checkpoint(
+                snapshot, destination,
+                training_budget={"target_stage_action_steps": None, "min_rounds": 1})
+            migrated = pickle.loads(destination.read_bytes())
+            self.assertEqual(migrated["checkpoint_schema"], CHECKPOINT_SCHEMA_VERSION)
+            self.assertIsNone(migrated["training_budget"]["target_stage_action_steps"])
+            self.assertEqual(payload["checkpoint_schema"], "training-resume-v6")
+        with self.assertRaisesRegex(ValueError, "v6 parent"):
+            validate_v6_migration(
+                {**parent_contract, "checkpoint_schema": "training-resume-v5"},
+                child_contract, parent_status="completed")
+
     @unittest.skipIf(torch is None, "PyTorch is not installed")
     def test_dqn_snapshot_materializes_a_weights_only_safe_checkpoint(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -271,7 +323,7 @@ class ResumeProtocolTestCase(unittest.TestCase):
             materialize_learner_checkpoint(loaded, destination)
             restored = torch.load(destination, map_location="cpu", weights_only=True)
             self.assertEqual(restored["checkpoint_schema"], CHECKPOINT_SCHEMA_VERSION)
-            self.assertEqual(CHECKPOINT_SCHEMA_VERSION, "training-resume-v6")
+            self.assertEqual(CHECKPOINT_SCHEMA_VERSION, "training-resume-v7")
             self.assertIn("replay", restored)
 
 
