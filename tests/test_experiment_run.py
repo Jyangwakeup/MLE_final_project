@@ -139,7 +139,7 @@ class ExperimentRunTest(unittest.TestCase):
             "version": "linear-v1",
             "start": 1.0,
             "end": 0.05,
-            "decay_action_steps": 1_920_000,
+            "decay_action_steps": 80_000,
         })
         self.assertEqual(
             metadata["expanded_config"]["training"]["exploration"],
@@ -377,29 +377,67 @@ class ExperimentRunTest(unittest.TestCase):
         output = self.output("early-stop-unit")
         output.mkdir()
         training_path = output / "training.csv"
-        training_path.write_text("round,reward\n", encoding="utf-8")
+        training_path.write_text("round,reward,action_steps\n", encoding="utf-8")
         stopper = TrainingEarlyStopping(training_path, {
             "window": 2,
             "patience": 2,
             "min_rounds": 4,
             "min_delta": 0.1,
             "target_reward": 9.0,
+            "require_exploration_complete": True,
+            "min_action_steps": 4,
         })
 
         decisions = []
         for round_index, reward in enumerate((10, 10, 10, 10), start=1):
             with training_path.open("a", encoding="utf-8") as file:
-                file.write(f"{round_index},{reward}\n")
+                file.write(f"{round_index},{reward},{round_index}\n")
             decisions.append(stopper(round_index))
 
         self.assertEqual(decisions, [False, False, False, True])
         self.assertEqual(stopper.result["reason"], "rolling_mean_plateau")
         self.assertEqual(stopper.result["completed_rounds"], 4)
 
-    def test_early_stopping_is_opt_in(self):
-        self.assertIsNone(early_stopping_config({}))
+    def test_early_stopping_waits_for_exploration_completion(self):
+        output = self.output("early-stop-exploration")
+        output.mkdir()
+        training_path = output / "training.csv"
+        training_path.write_text(
+            "round,reward,action_steps\n", encoding="utf-8")
+        stopper = TrainingEarlyStopping(training_path, {
+            "window": 2,
+            "patience": 1,
+            "min_rounds": 3,
+            "min_delta": 0.1,
+            "target_reward": None,
+            "require_exploration_complete": True,
+            "min_action_steps": 10,
+        })
+
+        decisions = []
+        for round_index, action_steps in enumerate((1, 2, 3, 10), start=1):
+            with training_path.open("a", encoding="utf-8") as file:
+                file.write(f"{round_index},1.0,{action_steps}\n")
+            decisions.append(stopper(round_index))
+
+        self.assertEqual(decisions, [False, False, False, True])
+        self.assertEqual(stopper.result["action_steps"], 10)
+
+    def test_early_stopping_is_enabled_by_default(self):
+        self.assertEqual(early_stopping_config({}), {
+            "enabled": True,
+            "window": 200,
+            "patience": 100,
+            "min_rounds": 300,
+            "min_delta": 0.1,
+            "target_reward": None,
+            "require_exploration_complete": True,
+        })
         config = {"early_stopping": {"enabled": True, "window": 5}}
-        self.assertEqual(early_stopping_config(config), config["early_stopping"])
+        self.assertEqual(early_stopping_config(config)["window"], 5)
+        self.assertIsNone(early_stopping_config({
+            "early_stopping": {"enabled": False},
+        }))
 
     def test_training_replay_interval_tracks_progress_milestones(self):
         self.assertEqual(replay_progress_interval(1), 1)
@@ -461,6 +499,7 @@ class ExperimentRunTest(unittest.TestCase):
 
         def fake_session(*args, **kwargs):
             self.assertEqual(kwargs["device_info"]["actual"], "cpu")
+            self.assertFalse(kwargs["show_progress"])
             run_output = args[3]
             run_output.mkdir()
             return run_output
@@ -519,6 +558,31 @@ class ExperimentRunTest(unittest.TestCase):
         self.assertEqual(actions, diagnostic_actions)
         self.assertTrue(all("navigation" in record for record in diagnostic_records))
         self.assertNotIn("BOMB", actions)
+
+    def test_official_baselines_run_without_checkpoints_and_emit_metrics(self):
+        for agent in (
+            "random_agent", "rule_based_agent", "peaceful_agent",
+            "coin_collector_agent",
+        ):
+            with self.subTest(agent=agent):
+                output = self.output(f"official-{agent}")
+                with patch.object(s, "MAX_STEPS", 3):
+                    result = experiment_main([
+                        "--config", str(
+                            PROJECT_ROOT / "experiments/configs/stage_gate_coin3.json"),
+                        "--mode", "evaluate", "--task", "1",
+                        "--agent", agent, "--n-rounds", "1",
+                        "--seed", "10000", "--device", "cpu",
+                        "--output", str(output),
+                    ])
+
+                self.assertEqual(result, 0)
+                metadata = json.loads((output / "metadata.json").read_text())
+                self.assertEqual(metadata["algorithm"], "official_baseline")
+                self.assertIsNone(metadata["checkpoint"])
+                self.assertTrue((output / "episodes.jsonl").is_file())
+                self.assertTrue((output / "timing.jsonl").is_file())
+                self.assertTrue((output / "summary" / "summary.csv").is_file())
 
 
 if __name__ == "__main__":

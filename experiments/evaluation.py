@@ -6,19 +6,21 @@ from pathlib import Path
 from typing import Any, Callable, Sequence
 
 from experiments.devices import resolve_device
+from experiments.agent_contracts import resolve_agent_contract
+from experiments.progress_plugin import INLINE_PROGRESS
 
 
 def run_multi_seed_evaluation(
     config_path: Path, seeds: Sequence[int], n_rounds: int,
     run_id_prefix: str, agent: str, opponents: Sequence[str], scenario: str,
-    checkpoint: Path, task_name: str, replay_policy: str, replay_interval: int,
+    checkpoint: Path | None, task_name: str, replay_policy: str, replay_interval: int,
     *, runs_root: Path, project_root: Path, run_session: Callable,
     analyze_runs: Callable, write_json: Callable, device_info: dict[str, Any],
     feature_id_override: str | None = None,
     reward_id_override: str | None = None,
 ) -> Path:
-    checkpoint = checkpoint.resolve()
-    if not checkpoint.is_file():
+    checkpoint = None if checkpoint is None else checkpoint.resolve()
+    if checkpoint is not None and not checkpoint.is_file():
         raise FileNotFoundError(f"Evaluation checkpoint does not exist: {checkpoint}")
     if not seeds or len(set(seeds)) != len(seeds):
         raise ValueError("Evaluation seeds must be non-empty and unique")
@@ -31,19 +33,24 @@ def run_multi_seed_evaluation(
         )
     evaluation_root.mkdir(parents=True)
     run_directories = []
-    for seed in seeds:
-        output = evaluation_root / f"{run_id_prefix}_s{seed}"
-        run_directories.append(run_session(
-            config_path, "evaluate", int(seed), output, agent, opponents,
-            scenario, n_rounds, checkpoint, task_name, replay_policy,
-            replay_interval,
-            device_info=device_info,
-            feature_id_override=feature_id_override,
-            reward_id_override=reward_id_override,
-        ))
+    with INLINE_PROGRESS.create(
+        total=len(seeds) * n_rounds, desc="Evaluation", unit="round",
+    ) as progress:
+        for seed in seeds:
+            output = evaluation_root / f"{run_id_prefix}_s{seed}"
+            run_directories.append(run_session(
+                config_path, "evaluate", int(seed), output, agent, opponents,
+                scenario, n_rounds, checkpoint, task_name, replay_policy,
+                replay_interval, device_info=device_info,
+                feature_id_override=feature_id_override,
+                reward_id_override=reward_id_override,
+                show_progress=False,
+            ))
+            progress.update(n_rounds)
     analyze_runs(run_directories, summary)
     write_json(summary / "fixed_evaluation.json", {
-        "agent": agent, "checkpoint": str(checkpoint),
+        "agent": agent,
+        "checkpoint": None if checkpoint is None else str(checkpoint),
         "exploration_disabled": True,
         "task1_metrics": {
             "all_coins_target": 50,
@@ -73,18 +80,19 @@ def run_evaluation_mode(
     output_directory: Callable, run_session: Callable,
     run_multi_seed: Callable, analyze_runs: Callable,
 ) -> Path:
+    contract = resolve_agent_contract(args.agent)
     raw_checkpoint = args.checkpoint or config.get("checkpoint")
-    if raw_checkpoint is None:
+    if raw_checkpoint is None and contract.checkpoint_name is not None:
         raise ValueError("Evaluation requires --checkpoint or config.checkpoint")
-    checkpoint = Path(raw_checkpoint)
-    if not checkpoint.is_absolute():
+    checkpoint = None if raw_checkpoint is None else Path(raw_checkpoint)
+    if checkpoint is not None and not checkpoint.is_absolute():
         checkpoint = (project_root / checkpoint).resolve()
-    if not checkpoint.is_file():
+    if checkpoint is not None and not checkpoint.is_file():
         raise FileNotFoundError(f"Evaluation checkpoint does not exist: {checkpoint}")
     evaluation = config.get("evaluation", {})
     if not isinstance(evaluation, dict):
         raise ValueError("config.evaluation must be an object")
-    algorithm = "dqn" if "dqn" in args.agent.lower() else "q_learning"
+    algorithm = contract.algorithm
     requested_device = args.device or evaluation.get("device", "cpu")
     device_info = resolve_device(algorithm, "evaluate", requested_device)
     n_rounds = args.n_rounds or configured_rounds

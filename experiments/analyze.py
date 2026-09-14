@@ -9,7 +9,7 @@ import math
 import sys
 from collections import defaultdict
 from pathlib import Path
-from statistics import mean, pstdev
+from statistics import mean, median, pstdev, stdev
 from typing import Any, Iterable, Sequence
 
 import matplotlib
@@ -29,7 +29,10 @@ SUMMARY_FIELDS = (
     "total_score",
     "rank_by_total_score",
     "mean_score",
+    "median_score",
     "score_std",
+    "mean_score_ci95_low",
+    "mean_score_ci95_high",
     "total_round_steps",
     "coins",
     "mean_coins",
@@ -69,6 +72,21 @@ SUMMARY_FIELDS = (
     "act_max_time",
     "act_timeout_count",
     "act_skipped_count",
+    "up_action_count",
+    "up_action_rate",
+    "right_action_count",
+    "right_action_rate",
+    "down_action_count",
+    "down_action_rate",
+    "left_action_count",
+    "left_action_rate",
+    "wait_action_count",
+    "wait_action_rate_all_actions",
+    "bomb_action_count",
+    "bomb_action_rate",
+    "median_longest_wait_streak",
+    "min_longest_wait_streak",
+    "max_longest_wait_streak",
     "navigation_decisions",
     "coin_distance_comparable_count",
     "coin_target_observation_count",
@@ -78,10 +96,29 @@ SUMMARY_FIELDS = (
     "coin_distance_reducing_rate",
     "coin_target_switch_rate",
     "multiple_nearest_coin_rate",
+    "conditional_loop_count",
+    "conditional_loop_rate",
+    "avoidable_wait_count",
+    "wait_penalized_count",
+    "wait_exempt_current_danger_count",
+    "wait_exempt_next_danger_count",
+    "wait_exempt_no_reachable_coin_count",
+    "wait_exempt_no_safe_progress_move_count",
     "unseen_q_states",
     "q_decisions",
     "unseen_q_state_rate",
 )
+
+ACTIONS = ("UP", "RIGHT", "DOWN", "LEFT", "WAIT", "BOMB")
+
+
+def _mean_ci95(values: Sequence[float]) -> tuple[float | None, float | None]:
+    """Return a normal-approximation 95% CI for a sample mean."""
+    if len(values) < 2:
+        return None, None
+    half_width = 1.96 * stdev(values) / math.sqrt(len(values))
+    centre = mean(values)
+    return centre - half_width, centre + half_width
 
 
 def _invalid(path: Path, line_number: int, message: str) -> ValueError:
@@ -205,6 +242,16 @@ def _validate_timing(value: Any, path: Path, line_number: int) -> dict[str, Any]
             if not isinstance(navigation.get(field), bool):
                 raise _invalid(
                     path, line_number, f"navigation.{field} must be a boolean")
+        for field in ("conditional_loop", "avoidable_wait"):
+            if field in navigation and not isinstance(navigation[field], bool):
+                raise _invalid(
+                    path, line_number, f"navigation.{field} must be a boolean")
+        if navigation.get("wait_disposition", "not_wait") not in {
+            "not_wait", "penalized", "current_danger", "next_danger",
+            "no_reachable_coin", "no_safe_progress_move",
+        }:
+            raise _invalid(
+                path, line_number, "navigation.wait_disposition is invalid")
         for field in (
             "nearest_coin_distance_before",
             "predicted_nearest_coin_distance_after",
@@ -331,6 +378,10 @@ def _summary_row(
         "coin_target_continuity_opportunities", 0)
     q_decisions = q_diagnostics.get("q_decisions", 0.0)
     unseen_q_states = q_diagnostics.get("unseen_q_states", 0.0)
+    score_ci_low, score_ci_high = _mean_ci95(scores)
+    action_counts = timing.get("action_counts", {})
+    action_total = sum(action_counts.values())
+    wait_streaks = timing.get("longest_wait_streaks", [])
     return {
         "run_id": run_id,
         "agent_name": agent_name,
@@ -338,7 +389,10 @@ def _summary_row(
         "total_score": sum(scores),
         "rank_by_total_score": None,
         "mean_score": mean(scores),
+        "median_score": median(scores),
         "score_std": pstdev(scores),
+        "mean_score_ci95_low": score_ci_low,
+        "mean_score_ci95_high": score_ci_high,
         "total_round_steps": total_round_steps,
         "coins": total_coins,
         "mean_coins": total_coins / episode_count,
@@ -385,6 +439,20 @@ def _summary_row(
         "act_max_time": max(act_times) if act_times else None,
         "act_timeout_count": timing.get("timeout_count", 0),
         "act_skipped_count": timing.get("skipped_count", 0),
+        **{
+            f"{action.lower()}_action_count": action_counts.get(action, 0)
+            for action in ACTIONS
+        },
+        **{
+            ("wait_action_rate_all_actions" if action == "WAIT"
+             else f"{action.lower()}_action_rate"):
+            (action_counts.get(action, 0) / action_total if action_total else None)
+            for action in ACTIONS
+        },
+        "median_longest_wait_streak": (
+            median(wait_streaks) if wait_streaks else None),
+        "min_longest_wait_streak": min(wait_streaks) if wait_streaks else None,
+        "max_longest_wait_streak": max(wait_streaks) if wait_streaks else None,
         "navigation_decisions": navigation_decisions,
         "coin_distance_comparable_count": comparable,
         "coin_target_observation_count": target_observations,
@@ -404,6 +472,16 @@ def _summary_row(
         "multiple_nearest_coin_rate": (
             timing.get("multiple_nearest_coins", 0) / target_observations
             if target_observations else None),
+        "conditional_loop_count": timing.get("conditional_loops", 0),
+        "conditional_loop_rate": (
+            timing.get("conditional_loops", 0) / navigation_decisions
+            if navigation_decisions else None),
+        "avoidable_wait_count": timing.get("avoidable_waits", 0),
+        "wait_penalized_count": timing.get("wait_penalized", 0),
+        "wait_exempt_current_danger_count": timing.get("wait_current_danger", 0),
+        "wait_exempt_next_danger_count": timing.get("wait_next_danger", 0),
+        "wait_exempt_no_reachable_coin_count": timing.get("wait_no_reachable_coin", 0),
+        "wait_exempt_no_safe_progress_move_count": timing.get("wait_no_safe_progress_move", 0),
         "unseen_q_states": unseen_q_states,
         "q_decisions": q_decisions,
         "unseen_q_state_rate": unseen_q_states / q_decisions if q_decisions else None,
@@ -423,6 +501,13 @@ def summarize_runs(run_directories: Iterable[Path]) -> list[dict[str, Any]]:
             "coin_target_continuity_opportunities": 0,
             "coin_target_switches": 0,
             "multiple_nearest_coins": 0,
+            "conditional_loops": 0, "avoidable_waits": 0,
+            "wait_penalized": 0, "wait_current_danger": 0,
+            "wait_next_danger": 0, "wait_no_reachable_coin": 0,
+            "wait_no_safe_progress_move": 0,
+            "action_counts": defaultdict(int),
+            "actions_by_round": defaultdict(list),
+            "longest_wait_streaks": [],
         }
     )
     q_by_agent: dict[tuple[str, str], dict[str, float]] = defaultdict(
@@ -471,6 +556,10 @@ def summarize_runs(run_directories: Iterable[Path]) -> list[dict[str, Any]]:
 
         for record in _read_timing(run_directory):
             bucket = timing_by_agent[(record["run_id"], record["agent_name"])]
+            action = record.get("action")
+            if action in ACTIONS:
+                bucket["action_counts"][action] += 1
+                bucket["actions_by_round"][record.get("round_index")].append(action)
             if record["think_time"] is not None:
                 bucket["think_times"].append(float(record["think_time"]))
                 bucket["act_count"] += 1
@@ -496,6 +585,21 @@ def summarize_runs(run_directories: Iterable[Path]) -> list[dict[str, Any]]:
                     navigation["target_switched_while_previous_available"])
                 bucket["multiple_nearest_coins"] += int(
                     navigation["multiple_nearest_coins"])
+                bucket["conditional_loops"] += int(navigation.get("conditional_loop", False))
+                bucket["avoidable_waits"] += int(navigation.get("avoidable_wait", False))
+                disposition = navigation.get("wait_disposition", "not_wait")
+                if disposition != "not_wait":
+                    bucket[f"wait_{disposition}"] += 1
+
+        for (run_id, agent_name), bucket in timing_by_agent.items():
+            if run_id != run_directory.name:
+                continue
+            for actions in bucket["actions_by_round"].values():
+                longest = current = 0
+                for action in actions:
+                    current = current + 1 if action == "WAIT" else 0
+                    longest = max(longest, current)
+                bucket["longest_wait_streaks"].append(longest)
 
         for agent_name, diagnostics in _read_q_diagnostics(run_directory).items():
             bucket = q_by_agent[(run_directory.name, agent_name)]
@@ -542,6 +646,7 @@ def _average_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
     averages: list[dict[str, Any]] = []
     for agent_name, agent_rows in sorted(rows_by_agent.items()):
         mean_scores = [float(row["mean_score"]) for row in agent_rows]
+        score_ci_low, score_ci_high = _mean_ci95(mean_scores)
         q_decisions = sum(float(row["q_decisions"]) for row in agent_rows)
         unseen_q_states = sum(float(row["unseen_q_states"]) for row in agent_rows)
         total_round_steps = sum(
@@ -560,7 +665,10 @@ def _average_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
                 "total_score": sum(float(row["total_score"]) for row in agent_rows),
                 "rank_by_total_score": mean(float(row["rank_by_total_score"]) for row in agent_rows),
                 "mean_score": _weighted_mean(agent_rows, "mean_score"),
+                "median_score": median(mean_scores),
                 "score_std": pstdev(mean_scores) if len(mean_scores) > 1 else 0.0,
+                "mean_score_ci95_low": score_ci_low,
+                "mean_score_ci95_high": score_ci_high,
                 "total_round_steps": total_round_steps,
                 "coins": total_coins,
                 "mean_coins": _weighted_mean(agent_rows, "mean_coins"),
@@ -609,6 +717,43 @@ def _average_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
                 "act_max_time": max(max_times) if max_times else None,
                 "act_timeout_count": sum(int(row["act_timeout_count"]) for row in agent_rows),
                 "act_skipped_count": sum(int(row["act_skipped_count"]) for row in agent_rows),
+                **{
+                    f"{action.lower()}_action_count": sum(
+                        int(row[f"{action.lower()}_action_count"])
+                        for row in agent_rows)
+                    for action in ACTIONS
+                },
+                **{
+                    ("wait_action_rate_all_actions" if action == "WAIT"
+                     else f"{action.lower()}_action_rate"):
+                    (
+                        sum(int(row[f"{action.lower()}_action_count"])
+                            for row in agent_rows)
+                        / sum(
+                            int(row[f"{candidate.lower()}_action_count"])
+                            for row in agent_rows for candidate in ACTIONS)
+                        if sum(
+                            int(row[f"{candidate.lower()}_action_count"])
+                            for row in agent_rows for candidate in ACTIONS) else None
+                    )
+                    for action in ACTIONS
+                },
+                "median_longest_wait_streak": median([
+                    float(row["median_longest_wait_streak"])
+                    for row in agent_rows
+                    if row["median_longest_wait_streak"] is not None
+                ]) if any(row["median_longest_wait_streak"] is not None
+                          for row in agent_rows) else None,
+                "min_longest_wait_streak": min([
+                    float(row["min_longest_wait_streak"])
+                    for row in agent_rows
+                    if row["min_longest_wait_streak"] is not None
+                ], default=None),
+                "max_longest_wait_streak": max([
+                    float(row["max_longest_wait_streak"])
+                    for row in agent_rows
+                    if row["max_longest_wait_streak"] is not None
+                ], default=None),
                 "navigation_decisions": sum(
                     int(row["navigation_decisions"]) for row in agent_rows),
                 "coin_distance_comparable_count": sum(
@@ -633,6 +778,22 @@ def _average_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
                 "multiple_nearest_coin_rate": _weighted_mean(
                     agent_rows, "multiple_nearest_coin_rate",
                     "coin_target_observation_count"),
+                "conditional_loop_count": sum(
+                    int(row["conditional_loop_count"]) for row in agent_rows),
+                "conditional_loop_rate": _weighted_mean(
+                    agent_rows, "conditional_loop_rate", "navigation_decisions"),
+                "avoidable_wait_count": sum(
+                    int(row["avoidable_wait_count"]) for row in agent_rows),
+                "wait_penalized_count": sum(
+                    int(row["wait_penalized_count"]) for row in agent_rows),
+                "wait_exempt_current_danger_count": sum(
+                    int(row["wait_exempt_current_danger_count"]) for row in agent_rows),
+                "wait_exempt_next_danger_count": sum(
+                    int(row["wait_exempt_next_danger_count"]) for row in agent_rows),
+                "wait_exempt_no_reachable_coin_count": sum(
+                    int(row["wait_exempt_no_reachable_coin_count"]) for row in agent_rows),
+                "wait_exempt_no_safe_progress_move_count": sum(
+                    int(row["wait_exempt_no_safe_progress_move_count"]) for row in agent_rows),
                 "unseen_q_states": unseen_q_states,
                 "q_decisions": q_decisions,
                 "unseen_q_state_rate": unseen_q_states / q_decisions if q_decisions else None,

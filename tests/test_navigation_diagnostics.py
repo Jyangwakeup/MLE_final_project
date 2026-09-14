@@ -42,6 +42,22 @@ class NavigationDiagnosticTestCase(unittest.TestCase):
         self.assertTrue(record["previous_target_still_available"])
         self.assertTrue(record["target_switched_while_previous_available"])
 
+    def test_reports_true_conditional_loop_and_wait_disposition(self):
+        state = make_game_state(position=(3, 3))
+        state["coins"] = [(5, 3)]
+        loop, _ = navigation_diagnostic(
+            state, "LEFT", previous_target=(5, 3), previous_action="RIGHT",
+            previous_position=(2, 3), actual_position=(2, 3))
+        self.assertTrue(loop["conditional_loop"])
+        self.assertEqual(loop["wait_disposition"], "not_wait")
+
+        waited, _ = navigation_diagnostic(
+            state, "WAIT", previous_target=(5, 3),
+            previous_position=(3, 3))
+        self.assertFalse(waited["conditional_loop"])
+        self.assertTrue(waited["avoidable_wait"])
+        self.assertEqual(waited["wait_disposition"], "penalized")
+
 
 if __name__ == "__main__":
     unittest.main()

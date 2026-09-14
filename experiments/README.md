@@ -5,7 +5,13 @@
 本目录是实验编排层。其接口来自 `PROJECT_REQUIREMENTS.md` 与
 `IMPLEMENTATION_GUIDE.md`；特征和学习模块的实现细节仍分别由 A 与 B 负责。
 
-当前 Task 3 前实验以 [`pre_task3_iteration.json`](pre_task3_iteration.json) 为唯一预注册入口，配置文件为 `configs/pre_task3_*.json`。旧 `formal_training_coin3.json` 和 v4 runs 仅保留历史证据，不得接入当前谱系。
+六个 Agent 当前推荐的完整训练、续训和冻结评估命令集中记录在
+[`docs/training-commands.md`](../docs/training-commands.md)。本轮冻结特征 coin3 课程使用
+`formal_training_coin3.json`；其他新模型实验可选择 `r2_balanced`、`r3_potential` 等独立配置。
+Task 1 的最终 reward 对照使用
+`task1_ddqn_continuous_r3_baseline.json` 与
+`task1_ddqn_continuous_r5_conditional_loop.json`；二者除 Reward ID 外完全相同。
+通用的 `reward_r5_conditional_loop.json` 将算法和 Feature 留空，可用于任一已注册学习 Agent。
 
 ## 可选学习 Agent
 
@@ -13,12 +19,10 @@
 
 | Agent | Algorithm | Feature | Checkpoint |
 | --- | --- | --- | --- |
-| `q_learning_agent` | `q_learning` | 默认 `discrete-q-v2`，可选 `discrete-v1` / `discrete-objective-v1` | `final.pkl` |
-| `double_q_agent` | `double_q_learning` | `discrete-objective-v1`，第三轮兜底 | `final.pkl` |
+| `q_learning_agent` | `q_learning` | 默认 `discrete-q-v2`，可显式选 `discrete-v1` | `final.pkl` |
 | `double_q_compact_agent` | `double_q_learning` | `discrete-compact-v1` | `final.pkl` |
-| `dqn_agent` | `dqn` | 默认 `discrete-q-v2`，可选 `discrete-v1` / `discrete-objective-v1` | `final.pt` |
-| `double_dqn_continuous_v2_agent` | `double_dqn` | `continuous-v2`，第三轮兜底 | `final.pt` |
-| `double_dqn_continuous_agent` | `double_dqn` | `continuous-v1` | `final.pt` |
+| `dqn_agent` | `dqn` | 默认 `discrete-q-v2`，可显式选 `discrete-v1` | `final.pt` |
+| `double_dqn_continuous_agent` | `double_dqn` | `continuous-v2` | `final.pt` |
 | `cnn_double_dqn_agent` | `cnn_double_dqn` | `board-v1` | `final.pt` |
 | `hybrid_dueling_double_dqn_agent` | `hybrid_dueling_double_dqn` | `hybrid-v1` | `final.pt` |
 
@@ -100,7 +104,7 @@ C 需要 B 提供的最小信息是：
 - checkpoint 版本元数据；以及
 - 训练指标的输出位置。
 
-已冻结的完整恢复 schema 为 `training-resume-v5`。Runner 只校验公开 checkpoint 合同，
+已冻结的完整恢复 schema 为 `training-resume-v4`。Runner 只校验公开 checkpoint 合同，
 不导入 `agent_code/q_learning_agent/` 或 `agent_code/dqn_agent/` 的私有学习实现。
 
 ### 运行时配置
@@ -110,8 +114,6 @@ C 需要 B 提供的最小信息是：
 - `BOMBERMAN_RUN_DIR` 指向绝对路径的运行输出目录。训练输出从该目录解析。
 - `BOMBERMAN_AGENT_SEED` 与 `BOMBERMAN_EXPLORATION_SPEC` 由 Runner 设置；直接使用官方
   框架时分别回退为 seed 0 和共享 `linear-v1` 默认值。
-- `BOMBERMAN_SAFE_EXPLORATION`、`BOMBERMAN_N_STEP`、`BOMBERMAN_RETENTION_SPEC` 和
-  `BOMBERMAN_TRAINING_BUDGET` 保存当前阶段训练契约；不由冻结评估启用安全盾。
 - 包内配置中的模型路径相对 agent 包解析。导出配置与模型路径不得包含开发机器的
   绝对路径。
 
@@ -193,6 +195,23 @@ agent 或未上报的运行在分析结果中对应字段为空或为 0。
 完成步数、等待率、立即反向率、缩短距离率和目标切换率。输入缺少 `episodes.jsonl`、空文件、非法 JSON 或不符合
 schema 时会明确失败。
 
+所有 Task 的汇总还报告 score 中位数和均值的 95% 置信区间、六种动作各自的计数与占比，
+以及逐局最长连续 `WAIT` 的中位数、最小值和最大值。通用
+`wait_action_rate_all_actions` 直接以 `timing.jsonl` 的全部动作作为分母，因此即使没有启用
+Task 1 的可选导航诊断也不会为空；原有 `wait_action_rate` 仍严格表示导航诊断决策中的等待率。
+跨候选的同 seed 比较使用 `experiments/compare_evaluations.py`，先按
+`(environment_seed, round_index)` 核对完整配对，再以环境 seed 为独立重复单位聚合，输出
+均值差、中位数差、候选胜/平/负 seed 数和确定性 bootstrap 95% 区间。Task 1 比较
+score、coins 和 round steps；Task 2 另比较 crates、
+suicides 与生存指标；Task 3/4 再加入 kills 和胜局指标。
+
+```bash
+python3 -m experiments.compare_evaluations \
+  --candidate-runs runs/candidate/candidate_s* \
+  --reference-runs runs/reference/reference_s* \
+  --output results/candidate_vs_reference
+```
+
 ## 运行命令
 
 所有命令均在项目根目录执行。框架只有两个彼此独立的模式：`train` 负责训练和训练报告，
@@ -249,7 +268,7 @@ python3 main.py replay \
 `--replay-interval` 显式覆盖进度比例生成的间隔。回放写入每个运行目录的
 `replays/round_XXXXX.pt`，`replays/manifest.jsonl` 同时记录 round、seed、目标 Agent
 得分以及保存原因。训练不会因此保存全部回放；阶段门槛、主验证和最终测试均采用多个
-独立 seed、每 seed 一局，并保留全部评估回放以复核高分和失败案例。
+独立 seed、每 seed 多局，并保留全部评估回放以复核高分和失败案例。
 
 查看某一局时运行：
 
@@ -320,7 +339,7 @@ checkpoint，只在 `metadata.json` 和 `fixed_evaluation.json` 中记录其绝�
 Task 1 和 Task 2 不接受对手；Task 3 的两个官方对手固定，是对官方 SHOULD 课程路线的
 合并实现；Task 4 至少需要一个对手，正式训练和验证均使用默认三名规则对手。
 
-以下固定局数六链是 v4 历史协议：Q-learning/DQN × seeds 11/22/33，阶段新增预算依次为 500、1,000、
+正式六链由 Q-learning/DQN × seeds 11/22/33 构成，阶段新增预算依次为 500、1,000、
 1,500、3,000 局；能力门槛失败只可按原预算 25% 追加一次，即 125、250、375、750 局。
 各链独立晋级，链内严格串行。run-id 使用
 `formal_<q|dqn>_discrete_v1_r1_coin3_s<seed>_t<task>_r<local-rounds>`，故障重跑追加 `_retryN`。
@@ -338,26 +357,25 @@ conda run --no-capture-output -n mle python -m unittest discover -s tests
 `CUDA_VISIBLE_DEVICES` 内可见的 GPU。`--device auto` 在 CUDA 可用时选择 GPU，
 否则回退 CPU。Q-learning 始终使用 CPU，冻结评估也强制使用 CPU，以匹配官方环境。
 
-当前 Task 3 前训练固定 CPU、关闭 early stopping，并由动作预算停止。以下启动 Q-learning seed 11 的一个 100k 动作初筛；实验运行器会自动禁止放炸弹：
+本轮正式训练固定 CPU、`discrete-v1`、`r1_coin3`、关闭 early stopping。以下启动 Q-learning seed 11 的
+Task 1 共 500 局；实验运行器会自动禁止放炸弹：
 
 ```bash
 python3 experiments/run.py \
-  --config experiments/configs/pre_task3_task1.json \
+  --config experiments/configs/formal_training_coin3.json \
   --mode train \
   --device cpu \
   --task 1 \
   --agent q_learning_agent \
-  --feature-id discrete-objective-v1 \
-  --reward-id r1_coin3 \
-  --n-rounds 500 --target-stage-action-steps 100000 --min-rounds 1 \
+  --n-rounds 500 \
   --seed 11 \
-  --run-id iter_r1_q_discrete_objective_v1_r1_coin3_s11_t1_a100000_COMMIT
+  --run-id formal_q_discrete_v1_r1_coin3_s11_t1_r500
 ```
 
 训练输出：
 
 ```text
-runs/<run-id>/
+runs/formal_q_discrete_v1_r1_coin3_s11_t1_r500/
   metadata.json
   episodes.jsonl
   timing.jsonl
@@ -367,10 +385,10 @@ runs/<run-id>/
   official_stats.json
   checkpoints/final.pkl
   resume/latest.json
-  resume/generation-<last-completed-round>/
+  resume/generation-00000500/
 ```
 
-`training.csv` 每个训练回合写一行，统一包含 `round`、`reward`、总 `action_steps`、阶段 `stage_action_steps`、安全探索诊断、
+`training.csv` 每个训练回合写一行，统一包含 `round`、`reward`、`action_steps`、
 `epsilon`、`q_states`、`loss`、`updates` 和 `checkpoint`。Q-learning 使用
 `q_states`，DQN 使用 `loss` 与 `updates`；不适用的列留空。`training_summary.json` 保存
 最终步数、平均 reward、最近 100 局平均 reward 和最佳回合，`training_progress.png` 展示
@@ -409,28 +427,28 @@ python experiments/analyze_training.py \
 ### 续训与课程晋级
 
 `--resume-from` 指向父训练 run 的根目录，并总是写入一个新的子 run。`--n-rounds`
-表示子 run 的局数硬上限。当前 Task 1 finalist 用同 Task 子 run 将阶段动作目标从 100k 提高到 200k；新局数上限按“总计不超过 750 局”扣除父 run 已完成局数：
+表示子 run 新增的局数。例如，Task 1 能力门槛失败后唯一允许的 25% 追加为 125 局：
 
 ```bash
 python3 experiments/run.py \
-  --config experiments/configs/pre_task3_task1.json \
+  --config experiments/configs/formal_training_coin3.json \
   --mode train \
   --device cpu \
   --task 1 \
   --agent q_learning_agent \
-  --feature-id discrete-objective-v1 --reward-id r1_coin3 \
-  --n-rounds <750-parent-rounds> --target-stage-action-steps 200000 --min-rounds 1 \
+  --n-rounds 125 \
   --seed 11 \
-  --resume-from runs/<100k-parent-run> \
-  --run-id iter_r1_q_discrete_objective_v1_r1_coin3_s11_t1_a200000_COMMIT
+  --resume-from runs/formal_q_discrete_v1_r1_coin3_s11_t1_r500 \
+  --run-id formal_q_discrete_v1_r1_coin3_s11_t1_r125_cont125
 ```
 
-进入直接下一 Task 时切换到预注册的 `pre_task3_task2*.json`。同 Task 恢复世界、
-对手、Agent、动作历史、阶段计数和早停状态，回合编号连续；下一 Task 保留全部学习器与总动作进度，
-但按同一 seed 重建环境/对手随机流、从回合 1 开始，阶段 ε 重热并重置早停。只允许同 Task 或
+进入直接下一 Task 时命令相同，只需修改 `--task` 和新 `--run-id`。同 Task 恢复世界、
+对手、Agent 和早停状态，回合编号连续；下一 Task 保留全部学习器状态和 epsilon 进度，
+但按同一 seed 重建环境/对手随机流、从回合 1 开始并重置早停。只允许同 Task 或
 `1→2→3→4`，且算法、训练/Agent seed、动作顺序、特征版本、奖励版本、完整奖励表、
-训练设备、`source_commit`、`source_hash` 和 resume schema 必须一致。探索、n-step、回放保留和预算只可按直接 Task 晋级的预注册合同改变。
-当前 schema 为 `training-resume-v5`；v1–v4 及冻结 final
+探索配置、训练设备、`source_commit` 和 resume schema 必须一致。`source_hash` 仍会记录用于
+审计，但显示、评估等未提交改动造成的 hash 差异不会阻止续训。
+当前 schema 为 `training-resume-v4`；v1/v2/v3 及冻结 final
 checkpoint 不能精确续训。
 同 Task 的早停配置也必须保持一致。
 
@@ -438,24 +456,27 @@ checkpoint 不能精确续训。
 上一代，丢失局数记录在子 run 的 `metadata.json`。`--checkpoint` 仅用于冻结评估；旧
 checkpoint 仍可评估，但不能替代 `--resume-from`。
 
-训练模式可在配置中启用基于 reward 移动平均的早停：
+训练模式默认启用基于 reward 移动平均的双重条件早停；未提供配置时使用 window 200、
+patience 100、min_rounds 300、min_delta 0.1、空 target_reward，并要求 action steps 达到
+exploration 的衰减步数。可在配置中显式覆盖：
 
 ```json
 "training": {
   "n_rounds": 10000,
   "early_stopping": {
     "enabled": true,
-    "window": 100,
+    "window": 200,
     "patience": 100,
     "min_rounds": 300,
     "min_delta": 0.1,
-    "target_reward": 49.0
+    "target_reward": 49.0,
+    "require_exploration_complete": true
   }
 }
 ```
 
-`patience` 表示移动平均连续多少轮未提高至少 `min_delta` 后停止；只有达到
-`min_rounds` 和可选的 `target_reward` 才会触发。省略或设为 `null` 的
+`patience` 表示移动平均连续多少轮未提高至少 `min_delta` 后停止；默认还要求探索衰减完成，
+并达到 `min_rounds` 和可选的 `target_reward`。省略或设为 `null` 的
 `target_reward` 会允许低奖励平台触发早停。实际完成轮数和停止原因写入
 `metadata.json` 的 `termination` 字段。该配置仅对 `train` 模式生效。
 
@@ -504,18 +525,33 @@ Task 1 还必须运行使用同一合法动作掩码的确定性均匀随机诊�
 
 ```bash
 python3 experiments/run.py \
-  --config experiments/configs/pre_task3_task1.json \
+  --config experiments/configs/stage_gate.json \
+  --config experiments/configs/reward_r2_balanced.json \
   --mode evaluate \
   --task 1 \
   --agent legal_random_agent \
-  --feature-id discrete-v1 --reward-id r1_coin3 \
   --checkpoint agent_code/legal_random_agent/baseline.json \
   --run-id gate_legal_random_t1
 ```
 
-当前开发门槛使用 `pre_task3_task1/task2*.json` 的 10000–10019，主验证使用
-`pre_task3_main_validation.json` 的 11000–11099，最终测试只使用一次 `final_test.json`
-的 20000–20099；三者都是每 seed 一局。也可用
+课程自带的四个非学习基线也可以作为评估主体运行。它们没有模型参数，因此不要传
+`--checkpoint`；其余 episode、timing、Task 1 导航诊断及汇总输出与学习 Agent 相同：
+
+```bash
+for agent in random_agent rule_based_agent peaceful_agent coin_collector_agent; do
+  python3 experiments/run.py \
+    --config experiments/configs/stage_gate_coin3.json \
+    --mode evaluate \
+    --task 1 \
+    --agent "$agent" \
+    --run-id "gate_${agent}_t1"
+done
+```
+
+阶段门槛使用 `stage_gate.json` 的 10000–10004、每 seed 20 局；主验证使用
+`main_validation.json` 的 10000–10099，最终测试只使用一次 `final_test.json` 的
+20000–20099，后二者都是每 seed 一局。
+默认 seeds 和每个 seed 的测试局数来自 `reward_r2_balanced.json` 的 `evaluation`。也可用
 `--seeds 10001 10002` 和 `--n-rounds 5` 临时覆盖。
 
 ### 单 Seed 快速测试
@@ -574,12 +610,7 @@ python3 experiments/run.py \
 | `--mode evaluate` | 冻结并评估已有 checkpoint |
 | `--task` | 选择 PDF 定义的 Task 1、2、3 或 4 |
 | `--agent` | 目标 Agent 目录名 |
-| `--feature-id` | 为支持可选特征的基线显式选择完整 Feature ID |
-| `--reward-id` | 显式选择注册 Reward ID；训练续接仍须满足契约 |
 | `--n-rounds` | 训练局数，或每个评估 seed 的测试局数 |
-| `--target-stage-action-steps` | 达到该阶段累计动作数且满足最小局数后停止 |
-| `--adaptation-trigger` | 第三轮失败原因；可重复传入并写入 metadata，不改变恢复契约 |
-| `--min-rounds` | 动作目标允许停止前必须完成的本地训练局数 |
 | `--seed` | 单次运行 seed；评估时也会切换为单 seed 模式 |
 | `--seeds` | 多 seed 评估列表 |
 | `--checkpoint` | `evaluate` 模式加载的模型路径 |
@@ -601,7 +632,10 @@ Q-learning 与 DQN agent 都会据此屏蔽炸弹。Task 2–4 会自动允许�
 `timing-v1`。
 
 `configs/formal_training.json` 保留 CPU、`discrete-v1`、`r1` 基线；
-`configs/formal_training_coin3.json` 保留旧 v4 固定局数证据。当前 `pre_task3_task1*.json` 固定 Task 1 的 1.0→0.10/160k，`pre_task3_task2*.json` 固定 Task 2 的 0.30→0.05/120k、安全探索、150k 动作目标和至少 500 局；`pre_task3_main_validation.json` 使用 11000–11099。`final_test.json` 的 20000–20099 仍封存。smoke/v4 run 不得成为 v5 父节点或参与当前选模。
+`configs/formal_training_coin3.json` 在相同冻结特征下固定 `r1_coin3`、关闭 early stopping、共享
+`linear-v1` 探索（1.0→0.05，80,000 动作步）及六链预算。`stage_gate.json`、
+`main_validation.json`、`final_test.json` 分别固定 5-seed × 20 局阶段门槛、100-seed 主验证和
+100-seed 最终留出测试。smoke run 只用于工程验证，不得成为正式链父节点或参与选模。
 奖励实验使用独立配置文件：
 
 ```text
@@ -619,9 +653,6 @@ Reward ID 和完整 spec 都是 checkpoint 与 resume 契约的一部分。更�
 | `r1_coin3_no_crate` | 金币 +3、炸箱 0 | coin3 课程的严格炸箱消融 |
 | `r2_balanced` | 金币 +3，并重新平衡发现、炸箱、死亡、存活和非法动作 | Task 2–4 的事件奖励实验 |
 | `r3_potential` | `r2_balanced` 加金币/箱子路径与安全势能 | Task 1 导航和循环问题，或需要密集反馈的实验 |
-| `r5_coin_potential` | r1_coin3 + 金币势 | Task 1 受控矩阵 |
-| `r6_safe_sparse/potential` | 箱区/危险势、炸弹信用与分离死亡代价 | Task 2 成对安全比较 |
-| `r7_safe_credit_sparse/potential` | 不可逃放弹 −20 | 第三轮自杀失败分支 |
 
 完整数值、势能公式和边界语义见
 [`agent_code/team_agent/README.md`](../agent_code/team_agent/README.md#公共奖励)。不同 Reward 的

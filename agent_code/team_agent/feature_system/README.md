@@ -67,10 +67,9 @@ danger.shape = (HORIZON + 1, width, height)
 |---|---|---|---|---|
 | `discrete-v1` | 历史 DQN / Q-learning | state 14 / vector 40 | 是 | 兼容旧 `v1` |
 | `discrete-q-v2` | Q-learning / DQN | state 16 / vector 50 | 是 | 不兼容 |
-| `discrete-objective-v1` | Task 1–2 Q-learning / DQN | state 14 / vector 60 | 是 | v5 新谱系 |
 | `discrete-compact-v1` | Q-learning / Double Q | state 12 / vector 38 | 是 | 不兼容 |
 | `continuous-v1` | MLP Double DQN | vector 70 | 是 | 不兼容 |
-| `continuous-v2` | 第三轮 Double DQN | vector 78 | 是 | v5 新谱系 |
+| `continuous-v2` | 历史感知 MLP Double DQN | vector 84 | 是 | 不兼容 |
 | `board-v1` | CNN | board `12×W×H` | 主要为原始结构化通道 | 不兼容 |
 | `hybrid-v1` | CNN + MLP | board `12×W×H` + vector 70 | 两者组合 | 不兼容 |
 
@@ -90,12 +89,6 @@ danger.shape = (HORIZON + 1, width, height)
 | 13 | 对手在爆炸范围 | 否 / 是 |
 
 此版本不增加独立的 `danger_t1/t2/t3`，保证既有 Q-table key 和 DQN 40 维权重不变。
-
-## `discrete-objective-v1`：60 维目标事实
-
-14 个类别字段依次为四方向安全（非法/无法活过 H/可存活）、四方向相对分层目标进展（非法/无目标/变差或不可达/不变/变近）、当前危险桶、放弹结果桶、目标距离桶、目标类型、上一动作和连续等待桶。目标只按“可达金币，否则可达箱区前沿”确定，用来测量四个动作的相对变化，不输出唯一目标动作或规则分数。类别数为 `(3,3,3,3,5,5,5,5,5,5,5,3,7,3)`。
-
-动作历史由 Agent 在 `act` 返回前统一更新，训练回调和冻结评估看到相同语义；新回合清零，同 Task v5 恢复保存。
 
 ## `continuous-v1`：70 维向量
 
@@ -140,9 +133,11 @@ crate_frontier_distance_delta, opponent_distance_delta
 
 不能放弹时 64–67 均为 0。
 
-## `continuous-v2`：78 维修正版
+## `continuous-v2`：84 维历史感知向量
 
-前 70 维沿用 continuous-v1，但三个有限目标的距离变化直接使用 `clip(before-after,-1,1)`，不再除以棋盘面积；随后加入上一动作（none + 六动作）7 维 one-hot 和 `min(wait_streak,3)/3`。该表示固定供 `double_dqn_continuous_v2_agent` 的预注册能力失败分支使用。
+前 70 维与 `continuous-v1` 完全一致，随后追加：上一动作的 7 类 one-hot（六动作及 none）、
+当前确定性 BFS 金币目标是否延续，以及六个候选动作是否会返回前一位置。历史值由 Agent
+回调提供；registry 的无历史直接调用使用 none/false，保持确定性和只读行为。
 
 ## `discrete-compact-v1`：12 个离散字段
 

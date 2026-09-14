@@ -2,13 +2,13 @@
 
 ## 中文说明
 
-该 Agent 使用公共 `continuous-v1` 的 70 维连续手工摘要和 Double DQN。policy network
+该 Agent 使用公共 `continuous-v2` 的 84 维历史感知连续摘要和 Double DQN。policy network
 选择下一合法动作，target network 评价该动作，避免使用同一网络同时选择和评价造成的
 过估计。Feature 的 `legal_mask` 只屏蔽物理非法动作。
 
 - Algorithm：`double_dqn`
-- Feature：`(70,) float32`
-- 网络：`70 → 128 → 128 → 6`，隐藏层为 ReLU
+- Feature：`(84,) float32`
+- 网络：`84 → 128 → 128 → 6`，隐藏层为 ReLU
 - Reward：新训练默认 `r2_balanced`
 - Checkpoint：`final.pt`
 - 超参数：gamma 0.95、learning rate 3e-4、batch 64、replay 50,000、warmup 2,000、
@@ -59,7 +59,7 @@ python3 -m experiments.run \
 ```bash
 mkdir -p runs/manual_continuous_ddqn/checkpoints
 BOMBERMAN_CHECKPOINT="$PWD/runs/manual_continuous_ddqn/checkpoints/final.pt" \
-BOMBERMAN_FEATURE_ID=continuous-v1 BOMBERMAN_REWARD_ID=r2_balanced \
+BOMBERMAN_FEATURE_ID=continuous-v2 BOMBERMAN_REWARD_ID=r2_balanced \
 BOMBERMAN_TRAINING_TASK=coin_navigation BOMBERMAN_ALLOW_BOMB=false \
 python3 main.py play --agents double_dqn_continuous_agent --train 1 \
   --scenario coin-heaven --seed 11 --n-rounds 3 --no-gui
@@ -69,7 +69,7 @@ python3 main.py play --agents double_dqn_continuous_agent --train 1 \
 
 ```bash
 BOMBERMAN_CHECKPOINT="$PWD/runs/manual_continuous_ddqn/checkpoints/final.pt" \
-BOMBERMAN_FEATURE_ID=continuous-v1 BOMBERMAN_REWARD_ID=r2_balanced \
+BOMBERMAN_FEATURE_ID=continuous-v2 BOMBERMAN_REWARD_ID=r2_balanced \
 BOMBERMAN_TRAINING_TASK=coin_navigation BOMBERMAN_ALLOW_BOMB=false \
 python3 main.py play --agents double_dqn_continuous_agent \
   --scenario coin-heaven --seed 10001 --n-rounds 3 --no-gui
@@ -89,7 +89,7 @@ python3 main.py play --agents double_dqn_continuous_agent \
 ```bash
 mkdir -p runs/manual_continuous_ddqn_task2/checkpoints
 BOMBERMAN_CHECKPOINT="$PWD/runs/manual_continuous_ddqn_task2/checkpoints/final.pt" \
-BOMBERMAN_FEATURE_ID=continuous-v1 BOMBERMAN_REWARD_ID=r2_balanced \
+BOMBERMAN_FEATURE_ID=continuous-v2 BOMBERMAN_REWARD_ID=r2_balanced \
 BOMBERMAN_TRAINING_TASK=crate_navigation BOMBERMAN_ALLOW_BOMB=true \
 python3 main.py play --agents double_dqn_continuous_agent --train 1 \
   --scenario classic --seed 11 --n-rounds 3 --no-gui
@@ -101,7 +101,7 @@ python3 main.py play --agents double_dqn_continuous_agent --train 1 \
 
 ```bash
 BOMBERMAN_CHECKPOINT="$PWD/runs/continuous_ddqn_t1_train/checkpoints/final.pt" \
-BOMBERMAN_FEATURE_ID=continuous-v1 BOMBERMAN_REWARD_ID=r2_balanced \
+BOMBERMAN_FEATURE_ID=continuous-v2 BOMBERMAN_REWARD_ID=r2_balanced \
 BOMBERMAN_TRAINING_TASK=coin_navigation BOMBERMAN_ALLOW_BOMB=false \
 python3 main.py play --agents double_dqn_continuous_agent \
   --scenario coin-heaven --seed 10001 --n-rounds 1
@@ -111,7 +111,7 @@ python3 main.py play --agents double_dqn_continuous_agent \
 
 ```bash
 BOMBERMAN_CHECKPOINT="$PWD/runs/manual_continuous_ddqn_task2/checkpoints/final.pt" \
-BOMBERMAN_FEATURE_ID=continuous-v1 BOMBERMAN_REWARD_ID=r2_balanced \
+BOMBERMAN_FEATURE_ID=continuous-v2 BOMBERMAN_REWARD_ID=r2_balanced \
 BOMBERMAN_TRAINING_TASK=crate_navigation BOMBERMAN_ALLOW_BOMB=true \
 python3 main.py play --agents double_dqn_continuous_agent \
   rule_based_agent rule_based_agent rule_based_agent \

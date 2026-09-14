@@ -1,18 +1,8 @@
 # 六个学习型 Agent 训练命令
 
-> 2026-09-13：当前 Task 3 前入口已切换到
-> [`experiments/pre_task3_iteration.json`](../experiments/pre_task3_iteration.json)。下方原六模型命令仅作历史参考，不得替代预注册三轮实验或接续 v4 run。
-
-当前第一轮只使用 `q_learning_agent` 与 `dqn_agent`，以 seed 11 比较
-`discrete-v1/discrete-objective-v1 × r1_coin3/r5_coin_potential` 共 8 条链。每条命令使用
-`experiments/configs/pre_task3_task1.json`、`--n-rounds 500`、
-`--target-stage-action-steps 100000 --min-rounds 1 --device cpu`，run ID 遵守
-`iter_r<round>_<agent>_<feature>_<reward>_s<seed>_t<task>_a<target>_<commit>`。
-
-各算法前两名才用 `--resume-from` 累计到 200k 动作；Task 1 mean coins ≥35 后才进入
-Task 2。Task 2 使用 `pre_task3_task2*.json`，至少 500 局且 150k 动作、最多 2000 局。
-第三轮能力失败才启用 `double_q_agent` 或 `double_dqn_continuous_v2_agent`。完整分支、门槛与
-seed 隔离见实施指南第 8.6 节。当前完整恢复协议为 v5；v4 及更早 run 只可冻结评估。
+本文档集中记录当前推荐训练入口。新训练使用 `r2_balanced`、`r3_potential`、
+`r4_anti_oscillation` 或 `r5_conditional_loop`；`r1` 和
+`r1_no_crate` 仅保留历史 checkpoint 兼容，不再用于新实验。
 
 所有命令都应从仓库根目录运行。`experiments.run` 会自动选择 Agent 的 `feature_id`，Task 1
 自动禁止炸弹，Task 2–4 自动允许炸弹，并保存 metadata、CSV、checkpoint 和恢复快照。
@@ -33,20 +23,23 @@ seed 隔离见实施指南第 8.6 节。当前完整恢复协议为 v5；v4 及�
 也没有改变 Feature/Reward 数值、epsilon、网络、Q 更新和随机采样顺序。旧 replay checkpoint
 仍可加载；新 checkpoint 使用更快的列式 replay 内部格式。
 
-## 历史六模型组合（非当前 Task 1–2 入口）
+## 当前组合
 
 | Agent | Feature | Reward | Checkpoint |
 |---|---|---|---|
 | `q_learning_agent` | `discrete-q-v2` | `r4_anti_oscillation` | `final.pkl` |
 | `double_q_compact_agent` | `discrete-compact-v1` | `r3_potential` | `final.pkl` |
 | `dqn_agent` | `discrete-q-v2` vector | `r4_anti_oscillation` | `final.pt` |
-| `double_dqn_continuous_agent` | `continuous-v1` | `r2_balanced` | `final.pt` |
+| `double_dqn_continuous_agent` | `continuous-v2` | `r2_balanced` | `final.pt` |
 | `cnn_double_dqn_agent` | `board-v1` | `r3_potential` | `final.pt` |
 | `hybrid_dueling_double_dqn_agent` | `hybrid-v1` | `r2_balanced` | `final.pt` |
 
 `experiments/configs/reward_r2_balanced.json` 选择 `r2_balanced`；需要 `r3_potential` 时使用
 `experiments/configs/reward_r3_potential.json`。
-Q-learning 的防摆动训练使用 `experiments/configs/reward_r4_anti_oscillation.json`。
+旧式防摆动训练使用 `experiments/configs/reward_r4_anti_oscillation.json`。
+所有学习 Agent 都可通过 `experiments/configs/reward_r5_conditional_loop.json` 使用条件式
+reward；各模型保留自己的 Feature。`continuous-v2` 对历史条件的可观测性最完整，但不是
+启用 `r5` 的硬性要求。
 
 ## Agent 1：Q-learning
 
@@ -91,6 +84,30 @@ python3 -m experiments.run \
 ```
 
 输出：`runs/continuous_ddqn_r2_t1_train/checkpoints/final.pt`
+
+### Task 1 收尾：条件式循环惩罚配对实验
+
+这组实验以 `r3_potential` 为基线。两个完整配置固定为同一个 Double DQN、`continuous-v2`、
+训练 seed 11、1000 局、相同探索计划、CPU 初始化与评估 seeds/局数，并关闭早停，避免实际
+训练轮数不同。两个 run 都必须从零训练，不能相互恢复 checkpoint。
+
+```bash
+.venv/bin/python -m experiments.run \
+  --config experiments/configs/task1_ddqn_continuous_r3_baseline.json \
+  --mode train --task 1 --agent double_dqn_continuous_agent \
+  --run-id task1_ddqn_continuous_r3_baseline
+
+.venv/bin/python -m experiments.run \
+  --config experiments/configs/task1_ddqn_continuous_r5_conditional_loop.json \
+  --mode train --task 1 --agent double_dqn_continuous_agent \
+  --run-id task1_ddqn_continuous_r5_conditional_loop
+```
+
+分别用原训练配置和对应 checkpoint 执行冻结评估，再用
+`experiments.compare_evaluations` 按 `(environment_seed, round_index)` 配对比较。主要看金币、
+全金币完成率、完成步数和真实条件循环率。训练 CSV 另记录循环/WAIT 触发次数、WAIT 的四类
+豁免原因以及两项惩罚各自贡献的累计 reward；官方得分/金币是选模依据，训练 reward 不跨方案
+直接比较。
 
 ## Agent 5：CNN Double DQN
 

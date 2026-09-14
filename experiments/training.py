@@ -23,6 +23,15 @@ from agent_code.learning_common.training_spec import resolve_retention_spec
 
 
 DEFAULT_REPLAY_PROGRESS_PERCENT = 10
+DEFAULT_EARLY_STOPPING_CONFIG = {
+    "enabled": True,
+    "window": 200,
+    "patience": 100,
+    "min_rounds": 300,
+    "min_delta": 0.1,
+    "target_reward": None,
+    "require_exploration_complete": True,
+}
 
 
 class TrainingActionBudget:
@@ -86,6 +95,21 @@ class TrainingEarlyStopping:
         ):
             raise ValueError("early_stopping.target_reward must be null or finite")
         self.target_reward = None if raw_target is None else float(raw_target)
+        require_exploration = config.get("require_exploration_complete", True)
+        if not isinstance(require_exploration, bool):
+            raise ValueError(
+                "early_stopping.require_exploration_complete must be a boolean")
+        self.min_action_steps = (
+            _positive_int(
+                config.get(
+                    "min_action_steps",
+                    resolve_exploration_spec()["decay_action_steps"],
+                ),
+                "min_action_steps",
+            )
+            if require_exploration else 0
+        )
+        self.latest_action_steps = 0
         self.rewards: list[float] = []
         self._reward_column: int | None = None
         self._file_offset = 0
@@ -104,6 +128,11 @@ class TrainingEarlyStopping:
                     self._reward_column = header.index("reward")
                 except ValueError as exception:
                     raise ValueError("training.csv is missing the reward column") from exception
+                try:
+                    self._action_steps_column = header.index("action_steps")
+                except ValueError as exception:
+                    raise ValueError(
+                        "training.csv is missing the action_steps column") from exception
                 self._file_offset = file.tell()
             else:
                 file.seek(self._file_offset)
@@ -111,6 +140,7 @@ class TrainingEarlyStopping:
             self._file_offset = file.tell()
         for row in csv.reader(new_lines):
             self.rewards.append(float(row[self._reward_column]))
+            self.latest_action_steps = int(row[self._action_steps_column])
         if len(self.rewards) < self.window:
             return False
 
@@ -128,6 +158,7 @@ class TrainingEarlyStopping:
         effective_rounds = len(self.rewards)
         should_stop = completed_rounds is not None and (
             effective_rounds >= self.min_rounds
+            and self.latest_action_steps >= self.min_action_steps
             and self.rounds_without_improvement >= self.patience
             and (self.target_reward is None or rolling_mean >= self.target_reward)
         )
@@ -135,6 +166,8 @@ class TrainingEarlyStopping:
             self.result = {
                 "best_rolling_mean_reward": self.best_mean,
                 "completed_rounds": effective_rounds,
+                "action_steps": self.latest_action_steps,
+                "min_action_steps": self.min_action_steps,
                 "reason": "rolling_mean_plateau",
                 "rolling_mean_reward": rolling_mean,
                 "rounds_without_improvement": self.rounds_without_improvement,
@@ -143,13 +176,15 @@ class TrainingEarlyStopping:
 
 
 def early_stopping_config(training: dict[str, Any]) -> dict[str, Any] | None:
-    config = training.get("early_stopping", {})
+    config = training.get("early_stopping", DEFAULT_EARLY_STOPPING_CONFIG)
     if not isinstance(config, dict):
         raise ValueError("config.training.early_stopping must be an object")
-    enabled = config.get("enabled", False)
+    enabled = config.get("enabled", True)
     if not isinstance(enabled, bool):
         raise ValueError("config.training.early_stopping.enabled must be a boolean")
-    return config if enabled else None
+    if not enabled:
+        return None
+    return {**DEFAULT_EARLY_STOPPING_CONFIG, **config, "enabled": True}
 
 
 def run_training_mode(

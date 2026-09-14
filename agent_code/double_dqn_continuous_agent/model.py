@@ -8,7 +8,7 @@ class ContinuousQNetwork(nn.Module):
     def __init__(self):
         super().__init__()
         self.layers = nn.Sequential(
-            nn.Linear(70, 128), nn.ReLU(), nn.Linear(128, 128), nn.ReLU(),
+            nn.Linear(84, 128), nn.ReLU(), nn.Linear(128, 128), nn.ReLU(),
             nn.Linear(128, 6),
         )
 
