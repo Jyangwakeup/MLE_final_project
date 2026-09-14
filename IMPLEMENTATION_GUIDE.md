@@ -258,7 +258,7 @@ CPU 模式固定 PyTorch 单线程；Q 表路径延迟导入或完全不导入 P
 - Q 表保存整数键数组和浮点 Q 数组到 NPZ（读取禁用对象 pickle），附 JSON 元数据；DQN 保存 `state_dict`，不 pickle 整个模型对象。
 - 完整训练检查点包含策略网络、目标网络、优化器、回放池、自有 RNG 状态、NumPy Generator 状态、CPU/CUDA Torch RNG 状态、训练设备、动作步数、更新步数、阶段与探索进度；Q 表保存对应适用状态。新建 DQN 前按模型种子设置 Torch RNG；恢复时在网络和优化器构造完成后恢复 RNG，避免初始化消耗改变后续随机序列。GPU 训练启用确定性算法，正式评估始终映射到 CPU。
 - 每个完整回合的训练回调成功返回后保存一代 resume 快照。先写临时 generation，校验文件 SHA256 后原子发布，再原子更新 `latest.json`；只保留最新和上一代。最新一代损坏时自动回退上一代，并在子 run 谱系中记录原因所对应的丢失局数。
-- `--resume-from` 只接受父 run 根目录，并始终创建新的子 run。只允许同 Task 或 `1→2→3→4` 的直接晋级；算法、seed、动作顺序、Feature/Reward/Safety 完整契约、设备、源码身份和 checkpoint schema 必须一致。当前完整恢复 schema 为 `training-resume-v6`；v1–v5 和旧 `final.pkl`/`final.pt` 只允许冻结评估。
+- `--resume-from` 只接受 v7 父 run 根目录，并始终创建新的子 run。只允许同 Task 或 `1→2→3→4` 的直接晋级；算法、seed、动作顺序、Feature/Reward/Safety 完整契约、设备、源码身份和 checkpoint schema 必须一致。当前完整恢复 schema 为 `training-resume-v7`；v1–v6 和旧 `final.pkl`/`final.pt` 默认只允许冻结评估。唯一例外是 `--migrate-resume-from` 可把完整 v6 Task 1 快照显式迁移为 v7 子 run，迁移事实和双方源码身份必须写入 lineage。
 - 同 Task 回合边界恢复必须保持探索、n-step、回放保留和最小局数配置，动作目标只能提高；阶段动作计数、动作历史、n-step 队列及全部 RNG 原样恢复。直接进入下一 Task 时可按预注册配置重置阶段 ε、n-step 与回放/蒸馏比例，同时保留全局动作数、Q/网络、optimizer、target、分区 replay、父网络和 Agent RNG；清空回合 pending 与早停并按同一 seed 重建环境。
 - 旧 `final.pkl`/`final.pt` 仍可用于冻结评估；缺少 resume schema 的旧 checkpoint 不能用于精确续训。
 - 参赛导出仅保留推理权重、配置和所选算法依赖，不包含优化器、回放池、训练日志或本机绝对路径。
@@ -441,13 +441,17 @@ Task 2 联合门槛全部同时满足：`mean_coins ≥ 2`、`mean_crates ≥ 5`
 
 `r8_safe_constrained` 保留 r7 sparse 的 step、coin、kill、crate、死亡、箱区/危险势和不可逃放弹惩罚，删除预测 useful-bomb 正奖励；只有“当前动作必死且存在安全替代”时即时扣 20。`KILLED_SELF` 与金币、炸箱或击杀同帧时抑制这些正奖励。Task 1 禁止放弹，因此相同 feature/seed 下 r8 与 r7 的数值和轨迹必须一致。
 
-所有条件已在 [`experiments/task2_safety_ablation.json`](experiments/task2_safety_ablation.json) 预注册。先对既有 v5 checkpoint 在 seeds 10000–10019 做冻结 `all` mask 诊断；自杀率高于 5% 时停止训练并审计动力学。诊断通过后，在一个干净 v6 提交上并行建立三条 seed 11 独立链：`v2+r7+all`、`v3+r7+all`、`v3+r8+all`。每条 Task 1 从零达到 200000 动作、最多 750 局；Task 2 从对应 v6 父 snapshot 晋级，至少 500 局且达到 150000 阶段动作、最多 2000 局，保持 4-step、75% 父回放和蒸馏 λ=2。
+所有条件已在 [`experiments/task2_safety_ablation.json`](experiments/task2_safety_ablation.json) 预注册。冻结 shield 诊断把旧模型的20-seed自杀率从30%降到0%，因此在提交 `2eba43a` 建立了三条 seed 11 Task 1 链：`v2+r7+all`、`v3+r7+all`、`v3+r8+all`。三者跑满750局后分别累计180311、182000、182000动作，未达到旧200000动作目标，但最后100局平均金币分别为49.99、49.98、49.98；最后100局全金币率为99%、98%、98%。这证明动作门槛会把更快收完金币、因而更早结束回合的模型误记为训练量不足。
 
-开发门槛同时要求：Task 1 `mean_coins≥35`；Task 2 `mean_coins≥2`、`mean_crates≥5`、相对父模型 crates 增加至少 0.5；Task 1 保留率至少 90%；`suicide≤5%`、零放弹局率不超过 10%、存活炸弹率至少 95%、invalid 不超过 1%；checkpoint/v6 两代 snapshot 完整，loss 有限，无异常/timeout/skipped，act P95<50 ms 且最大值<500 ms。多候选依次按自杀率、零放弹率、存活炸弹率、`min(coins/2,crates/5)`、金币、保留率、时延和 run ID 排序。
+Task 1 因此改用 `task1-frozen-score-v1`：累计第200局开始，每50局暂停训练，对 seeds 9000–9019 各做1局关闭探索的同步评估；连续三次 `mean_score≥48` 才记为 **Task 1 分数收敛**，第三次 checkpoint 为父模型。一次失败将连续计数归零，累计1000局仍未收敛则状态为 `not_converged`。动作数继续控制 epsilon 并用于诊断，不再参与 Task 1 停止或晋级。全金币率、完成步数、WAIT、往返和时延只作诊断。
+
+收敛后必须在未参与停止的 seeds 10000–10019 上做一次独立阶段门槛，并再次满足 `mean_score≥48` 与工程硬门槛；失败后不得继续利用这组 seeds 调参。只有阶段门槛合格的链可进入 Task 2。Task 2 仍至少500局且达到150000阶段动作、最多2000局，保持4-step、75%父回放和蒸馏 λ=2。seeds 11000–11099 与 20000–20099 分别继续保留给主验证和最终测试。
+
+开发门槛同时要求：Task 1 `mean_score≥48`；Task 2 `mean_coins≥2`、`mean_crates≥5`、相对父模型 crates 增加至少 0.5；Task 1 保留率至少 90%；`suicide≤5%`、零放弹局率不超过 10%、存活炸弹率至少 95%、invalid 不超过 1%；checkpoint/v7 两代 snapshot 完整，loss 有限，无异常/timeout/skipped，act P95<50 ms 且最大值<500 ms。多候选依次按自杀率、零放弹率、存活炸弹率、`min(coins/2,crates/5)`、金币、保留率、时延和 run ID 排序。
 
 seed 11 优胜配置才从零复制 seeds 22/33。三训练 seed × 20 开发 seed 汇总后只选一个 checkpoint，在 seeds 11000–11099 一次性做父 Task 1、子 Task 1、父 Task 2、子 Task 2 主验证，并用 10000 次配对 bootstrap（RNG `20260913`）报告 95% 区间。主验证失败即停止，不回看次优模型。seeds 20000–20099 保持封存，本轮不得启动 Task 3。
 
-当前完整恢复协议为 `training-resume-v6`，绑定 Safety/Feature/Reward/网络/训练合同、动作与自身炸弹历史、实际 replay mask 及全部 RNG；v5 及更早 checkpoint 只允许冻结评估。
+当前完整恢复协议为 `training-resume-v7`，在 v6 的 Safety/Feature/Reward/网络/历史/replay/RNG 合同上增加 Task 1 分数收敛配置与已提交评估历史。周期评估先引用不可变 generation/hash，再原子发布 assessment；评估失败或半成品不计数。普通续训拒绝 v6，显式迁移入口只接受完整 v6 Task 1 快照。
 
 ## 9. 核心实验如何分配和解释
 

@@ -16,9 +16,12 @@ from agent_code.team_agent.safety import resolve_safety_spec
 from experiments.devices import resolve_device
 from experiments.resume import (
     CHECKPOINT_SCHEMA_VERSION,
+    load_migration_snapshot,
     load_training_snapshot,
+    validate_v6_migration,
     validate_resume_transition,
 )
+from experiments.performance_stopping import resolve_performance_stopping
 from experiments.agent_contracts import resolve_agent_contract
 from agent_code.learning_common.training_spec import resolve_retention_spec
 
@@ -220,6 +223,8 @@ def run_training_mode(
     checkpoint = output / "checkpoints" / checkpoint_name(args.agent)
     replay_interval = args.replay_interval or replay_progress_interval(n_rounds)
     stopping_config = early_stopping_config(training)
+    performance_stopping = resolve_performance_stopping(
+        training.get("performance_stopping"), task=task_name)
     target_steps = (
         getattr(args, "target_stage_action_steps", None)
         if getattr(args, "target_stage_action_steps", None) is not None
@@ -235,6 +240,13 @@ def run_training_mode(
     }
     if budget_config["min_rounds"] > int(n_rounds):
         raise ValueError("--min-rounds cannot exceed --n-rounds")
+    if performance_stopping is not None:
+        if budget_config["target_stage_action_steps"] is not None:
+            raise ValueError(
+                "Task 1 performance_stopping conflicts with an action-step target")
+        if stopping_config is not None:
+            raise ValueError(
+                "Task 1 performance_stopping conflicts with reward early stopping")
     safe_exploration = training.get("safe_exploration", False)
     if not isinstance(safe_exploration, bool):
         raise ValueError("config.training.safe_exploration must be a boolean")
@@ -246,6 +258,7 @@ def run_training_mode(
         legacy_safe_exploration=(
             safe_exploration if configured_safety is None else None),
     )
+    effective_safe_exploration = safety_spec["mode"] in {"exploration", "all"}
     n_step = training.get("n_step", 1)
     if n_step not in {1, 4}:
         raise ValueError("config.training.n_step must be 1 or 4")
@@ -269,7 +282,8 @@ def run_training_mode(
         "sampled" if args.replay_policy == "auto" else args.replay_policy,
         replay_interval, stopping_config,
     )
-    if args.resume_from is None:
+    migration_from = getattr(args, "migrate_resume_from", None)
+    if args.resume_from is None and migration_from is None:
         return run_session(
             *positional, device_info=device_info,
             action_budget_config=budget_config,
@@ -280,13 +294,18 @@ def run_training_mode(
             adaptation_triggers=adaptation_triggers,
             feature_id_override=getattr(args, "feature_id", None),
             reward_id_override=getattr(args, "reward_id", None),
+            performance_stopping=performance_stopping,
         )
 
-    parent_run = Path(args.resume_from)
+    migrating = migration_from is not None
+    parent_run = Path(migration_from if migrating else args.resume_from)
     if not parent_run.is_absolute():
         parent_run = Path.cwd() / parent_run
     parent_run = parent_run.resolve()
-    snapshot = load_training_snapshot(parent_run)
+    snapshot = (
+        load_migration_snapshot(parent_run) if migrating
+        else load_training_snapshot(parent_run)
+    )
     metadata_path = parent_run / "metadata.json"
     if not metadata_path.is_file():
         raise ValueError("Parent run is missing metadata.json")
@@ -311,20 +330,26 @@ def run_training_mode(
         "training_device_type": device_info["type"],
         "agent_seed": seed,
         "exploration_spec": resolve_exploration_spec(training.get("exploration")),
-        "safe_exploration": safe_exploration,
+        "safe_exploration": effective_safe_exploration,
         "safety_spec": safety_spec,
         "n_step": n_step,
         "retention_spec": retention_spec,
         "training_budget": budget_config,
+        "performance_stopping": performance_stopping,
         "source_commit": source_commit,
         "source_hash": source_hash,
         "network_spec": agent_contract.network_spec,
         "hyperparameters": agent_contract.hyperparameters,
     }
     parent_status = parent_metadata.get("status", "unknown")
-    resume_kind = validate_resume_transition(
-        snapshot.contract, child_contract, parent_status=parent_status,
-    )
+    if migrating:
+        validate_v6_migration(
+            snapshot.contract, child_contract, parent_status=parent_status)
+        resume_kind = "v6_migration"
+    else:
+        resume_kind = validate_resume_transition(
+            snapshot.contract, child_contract, parent_status=parent_status,
+        )
     if (
         resume_kind == "same_task"
         and snapshot.runner_state.get("early_stopping_config") != stopping_config
@@ -344,6 +369,8 @@ def run_training_mode(
         adaptation_triggers=adaptation_triggers,
         feature_id_override=getattr(args, "feature_id", None),
         reward_id_override=getattr(args, "reward_id", None),
+        performance_stopping=performance_stopping,
+        migration=migrating,
     )
 
 

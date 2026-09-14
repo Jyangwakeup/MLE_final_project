@@ -164,7 +164,7 @@ class DQNTrainingTaskTestCase(unittest.TestCase):
                 "actions": ["UP", "RIGHT", "DOWN", "LEFT", "WAIT", "BOMB"],
                 "reward_id": "r1",
                 "reward_version": "r1",
-                "checkpoint_schema": "training-resume-v6",
+                "checkpoint_schema": "training-resume-v7",
                 "network_spec": network_spec(INPUT_SIZE),
                 "hyperparameters": HYPERPARAMETERS,
                 "feature_version": FEATURE_VERSION,

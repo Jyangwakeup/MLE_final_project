@@ -293,7 +293,7 @@ class PreregistrationAndContractTests(unittest.TestCase):
             self.assertTrue(budget(2))
             self.assertEqual(budget.result["reason"], "stage_action_target_reached")
 
-    def test_v6_allows_stage_contract_changes_only_on_task_promotion(self):
+    def test_v7_allows_stage_contract_changes_only_on_task_promotion(self):
         base = {
             "algorithm": "dqn", "seed": 11, "task": "coin_navigation",
             "checkpoint_schema": CHECKPOINT_SCHEMA_VERSION,

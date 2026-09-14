@@ -109,7 +109,7 @@ class SurvivalMaskTests(unittest.TestCase):
         np.testing.assert_array_equal(
             restored._all_items()[0].next_legal, transition.next_legal)
 
-    def test_v5_checkpoint_is_frozen_only_and_v6_binds_safety(self):
+    def test_v5_checkpoint_is_frozen_only_and_v7_binds_safety(self):
         payload = {
             "checkpoint_schema": "training-resume-v5",
             "algorithm": v2_callbacks.ALGORITHM,
@@ -269,8 +269,15 @@ class SafetyPreregistrationTests(unittest.TestCase):
                 self.assertEqual(
                     config["training"]["target_stage_action_steps"], 150000)
             else:
+                self.assertNotIn(
+                    "target_stage_action_steps", config["training"])
+                self.assertEqual(config["training"]["n_rounds"], 1000)
+                stopping = config["training"]["performance_stopping"]
+                self.assertEqual(stopping["metric"], "mean_score")
+                self.assertEqual(stopping["threshold"], 48.0)
                 self.assertEqual(
-                    config["training"]["target_stage_action_steps"], 200000)
+                    stopping["evaluation_seeds"], list(range(9000, 9020)))
+                self.assertEqual(stopping["consecutive_passes"], 3)
 
 
 if __name__ == "__main__":
