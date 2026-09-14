@@ -5,7 +5,7 @@
 - 默认 Feature：`discrete-q-v2`（16 个离散字段）；实验配置也可显式选择冻结的 `discrete-v1`（14 个字段）。
 - 默认 Reward：`r1`；正式 coin3 课程使用 `r1_coin3`。
 - Checkpoint：`final.pkl`。
-- 正式探索：epsilon 从 1.0 在 1,920,000 个动作步内线性下降至 0.05，跨 Task 不重置。
+- 正式探索：epsilon 从 1.0 在 80,000 个动作步内线性下降至 0.05，跨 Task 不重置。
 - Task 1 由 Runner 禁止 `BOMB`；Task 2–4 恢复完整动作空间。
 
 ## 正式 Task 1

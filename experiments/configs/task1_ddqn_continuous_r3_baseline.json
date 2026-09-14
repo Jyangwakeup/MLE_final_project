@@ -1,0 +1,26 @@
+{
+  "algorithm": "double_dqn",
+  "feature_id": "continuous-v2",
+  "feature_version": null,
+  "reward_id": "r3_potential",
+  "reward_version": "r3_potential",
+  "seed": 11,
+  "checkpoint": null,
+  "evaluation": {
+    "device": "cpu",
+    "navigation_diagnostics": true,
+    "seeds": [10001, 10002, 10003, 10004, 10005],
+    "n_rounds": 20
+  },
+  "training": {
+    "device": "cpu",
+    "n_rounds": 1000,
+    "exploration": {
+      "version": "linear-v1",
+      "start": 1.0,
+      "end": 0.05,
+      "decay_action_steps": 80000
+    },
+    "early_stopping": {"enabled": false}
+  }
+}

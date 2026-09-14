@@ -17,16 +17,21 @@ class AgentContract:
     agent: str
     algorithm: str
     feature_id: str
-    checkpoint_name: str
+    checkpoint_name: str | None
     feature_schema: dict[str, Any]
     network_spec: dict[str, Any] | None
     hyperparameters: dict[str, Any]
+    trainable: bool = True
 
 
 _BASELINES = {
     "q_learning_agent": ("q_learning", "discrete-q-v2", "final.pkl", None),
     "dqn_agent": ("dqn", "discrete-q-v2", "final.pt", None),
     "legal_random_agent": ("legal_random", "discrete-v1", "baseline.json", None),
+}
+_OFFICIAL_BASELINES = {
+    "random_agent", "rule_based_agent", "peaceful_agent",
+    "coin_collector_agent",
 }
 _NEW_AGENTS = {
     "double_q_compact_agent", "double_dqn_continuous_agent",
@@ -38,6 +43,22 @@ _BASELINE_FEATURE_IDS = {"discrete-v1", "discrete-q-v2"}
 def resolve_agent_contract(
     agent: str, feature_id: str | None = None,
 ) -> AgentContract:
+    if agent in _OFFICIAL_BASELINES:
+        resolved_feature_id = normalize_feature_id(feature_id or "discrete-v1")
+        if resolved_feature_id != "discrete-v1":
+            raise ValueError(
+                f"{agent} only supports 'discrete-v1' evaluation metadata; "
+                f"got {resolved_feature_id!r}")
+        return AgentContract(
+            agent=agent,
+            algorithm="official_baseline",
+            feature_id=resolved_feature_id,
+            checkpoint_name=None,
+            feature_schema=feature_schema_contract(resolved_feature_id),
+            network_spec=None,
+            hyperparameters={},
+            trainable=False,
+        )
     if agent in _BASELINES:
         algorithm, default_feature_id, checkpoint, network = _BASELINES[agent]
         resolved_feature_id = normalize_feature_id(feature_id or default_feature_id)

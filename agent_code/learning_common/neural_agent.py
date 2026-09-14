@@ -9,18 +9,24 @@ from pathlib import Path
 import numpy as np
 import torch
 
+from agent_code.team_agent.exploration import epsilon_at
 from agent_code.team_agent.rewards import reward_from_events
 from .neural import Transition
 from .runtime import (
-    CHECKPOINT_SCHEMA, adopt_checkpoint_reward, effective_legal_mask, epsilon_at,
+    CHECKPOINT_SCHEMA, adopt_checkpoint_reward, effective_legal_mask,
     load_common_configuration, save_checkpoint_atomic, validate_checkpoint,
 )
-from .temporal_reward import reset_temporal_reward_state, temporal_reward_context
+from .temporal_reward import (
+    DIAGNOSTIC_COUNT_FIELDS, accumulate_reward_diagnostics,
+    observed_terminal_state, reset_reward_diagnostics,
+    reset_temporal_reward_state, temporal_reward_context,
+)
 
 
 TRAINING_FIELDS = (
     "schema_version", "algorithm", "round", "reward", "action_steps", "epsilon",
     "q_states", "loss", "updates", "replay_size", "checkpoint",
+    *DIAGNOSTIC_COUNT_FIELDS, "conditional_loop_reward", "avoidable_wait_reward",
 )
 
 
@@ -66,7 +72,7 @@ def act_neural(self, game_state, *, actions, hyperparameters, extractor, state_v
         features.legal_mask, actions, self.curriculum_allows_bomb)
     legal_indices = np.flatnonzero(legal).tolist()
     if self.train:
-        epsilon = epsilon_at(self.action_steps, hyperparameters)
+        epsilon = epsilon_at(self.action_steps, self.exploration_spec)
         self.action_steps += 1
         if self.rng.random() < epsilon:
             return actions[self.rng.choice(legal_indices)]
@@ -82,6 +88,7 @@ def setup_neural_training(self):
     self.last_loss = None
     self.pending = None
     self.ended_key = None
+    reset_reward_diagnostics(self)
 
 
 def _transition(self, old_state, action, reward, new_state, done, *,
@@ -111,7 +118,11 @@ def neural_game_events(self, old_game_state, self_action, new_game_state, events
     # Preserve the pre-action temporal feature before advancing shared history.
     cached_features(self, old_game_state, extractor)
     reward_context = temporal_reward_context(
-        self, self_action, old_game_state, new_game_state, events)
+        self, self_action, old_game_state, new_game_state, events,
+        reward_id=self.reward_id)
+    diagnostic = reward_context.pop("diagnostic")
+    if diagnostic:
+        accumulate_reward_diagnostics(self, diagnostic, self.reward_spec)
     reward = reward_from_events(
         events, self.reward_id, old_game_state=old_game_state,
         new_game_state=new_game_state, terminal=False, **reward_context)
@@ -128,9 +139,18 @@ def neural_end_round(self, last_game_state, last_action, events, *, actions,
         if key != self.ended_key:
             if self.pending is not None and self.pending[0] != key:
                 _submit(self, self.pending[1])
+            reward_context = {}
+            if self.reward_id == "r5_conditional_loop":
+                cached_features(self, last_game_state, extractor)
+                reward_context = temporal_reward_context(
+                    self, last_action, last_game_state,
+                    observed_terminal_state(last_game_state, last_action, events),
+                    events, reward_id=self.reward_id)
+                diagnostic = reward_context.pop("diagnostic")
+                accumulate_reward_diagnostics(self, diagnostic, self.reward_spec)
             reward = reward_from_events(
                 events, self.reward_id, old_game_state=last_game_state,
-                new_game_state=None, terminal=True)
+                new_game_state=None, terminal=True, **reward_context)
             _submit(self, _transition(
                 self, last_game_state, last_action, reward, None, True,
                 actions=actions, extractor=extractor, state_value=state_value))
@@ -164,16 +184,18 @@ def _submit(self, transition):
 def _append_metrics(self, last_game_state, algorithm, hyperparameters):
     run_dir = os.getenv("BOMBERMAN_RUN_DIR")
     if not run_dir:
+        reset_reward_diagnostics(self)
         return
     path = Path(run_dir) / "training.csv"
     record = {
         "schema_version": "training-v1", "algorithm": algorithm,
         "round": "" if last_game_state is None else last_game_state.get("round", ""),
         "reward": self.round_reward, "action_steps": self.action_steps,
-        "epsilon": epsilon_at(self.action_steps, hyperparameters), "q_states": "",
+        "epsilon": epsilon_at(self.action_steps, self.exploration_spec), "q_states": "",
         "loss": "" if self.last_loss is None else self.last_loss,
         "updates": self.model.updates, "replay_size": len(self.model.replay),
         "checkpoint": str(self.model_file),
+        **self.reward_diagnostics,
     }
     write_header = not path.exists()
     with path.open("a", newline="", encoding="utf-8") as file:
@@ -181,3 +203,4 @@ def _append_metrics(self, last_game_state, algorithm, hyperparameters):
         if write_header:
             writer.writeheader()
         writer.writerow(record)
+    reset_reward_diagnostics(self)

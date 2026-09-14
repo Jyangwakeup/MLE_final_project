@@ -407,7 +407,7 @@ def validate_resume_transition(
     for field in (
         "algorithm", "seed", "checkpoint_schema", "reward_spec",
         "training_device_type", "training_device_name", "agent_seed", "exploration_spec",
-        "source_commit", "source_hash",
+        "source_commit",
     ):
         if parent.get(field) != child.get(field):
             raise ValueError(f"Resume {field} must match the parent run")

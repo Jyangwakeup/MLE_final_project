@@ -39,8 +39,9 @@ schema = get_feature_schema("discrete-q-v2", game_state["field"].shape)
 | `r2_balanced` | -0.01 | +3.0 | +0.25 | +5.0 | +0.1 | -7.0 | -5.0 | +0.25 | -0.2 |
 | `r3_potential` | -0.01 | +3.0 | +0.25 | +5.0 | +0.1 | -7.0 | -5.0 | +0.25 | -0.2 |
 | `r4_anti_oscillation` | -0.01 | +3.0 | +0.25 | +5.0 | +0.1 | -7.0 | -5.0 | +0.25 | -0.2 |
+| `r5_conditional_loop` | -0.01 | +3.0 | +0.25 | +5.0 | +0.1 | -7.0 | -5.0 | +0.25 | -0.2 |
 
-`r1_coin3` 相对 `r1` 只改变金币奖励；`r1_coin3_no_crate` 相对它只关闭炸箱奖励，因此可作为严格单因素消融。`r3_potential` 在 `r2_balanced` 事件奖励上增加状态势能，`r4_anti_oscillation` 再增加连续反向移动和安全空等惩罚。
+`r1_coin3` 相对 `r1` 只改变金币奖励；`r1_coin3_no_crate` 相对它只关闭炸箱奖励，因此可作为严格单因素消融。`r3_potential` 在 `r2_balanced` 事件奖励上增加状态势能；`r4_anti_oscillation` 再增加旧的连续反向移动和安全空等惩罚。`r5_conditional_loop` 从 `r3_potential` 分叉，改用条件式循环和可避免 WAIT 惩罚，不叠加 `r4` 的旧惩罚。
 
 Feature 与 Reward 是独立契约。metadata、final checkpoint 和 `training-resume-v4` 快照同时记录 ID 与完整 schema/spec；任何语义变化必须创建新 ID，跨契约不得续训。v1–v3 resume 只允许冻结评估。
 

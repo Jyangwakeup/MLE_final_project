@@ -26,7 +26,7 @@ EXPLORATION_SPEC = {
     "version": "linear-v1",
     "start": 1.0,
     "end": 0.05,
-    "decay_action_steps": 1_920_000,
+    "decay_action_steps": 80_000,
 }
 REWARD_SPEC = {
     "step": -0.01,
@@ -144,13 +144,20 @@ class ResumeProtocolTestCase(unittest.TestCase):
             ("agent_seed", 22),
             ("exploration_spec", {**EXPLORATION_SPEC, "end": 0.1}),
             ("source_commit", "different-commit"),
-            ("source_hash", "different-source"),
         ):
             with self.subTest(field=field):
                 with self.assertRaisesRegex(ValueError, field):
                     validate_resume_transition(
                         parent, {**parent, field: value}, parent_status="completed"
                     )
+
+        self.assertEqual(
+            validate_resume_transition(
+                parent, {**parent, "source_hash": "different-source"},
+                parent_status="completed",
+            ),
+            "same_task",
+        )
 
     def test_resume_rejects_new_feature_schema_mismatch(self):
         parent = {

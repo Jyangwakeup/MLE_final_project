@@ -38,7 +38,7 @@ def assert_state_unchanged(test_case, actual, expected):
 class RegistryAndBaselineTestCase(unittest.TestCase):
     def test_registry_has_stable_semantic_ids_and_legacy_alias(self):
         self.assertEqual(available_feature_ids(), (
-            "discrete-v1", "discrete-q-v2", "discrete-compact-v1", "continuous-v1",
+            "discrete-v1", "discrete-q-v2", "discrete-compact-v1", "continuous-v1", "continuous-v2",
             "board-v1", "hybrid-v1",
         ))
         self.assertEqual(normalize_feature_id(legacy_version="v1"), "discrete-v1")
@@ -67,6 +67,19 @@ class RegistryAndBaselineTestCase(unittest.TestCase):
         self.assertEqual(result.state_key[-2:], (2, 4))
         self.assertEqual(result.vector.shape, (50,))
         self.assertEqual(result.vector.dtype, np.float32)
+
+    def test_continuous_v2_exposes_history_and_return_candidates(self):
+        from agent_code.team_agent.feature_system.continuous_v2 import extract
+        state = make_game_state(position=(3, 3))
+        state["coins"] = [(5, 3)]
+        result = extract(
+            state, previous_action="RIGHT", previous_position=(2, 3),
+            previous_coin_target=(5, 3))
+        self.assertEqual(result.vector.shape, (84,))
+        self.assertEqual(result.vector[71], 1.0)  # previous RIGHT
+        self.assertEqual(result.vector[77], 1.0)  # target continuity
+        self.assertEqual(result.vector[81], 1.0)  # LEFT returns to (2, 3)
+        self.assertEqual(float(result.vector[78:84].sum()), 1.0)
 
     def test_checkpoint_contract_accepts_explicit_legacy_and_rejects_mismatch(self):
         validate_checkpoint_feature_contract(

@@ -2,10 +2,10 @@ import os
 from argparse import ArgumentParser
 from pathlib import Path
 from time import sleep, time
-from tqdm import tqdm
 
 import settings as s
 from environment import BombeRLeWorld, GUI
+from experiments.progress_plugin import INLINE_PROGRESS
 from fallbacks import pygame, LOADED_PYGAME
 from replay import ReplayWorld
 
@@ -31,7 +31,7 @@ class Timekeeper:
 
 def world_controller(world, n_rounds, *,
                      gui, every_step, turn_based, make_video, update_interval,
-                     show_progress=True, progress_ncols=80,
+                     show_progress=True, progress_leave=True,
                      stop_condition=None):
     if make_video and not gui.screenshot_dir.exists():
         gui.screenshot_dir.mkdir()
@@ -51,11 +51,10 @@ def world_controller(world, n_rounds, *,
 
     user_input = None
     completed_rounds = 0
-    for _ in tqdm(
+    for _ in INLINE_PROGRESS.create(
         range(n_rounds),
         disable=not show_progress,
-        ncols=progress_ncols,
-        dynamic_ncols=progress_ncols is None,
+        leave=progress_leave,
     ):
         world.new_round()
         while world.running:

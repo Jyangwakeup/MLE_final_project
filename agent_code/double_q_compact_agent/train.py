@@ -11,6 +11,8 @@ import numpy as np
 from agent_code.learning_common.runtime import CHECKPOINT_SCHEMA, epsilon_at, save_checkpoint_atomic
 from agent_code.team_agent.rewards import reward_from_events
 from agent_code.learning_common.temporal_reward import (
+    DIAGNOSTIC_COUNT_FIELDS, accumulate_reward_diagnostics,
+    observed_terminal_state, reset_reward_diagnostics,
     reset_temporal_reward_state, temporal_reward_context,
 )
 from .callbacks import (
@@ -32,6 +34,7 @@ TRAINING_FIELDS = (
     "schema_version", "algorithm", "round", "reward", "action_steps", "epsilon",
     "q_states", "q_states_a", "q_states_b", "union_q_states", "unseen_q_states",
     "unseen_q_state_rate", "loss", "updates", "checkpoint",
+    *DIAGNOSTIC_COUNT_FIELDS, "conditional_loop_reward", "avoidable_wait_reward",
 )
 
 
@@ -39,6 +42,8 @@ def setup_training(self):
     self.round_reward = 0.0
     self.pending = None
     self.ended_key = None
+    reset_temporal_reward_state(self)
+    reset_reward_diagnostics(self)
 
 
 def _argmax(values, legal, rng):
@@ -93,7 +98,11 @@ def game_events_occurred(self, old_game_state: dict, self_action: str,
         _submit(self, self.pending[1])
     _features_for(self, old_game_state)
     reward_context = temporal_reward_context(
-        self, self_action, old_game_state, new_game_state, events)
+        self, self_action, old_game_state, new_game_state, events,
+        reward_id=self.reward_id)
+    diagnostic = reward_context.pop("diagnostic")
+    if diagnostic:
+        accumulate_reward_diagnostics(self, diagnostic, self.reward_spec)
     reward = reward_from_events(
         events, self.reward_id, old_game_state=old_game_state,
         new_game_state=new_game_state, terminal=False, **reward_context)
@@ -107,9 +116,18 @@ def end_of_round(self, last_game_state: dict, last_action: str, events: List[str
         if key != self.ended_key:
             if self.pending is not None and self.pending[0] != key:
                 _submit(self, self.pending[1])
+            reward_context = {}
+            if self.reward_id == "r5_conditional_loop":
+                _features_for(self, last_game_state)
+                reward_context = temporal_reward_context(
+                    self, last_action, last_game_state,
+                    observed_terminal_state(last_game_state, last_action, events),
+                    events, reward_id=self.reward_id)
+                diagnostic = reward_context.pop("diagnostic")
+                accumulate_reward_diagnostics(self, diagnostic, self.reward_spec)
             reward = reward_from_events(
                 events, self.reward_id, old_game_state=last_game_state,
-                new_game_state=None, terminal=True)
+                new_game_state=None, terminal=True, **reward_context)
             _submit(self, _make_transition(
                 self, last_game_state, last_action, reward, None, True))
             self.ended_key = key
@@ -149,6 +167,7 @@ def _submit(self, transition):
 def _append_metrics(self, last_game_state):
     run_dir = os.getenv("BOMBERMAN_RUN_DIR")
     if not run_dir:
+        reset_reward_diagnostics(self)
         return
     path = Path(run_dir) / "training.csv"
     union = self.union_q_states
@@ -161,6 +180,7 @@ def _append_metrics(self, last_game_state):
         "union_q_states": union, "unseen_q_states": self.unseen_q_states,
         "unseen_q_state_rate": self.unseen_q_states / max(self.q_decisions, 1),
         "loss": "", "updates": "", "checkpoint": str(self.model_file),
+        **self.reward_diagnostics,
     }
     write_header = not path.exists()
     with path.open("a", newline="", encoding="utf-8") as file:
@@ -168,3 +188,4 @@ def _append_metrics(self, last_game_state):
         if write_header:
             writer.writeheader()
         writer.writerow(record)
+    reset_reward_diagnostics(self)

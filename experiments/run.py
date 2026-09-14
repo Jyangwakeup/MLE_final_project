@@ -148,6 +148,7 @@ class ExperimentWorld(BombeRLeWorld):
         self._navigation_diagnostics = navigation_diagnostics
         self._navigation_previous_action: dict[str, str] = {}
         self._navigation_previous_target: dict[str, tuple[int, int] | None] = {}
+        self._navigation_previous_position: dict[str, tuple[int, int] | None] = {}
         self._training_rewards: list[float] = []
         self._training_csv_offset = 0
         self._training_reward_column: int | None = None
@@ -160,6 +161,7 @@ class ExperimentWorld(BombeRLeWorld):
         self._death_causes = {}
         self._navigation_previous_action = {}
         self._navigation_previous_target = {}
+        self._navigation_previous_position = {}
         super().new_round()
 
     def evaluate_explosions(self) -> None:
@@ -194,6 +196,7 @@ class ExperimentWorld(BombeRLeWorld):
         available_before: float,
         available_after: float,
         game_state: dict[str, Any],
+        actual_position: tuple[int, int],
     ) -> None:
         record = {
                 "schema_version": TIMING_SCHEMA_VERSION,
@@ -215,10 +218,13 @@ class ExperimentWorld(BombeRLeWorld):
                 action,
                 previous_target=self._navigation_previous_target.get(agent.name),
                 previous_action=self._navigation_previous_action.get(agent.name),
+                previous_position=self._navigation_previous_position.get(agent.name),
+                actual_position=actual_position,
             )
             record["navigation"] = diagnostic
             self._navigation_previous_target[agent.name] = target
             self._navigation_previous_action[agent.name] = action
+            self._navigation_previous_position[agent.name] = tuple(game_state["self"][3])
         self._timing_file.write(json.dumps(record, sort_keys=True) + "\n")
 
     def poll_and_run_agents(self) -> None:
@@ -281,6 +287,8 @@ class ExperimentWorld(BombeRLeWorld):
                 agent.available_think_time += agent.base_timeout
                 action = "WAIT"
 
+            self.replay["actions"][agent.name].append(action)
+            self.perform_agent_action(agent, action)
             self._append_timing(
                 agent,
                 action,
@@ -291,9 +299,8 @@ class ExperimentWorld(BombeRLeWorld):
                 available_before,
                 float(agent.available_think_time),
                 states[agent.name],
+                (agent.x, agent.y),
             )
-            self.replay["actions"][agent.name].append(action)
-            self.perform_agent_action(agent, action)
 
     def end_round(self) -> None:
         super().end_round()
@@ -624,7 +631,10 @@ def _training_seeds(experiment_seed: int) -> dict[str, int]:
 
 
 def _checkpoint_name(agent: str) -> str:
-    return resolve_agent_contract(agent).checkpoint_name
+    checkpoint_name = resolve_agent_contract(agent).checkpoint_name
+    if checkpoint_name is None:
+        raise ValueError(f"Agent {agent!r} does not support training")
+    return checkpoint_name
 
 
 def _algorithm_name(agent: str) -> str:
@@ -661,7 +671,7 @@ def run_agent_session(
     opponents: Sequence[str],
     scenario: str,
     n_rounds: int,
-    checkpoint: Path,
+    checkpoint: Path | None,
     task_name: str,
     replay_policy: str = "none",
     replay_interval: int = DEFAULT_REPLAY_INTERVAL,
@@ -671,6 +681,8 @@ def run_agent_session(
     resume_kind: str | None = None,
     parent_metadata: dict[str, Any] | None = None,
     device_info: dict[str, Any] | None = None,
+    show_progress: bool = True,
+    progress_leave: bool = True,
 ) -> Path:
     """Run one isolated training or frozen-evaluation session."""
     training = mode == "train"
@@ -683,7 +695,7 @@ def run_agent_session(
         raise ValueError(f"replay_policy must be one of {', '.join(REPLAY_POLICIES)}")
     replay_interval = _positive_int(replay_interval, "replay_interval")
     specs = _custom_agents(agent, opponents, training)
-    checkpoint = checkpoint.resolve()
+    checkpoint = None if checkpoint is None else checkpoint.resolve()
     expanded = _read_config(config_path)
     algorithm = _algorithm_name(agent)
     training_config = expanded.get("training", {})
@@ -732,13 +744,15 @@ def run_agent_session(
         raise ValueError("Resume snapshots are only valid in training mode")
     if (resume_snapshot is None) != (resume_kind is None):
         raise ValueError("Resume snapshot and resume kind must be provided together")
-    if not training and not checkpoint.is_file():
+    if not training and checkpoint is not None and not checkpoint.is_file():
         raise FileNotFoundError(f"Evaluation checkpoint does not exist: {checkpoint}")
     checkpoint_reward_contract = (
-        None if training else _checkpoint_reward_contract(checkpoint, algorithm)
+        None if training or checkpoint is None
+        else _checkpoint_reward_contract(checkpoint, algorithm)
     )
     output.mkdir(parents=True, exist_ok=False)
     if training:
+        assert checkpoint is not None
         checkpoint.parent.mkdir(parents=True, exist_ok=True)
     if resume_snapshot is not None:
         materialize_learner_checkpoint(resume_snapshot, checkpoint)
@@ -759,7 +773,7 @@ def run_agent_session(
     expanded["execution"] = {
         "agent": agent,
         "allow_bomb": task_name != "coin_navigation",
-        "checkpoint": str(checkpoint),
+        "checkpoint": None if checkpoint is None else str(checkpoint),
         "n_rounds": n_rounds,
         "opponents": list(opponents),
         "replay_interval": replay_interval,
@@ -784,7 +798,7 @@ def run_agent_session(
     metadata["reward_id"] = reward_version
     metadata["reward_version"] = reward_version
     metadata["action_order"] = list(ACTIONS)
-    metadata["checkpoint"] = str(checkpoint)
+    metadata["checkpoint"] = None if checkpoint is None else str(checkpoint)
     metadata["network_spec"] = contract.network_spec
     metadata["hyperparameters"] = contract.hyperparameters
     metadata["curriculum_action_mask"] = {
@@ -834,7 +848,10 @@ def run_agent_session(
     }
     try:
         (output / "logs").mkdir()
-        os.environ["BOMBERMAN_CHECKPOINT"] = str(checkpoint)
+        if checkpoint is None:
+            os.environ.pop("BOMBERMAN_CHECKPOINT", None)
+        else:
+            os.environ["BOMBERMAN_CHECKPOINT"] = str(checkpoint)
         os.environ["BOMBERMAN_CONFIG"] = str(config_path.resolve())
         os.environ["BOMBERMAN_RUN_DIR"] = str(output.resolve())
         os.environ["BOMBERMAN_RUN_ID"] = output.name
@@ -899,10 +916,11 @@ def run_agent_session(
         )
         completed_rounds = world_controller(
             world, n_rounds, gui=None, every_step=False, turn_based=False,
-            make_video=False, update_interval=0.0, show_progress=True,
+            make_video=False, update_interval=0.0, show_progress=show_progress,
+            progress_leave=progress_leave,
             stop_condition=early_stopping,
         )
-        if training and not checkpoint.is_file():
+        if training and (checkpoint is None or not checkpoint.is_file()):
             raise RuntimeError(f"Training did not write checkpoint: {checkpoint}")
         if training:
             analyze_training(output)
@@ -953,7 +971,7 @@ def run_agent_evaluation(
     agent: str,
     opponents: Sequence[str],
     scenario: str,
-    checkpoint: Path,
+    checkpoint: Path | None,
     task_name: str,
     replay_policy: str = "all",
     replay_interval: int = DEFAULT_REPLAY_INTERVAL,
@@ -1011,11 +1029,14 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = _parser().parse_args(argv)
     try:
         config = _read_config(args.config)
+        agent_contract = resolve_agent_contract(args.agent)
         configured_seeds, configured_rounds = _configured_evaluation(
             json.loads(json.dumps(config))
         )
         task_name, scenario, opponents = _task_settings(args.task, args.opponents)
         if args.mode == "train":
+            if not agent_contract.trainable:
+                raise ValueError(f"Agent {args.agent!r} does not support training")
             run_training_mode(
                 args, config, task_name, scenario, opponents,
                 output_directory=_output_directory,

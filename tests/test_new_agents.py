@@ -19,6 +19,7 @@ from agent_code.learning_common.replay import (
     encode_board,
 )
 from agent_code.learning_common.runtime import effective_legal_mask, epsilon_at
+from agent_code.learning_common.neural_agent import act_neural
 from agent_code.team_agent.rewards import resolve_reward_spec
 from agent_code.double_q_compact_agent import callbacks as dq_callbacks
 from agent_code.double_q_compact_agent import train as dq_train
@@ -60,12 +61,12 @@ class FeatureAdapterTests(unittest.TestCase):
         board = board_features.features_for_state(state)
         hybrid = hybrid_features.features_for_state(state)
         self.assertEqual(len(compact.state_key), 12)
-        self.assertEqual(continuous.vector.shape, (70,))
+        self.assertEqual(continuous.vector.shape, (84,))
         self.assertEqual(board.board.shape, (12, 17, 17))
         self.assertEqual(hybrid.board.shape, (12, 17, 17))
         self.assertEqual(hybrid.vector.shape, (70,))
         np.testing.assert_array_equal(board.board, hybrid.board)
-        np.testing.assert_array_equal(continuous.vector, hybrid.vector)
+        np.testing.assert_array_equal(continuous.vector[:70], hybrid.vector)
 
     def test_canonical_action_mapping_is_a_bijection(self):
         features = dq_callbacks.features_for_state(game_state())
@@ -137,6 +138,63 @@ class AlgorithmTests(unittest.TestCase):
         self.assertEqual(epsilon_at(0, parameters), 1.0)
         self.assertEqual(epsilon_at(80_000, parameters), 0.05)
         self.assertEqual(epsilon_at(160_000, parameters), 0.05)
+
+    def test_neural_action_uses_runner_exploration_spec(self):
+        class RNG:
+            def random(self): return 0.5
+            def choice(self, values): return values[0]
+
+        owner = SimpleNamespace(
+            train=True, action_steps=80_000, rng=RNG(),
+            curriculum_allows_bomb=True,
+            exploration_spec={
+                "version": "linear-v1", "start": 1.0, "end": 0.05,
+                "decay_action_steps": 160_000,
+            },
+            model=SimpleNamespace(
+                q_values=lambda state: np.array([0, 1, 2, 3, 4, 5], dtype=np.float32)),
+            _feature_cache_key=None, _feature_cache_value=None,
+        )
+        features = SimpleNamespace(
+            legal_mask=np.ones(6, dtype=bool), vector=np.zeros(1, dtype=np.float32))
+        action = act_neural(
+            owner, game_state(), actions=continuous_callbacks.ACTIONS,
+            hyperparameters=continuous_callbacks.HYPERPARAMETERS,
+            extractor=lambda state: features, state_value=lambda value: value.vector,
+        )
+        self.assertEqual(action, "UP")
+        self.assertEqual(owner.action_steps, 80_001)
+
+    def test_continuous_frozen_act_advances_and_resets_history(self):
+        owner = SimpleNamespace(
+            train=False, previous_action=None, reward_previous_position=None,
+            reward_previous_coin_target=None,
+        )
+        first = game_state()
+        second = game_state()
+        second["step"] = 2
+        next_round = game_state()
+        next_round["round"] = 2
+        observed = []
+
+        def choose(owner, state, **kwargs):
+            observed.append(kwargs["extractor"](state).vector.copy())
+            return ("RIGHT", "DOWN", "LEFT")[len(observed) - 1]
+
+        with patch(
+            "agent_code.double_dqn_continuous_agent.callbacks.act_neural",
+            side_effect=choose,
+        ):
+            continuous_callbacks.act(owner, first)
+            self.assertEqual(owner.previous_action, "RIGHT")
+            self.assertEqual(owner.reward_previous_position, (1, 1))
+            self.assertEqual(owner.reward_previous_coin_target, (3, 1))
+
+            continuous_callbacks.act(owner, second)
+            self.assertEqual(observed[1][70 + 1], 1.0)
+
+            continuous_callbacks.act(owner, next_round)
+            self.assertEqual(observed[2][70 + 6], 1.0)
 
     def test_double_dqn_selects_with_policy_and_evaluates_with_target(self):
         policy = torch.tensor([[0.0, 9.0, 4.0], [8.0, 7.0, 6.0]])
@@ -211,7 +269,7 @@ class CheckpointTests(unittest.TestCase):
 
     def test_neural_checkpoints_round_trip(self):
         cases = (
-            (continuous_callbacks, continuous_train, "continuous-v1"),
+            (continuous_callbacks, continuous_train, "continuous-v2"),
             (cnn_callbacks, cnn_train, "board-v1"),
             (hybrid_callbacks, hybrid_train, "hybrid-v1"),
         )

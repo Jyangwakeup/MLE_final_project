@@ -19,13 +19,13 @@ class ExplorationScheduleTestCase(unittest.TestCase):
             "version": "linear-v1",
             "start": 1.0,
             "end": 0.05,
-            "decay_action_steps": 1_920_000,
+            "decay_action_steps": 80_000,
         })
 
         self.assertEqual(schedule["version"], EXPLORATION_VERSION)
         self.assertAlmostEqual(epsilon_at(0, schedule), 1.0)
-        self.assertAlmostEqual(epsilon_at(960_000, schedule), 0.525)
-        self.assertAlmostEqual(epsilon_at(1_920_000, schedule), 0.05)
+        self.assertAlmostEqual(epsilon_at(40_000, schedule), 0.525)
+        self.assertAlmostEqual(epsilon_at(80_000, schedule), 0.05)
         self.assertAlmostEqual(epsilon_at(3_000_000, schedule), 0.05)
 
 

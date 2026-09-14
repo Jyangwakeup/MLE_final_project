@@ -17,16 +17,17 @@
       "version": "linear-v1",
       "start": 1.0,
       "end": 0.05,
-      "decay_action_steps": 1920000
+      "decay_action_steps": 80000
     },
     "n_rounds": null,
     "early_stopping": {
       "enabled": true,
-      "window": 100,
+      "window": 200,
       "patience": 100,
       "min_rounds": 300,
       "min_delta": 0.1,
-      "target_reward": null
+      "target_reward": null,
+      "require_exploration_complete": true
     }
   }
 }

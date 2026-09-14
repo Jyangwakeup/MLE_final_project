@@ -69,6 +69,7 @@ danger.shape = (HORIZON + 1, width, height)
 | `discrete-q-v2` | Q-learning / DQN | state 16 / vector 50 | 是 | 不兼容 |
 | `discrete-compact-v1` | Q-learning / Double Q | state 12 / vector 38 | 是 | 不兼容 |
 | `continuous-v1` | MLP Double DQN | vector 70 | 是 | 不兼容 |
+| `continuous-v2` | 历史感知 MLP Double DQN | vector 84 | 是 | 不兼容 |
 | `board-v1` | CNN | board `12×W×H` | 主要为原始结构化通道 | 不兼容 |
 | `hybrid-v1` | CNN + MLP | board `12×W×H` + vector 70 | 两者组合 | 不兼容 |
 
@@ -131,6 +132,12 @@ crate_frontier_distance_delta, opponent_distance_delta
 | 69 | `round_progress` | `(clip(step,1,MAX_STEPS)-1)/(MAX_STEPS-1)` |
 
 不能放弹时 64–67 均为 0。
+
+## `continuous-v2`：84 维历史感知向量
+
+前 70 维与 `continuous-v1` 完全一致，随后追加：上一动作的 7 类 one-hot（六动作及 none）、
+当前确定性 BFS 金币目标是否延续，以及六个候选动作是否会返回前一位置。历史值由 Agent
+回调提供；registry 的无历史直接调用使用 none/false，保持确定性和只读行为。
 
 ## `discrete-compact-v1`：12 个离散字段
 

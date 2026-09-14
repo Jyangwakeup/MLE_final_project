@@ -21,6 +21,12 @@ _TRAINING_COLUMNS = (
     "schema_version", "algorithm", "round", "reward", "action_steps", "epsilon",
     "q_states", "loss", "updates", "checkpoint",
 )
+_REWARD_DIAGNOSTIC_COLUMNS = (
+    "conditional_loop_count", "avoidable_wait_count",
+    "conditional_loop_reward", "avoidable_wait_reward",
+    "wait_current_danger_count", "wait_next_danger_count",
+    "wait_no_reachable_coin_count", "wait_no_safe_progress_move_count",
+)
 _ROUND_COLUMNS = (
     "run_id", "algorithm", "seed", "round", "coins", "reward", "epsilon",
     "q_states", "dqn_last_update_loss", "updates", "coins_rolling_mean",
@@ -55,6 +61,8 @@ def analyze_training(run_directory: Path) -> dict[str, object]:
         "final_updates": int(rows[-1]["updates"]) if rows[-1].get("updates") else None,
         "checkpoint": rows[-1]["checkpoint"],
     }
+    for field in _REWARD_DIAGNOSTIC_COLUMNS:
+        summary[field] = sum(float(row.get(field) or 0) for row in rows)
     (run_directory / "training_summary.json").write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     figure, reward_axis = plt.subplots(figsize=(8, 4.5))
     reward_axis.plot(rounds, rewards, color="#176B87", linewidth=1)
@@ -148,11 +156,13 @@ def _load_training_run(run_directory: Path) -> dict[str, Any]:
         raise ValueError(f"Completed rounds do not match requested round budget: {run_directory}")
     rows = []
     for training, episode in zip(training_rows, episodes, strict=True):
-        rows.append({"run_id": str(metadata.get("run_id", run_directory.name)), "algorithm": algorithm, "seed": seed,
+        row = {"run_id": str(metadata.get("run_id", run_directory.name)), "algorithm": algorithm, "seed": seed,
                      "round": training["round"], "coins": episode["coins"], "reward": training["reward"],
                      "epsilon": training["epsilon"], "q_states": training["q_states"],
                      "dqn_last_update_loss": training["loss"], "updates": training["updates"],
-                     "action_steps": training["action_steps"]})
+                     "action_steps": training["action_steps"]}
+        row.update({field: training.get(field, 0.0) for field in _REWARD_DIAGNOSTIC_COLUMNS})
+        rows.append(row)
     return {"directory": run_directory, "algorithm": algorithm, "seed": seed, "task": str(metadata["task"]),
             "feature_version": str(metadata["feature_version"]), "reward_version": str(metadata["reward_version"]),
             "round_budget": termination["requested_rounds"], "rows": rows}
@@ -180,6 +190,8 @@ def _read_training_rows(path: Path, expected_algorithm: str) -> list[dict[str, A
             raise ValueError(f"Training round identifiers must be consecutive from 1: {path}")
         if not all(value is None or math.isfinite(value) for value in (row["reward"], row["epsilon"], row["loss"])):
             raise ValueError(f"Training metrics contain non-finite values: {path}")
+        for field in _REWARD_DIAGNOSTIC_COLUMNS:
+            row[field] = _optional_float(source.get(field)) or 0.0
         rows.append(row)
     return rows
 
@@ -247,13 +259,16 @@ def _round_metrics(runs: list[dict[str, Any]], window: int) -> list[dict[str, An
 def _summarize_run(rows: list[dict[str, Any]]) -> dict[str, Any]:
     window = min(100, len(rows)); first, last, final = rows[:window], rows[-window:], rows[-1]
     first_coins, last_coins = mean(row["coins"] for row in first), mean(row["coins"] for row in last)
-    return {"run_id": final["run_id"], "algorithm": final["algorithm"], "seed": final["seed"], "rounds": len(rows),
+    result = {"run_id": final["run_id"], "algorithm": final["algorithm"], "seed": final["seed"], "rounds": len(rows),
             "action_steps": final["action_steps"], "mean_coins": mean(row["coins"] for row in rows),
             "first_100_mean_coins": first_coins, "last_100_mean_coins": last_coins,
             "coins_change_last_minus_first_100": last_coins - first_coins, "mean_reward": mean(row["reward"] for row in rows),
             "first_100_mean_reward": mean(row["reward"] for row in first), "last_100_mean_reward": mean(row["reward"] for row in last),
             "final_epsilon": final["epsilon"], "final_q_states": final["q_states"],
             "final_dqn_last_update_loss": final["dqn_last_update_loss"], "final_updates": final["updates"]}
+    for field in _REWARD_DIAGNOSTIC_COLUMNS:
+        result[field] = sum(float(row.get(field, 0)) for row in rows)
+    return result
 
 
 def _summarize_algorithms(run_summary: list[dict[str, Any]]) -> list[dict[str, Any]]:
