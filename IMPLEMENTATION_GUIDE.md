@@ -493,6 +493,21 @@ Task 2父模型不能普通续训到新网络。`--transfer-task3-from` 显式�
 
 优胜配置从自己的Task 2父模型新增seed 33，并让三seed在14000–14019重新确认。全部独立通过后只选一个candidate，在15000–15099做一次主验证；通过才命名 `task3_winner` 并允许进入Task 4，失败不测试第二名。Task 4入口保持获胜的117维特征、r9和Safety合同，对三名rule-based agent训练；本轮不启动Task 4，20000–20099继续封存。
 
+### 8.12 Task 3 分阶段迭代结果
+
+首轮八条链均在源码 `125124f` 上完成500局，并在seeds 13000–13019完成父子配对冻结评估。四个方案都至少有一个训练seed的自杀率超过10%，因此按预注册规则全部在500局淘汰，不追加到1000局。排序最高的是 `continuous-phase-v1 + r7_safe_credit_sparse + survival-mask-v1`：它的两seed平均Task 3分数为5.50，但seed 11/22自杀率均为20%，seed 22分数仍比父模型低0.45。
+
+| 首轮方案 | seed 11：分数增量 / 自杀 | seed 22：分数增量 / 自杀 | 最差Task 2金币/炸箱保留 | 结论 |
+|---|---:|---:|---:|---|
+| phase + r7 | +0.75 / 20% | −0.45 / 20% | 85% / 83% | 排名第一，但安全失败 |
+| phase + r9 resource | +0.95 / 40% | −1.15 / 10% | 76% / 80% | 安全与资源保留失败 |
+| phase + r9 combat | +0.95 / 15% | −1.35 / 25% | 89% / 91% | 跨seed战斗不稳定 |
+| phase + r9 full | +0.90 / 20% | −1.75 / 15% | 81% / 80% | 后期势未转化为安全收益 |
+
+最高名的自杀率超过5%，因此触发第二轮 `survival-mask-v2` 对照；特征和r7保持不变，并从两个Task 2父模型重新迁移训练500局。mask-v2把seed 11/22的自杀率从20%降到10%/15%，seed 11的Task 3分数和击杀分别提升1.85和0.15，但seed 22仍下降0.75分和0.20击杀；两seed的Task 2金币保留仅60%/67%，炸箱保留仅58%/75%。这说明余量否决方向有效，但没有解决5%安全门槛，而且产生明显旧任务资源退化。
+
+第二轮没有满足“安全、资源和保留均通过而只剩战斗失败”的对手课程条件；mask-v2也没有单独解决安全问题，所以不存在两个可供第三轮组合的已验证有效改动。实验到此停止：不训练seed 33，不使用14000–14019或15000–15099，不创建Task 3 candidate/winner，也不进入Task 4。完整720局证据与机器判定见 [`experiments/task3_phase_evaluations.csv`](experiments/task3_phase_evaluations.csv) 和 [`experiments/task3_phase_results.json`](experiments/task3_phase_results.json)。本轮最佳失败配置是 `phase + r7 + mask-v2`，只能用于诊断，`qualified_for_task4=false`。
+
 ## 9. 核心实验如何分配和解释
 
 | 实验 | 负责人 | 保持不变 | 唯一变化 | 要回答的问题 |
