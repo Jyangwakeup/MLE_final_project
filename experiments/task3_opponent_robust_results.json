@@ -1,0 +1,374 @@
+{
+  "branch": "task3-opponent-robust",
+  "conclusion": "Opponent enumeration fixed the known seven-seed regression but failed the preregistered 20-seed admission because Task 3 still had avoidable escape collapses and exceeded the act P95 limit; seed 33 also retained a 20% suicide rate.",
+  "development_gate": {
+    "by_training_seed": {
+      "11": {
+        "task1": {
+          "failures": [],
+          "passed": true,
+          "v3": {
+            "avoidable_escape_collapses": 0,
+            "bomb_survival_rate": 1.0,
+            "episodes": 20,
+            "first_place_rate": 1.0,
+            "invalid_action_rate": 0.0,
+            "maximum_act_seconds": 0.014890670776367188,
+            "mean_coins": 50.0,
+            "mean_crates": 0.0,
+            "mean_kills": 0.0,
+            "mean_score": 50.0,
+            "suicide_rate": 0.0,
+            "worst_act_p95_seconds": 0.011009693145751953
+          },
+          "v4": {
+            "avoidable_escape_collapses": 0,
+            "bomb_survival_rate": 1.0,
+            "episodes": 20,
+            "first_place_rate": 1.0,
+            "invalid_action_rate": 0.0,
+            "maximum_act_seconds": 0.016820907592773438,
+            "mean_coins": 50.0,
+            "mean_crates": 0.0,
+            "mean_kills": 0.0,
+            "mean_score": 50.0,
+            "suicide_rate": 0.0,
+            "worst_act_p95_seconds": 0.011002779006958008
+          }
+        },
+        "task2": {
+          "failures": [],
+          "passed": true,
+          "v3": {
+            "avoidable_escape_collapses": 0,
+            "bomb_survival_rate": 1.0,
+            "episodes": 20,
+            "first_place_rate": 0.45,
+            "invalid_action_rate": 0.0,
+            "maximum_act_seconds": 0.024859905242919922,
+            "mean_coins": 2.75,
+            "mean_crates": 36.05,
+            "mean_kills": 0.0,
+            "mean_score": 2.75,
+            "suicide_rate": 0.0,
+            "worst_act_p95_seconds": 0.015177249908447266
+          },
+          "v4": {
+            "avoidable_escape_collapses": 0,
+            "bomb_survival_rate": 1.0,
+            "episodes": 20,
+            "first_place_rate": 0.45,
+            "invalid_action_rate": 0.0,
+            "maximum_act_seconds": 0.028270244598388672,
+            "mean_coins": 2.75,
+            "mean_crates": 36.05,
+            "mean_kills": 0.0,
+            "mean_score": 2.75,
+            "suicide_rate": 0.0,
+            "worst_act_p95_seconds": 0.01788783073425293
+          }
+        },
+        "task3": {
+          "failures": [
+            "avoidable_escape_collapses",
+            "act_p95"
+          ],
+          "passed": false,
+          "v3": {
+            "avoidable_escape_collapses": 5,
+            "bomb_survival_rate": 0.9924528301886792,
+            "episodes": 20,
+            "first_place_rate": 0.3,
+            "invalid_action_rate": 0.0007874015748031496,
+            "maximum_act_seconds": 0.06339859962463379,
+            "mean_coins": 3.0,
+            "mean_crates": 30.5,
+            "mean_kills": 0.25,
+            "mean_score": 4.25,
+            "suicide_rate": 0.2,
+            "worst_act_p95_seconds": 0.015708208084106445
+          },
+          "v4": {
+            "avoidable_escape_collapses": 1,
+            "bomb_survival_rate": 0.9982078853046595,
+            "episodes": 20,
+            "first_place_rate": 0.25,
+            "invalid_action_rate": 0.0005077430820005078,
+            "maximum_act_seconds": 0.15218400955200195,
+            "mean_coins": 2.9,
+            "mean_crates": 30.6,
+            "mean_kills": 0.2,
+            "mean_score": 3.9,
+            "suicide_rate": 0.05,
+            "worst_act_p95_seconds": 0.06280946731567383
+          }
+        }
+      },
+      "22": {
+        "task1": {
+          "failures": [],
+          "passed": true,
+          "v3": {
+            "avoidable_escape_collapses": 0,
+            "bomb_survival_rate": 1.0,
+            "episodes": 20,
+            "first_place_rate": 1.0,
+            "invalid_action_rate": 0.0,
+            "maximum_act_seconds": 0.015295267105102539,
+            "mean_coins": 50.0,
+            "mean_crates": 0.0,
+            "mean_kills": 0.0,
+            "mean_score": 50.0,
+            "suicide_rate": 0.0,
+            "worst_act_p95_seconds": 0.011222124099731445
+          },
+          "v4": {
+            "avoidable_escape_collapses": 0,
+            "bomb_survival_rate": 1.0,
+            "episodes": 20,
+            "first_place_rate": 1.0,
+            "invalid_action_rate": 0.0,
+            "maximum_act_seconds": 0.01305842399597168,
+            "mean_coins": 50.0,
+            "mean_crates": 0.0,
+            "mean_kills": 0.0,
+            "mean_score": 50.0,
+            "suicide_rate": 0.0,
+            "worst_act_p95_seconds": 0.011200904846191406
+          }
+        },
+        "task2": {
+          "failures": [],
+          "passed": true,
+          "v3": {
+            "avoidable_escape_collapses": 0,
+            "bomb_survival_rate": 1.0,
+            "episodes": 20,
+            "first_place_rate": 0.4,
+            "invalid_action_rate": 0.0,
+            "maximum_act_seconds": 0.023103713989257812,
+            "mean_coins": 1.55,
+            "mean_crates": 16.45,
+            "mean_kills": 0.0,
+            "mean_score": 1.55,
+            "suicide_rate": 0.0,
+            "worst_act_p95_seconds": 0.012964963912963867
+          },
+          "v4": {
+            "avoidable_escape_collapses": 0,
+            "bomb_survival_rate": 1.0,
+            "episodes": 20,
+            "first_place_rate": 0.4,
+            "invalid_action_rate": 0.0,
+            "maximum_act_seconds": 0.026979446411132812,
+            "mean_coins": 1.55,
+            "mean_crates": 16.45,
+            "mean_kills": 0.0,
+            "mean_score": 1.55,
+            "suicide_rate": 0.0,
+            "worst_act_p95_seconds": 0.015669822692871094
+          }
+        },
+        "task3": {
+          "failures": [
+            "avoidable_escape_collapses",
+            "act_p95"
+          ],
+          "passed": false,
+          "v3": {
+            "avoidable_escape_collapses": 2,
+            "bomb_survival_rate": 0.996116504854369,
+            "episodes": 20,
+            "first_place_rate": 0.3,
+            "invalid_action_rate": 0.0,
+            "maximum_act_seconds": 0.03505253791809082,
+            "mean_coins": 3.15,
+            "mean_crates": 34.0,
+            "mean_kills": 0.3,
+            "mean_score": 4.65,
+            "suicide_rate": 0.1,
+            "worst_act_p95_seconds": 0.01895618438720703
+          },
+          "v4": {
+            "avoidable_escape_collapses": 1,
+            "bomb_survival_rate": 0.9981884057971014,
+            "episodes": 20,
+            "first_place_rate": 0.35,
+            "invalid_action_rate": 0.0,
+            "maximum_act_seconds": 0.18230223655700684,
+            "mean_coins": 3.2,
+            "mean_crates": 35.2,
+            "mean_kills": 0.35,
+            "mean_score": 4.95,
+            "suicide_rate": 0.05,
+            "worst_act_p95_seconds": 0.08675646781921387
+          }
+        }
+      },
+      "33": {
+        "task1": {
+          "failures": [],
+          "passed": true,
+          "v3": {
+            "avoidable_escape_collapses": 0,
+            "bomb_survival_rate": 1.0,
+            "episodes": 20,
+            "first_place_rate": 1.0,
+            "invalid_action_rate": 0.0,
+            "maximum_act_seconds": 0.015969276428222656,
+            "mean_coins": 50.0,
+            "mean_crates": 0.0,
+            "mean_kills": 0.0,
+            "mean_score": 50.0,
+            "suicide_rate": 0.0,
+            "worst_act_p95_seconds": 0.011502504348754883
+          },
+          "v4": {
+            "avoidable_escape_collapses": 0,
+            "bomb_survival_rate": 1.0,
+            "episodes": 20,
+            "first_place_rate": 1.0,
+            "invalid_action_rate": 0.0,
+            "maximum_act_seconds": 0.02328324317932129,
+            "mean_coins": 50.0,
+            "mean_crates": 0.0,
+            "mean_kills": 0.0,
+            "mean_score": 50.0,
+            "suicide_rate": 0.0,
+            "worst_act_p95_seconds": 0.011376142501831055
+          }
+        },
+        "task2": {
+          "failures": [],
+          "passed": true,
+          "v3": {
+            "avoidable_escape_collapses": 0,
+            "bomb_survival_rate": 1.0,
+            "episodes": 20,
+            "first_place_rate": 0.4,
+            "invalid_action_rate": 0.0,
+            "maximum_act_seconds": 0.026651859283447266,
+            "mean_coins": 2.75,
+            "mean_crates": 38.25,
+            "mean_kills": 0.0,
+            "mean_score": 2.75,
+            "suicide_rate": 0.0,
+            "worst_act_p95_seconds": 0.01620626449584961
+          },
+          "v4": {
+            "avoidable_escape_collapses": 0,
+            "bomb_survival_rate": 1.0,
+            "episodes": 20,
+            "first_place_rate": 0.4,
+            "invalid_action_rate": 0.0,
+            "maximum_act_seconds": 0.030267715454101562,
+            "mean_coins": 2.75,
+            "mean_crates": 38.25,
+            "mean_kills": 0.0,
+            "mean_score": 2.75,
+            "suicide_rate": 0.0,
+            "worst_act_p95_seconds": 0.018871784210205078
+          }
+        },
+        "task3": {
+          "failures": [
+            "suicide_rate",
+            "avoidable_escape_collapses",
+            "act_p95"
+          ],
+          "passed": false,
+          "v3": {
+            "avoidable_escape_collapses": 6,
+            "bomb_survival_rate": 0.9881188118811881,
+            "episodes": 20,
+            "first_place_rate": 0.15,
+            "invalid_action_rate": 0.0005770340450086555,
+            "maximum_act_seconds": 0.027251005172729492,
+            "mean_coins": 2.85,
+            "mean_crates": 28.9,
+            "mean_kills": 0.05,
+            "mean_score": 3.1,
+            "suicide_rate": 0.25,
+            "worst_act_p95_seconds": 0.022504806518554688
+          },
+          "v4": {
+            "avoidable_escape_collapses": 5,
+            "bomb_survival_rate": 0.98989898989899,
+            "episodes": 20,
+            "first_place_rate": 0.15,
+            "invalid_action_rate": 0.0005635390250774866,
+            "maximum_act_seconds": 0.1377711296081543,
+            "mean_coins": 2.8,
+            "mean_crates": 29.05,
+            "mean_kills": 0.05,
+            "mean_score": 3.05,
+            "suicide_rate": 0.2,
+            "worst_act_p95_seconds": 0.06916332244873047
+          }
+        }
+      }
+    },
+    "passed": false
+  },
+  "evidence_csv": {
+    "path": "experiments/task3_opponent_robust_evaluations.csv",
+    "rows": 374,
+    "sha256": "df507796b44d1084df411024f2536d973f49fe75f24006c2f9fcddc9d97f9f05"
+  },
+  "implementation_commit": "591cd8e0f30e553e1a39eef9e097232a55ce63a7",
+  "known_death_gate": {
+    "passed": true,
+    "required": {
+      "avoidable_escape_collapses": 0,
+      "suicides": 0
+    },
+    "v3": {
+      "avoidable_escape_collapses": 1,
+      "bombs_resolved": 175,
+      "bombs_survived": 174,
+      "episodes": 7,
+      "maximum_act_seconds": 0.0255889892578125,
+      "suicides": 1,
+      "worst_act_p95_seconds": 0.01549983024597168
+    },
+    "v4": {
+      "avoidable_escape_collapses": 0,
+      "bombs_resolved": 191,
+      "bombs_survived": 191,
+      "episodes": 7,
+      "maximum_act_seconds": 0.12040138244628906,
+      "suicides": 0,
+      "worst_act_p95_seconds": 0.04144620895385742
+    }
+  },
+  "qualified_for_task4": false,
+  "reserved_final_test_seeds_used": false,
+  "rollback": {
+    "active_candidate": "task2_winner",
+    "main_rewritten": false,
+    "reason": "Exact multi-step opponent-robust reachability is required; the one-step v4 contract cannot guarantee a viable policy throughout the bomb cycle."
+  },
+  "root_cause": {
+    "excluded": [
+      "official action-order mismatch",
+      "bomb countdown mismatch"
+    ],
+    "minimal_reproduction": {
+      "bomb_step": 274,
+      "collapse_step": 276,
+      "death_step": 278,
+      "environment_seed": 16013,
+      "run": "runs/task3_opprobust_collapse_repro_s11_e16013_591cd8e"
+    },
+    "summary": "The forall-opponent/exists-path check covers only the next transition. Future paths hold opponents static, so repeated opponent moves can exhaust the safe set after a bomb was admitted."
+  },
+  "schema_version": "task3-opponent-robust-result-v1",
+  "status": "failed_frozen_development_admission",
+  "stopped_stages": [
+    "frozen_confirmation_16100_16199",
+    "task3_training",
+    "confirmation_17000_17019",
+    "main_validation_18000_18099"
+  ],
+  "task3_winner_created": false
+}
