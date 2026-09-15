@@ -108,7 +108,7 @@ r5 在 r3 上只增加两个窄条件：安全、最近可达金币目标未切�
 | T1-E03 | 471429 cancelled | v1+cache / r3 / off | 未有完整 summary | N/A | N/A | N/A | N/A | 因输入 bug 停止，无性能结论 |
 | T1-E04 | 471431 completed，可信 | v2 / r3 / off | 100,142 / 273 | 25,200 | 0% | 13.35 | 52% / 49% | 后期 WAIT 退化 |
 | T1-E05 | 471439 completed，可信 | v2 / r5 / off | 100,394 / 283 | 75,130 | 17% | 41.78 | 26% / 18% | 当前最佳，100k 后退化，未达标 |
-| T1-E06 | planned，未提交 Slurm | v2 / r5 / off + 4-step | 计划 100k / seed 11 | N/A | N/A | N/A | N/A | 单因素信用分配对照，尚未实现/训练 |
+| T1-E06 | implemented，未提交 Slurm | v2 / r5 / off + 4-step | 计划 100k / seed 11 | N/A | N/A | N/A | N/A | 已通过本地 smoke；正式训练尚未开始 |
 
 ## 4. 各轮证据与诊断
 
@@ -179,7 +179,9 @@ r5 在 r3 上只增加两个窄条件：安全、最近可达金币目标未切�
 
 ### T1-E06 — planned：r5 + 4-step return
 
-尚未实现、提交 Slurm 或运行。计划只改变 return horizon：保留 v2、r5、网络、seed 11、100k budget、epsilon 日程、safety off 和其他超参数；从随机初始化开始。需先在本 agent learner 实现真实四步折扣、终局截断及相应测试，不能仅把共享 config 的 `n_step` 改为 4 就声称生效。
+已实现，尚未提交 Slurm 或运行正式预算。配置为 [cnn_path_task1_v2_r5_n4.json](../../experiments/configs/cnn_path_task1_v2_r5_n4.json)，因此原始 [r5 1-step 配置](../../experiments/configs/cnn_path_task1_v2_r5.json) 和旧 checkpoint 仍可复现/评估。仅改变 return horizon：保留 v2、r5、网络、seed 11、100k budget、epsilon 日程、safety off 和其他超参数；从随机初始化开始。实现的 transition 保存实际 horizon，使用 `sum(gamma^k r[t+k]) + gamma^steps Q(s[t+steps])`；终局不足四步的尾部 transition 不 bootstrap。
+
+本地 CPU smoke（seed 12，1 局、400 steps）完成，checkpoint 中 `n_step=4`、pending 为空，replay 同时包含终局尾部的 1/2/3 step 与正常 4 step transition；训练 summary 已记录 conditional-loop=60、avoidable-WAIT=104 及对应罚分。该 smoke 只验证数据流，不用于性能结论。
 
 每 25k 保存快照并用同一开发集冻结选模，改善词典序指标才保留；没有改善则记录失败并恢复 1-step。通过后再决定 D4、dueling 和 seeds 11/22/33 稳定性实验。reserved 集仍保持未触碰。此条目只记录下一步，不授权/表示本次已启动训练。
 

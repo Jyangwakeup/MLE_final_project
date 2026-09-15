@@ -35,7 +35,8 @@ from agent_code.cnn_path_double_dqn_agent.features import (
     features_for_state as path_features, initialize_history, record_position,
 )
 from agent_code.cnn_path_double_dqn_agent.callbacks import cached_features
-from agent_code.cnn_path_double_dqn_agent.learner import PathReplay
+from agent_code.cnn_path_double_dqn_agent.learner import PathReplay, PathTransition
+from agent_code.learning_common.n_step import NStepAccumulator
 from agent_code.cnn_path_double_dqn_agent.model import PathBoardQNetwork
 from agent_code.hybrid_dueling_double_dqn_agent import features as hybrid_features
 from agent_code.hybrid_dueling_double_dqn_agent import callbacks as hybrid_callbacks
@@ -312,6 +313,32 @@ class AlgorithmTests(unittest.TestCase):
         batch = restored.sample_batch(1)
         np.testing.assert_allclose(batch["states"], board[None], atol=1.0 / 32.0)
         self.assertEqual(batch["actions"].tolist(), [1])
+
+    def test_path_n_step_return_and_terminal_tail(self):
+        board = path_features(SimpleNamespace(cnn_path_history=()), game_state()).board
+        legal = np.array([True, True, False, False, True, False])
+        accumulator = NStepAccumulator(4, 0.95)
+        transitions = [PathTransition(board, 1, reward, board, False, legal)
+                       for reward in (1.0, 2.0, 3.0, 4.0)]
+        emitted = []
+        for transition in transitions:
+            emitted.extend(accumulator.append(transition))
+        self.assertEqual(len(emitted), 1)
+        self.assertEqual(emitted[0].steps, 4)
+        self.assertAlmostEqual(emitted[0].reward, 1 + .95 * 2 + .95**2 * 3 + .95**3 * 4)
+        self.assertFalse(emitted[0].done)
+
+        accumulator = NStepAccumulator(4, 0.95)
+        accumulator.append(PathTransition(board, 1, 1.0, board, False, legal))
+        accumulator.append(PathTransition(board, 1, 2.0, board, False, legal))
+        tail = accumulator.append(PathTransition(board, 1, 3.0, None, True, None))
+        self.assertEqual([item.steps for item in tail], [3, 2, 1])
+        self.assertTrue(all(item.done and item.next_state is None for item in tail))
+        self.assertAlmostEqual(tail[0].reward, 1 + .95 * 2 + .95**2 * 3)
+
+        replay = PathReplay(4, 7)
+        replay.append(emitted[0])
+        self.assertEqual(replay.sample_batch(1)["steps"].tolist(), [4])
 
 
 class CheckpointTests(unittest.TestCase):

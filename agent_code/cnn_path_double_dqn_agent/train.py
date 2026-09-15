@@ -6,7 +6,7 @@ import shutil
 import torch
 
 from agent_code.learning_common.action_history import action_history_state, init_action_history
-from agent_code.learning_common.neural import Transition
+from agent_code.learning_common.n_step import NStepAccumulator
 from agent_code.learning_common.runtime import (
     CHECKPOINT_SCHEMA, effective_legal_mask, save_checkpoint_atomic,
 )
@@ -24,19 +24,29 @@ from .callbacks import (
     cached_features,
 )
 from .features import reset_history
+from .learner import PathTransition
 
 
 FIELDS = (
     "schema_version", "algorithm", "round", "reward", "action_steps",
     "stage_action_steps", "epsilon", "loss", "updates", "replay_size",
     "safety_decisions", "safety_interventions", "safety_fallbacks", "checkpoint",
+    "conditional_loop_count", "loop_not_move_count", "loop_no_movement_count",
+    "loop_current_danger_count", "loop_no_reachable_coin_count",
+    "loop_target_changed_count", "loop_not_returned_count",
+    "avoidable_wait_count", "wait_current_danger_count", "wait_next_danger_count",
+    "wait_no_reachable_coin_count", "wait_no_safe_progress_move_count",
+    "conditional_loop_reward", "avoidable_wait_reward",
 )
 
 
 def setup_training(self):
     self.round_reward = 0.0
     self.last_loss = None
-    self.pending = None
+    self.unfinalized_transition = None
+    self.n_step_accumulator = NStepAccumulator(self.n_step, HYPERPARAMETERS["gamma"])
+    self.n_step_accumulator.load_state_dict(
+        getattr(self, "cnn_path_n_step_state", None))
     self.ended_key = None
     reset_temporal_reward_state(self)
     reset_reward_diagnostics(self)
@@ -55,9 +65,9 @@ def _decision_mask(self, state):
 def _transition(self, old_state, action, reward, new_state, done):
     old, _, _ = _decision_mask(self, old_state)
     if done:
-        return Transition(old.board.copy(), ACTIONS.index(action), reward, None, True, None)
+        return PathTransition(old.board.copy(), ACTIONS.index(action), reward, None, True, None)
     new, _, next_legal = _decision_mask(self, new_state)
-    return Transition(
+    return PathTransition(
         old.board.copy(), ACTIONS.index(action), reward, new.board.copy(),
         False, next_legal,
     )
@@ -69,14 +79,25 @@ def _submit(self, transition):
         self.last_loss = loss
 
 
+def _commit_n_step(self, transition):
+    """Submit one finalized raw transition and every emitted n-step target."""
+    emitted = self.n_step_accumulator.append(transition)
+    for item in emitted:
+        _submit(self, item)
+
+
 def game_events_occurred(self, old_game_state, self_action, new_game_state, events):
     if old_game_state is None or self_action not in ACTIONS:
         return
     key = (old_game_state.get("round"), old_game_state.get("step"))
     if key == self.ended_key:
         return
-    if self.pending is not None and self.pending[0] != key:
-        _submit(self, self.pending[1])
+    if self.unfinalized_transition is not None:
+        previous_key, previous = self.unfinalized_transition
+        if previous_key == key:
+            return
+        _commit_n_step(self, previous)
+        self.unfinalized_transition = None
     _, physical, _ = _decision_mask(self, old_game_state)
     context = temporal_reward_context(
         self, self_action, old_game_state, new_game_state, events,
@@ -91,7 +112,7 @@ def game_events_occurred(self, old_game_state, self_action, new_game_state, even
         events, self.reward_id, old_game_state=old_game_state,
         new_game_state=new_game_state, action=self_action, **context)
     self.round_reward += reward
-    self.pending = (key, _transition(
+    self.unfinalized_transition = (key, _transition(
         self, old_game_state, self_action, reward, new_game_state, False))
 
 
@@ -99,8 +120,11 @@ def end_of_round(self, last_game_state, last_action, events):
     if last_game_state is not None and last_action in ACTIONS:
         key = (last_game_state.get("round"), last_game_state.get("step"))
         if key != self.ended_key:
-            if self.pending is not None and self.pending[0] != key:
-                _submit(self, self.pending[1])
+            if self.unfinalized_transition is not None:
+                previous_key, previous = self.unfinalized_transition
+                if previous_key != key:
+                    _commit_n_step(self, previous)
+                self.unfinalized_transition = None
             _, physical, _ = _decision_mask(self, last_game_state)
             reward = reward_from_events(
                 events, self.reward_id, old_game_state=last_game_state,
@@ -109,12 +133,13 @@ def end_of_round(self, last_game_state, last_action, events):
                     last_game_state, last_action, physical,
                     allow_bomb=self.curriculum_allows_bomb))
             self.round_reward += reward
-            _submit(self, _transition(
+            _commit_n_step(self, _transition(
                 self, last_game_state, last_action, reward, None, True))
             self.ended_key = key
-    elif self.pending is not None:
-        _submit(self, self.pending[1])
-    self.pending = None
+    elif self.unfinalized_transition is not None:
+        _, previous = self.unfinalized_transition
+        _commit_n_step(self, previous)
+        self.unfinalized_transition = None
     reset_temporal_reward_state(self)
     init_action_history(self)
     checkpoint = self.model.checkpoint()
@@ -135,8 +160,8 @@ def end_of_round(self, last_game_state, last_action, events):
         "safety_decisions": self.safety_decisions,
         "safety_interventions": self.safety_interventions,
         "safety_fallbacks": self.safety_fallbacks,
-        "action_history_state": action_history_state(self), "n_step": 1,
-        "n_step_state": {"n_step": 1, "gamma": HYPERPARAMETERS["gamma"], "pending": []},
+        "action_history_state": action_history_state(self), "n_step": self.n_step,
+        "n_step_state": self.n_step_accumulator.state_dict(),
         "retention_spec": self.retention_spec, "training_budget": self.training_budget,
         "training_task": self.training_task,
     })
@@ -175,6 +200,7 @@ def _append_metrics(self, last_game_state):
         "safety_decisions": self.safety_decisions,
         "safety_interventions": self.safety_interventions,
         "safety_fallbacks": self.safety_fallbacks, "checkpoint": str(self.model_file),
+        **self.reward_diagnostics,
     }
     write_header = not path.exists()
     with path.open("a", newline="", encoding="utf-8") as file:
