@@ -501,6 +501,7 @@ def materialize_task3_safety_checkpoint(
     exploration_spec: dict[str, Any],
     training_budget: dict[str, Any],
     safety_replay_spec: dict[str, Any],
+    n_step: int | None = None,
 ) -> None:
     """Promote an intact v7 Task 2 learner into a clean v9 Task 3 stage."""
     if snapshot.learner_path is None:
@@ -510,6 +511,7 @@ def materialize_task3_safety_checkpoint(
     except ImportError as exception:
         raise RuntimeError("PyTorch is required for Task 3 safety transfer") from exception
     payload = torch.load(snapshot.learner_path, map_location="cpu", weights_only=True)
+    target_n_step = int(payload.get("n_step", 4) if n_step is None else n_step)
     payload.update({
         "checkpoint_schema": CHECKPOINT_SCHEMA_VERSION,
         "training_task": "weak_opponents",
@@ -518,8 +520,9 @@ def materialize_task3_safety_checkpoint(
         "training_budget": dict(training_budget),
         "safety_replay_spec": dict(safety_replay_spec),
         "stage_action_steps": 0,
+        "n_step": target_n_step,
         "n_step_state": {
-            "n_step": int(payload.get("n_step", 4)),
+            "n_step": target_n_step,
             "gamma": float(payload["hyperparameters"]["gamma"]),
             "pending": [],
         },
@@ -560,12 +563,14 @@ def validate_task3_safety_transfer(
         raise ValueError("Task 3 safety transfer requires a completed Task 2 parent")
     if parent.get("task") != "crate_navigation" or child.get("task") != "weak_opponents":
         raise ValueError("Task 3 safety transfer must promote Task 2 directly to Task 3")
-    if child.get("safety_spec", {}).get("version") != "survival-mask-v3":
-        raise ValueError("Task 3 safety transfer requires survival-mask-v3")
+    if child.get("safety_spec", {}).get("version") not in {
+        "survival-mask-v1", "survival-mask-v3",
+    }:
+        raise ValueError("Task 3 safety transfer requires survival-mask-v1 or v3")
     for field in (
         "algorithm", "seed", "feature_id", "feature_schema", "reward_id",
         "reward_spec", "training_device_type", "training_device_name",
-        "agent_seed", "actions", "network_spec", "hyperparameters", "n_step",
+        "agent_seed", "actions", "network_spec", "hyperparameters",
         "retention_spec",
     ):
         if parent.get(field) != child.get(field):
@@ -576,6 +581,12 @@ def validate_task3_safety_transfer(
         raise ValueError("Task 3 safety transfer requires 84-dimensional continuous-v2")
     if parent.get("reward_id") != "r7_safe_credit_sparse":
         raise ValueError("Task 3 safety transfer requires r7_safe_credit_sparse")
+    parent_n_step = int(parent.get("n_step", 1))
+    child_n_step = int(child.get("n_step", 1))
+    if child_n_step not in {parent_n_step, 5}:
+        raise ValueError(
+            "Task 3 safety transfer n_step must match the parent or use "
+            "the preregistered five-step bomb-credit horizon")
 
 
 def validate_v6_migration(

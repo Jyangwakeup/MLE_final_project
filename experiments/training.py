@@ -264,8 +264,8 @@ def run_training_mode(
     )
     effective_safe_exploration = safety_spec["mode"] in {"exploration", "all"}
     n_step = training.get("n_step", 1)
-    if n_step not in {1, 4}:
-        raise ValueError("config.training.n_step must be 1 or 4")
+    if n_step not in {1, 4, 5}:
+        raise ValueError("config.training.n_step must be 1, 4, or 5")
     retention_spec = resolve_retention_spec(training.get("retention"))
     safety_replay_spec = resolve_safety_replay_spec(training.get("safety_replay"))
     adaptation_triggers = tuple(getattr(args, "adaptation_trigger", ()) or ())

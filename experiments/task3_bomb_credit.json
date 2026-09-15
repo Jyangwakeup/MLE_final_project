@@ -1,0 +1,40 @@
+{
+  "schema_version": "task3-bomb-credit-v1",
+  "hypothesis": "A four-step return ends one transition before an own bomb can deliver KILLED_SELF to the causal BOMB action; five steps closes that credit gap.",
+  "base_source": "e68b9e9",
+  "branch": "task3-bomb-credit",
+  "fixed_contract": {
+    "algorithm": "double_dqn",
+    "feature_id": "continuous-v2",
+    "feature_dimensions": 84,
+    "reward_id": "r7_safe_credit_sparse",
+    "safety": "survival-mask-v1/all",
+    "opponents": ["peaceful_agent", "coin_collector_agent"],
+    "parent_fraction": 0.75,
+    "distillation_weight": 2.0
+  },
+  "single_change": {"n_step_from": 4, "n_step_to": 5},
+  "diagnostic_seed": 22,
+  "replication_seeds_after_pass": [11, 33],
+  "training": {
+    "segment_rounds": 500,
+    "maximum_rounds": 1500,
+    "stop_on_first_pass": true
+  },
+  "development_seeds": {"start": 19000, "end": 19019},
+  "gates": {
+    "task3_score_gain": 0.5,
+    "task3_kill_gain_or_first_place_gain": [0.1, 0.05],
+    "task3_coin_retention": 0.9,
+    "task3_crate_retention": 0.9,
+    "task1_score_retention": 0.9,
+    "task2_coin_retention": 0.9,
+    "task2_crate_retention": 0.9,
+    "suicide_rate": 0.05,
+    "survived_bomb_rate": 0.95,
+    "invalid_action_rate": 0.01,
+    "act_max_seconds": 0.5
+  },
+  "stop_rule": "If seed 22 fails after 1500 rounds, do not train seeds 11 or 33 and do not enter Task 4.",
+  "reserved_final_test_seeds": {"start": 20000, "end": 20099, "used": false}
+}
