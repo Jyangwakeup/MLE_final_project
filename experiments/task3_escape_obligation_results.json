@@ -1,0 +1,77 @@
+{
+  "schema_version": "task3-escape-obligation-result-v1",
+  "status": "failed_frozen_admission",
+  "implementation_commit": "e68b9e9793897bdc027d5ae82de178c1882f29c3",
+  "source_hash": "b44e33de0cf67f9a1ad11650e73c4bdae707fd7730dcb277273c2c2606296f98",
+  "checkpoint": {
+    "path": "runs/task3_pilot_ddqn_cv2_r7_s22_t3_c1500_814173b/checkpoints/final.pt",
+    "sha256": "822538947be5badb248876404357aed1dffdb3a2bf6cebc9ff88284a5685a199"
+  },
+  "known_death_seeds": [12000, 12005, 12008, 12011, 12015, 12017, 12019],
+  "gate": {
+    "metric": "suicides",
+    "required": 0,
+    "observed": 1,
+    "passed": false
+  },
+  "frozen_ab": {
+    "survival_mask_v1": {
+      "run_group": "runs/task3escape_known_s22_v1_e68b9e9",
+      "summary_sha256": "698599678aecbdeb09a585263920c1731f220dfe62ce4a7939018e7aa6b69dea",
+      "episodes": 7,
+      "mean_score": 2.2857142857142856,
+      "mean_coins": 2.2857142857142856,
+      "mean_crates": 41.57142857142857,
+      "mean_kills": 0.0,
+      "suicides": 7,
+      "suicide_rate": 1.0,
+      "bombs_resolved": 112,
+      "bombs_survived": 105,
+      "bomb_survival_rate": 0.9375,
+      "invalid_action_rate": 0.0032017075773745998,
+      "avoidable_escape_collapses": 7,
+      "worst_run_act_p95_seconds": 0.006819963455200195,
+      "maximum_act_seconds": 0.01554727554321289
+    },
+    "survival_mask_v3": {
+      "run_group": "runs/task3escape_known_s22_v3_e68b9e9",
+      "summary_sha256": "0442e2773e4bf52d8b8f64aea5a51574d864b0c550cd22b59710c48958ea8efc",
+      "episodes": 7,
+      "mean_score": 3.7142857142857144,
+      "mean_coins": 3.0,
+      "mean_crates": 33.142857142857146,
+      "mean_kills": 0.14285714285714285,
+      "suicides": 1,
+      "suicide_rate": 0.14285714285714285,
+      "bombs_resolved": 175,
+      "bombs_survived": 174,
+      "bomb_survival_rate": 0.9942857142857143,
+      "invalid_action_rate": 0.0007437709185570844,
+      "robust_safety_interventions": 876,
+      "robust_to_v1_fallbacks": 114,
+      "v1_to_physical_fallbacks": 3,
+      "avoidable_escape_collapses": 1,
+      "worst_run_act_p95_seconds": 0.01562047004699707,
+      "maximum_act_seconds": 0.027973413467407227
+    }
+  },
+  "remaining_failure": {
+    "environment_seed": 12017,
+    "death_step": 289,
+    "cause": "self_bomb",
+    "bomb_placement_step": 285,
+    "trace_replay": "runs/task3escape_known_s22_v3_trace12017_e68b9e9/task3escape_known_s22_v3_trace12017_e68b9e9_s12017/replays/round_00001.pt",
+    "trace_replay_sha256": "d6d75e99955aa21edd3cc9d9a7527a57dcd507f19f5bb850723d0e214ab82b71",
+    "diagnosis": "The hypothetical pre-bomb graph admitted BOMB with two routes, but the next observed state had no horizon-survivable action after the opponents advanced. The static-current-opponent approximation did not guarantee robustness to the environment transition.",
+    "diagnostic_limitation": "The avoidable-collapse counter fired at step 288 rather than the first post-bomb fallback at step 286 because the pre-bomb safe-alternative fact is not carried into the bomb obligation. This affects attribution, not the observed death or admission decision."
+  },
+  "stopped_stages": [
+    "full_frozen_ab_16000_16019",
+    "task3_training",
+    "confirmation_17000_17019",
+    "main_validation_18000_18099"
+  ],
+  "task3_winner_created": false,
+  "qualified_for_task4": false,
+  "reserved_final_test_seeds_used": false
+}

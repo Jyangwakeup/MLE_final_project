@@ -587,6 +587,16 @@ python main.py play --no-gui --agents <selected_agent> rule_based_agent rule_bas
 确认集为 17000–17019，唯一候选主验证为 18000–18099；20000–20099 不用。
 完整固定合同见 `experiments/task3_escape_obligation.json`。
 
+冻结准入结果：在七个已知 seed-22 自炸局中，v1 为 7/7 自炸，v3 降至
+1/7；炸弹存活率从 93.75% 提升到 99.43%，但没有达到预注册的 0/7 自炸
+硬门槛。残余失败发生在 seed 12017：第 285 步放弹前静态图判断有两条路线，
+环境推进后的第 286 步却已无 H=7 可存活动作，说明只把对手当前位置当障碍
+不能保证下一帧路线仍可用。实验因此按协议停止；16000–16019 完整冻结 A/B、
+Task 3 长训练、安全 replay 对照、确认集和主验证均未运行，且没有
+`task3_winner`。详细证据见
+`experiments/task3_escape_obligation_results.json` 和
+`docs/research/task3-escape-obligation-results.md`。
+
 ### A：环境与特征
 
 - [ ] 石墙挡火、箱子不挡火、无连锁引爆。
