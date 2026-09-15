@@ -23,7 +23,7 @@ from .training_spec import (
 )
 
 
-CHECKPOINT_SCHEMA = "training-resume-v9"
+CHECKPOINT_SCHEMA = "training-resume-v11"
 DEFAULT_REWARD_ID = "r1"
 CHECKPOINT_ENV = "BOMBERMAN_CHECKPOINT"
 FEATURE_ID_ENV = "BOMBERMAN_FEATURE_ID"
@@ -92,11 +92,18 @@ def load_common_configuration(self, *, feature_id: str, default_model: Path) -> 
     self.safety_fallbacks = 0
     self.robust_safety_interventions = 0
     self.robust_to_v1_fallbacks = 0
+    self.opponent_robust_interventions = 0
+    self.opponent_to_v3_fallbacks = 0
+    self.opponent_scenarios_evaluated = 0
+    self.robust_guarantee_losses = 0
+    self.robust_search_timeouts = 0
+    self.robust_states_evaluated = 0
     self.v1_to_physical_fallbacks = 0
     self.avoidable_escape_collapses = 0
     self.own_bomb_cycles = 0
     self._own_bomb_cycle_had_safe_alternative = False
     self._own_bomb_cycle_collapse_recorded = False
+    self._own_bomb_placement_certificate = None
     self._feature_cache_key = None
     self._feature_cache_value = None
     init_temporal_reward_state(self)
@@ -163,6 +170,7 @@ def validate_checkpoint(
         "training-resume-v1", "training-resume-v2",
         "training-resume-v3", "training-resume-v4", "training-resume-v5",
         "training-resume-v6", "training-resume-v7", "training-resume-v8",
+        "training-resume-v9", "training-resume-v10",
         CHECKPOINT_SCHEMA,
     }
     if checkpoint_schema not in frozen_schemas:

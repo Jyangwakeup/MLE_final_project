@@ -1,0 +1,24 @@
+{
+  "algorithm": "double_dqn",
+  "feature_id": "continuous-v2",
+  "feature_version": null,
+  "reward_id": "r7_safe_credit_sparse",
+  "reward_version": "r7_safe_credit_sparse",
+  "checkpoint": null,
+  "safety": {
+    "version": "survival-mask-v4", "mode": "all", "horizon": 7,
+    "required_independent_routes": 2, "robust_fallback": "survival-mask-v1",
+    "opponent_transition_horizon": 1, "opponent_action_space": "all_physical",
+    "include_opponent_bombs": true, "execution_orders": "all",
+    "minimum_scenario_routes": 1, "opponent_robust_fallback": "survival-mask-v3",
+    "fallback": "physical_q"
+  },
+  "evaluation": {"device": "cpu", "seeds": [16000,16001,16002,16003,16004,16005,16006,16007,16008,16009,16010,16011,16012,16013,16014,16015,16016,16017,16018,16019], "n_rounds": 1, "navigation_diagnostics": true},
+  "training": {
+    "device": "cpu", "n_rounds": 500, "min_rounds": 1, "n_step": 4,
+    "exploration": {"version": "linear-v1", "start": 0.3, "end": 0.05, "decay_action_steps": 120000},
+    "retention": {"parent_fraction": 0.75, "distillation_weight": 2.0, "temperature": 1.0, "per_task_capacity": 20000, "current_warmup": 2000},
+    "safety_replay": {"enabled": false, "parent_samples": 48, "ordinary_task3_samples": 8, "own_bomb_cycle_samples": 8, "fatal_prefix_steps": 4},
+    "early_stopping": {"enabled": false}
+  }
+}

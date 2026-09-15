@@ -28,6 +28,10 @@ FIELDS = (
     "replay_size", "safe_exploration_decisions", "safe_exploration_fallbacks",
     "safety_decisions", "safety_interventions", "safety_fallbacks", "checkpoint",
     "robust_safety_interventions", "robust_to_v1_fallbacks",
+    "opponent_robust_interventions", "opponent_to_v3_fallbacks",
+    "opponent_scenarios_evaluated",
+    "robust_guarantee_losses", "robust_search_timeouts",
+    "robust_states_evaluated",
     "v1_to_physical_fallbacks", "avoidable_escape_collapses",
     "own_bomb_cycles",
 )
@@ -51,14 +55,15 @@ def _transition(self, old_state, action, reward, new_state, done):
     old_legal = effective_legal_mask(
         old.legal_mask, ACTIONS, self.curriculum_allows_bomb)
     old_key = (old_state.get("round"), old_state.get("step"))
+    old_bomb = own_bomb_history_for_state(self, old_state)
     if getattr(self, "_last_decision_key", None) == old_key:
         old_legal = self._last_decision_mask.copy()
     else:
         old_legal = safety_decision(
             old_state, old_legal, self.safety_spec,
             allow_bomb=self.curriculum_allows_bomb, exploring=False,
-            own_bomb_pending=bool(own_bomb_history_for_state(
-                self, old_state)["pending"])).mask
+            own_bomb_pending=bool(old_bomb["pending"]),
+            own_bomb_state=old_bomb).mask
     if done:
         return Transition(
             old.vector.copy(), ACTIONS.index(action), reward, None, True, None,
@@ -66,11 +71,12 @@ def _transition(self, old_state, action, reward, new_state, done):
     new = _features_for(self, new_state)
     next_legal = effective_legal_mask(
         new.legal_mask, ACTIONS, self.curriculum_allows_bomb)
+    next_bomb = own_bomb_history_for_state(self, new_state)
     next_legal = safety_decision(
         new_state, next_legal, self.safety_spec,
         allow_bomb=self.curriculum_allows_bomb, exploring=False,
-        own_bomb_pending=bool(own_bomb_history_for_state(
-            self, new_state)["pending"])).mask
+        own_bomb_pending=bool(next_bomb["pending"]),
+        own_bomb_state=next_bomb).mask
     return Transition(
         old.vector.copy(), ACTIONS.index(action), reward, new.vector.copy(),
         False, next_legal, old_legal, self.training_task, 1, safety_class)
@@ -133,6 +139,7 @@ def end_of_round(self, last_game_state, last_action, events):
     init_action_history(self)
     self._own_bomb_cycle_had_safe_alternative = False
     self._own_bomb_cycle_collapse_recorded = False
+    self._own_bomb_placement_certificate = None
     checkpoint = self.model.checkpoint()
     checkpoint.update({
         "checkpoint_schema": CHECKPOINT_SCHEMA,
@@ -163,6 +170,18 @@ def end_of_round(self, last_game_state, last_action, events):
             self, "robust_safety_interventions", 0)),
         "robust_to_v1_fallbacks": int(getattr(
             self, "robust_to_v1_fallbacks", 0)),
+        "opponent_robust_interventions": int(getattr(
+            self, "opponent_robust_interventions", 0)),
+        "opponent_to_v3_fallbacks": int(getattr(
+            self, "opponent_to_v3_fallbacks", 0)),
+        "opponent_scenarios_evaluated": int(getattr(
+            self, "opponent_scenarios_evaluated", 0)),
+        "robust_guarantee_losses": int(getattr(
+            self, "robust_guarantee_losses", 0)),
+        "robust_search_timeouts": int(getattr(
+            self, "robust_search_timeouts", 0)),
+        "robust_states_evaluated": int(getattr(
+            self, "robust_states_evaluated", 0)),
         "v1_to_physical_fallbacks": int(getattr(
             self, "v1_to_physical_fallbacks", 0)),
         "avoidable_escape_collapses": int(getattr(
@@ -173,6 +192,8 @@ def end_of_round(self, last_game_state, last_action, events):
                 self, "_own_bomb_cycle_had_safe_alternative", False)),
             "collapse_recorded": bool(getattr(
                 self, "_own_bomb_cycle_collapse_recorded", False)),
+            "placement_certificate": getattr(
+                self, "_own_bomb_placement_certificate", None),
         },
         "action_history_state": action_history_state(self),
         "n_step": self.n_step,
@@ -212,6 +233,18 @@ def _append_metrics(self, state):
             self, "robust_safety_interventions", 0)),
         "robust_to_v1_fallbacks": int(getattr(
             self, "robust_to_v1_fallbacks", 0)),
+        "opponent_robust_interventions": int(getattr(
+            self, "opponent_robust_interventions", 0)),
+        "opponent_to_v3_fallbacks": int(getattr(
+            self, "opponent_to_v3_fallbacks", 0)),
+        "opponent_scenarios_evaluated": int(getattr(
+            self, "opponent_scenarios_evaluated", 0)),
+        "robust_guarantee_losses": int(getattr(
+            self, "robust_guarantee_losses", 0)),
+        "robust_search_timeouts": int(getattr(
+            self, "robust_search_timeouts", 0)),
+        "robust_states_evaluated": int(getattr(
+            self, "robust_states_evaluated", 0)),
         "v1_to_physical_fallbacks": int(getattr(
             self, "v1_to_physical_fallbacks", 0)),
         "avoidable_escape_collapses": int(getattr(

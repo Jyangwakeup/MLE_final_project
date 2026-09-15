@@ -58,6 +58,17 @@ class RobustRouteResult:
     escape_slack: float
 
 
+@dataclass(frozen=True)
+class OpponentRobustResult:
+    """Survival result across all distinct opponent transition scenarios."""
+
+    survives_all: bool
+    scenario_count: int
+    passing_scenarios: int
+    first_failing_profile: tuple[str, ...] | None
+    first_failing_order: tuple[int, ...] | None
+
+
 def _bomb_explosion_time(timer: int) -> int:
     """Return the future step at which an existing bomb explodes."""
     return timer + 1
@@ -339,6 +350,63 @@ def robust_routes_after_first_step(
             node = previous
         flow += 1
     return RobustRouteResult(flow, margin)
+
+
+def _survives_from_completed_action(
+    position: tuple[int, int], danger: np.ndarray, blocked: np.ndarray,
+) -> bool:
+    """Whether a position after this action can survive the remaining horizon."""
+    if danger[1, position[0], position[1]]:
+        return False
+    frontier = {position}
+    for time_step in range(2, danger.shape[0]):
+        following = set()
+        for current in frontier:
+            for action in ACTIONS:
+                successor = _advance(current, action, time_step, danger, blocked)
+                if successor is not None:
+                    following.add(successor)
+        if not following:
+            return False
+        frontier = following
+    return bool(frontier)
+
+
+def opponent_robust_survival_after_action(
+    game_state: dict,
+    action: str,
+    *,
+    horizon: int = HORIZON,
+) -> OpponentRobustResult:
+    """Require one H-surviving continuation in every opponent next-step outcome."""
+    from .opponent_transitions import enumerate_opponent_transition_scenarios
+
+    scenarios = enumerate_opponent_transition_scenarios(game_state, action)
+    passing = 0
+    danger_cache: dict[tuple, np.ndarray] = {}
+    for scenario in scenarios:
+        bomb_key = tuple(sorted(
+            (tuple(position), int(timer))
+            for position, timer in scenario.game_state["bombs"]))
+        danger = danger_cache.get(bomb_key)
+        if danger is None:
+            danger = predict_danger(
+                scenario.game_state, hypothetical_bomb=False,
+                horizon=horizon).danger
+            danger_cache[bomb_key] = danger
+        schedule = _bomb_schedule(scenario.game_state, False)
+        blocked = _initial_blocked(
+            scenario.game_state["field"], scenario.game_state, horizon)
+        _mark_destroyed_crates(
+            blocked, scenario.game_state["field"], schedule)
+        _mark_bomb_occupancy(blocked, schedule)
+        position = tuple(scenario.game_state["self"][3])
+        if not _survives_from_completed_action(position, danger, blocked):
+            return OpponentRobustResult(
+                False, len(scenarios), passing,
+                scenario.action_profile, scenario.execution_order)
+        passing += 1
+    return OpponentRobustResult(True, len(scenarios), passing, None, None)
 
 
 def detailed_reachability_all_first_steps(

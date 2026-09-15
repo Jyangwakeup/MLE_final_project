@@ -23,7 +23,7 @@ from agent_code.team_agent.feature_system import (
 from agent_code.learning_common.training_spec import resolve_safety_replay_spec
 
 
-CHECKPOINT_SCHEMA_VERSION = "training-resume-v9"
+CHECKPOINT_SCHEMA_VERSION = "training-resume-v11"
 MIGRATABLE_CHECKPOINT_SCHEMA = "training-resume-v6"
 TASK3_SAFETY_TRANSFER_PARENT_SCHEMA = "training-resume-v7"
 TASK_ORDER = ("coin_navigation", "crate_navigation", "weak_opponents", "full_match")
@@ -198,12 +198,26 @@ def commit_training_snapshot(
             "agent_rng_state", "action_history_state",
             "safe_exploration_decisions", "safe_exploration_fallbacks",
         }
-        if learner.get("safety_spec", {}).get("version") == "survival-mask-v3":
+        if learner.get("safety_spec", {}).get("version") in {
+            "survival-mask-v3", "survival-mask-v4", "survival-mask-v5",
+        }:
             required.update({
                 "robust_safety_interventions", "robust_to_v1_fallbacks",
                 "v1_to_physical_fallbacks", "avoidable_escape_collapses",
                 "own_bomb_escape_state", "own_bomb_cycles",
                 "safety_replay_spec",
+            })
+        if learner.get("safety_spec", {}).get("version") in {
+            "survival-mask-v4", "survival-mask-v5",
+        }:
+            required.update({
+                "opponent_robust_interventions", "opponent_to_v3_fallbacks",
+                "opponent_scenarios_evaluated",
+            })
+        if learner.get("safety_spec", {}).get("version") == "survival-mask-v5":
+            required.update({
+                "robust_guarantee_losses", "robust_search_timeouts",
+                "robust_states_evaluated",
             })
         if algorithm in TABLE_ALGORITHMS:
             required.update(
@@ -503,7 +517,7 @@ def materialize_task3_safety_checkpoint(
     safety_replay_spec: dict[str, Any],
     n_step: int | None = None,
 ) -> None:
-    """Promote an intact v7 Task 2 learner into a clean v9 Task 3 stage."""
+    """Promote an intact v7 Task 2 learner into a clean v11 Task 3 stage."""
     if snapshot.learner_path is None:
         raise ValueError("Task 3 safety transfer requires a neural checkpoint")
     try:
@@ -538,11 +552,18 @@ def materialize_task3_safety_checkpoint(
         "safe_exploration_fallbacks": 0,
         "robust_safety_interventions": 0,
         "robust_to_v1_fallbacks": 0,
+        "opponent_robust_interventions": 0,
+        "opponent_to_v3_fallbacks": 0,
+        "opponent_scenarios_evaluated": 0,
+        "robust_guarantee_losses": 0,
+        "robust_search_timeouts": 0,
+        "robust_states_evaluated": 0,
         "v1_to_physical_fallbacks": 0,
         "avoidable_escape_collapses": 0,
         "own_bomb_cycles": 0,
         "own_bomb_escape_state": {
             "had_safe_alternative": False, "collapse_recorded": False,
+            "placement_certificate": None,
         },
     })
     destination.parent.mkdir(parents=True, exist_ok=True)
@@ -554,19 +575,21 @@ def materialize_task3_safety_checkpoint(
 def validate_task3_safety_transfer(
     parent: dict[str, Any], child: dict[str, Any], *, parent_status: str,
 ) -> None:
-    """Validate the narrow v7 Task 2 to v9 robust-safety experiment seam."""
+    """Validate the narrow v7 Task 2 to v11 robust-safety experiment seam."""
     if parent.get("checkpoint_schema") != TASK3_SAFETY_TRANSFER_PARENT_SCHEMA:
         raise ValueError("Task 3 safety transfer requires a training-resume-v7 parent")
     if child.get("checkpoint_schema") != CHECKPOINT_SCHEMA_VERSION:
-        raise ValueError("Task 3 safety transfer target must use training-resume-v9")
+        raise ValueError("Task 3 safety transfer target must use training-resume-v11")
     if parent_status not in {"completed", "early_stopped"}:
         raise ValueError("Task 3 safety transfer requires a completed Task 2 parent")
     if parent.get("task") != "crate_navigation" or child.get("task") != "weak_opponents":
         raise ValueError("Task 3 safety transfer must promote Task 2 directly to Task 3")
     if child.get("safety_spec", {}).get("version") not in {
-        "survival-mask-v1", "survival-mask-v3",
+        "survival-mask-v1", "survival-mask-v3", "survival-mask-v4",
+        "survival-mask-v5",
     }:
-        raise ValueError("Task 3 safety transfer requires survival-mask-v1 or v3")
+        raise ValueError(
+            "Task 3 safety transfer requires survival-mask-v1, v3, v4, or v5")
     for field in (
         "algorithm", "seed", "feature_id", "feature_schema", "reward_id",
         "reward_spec", "training_device_type", "training_device_name",

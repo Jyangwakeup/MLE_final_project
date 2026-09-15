@@ -1,0 +1,60 @@
+{
+  "schema_version": "task3-controllable-survival-v1",
+  "status": "preregistered",
+  "source_base": "546fbcc9a4355cb4177e431eea9c9e638f3b9ce3",
+  "branch": "task3-controllable-survival",
+  "agent": "double_dqn_continuous_v2_agent",
+  "algorithm": "double_dqn",
+  "feature_id": "continuous-v2",
+  "feature_dimension": 84,
+  "reward_id": "r7_safe_credit_sparse",
+  "safety_version": "survival-mask-v5",
+  "checkpoint_schema": "training-resume-v11",
+  "n_step": 5,
+  "opponents": ["peaceful_agent", "coin_collector_agent"],
+  "known_regression_corpus": {
+    "legacy_v7_seeds": [12000, 12005, 12008, 12011, 12015, 12017, 12019],
+    "bomb_credit_n5_seeds": [19000, 19004, 19006, 19017],
+    "bomb_credit_n5_checkpoint_sha256": "e9a5f000dff5765542adaa08c8f335a54d2231412fc4ee731eca246ecbd3f0be"
+  },
+  "frozen_admission_seeds": {"start": 19100, "end": 19199},
+  "development_seeds": {"start": 19200, "end": 19219},
+  "confirmation_seeds": {"start": 19300, "end": 19319},
+  "main_validation_seeds": {"start": 19400, "end": 19499},
+  "reserved_final_test_seeds": {"start": 20000, "end": 20099},
+  "training_seeds": [22, 11, 33],
+  "training_checkpoints": [500, 1000, 1500],
+  "seed_order": "seed 22 first; seeds 11 and 33 only after the selected arm passes",
+  "task2_parents": {
+    "11": {"run": "runs/scoreconv_ddqn_cv2_r7_s11_t2_v7_814173b", "checkpoint_sha256": "91fc3d5e346768ed8928a63baf1b62f6a11bd1f2e816c1fb8d27a16ab00479f1"},
+    "22": {"run": "runs/task2winner_replica_cv2_r7_s22_t2_v7_814173b", "checkpoint_sha256": "74cf3fca33acb59f003949006c7401a5a9f58c1785dd8b294b548bd7bd307715"},
+    "33": {"run": "runs/task2winner_replica_cv2_r7_s33_t2_v7_814173b", "checkpoint_sha256": "afa8092e2be3c1402ec634c988d3c739f1563fe62b4eb4b7b59a19ef8e21a94c"}
+  },
+  "configs": {
+    "known_regression": "experiments/configs/task3_controllable_safety_known_v5.json",
+    "frozen_admission": "experiments/configs/task3_controllable_safety_frozen_v5.json",
+    "training": "experiments/configs/task3_controllable_safety_train_v5.json",
+    "safety_replay": "experiments/configs/task3_controllable_safety_replay_v5.json",
+    "development": "experiments/configs/task3_controllable_safety_dev_v5.json",
+    "confirmation": "experiments/configs/task3_controllable_safety_confirm_v5.json",
+    "main_validation": "experiments/configs/task3_controllable_safety_main_v5.json"
+  },
+  "gates": {
+    "known_regression_suicides": 0,
+    "maximum_suicide_rate": 0.05,
+    "robust_guarantee_losses": 0,
+    "robust_search_timeouts": 0,
+    "minimum_bomb_survival_rate": 0.95,
+    "maximum_invalid_rate": 0.01,
+    "minimum_resource_combat_retention": 0.90,
+    "maximum_zero_bomb_round_rate": 0.10,
+    "maximum_act_p95_seconds": 0.25,
+    "maximum_act_seconds": 0.48,
+    "task3_score_gain": 0.5,
+    "task3_kill_gain_or_first_place_gain": [0.1, 0.05]
+  },
+  "safety_replay_trigger": "seed 22 fails only suicide or robust guarantee loss after frozen admission passes",
+  "failure_policy": "stop_without_posthoc_threshold_or_model_changes",
+  "single_candidate_main_validation": true,
+  "stop_after_task3": true
+}

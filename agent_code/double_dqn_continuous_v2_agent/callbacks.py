@@ -16,7 +16,11 @@ from agent_code.learning_common.runtime import (
     load_common_configuration, validate_checkpoint,
 )
 from agent_code.team_agent.exploration import epsilon_at
-from agent_code.team_agent.safety import safety_decision, survival_diagnostics
+from agent_code.team_agent.safety import (
+    CONTROLLABLE_SAFETY_VERSION, OPPONENT_ROBUST_SAFETY_VERSION,
+    ROBUST_SAFETY_VERSION,
+    safety_decision, survival_diagnostics,
+)
 from .features import ACTIONS, FEATURE_ID, FEATURE_SCHEMA, features_for_state
 
 
@@ -121,6 +125,18 @@ def setup(self):
             "robust_safety_interventions", 0))
         self.robust_to_v1_fallbacks = int(checkpoint.get(
             "robust_to_v1_fallbacks", 0))
+        self.opponent_robust_interventions = int(checkpoint.get(
+            "opponent_robust_interventions", 0))
+        self.opponent_to_v3_fallbacks = int(checkpoint.get(
+            "opponent_to_v3_fallbacks", 0))
+        self.opponent_scenarios_evaluated = int(checkpoint.get(
+            "opponent_scenarios_evaluated", 0))
+        self.robust_guarantee_losses = int(checkpoint.get(
+            "robust_guarantee_losses", 0))
+        self.robust_search_timeouts = int(checkpoint.get(
+            "robust_search_timeouts", 0))
+        self.robust_states_evaluated = int(checkpoint.get(
+            "robust_states_evaluated", 0))
         self.v1_to_physical_fallbacks = int(checkpoint.get(
             "v1_to_physical_fallbacks", 0))
         self.avoidable_escape_collapses = int(checkpoint.get(
@@ -131,6 +147,8 @@ def setup(self):
             escape_state.get("had_safe_alternative", False))
         self._own_bomb_cycle_collapse_recorded = bool(
             escape_state.get("collapse_recorded", False))
+        self._own_bomb_placement_certificate = escape_state.get(
+            "placement_certificate")
         self._resume_n_step_state = (
             checkpoint.get("n_step_state") if same_task else None)
         if self.train:
@@ -178,7 +196,7 @@ def act(self, game_state):
     decision = safety_decision(
         game_state, physical, self.safety_spec,
         allow_bomb=self.curriculum_allows_bomb, exploring=exploring,
-        own_bomb_pending=bool(own_bomb["pending"]))
+        own_bomb_pending=bool(own_bomb["pending"]), own_bomb_state=own_bomb)
     legal, fallback = decision.mask, decision.physical_fallback
     enabled = self.safety_spec["mode"] == "all" or (
         self.safety_spec["mode"] == "exploration" and exploring)
@@ -187,6 +205,21 @@ def act(self, game_state):
         self.safety_fallbacks += int(fallback)
         self.robust_to_v1_fallbacks = int(getattr(
             self, "robust_to_v1_fallbacks", 0)) + int(decision.robust_fallback)
+        self.opponent_to_v3_fallbacks = int(getattr(
+            self, "opponent_to_v3_fallbacks", 0)) + int(
+                decision.opponent_fallback)
+        self.opponent_scenarios_evaluated = int(getattr(
+            self, "opponent_scenarios_evaluated", 0)) + sum(
+                decision.opponent_scenario_counts)
+        self.robust_guarantee_losses = int(getattr(
+            self, "robust_guarantee_losses", 0)) + int(
+                decision.robust_guarantee_loss)
+        self.robust_search_timeouts = int(getattr(
+            self, "robust_search_timeouts", 0)) + int(
+                decision.robust_search_timed_out)
+        self.robust_states_evaluated = int(getattr(
+            self, "robust_states_evaluated", 0)) + int(
+                decision.robust_states_evaluated)
         self.v1_to_physical_fallbacks = int(getattr(
             self, "v1_to_physical_fallbacks", 0)) + int(decision.physical_fallback)
         if exploring:
@@ -204,16 +237,32 @@ def act(self, game_state):
     intervention = bool(enabled and not fallback and not legal[raw_index])
     self.safety_interventions += int(intervention)
     robust_intervention = bool(
-        self.safety_spec["version"] == "survival-mask-v3"
+        self.safety_spec["version"] in {
+            ROBUST_SAFETY_VERSION, OPPONENT_ROBUST_SAFETY_VERSION,
+            CONTROLLABLE_SAFETY_VERSION,
+        }
         and not decision.robust_fallback and not decision.physical_fallback
-        and decision.v1_mask[raw_index] and not legal[raw_index])
+        and decision.v1_mask[raw_index] and not legal[raw_index]
+        and decision.route_counts[raw_index] < 2)
     self.robust_safety_interventions = int(getattr(
         self, "robust_safety_interventions", 0)) + int(robust_intervention)
+    opponent_intervention = bool(
+        self.safety_spec["version"] in {
+            OPPONENT_ROBUST_SAFETY_VERSION, CONTROLLABLE_SAFETY_VERSION,
+        }
+        and not decision.opponent_fallback
+        and decision.v1_mask[raw_index] and not legal[raw_index]
+        and decision.opponent_scenario_counts[raw_index] > 0
+        and decision.opponent_passing_counts[raw_index]
+        < decision.opponent_scenario_counts[raw_index])
+    self.opponent_robust_interventions = int(getattr(
+        self, "opponent_robust_interventions", 0)) + int(opponent_intervention)
     action = ACTIONS[selected]
     if action == "BOMB":
         self.own_bomb_cycles = int(getattr(self, "own_bomb_cycles", 0)) + 1
     collapse_now = bool(
-        own_bomb["pending"] and decision.physical_fallback
+        own_bomb["pending"] and (
+            decision.physical_fallback or decision.robust_guarantee_loss)
         and getattr(self, "_own_bomb_cycle_had_safe_alternative", False)
         and not getattr(self, "_own_bomb_cycle_collapse_recorded", False))
     self.last_safety_diagnostic = {
@@ -221,6 +270,11 @@ def act(self, game_state):
         "intervened": intervention, "fallback": bool(fallback),
         "robust_intervened": robust_intervention,
         "robust_to_v1_fallback": bool(decision.robust_fallback),
+        "opponent_robust_intervened": opponent_intervention,
+        "opponent_to_v3_fallback": bool(decision.opponent_fallback),
+        "robust_guarantee_loss": bool(decision.robust_guarantee_loss),
+        "robust_search_timed_out": bool(decision.robust_search_timed_out),
+        "robust_states_evaluated": int(decision.robust_states_evaluated),
         "v1_to_physical_fallback": bool(decision.physical_fallback),
         "own_bomb_pending": bool(own_bomb["pending"]),
         "own_bomb_visible": bool(own_bomb["visible"]),
@@ -228,6 +282,16 @@ def act(self, game_state):
         "avoidable_escape_collapse": collapse_now,
         "independent_routes": list(decision.route_counts),
         "escape_slack": list(decision.escape_slack),
+        "opponent_scenario_counts": list(decision.opponent_scenario_counts),
+        "opponent_passing_counts": list(decision.opponent_passing_counts),
+        "opponent_failing_profiles": [
+            None if value is None else list(value)
+            for value in decision.opponent_failing_profiles
+        ],
+        "opponent_failing_orders": [
+            None if value is None else list(value)
+            for value in decision.opponent_failing_orders
+        ],
         "physical_mask": physical.astype(bool).tolist(),
         "decision_mask": legal.astype(bool).tolist(),
         **survival_diagnostics(
@@ -237,17 +301,28 @@ def act(self, game_state):
     self._last_decision_mask = legal.copy()
     self._last_had_safe_alternative = bool(
         own_bomb["pending"] and legal.any() and not decision.physical_fallback)
+    placement_safe_alternative = bool(
+        action == "BOMB" and decision.v1_mask[:ACTIONS.index("BOMB")].any())
     if collapse_now:
         self.avoidable_escape_collapses = int(getattr(
             self, "avoidable_escape_collapses", 0)) + 1
         self._own_bomb_cycle_collapse_recorded = True
+    if action == "BOMB":
+        bomb_index = ACTIONS.index("BOMB")
+        self._own_bomb_placement_certificate = {
+            "had_safe_non_bomb_alternative": placement_safe_alternative,
+            "independent_routes": int(decision.route_counts[bomb_index]),
+            "scenario_count": int(decision.opponent_scenario_counts[bomb_index]),
+            "passing_scenarios": int(decision.opponent_passing_counts[bomb_index]),
+        }
     if action == "BOMB" or own_bomb["pending"]:
         self._own_bomb_cycle_had_safe_alternative = bool(
             getattr(self, "_own_bomb_cycle_had_safe_alternative", False)
-            or self._last_had_safe_alternative)
+            or self._last_had_safe_alternative or placement_safe_alternative)
     else:
         self._own_bomb_cycle_had_safe_alternative = False
         self._own_bomb_cycle_collapse_recorded = False
+        self._own_bomb_placement_certificate = None
     record_selected_action(self, game_state, action)
     return action
 
