@@ -16,11 +16,11 @@ Transition = namedtuple(
     "Transition",
     (
         "state", "action", "reward", "next_state", "done", "next_legal",
-        "state_legal", "task_id", "steps",
+        "state_legal", "task_id", "steps", "safety_class",
     ),
-    defaults=(None, None, 1),
+    defaults=(None, None, 1, "ordinary"),
 )
-REPLAY_CHECKPOINT_FORMAT = "vector-replay-task-partitioned-v2"
+REPLAY_CHECKPOINT_FORMAT = "vector-replay-task-partitioned-v3"
 DEFAULT_GAMMA = 0.95
 DEFAULT_LEARNING_RATE = 3e-4
 DEFAULT_BATCH_SIZE = 64
@@ -66,13 +66,47 @@ class ReplayBuffer:
     def sample(self, size: int):
         return self.random.sample(self._all_items(), size)
 
-    def sample_batch(self, size: int, parent_fraction: float = 0.0):
+    def sample_batch(self, size: int, parent_fraction: float = 0.0,
+                     safety_replay_spec=None):
         current = list(self.partitions.get(self.current_task, ()))
         parents = [
             item for task, partition in self.partitions.items()
             if task != self.current_task for item in partition
         ]
-        if parents and current and parent_fraction > 0.0:
+        safety = dict(safety_replay_spec or {})
+        if safety.get("enabled") and parents and current:
+            parent_count = int(safety["parent_samples"])
+            safety_count = int(safety["own_bomb_cycle_samples"])
+            ordinary_count = int(safety["ordinary_task3_samples"])
+            if parent_count + safety_count + ordinary_count != size:
+                raise ValueError("safety replay counts do not match batch size")
+            safety_pool = [
+                item for item in current if item.safety_class != "ordinary"]
+            fatal_pool = [
+                item for item in safety_pool
+                if item.safety_class == "fatal_own_bomb"]
+            selected_safety = self.random.sample(
+                fatal_pool, min(len(fatal_pool), safety_count))
+            remaining = safety_count - len(selected_safety)
+            selected_ids = {id(item) for item in selected_safety}
+            other_safety = [item for item in safety_pool if id(item) not in selected_ids]
+            selected_safety += self.random.sample(
+                other_safety, min(len(other_safety), remaining))
+            remaining = safety_count - len(selected_safety)
+            selected_ids = {id(item) for item in selected_safety}
+            ordinary_pool = [item for item in current if id(item) not in selected_ids]
+            if remaining:
+                selected_safety += self.random.sample(ordinary_pool, remaining)
+                selected_ids = {id(item) for item in selected_safety}
+                ordinary_pool = [
+                    item for item in ordinary_pool if id(item) not in selected_ids]
+            items = (
+                self.random.sample(parents, parent_count)
+                + selected_safety
+                + self.random.sample(ordinary_pool, ordinary_count)
+            )
+            self.random.shuffle(items)
+        elif parents and current and parent_fraction > 0.0:
             parent_count = min(len(parents), int(round(size * parent_fraction)))
             current_count = size - parent_count
             if len(current) < current_count:
@@ -104,6 +138,7 @@ class ReplayBuffer:
             "is_parent": np.fromiter(
                 (item.task_id != self.current_task for item in items),
                 dtype=bool, count=size),
+            "safety_classes": [item.safety_class for item in items],
             "next_states": None if not nonterminal else np.stack([
                 item.next_state for item in nonterminal]),
             "next_legal": None if not nonterminal else np.stack([
@@ -154,6 +189,7 @@ class ReplayBuffer:
                 for item in items
             ]), dtype=torch.bool),
             "task_ids": [item.task_id for item in items],
+            "safety_classes": [item.safety_class for item in items],
             "next_legal": torch.as_tensor(np.stack([
                 np.zeros(6, dtype=bool) if item.next_legal is None else item.next_legal
                 for item in items
@@ -163,7 +199,9 @@ class ReplayBuffer:
 
     def load_state_dict(self, state):
         self.partitions.clear()
-        if state.get("format") == REPLAY_CHECKPOINT_FORMAT:
+        if state.get("format") in {
+            REPLAY_CHECKPOINT_FORMAT, "vector-replay-task-partitioned-v2",
+        }:
             self.capacity = int(state.get("capacity", self.capacity))
             self.current_task = state.get("current_task", self.current_task)
             count = int(state.get("count", 0))
@@ -177,6 +215,8 @@ class ReplayBuffer:
                 state_legal = state["state_legal"].cpu().numpy()
                 next_legal = state["next_legal"].cpu().numpy()
                 task_ids = list(state["task_ids"])
+                safety_classes = list(state.get(
+                    "safety_classes", ["ordinary"] * count))
                 for index in range(count):
                     transition = Transition(
                         states[index].copy(), int(actions[index]),
@@ -185,6 +225,7 @@ class ReplayBuffer:
                         bool(dones[index]),
                         None if bool(dones[index]) else next_legal[index].copy(),
                         state_legal[index].copy(), task_ids[index], int(steps[index]),
+                        safety_classes[index],
                     )
                     self.append(transition)
         else:
@@ -201,6 +242,20 @@ class ReplayBuffer:
         if "rng_state" in state:
             self.random.setstate(state["rng_state"])
 
+    def mark_recent_own_bomb_fatal(self, task_id: str, count: int = 4) -> None:
+        """Label the fatal transition prefix without duplicating replay rows."""
+        partition = self.partitions.get(task_id)
+        if not partition:
+            return
+        marked = 0
+        for index in range(len(partition) - 1, -1, -1):
+            item = partition[index]
+            if item.safety_class in {"own_bomb", "fatal_own_bomb"}:
+                partition[index] = item._replace(safety_class="fatal_own_bomb")
+                marked += 1
+                if marked >= count:
+                    break
+
 
 class DQN:
     def __init__(self, input_size, action_count, seed=0, gamma=DEFAULT_GAMMA,
@@ -211,7 +266,7 @@ class DQN:
                  target_sync_interval=DEFAULT_TARGET_SYNC_INTERVAL,
                  device="cpu", deterministic=True,
                  training_task=None, retention_spec=None, double_dqn=False,
-                 hidden_size=DEFAULT_HIDDEN_SIZE):
+                 hidden_size=DEFAULT_HIDDEN_SIZE, safety_replay_spec=None):
         self.device = torch.device(device)
         if self.device.type == "cuda" and not torch.cuda.is_available():
             raise RuntimeError("CUDA was requested but is not available")
@@ -237,6 +292,7 @@ class DQN:
             "current_warmup": warmup,
         })
         self.double_dqn = bool(double_dqn)
+        self.safety_replay_spec = dict(safety_replay_spec or {"enabled": False})
         self.input_size = int(input_size)
         self.hidden_size = int(hidden_size)
         self.updates = 0
@@ -270,7 +326,8 @@ class DQN:
             float(self.retention_spec["parent_fraction"])
             if self.teacher is not None else 0.0
         )
-        batch = self.replay.sample_batch(self.batch_size, parent_fraction)
+        batch = self.replay.sample_batch(
+            self.batch_size, parent_fraction, self.safety_replay_spec)
         states = torch.as_tensor(
             batch["states"], dtype=torch.float32, device=self.device)
         actions = torch.as_tensor(
@@ -355,6 +412,7 @@ class DQN:
             "teacher": None if self.teacher is None else self.teacher.state_dict(),
             "retention_spec": self.retention_spec,
             "double_dqn": self.double_dqn,
+            "safety_replay_spec": self.safety_replay_spec,
         }
         if self.device.type == "cuda":
             checkpoint["cuda_rng_state_all"] = torch.cuda.get_rng_state_all()

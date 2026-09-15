@@ -18,7 +18,7 @@ python experiments/run.py \
   --run-id formal_q_discrete_v1_r1_coin3_s11_t1_r500
 ```
 
-后续阶段必须使用 `--resume-from runs/<direct-parent-run>` 创建新 run。当前精确恢复协议是 `training-resume-v7`，并保存阶段/总动作数、完整 Safety 合同、动作历史、n-step 与 Task 1 收敛历史；v1–v6 和旧 final checkpoint 默认只能冻结评估。
+后续阶段必须使用 `--resume-from runs/<direct-parent-run>` 创建新 run。当前新实验精确恢复协议是 `training-resume-v9`，并保存阶段/总动作数、完整 Safety 合同、动作历史、n-step 与 Task 1 收敛历史；旧 snapshot 和 final checkpoint 默认只能冻结评估。
 
 ## 冻结评估
 

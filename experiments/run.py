@@ -40,6 +40,7 @@ from experiments.resume import (
     commit_training_snapshot,
     materialize_learner_checkpoint,
     materialize_migrated_checkpoint,
+    materialize_task3_safety_checkpoint,
 )
 from experiments.performance_stopping import (
     Task1PerformanceStopping, frozen_score_assessor, load_committed_history,
@@ -747,6 +748,7 @@ def run_agent_session(
     safety_spec: dict[str, Any] | None = None,
     n_step: int = 1,
     retention_spec: dict[str, Any] | None = None,
+    safety_replay_spec: dict[str, Any] | None = None,
     adaptation_triggers: Sequence[str] = (),
     feature_id_override: str | None = None,
     reward_id_override: str | None = None,
@@ -754,6 +756,7 @@ def run_agent_session(
     progress_leave: bool = True,
     performance_stopping: dict[str, Any] | None = None,
     migration: bool = False,
+    task3_safety_transfer: bool = False,
 ) -> Path:
     """Run one isolated training or frozen-evaluation session."""
     training = mode == "train"
@@ -795,6 +798,8 @@ def run_agent_session(
     if n_step not in {1, 4}:
         raise ValueError("n_step must be 1 or 4")
     retention_spec = resolve_retention_spec(retention_spec)
+    from agent_code.learning_common.training_spec import resolve_safety_replay_spec
+    safety_replay_spec = resolve_safety_replay_spec(safety_replay_spec)
     adaptation_triggers = tuple(adaptation_triggers)
     allowed_adaptation_triggers = {
         "suicide", "retention", "q_capability", "dqn_capability",
@@ -812,6 +817,7 @@ def run_agent_session(
     training_config["safe_exploration"] = safe_exploration
     training_config["n_step"] = n_step
     training_config["retention"] = retention_spec
+    training_config["safety_replay"] = safety_replay_spec
     training_config["action_budget"] = action_budget_config
     training_config["performance_stopping"] = performance_stopping
     expanded["training"] = training_config
@@ -874,7 +880,13 @@ def run_agent_session(
         assert checkpoint is not None
         checkpoint.parent.mkdir(parents=True, exist_ok=True)
     if resume_snapshot is not None:
-        if migration:
+        if task3_safety_transfer:
+            materialize_task3_safety_checkpoint(
+                resume_snapshot, checkpoint, safety_spec=safety_spec,
+                exploration_spec=exploration_spec,
+                training_budget=action_budget_config,
+                safety_replay_spec=safety_replay_spec)
+        elif migration:
             materialize_migrated_checkpoint(
                 resume_snapshot, checkpoint, training_budget=action_budget_config)
         else:
@@ -919,6 +931,7 @@ def run_agent_session(
     metadata["safety_spec"] = safety_spec
     metadata["n_step"] = n_step
     metadata["retention_spec"] = retention_spec
+    metadata["safety_replay_spec"] = safety_replay_spec
     metadata["training_budget"] = action_budget_config
     metadata["performance_stopping"] = performance_stopping
     metadata["adaptation_triggers"] = list(adaptation_triggers)
@@ -966,7 +979,11 @@ def run_agent_session(
                 "to": CHECKPOINT_SCHEMA_VERSION,
                 "history_initialized": "empty",
             }
-            if migration else None
+            if migration else ({
+                "from": "training-resume-v7",
+                "to": CHECKPOINT_SCHEMA_VERSION,
+                "reason": "own-bomb escape obligation experiment",
+            } if task3_safety_transfer else None)
         ),
     }
     metadata["config_sha256"] = hashlib.sha256(
@@ -987,6 +1004,7 @@ def run_agent_session(
             "BOMBERMAN_SAFE_EXPLORATION", "BOMBERMAN_N_STEP",
             "BOMBERMAN_SAFETY_SPEC",
             "BOMBERMAN_RETENTION_SPEC", "BOMBERMAN_TRAINING_BUDGET",
+            "BOMBERMAN_SAFETY_REPLAY_SPEC",
         )
     }
     try:
@@ -1014,6 +1032,8 @@ def run_agent_session(
         os.environ["BOMBERMAN_N_STEP"] = str(n_step)
         os.environ["BOMBERMAN_RETENTION_SPEC"] = json.dumps(
             retention_spec, sort_keys=True, separators=(",", ":"))
+        os.environ["BOMBERMAN_SAFETY_REPLAY_SPEC"] = json.dumps(
+            safety_replay_spec, sort_keys=True, separators=(",", ":"))
         os.environ["BOMBERMAN_TRAINING_BUDGET"] = json.dumps(
             action_budget_config, sort_keys=True, separators=(",", ":"))
         # Task 1 isolates coin navigation. Keep its action space free of bombs
@@ -1272,6 +1292,10 @@ def _parser() -> argparse.ArgumentParser:
         "--migrate-resume-from", type=Path,
         help="Complete v6 Task 1 run migrated explicitly into a v7 child",
     )
+    resume_group.add_argument(
+        "--transfer-task3-safety-from", type=Path,
+        help="Complete v7 Task 2 run transferred explicitly into a v9 Task 3 child",
+    )
     parser.add_argument(
         "--replay-policy", choices=("auto", *REPLAY_POLICIES), default="auto",
         help="Replay retention: auto, none, failures, sampled, or all",
@@ -1308,7 +1332,8 @@ def main(argv: Sequence[str] | None = None) -> int:
                 source_hash=_source_hash(),
             )
         else:
-            if args.resume_from is not None or args.migrate_resume_from is not None:
+            if (args.resume_from is not None or args.migrate_resume_from is not None
+                    or args.transfer_task3_safety_from is not None):
                 raise ValueError("resume and migration options are only valid with --mode train")
             if args.adaptation_trigger:
                 raise ValueError(

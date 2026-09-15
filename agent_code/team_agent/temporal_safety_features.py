@@ -50,6 +50,14 @@ class SafetyMarginResult:
     survivable_second_actions: int
 
 
+@dataclass(frozen=True)
+class RobustRouteResult:
+    """Redundant escape routes after one fixed first action."""
+
+    independent_routes: int
+    escape_slack: float
+
+
 def _bomb_explosion_time(timer: int) -> int:
     """Return the future step at which an existing bomb explodes."""
     return timer + 1
@@ -243,6 +251,94 @@ def safety_margin_after_first_step(
             ):
                 second_actions += 1
     return SafetyMarginResult(slack, second_actions)
+
+
+def robust_routes_after_first_step(
+        position: tuple, first_action: str,
+        danger: np.ndarray, blocked: np.ndarray,
+        *, required_routes: int = 2,
+) -> RobustRouteResult:
+    """Count internally vertex-disjoint paths in the time-expanded graph.
+
+    The state immediately after ``first_action`` is the shared source.  Every
+    later position-time vertex has unit capacity, so two routes may not rely on
+    the same future bottleneck.  The artificial sink is shared.  Flow is capped
+    because the safety contract currently needs only the distinction 0/1/2.
+    """
+    if required_routes < 1:
+        raise ValueError("required_routes must be positive")
+    first = _advance(position, first_action, 1, danger, blocked)
+    if first is None:
+        return RobustRouteResult(0, -1.0)
+    margin = safety_margin_after_first_step(
+        position, first_action, danger, blocked).escape_slack
+    horizon = danger.shape[0] - 1
+    if horizon == 1:
+        return RobustRouteResult(required_routes, margin)
+
+    # Residual graph for vertex-split max flow.  Integer capacities and the
+    # tiny H=7 board keep this dependency-free implementation cheap.
+    residual: dict[object, dict[object, int]] = {}
+
+    def edge(left, right, capacity):
+        residual.setdefault(left, {})[right] = capacity
+        residual.setdefault(right, {}).setdefault(left, 0)
+
+    source, sink = ("source",), ("sink",)
+    reachable = {(1, first[0], first[1])}
+    frontier = set(reachable)
+    for time_step in range(2, horizon + 1):
+        following = set()
+        for _, x, y in frontier:
+            for action in ACTIONS:
+                successor = _advance((x, y), action, time_step, danger, blocked)
+                if successor is not None:
+                    following.add((time_step, successor[0], successor[1]))
+        reachable |= following
+        frontier = following
+
+    start = (1, first[0], first[1])
+    edge(source, (start, "out"), required_routes)
+    for node in reachable:
+        if node == start:
+            continue
+        edge((node, "in"), (node, "out"), 1)
+    for node in reachable:
+        time_step, x, y = node
+        if time_step == horizon:
+            edge((node, "out"), sink, 1)
+            continue
+        for action in ACTIONS:
+            successor = _advance((x, y), action, time_step + 1, danger, blocked)
+            candidate = None if successor is None else (
+                time_step + 1, successor[0], successor[1])
+            if candidate not in reachable:
+                continue
+            left = (node, "out")
+            right = (candidate, "in")
+            edge(left, right, required_routes)
+
+    flow = 0
+    while flow < required_routes:
+        parent = {source: None}
+        queue = [source]
+        for node in queue:
+            if sink in parent:
+                break
+            for target, capacity in residual.get(node, {}).items():
+                if capacity > 0 and target not in parent:
+                    parent[target] = node
+                    queue.append(target)
+        if sink not in parent:
+            break
+        node = sink
+        while parent[node] is not None:
+            previous = parent[node]
+            residual[previous][node] -= 1
+            residual[node][previous] += 1
+            node = previous
+        flow += 1
+    return RobustRouteResult(flow, margin)
 
 
 def detailed_reachability_all_first_steps(

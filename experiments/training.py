@@ -17,13 +17,17 @@ from experiments.devices import resolve_device
 from experiments.resume import (
     CHECKPOINT_SCHEMA_VERSION,
     load_migration_snapshot,
+    load_task3_safety_transfer_snapshot,
     load_training_snapshot,
+    validate_task3_safety_transfer,
     validate_v6_migration,
     validate_resume_transition,
 )
 from experiments.performance_stopping import resolve_performance_stopping
 from experiments.agent_contracts import resolve_agent_contract
-from agent_code.learning_common.training_spec import resolve_retention_spec
+from agent_code.learning_common.training_spec import (
+    resolve_retention_spec, resolve_safety_replay_spec,
+)
 
 
 DEFAULT_REPLAY_PROGRESS_PERCENT = 10
@@ -263,6 +267,7 @@ def run_training_mode(
     if n_step not in {1, 4}:
         raise ValueError("config.training.n_step must be 1 or 4")
     retention_spec = resolve_retention_spec(training.get("retention"))
+    safety_replay_spec = resolve_safety_replay_spec(training.get("safety_replay"))
     adaptation_triggers = tuple(getattr(args, "adaptation_trigger", ()) or ())
     configured_id = getattr(args, "feature_id", None) or config.get("feature_id")
     configured_legacy = (
@@ -283,7 +288,8 @@ def run_training_mode(
         replay_interval, stopping_config,
     )
     migration_from = getattr(args, "migrate_resume_from", None)
-    if args.resume_from is None and migration_from is None:
+    safety_transfer_from = getattr(args, "transfer_task3_safety_from", None)
+    if args.resume_from is None and migration_from is None and safety_transfer_from is None:
         return run_session(
             *positional, device_info=device_info,
             action_budget_config=budget_config,
@@ -291,6 +297,7 @@ def run_training_mode(
             safety_spec=safety_spec,
             n_step=n_step,
             retention_spec=retention_spec,
+            safety_replay_spec=safety_replay_spec,
             adaptation_triggers=adaptation_triggers,
             feature_id_override=getattr(args, "feature_id", None),
             reward_id_override=getattr(args, "reward_id", None),
@@ -298,14 +305,17 @@ def run_training_mode(
         )
 
     migrating = migration_from is not None
-    parent_run = Path(migration_from if migrating else args.resume_from)
+    safety_transferring = safety_transfer_from is not None
+    parent_run = Path(
+        safety_transfer_from if safety_transferring else (
+            migration_from if migrating else args.resume_from))
     if not parent_run.is_absolute():
         parent_run = Path.cwd() / parent_run
     parent_run = parent_run.resolve()
     snapshot = (
-        load_migration_snapshot(parent_run) if migrating
-        else load_training_snapshot(parent_run)
-    )
+        load_task3_safety_transfer_snapshot(parent_run) if safety_transferring
+        else load_migration_snapshot(parent_run) if migrating
+        else load_training_snapshot(parent_run))
     metadata_path = parent_run / "metadata.json"
     if not metadata_path.is_file():
         raise ValueError("Parent run is missing metadata.json")
@@ -334,6 +344,7 @@ def run_training_mode(
         "safety_spec": safety_spec,
         "n_step": n_step,
         "retention_spec": retention_spec,
+        "safety_replay_spec": safety_replay_spec,
         "training_budget": budget_config,
         "performance_stopping": performance_stopping,
         "source_commit": source_commit,
@@ -342,7 +353,11 @@ def run_training_mode(
         "hyperparameters": agent_contract.hyperparameters,
     }
     parent_status = parent_metadata.get("status", "unknown")
-    if migrating:
+    if safety_transferring:
+        validate_task3_safety_transfer(
+            snapshot.contract, child_contract, parent_status=parent_status)
+        resume_kind = "task3_safety_transfer"
+    elif migrating:
         validate_v6_migration(
             snapshot.contract, child_contract, parent_status=parent_status)
         resume_kind = "v6_migration"
@@ -366,11 +381,13 @@ def run_training_mode(
         safety_spec=safety_spec,
         n_step=n_step,
         retention_spec=retention_spec,
+        safety_replay_spec=safety_replay_spec,
         adaptation_triggers=adaptation_triggers,
         feature_id_override=getattr(args, "feature_id", None),
         reward_id_override=getattr(args, "reward_id", None),
         performance_stopping=performance_stopping,
         migration=migrating,
+        task3_safety_transfer=safety_transferring,
     )
 
 

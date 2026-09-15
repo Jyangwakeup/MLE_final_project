@@ -1,0 +1,8 @@
+{
+  "algorithm": "double_dqn",
+  "feature_id": "continuous-v2",
+  "reward_id": "r7_safe_credit_sparse",
+  "safety": {"version": "survival-mask-v3", "mode": "all", "horizon": 7, "required_independent_routes": 2, "robust_fallback": "survival-mask-v1", "fallback": "physical_q"},
+  "evaluation": {"device": "cpu", "seeds": [17000, 17001, 17002, 17003, 17004, 17005, 17006, 17007, 17008, 17009, 17010, 17011, 17012, 17013, 17014, 17015, 17016, 17017, 17018, 17019], "n_rounds": 1, "navigation_diagnostics": true},
+  "training": {"device": "cpu"}
+}

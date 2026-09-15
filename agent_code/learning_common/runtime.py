@@ -19,11 +19,11 @@ from .temporal_reward import init_temporal_reward_state
 from .action_history import init_action_history
 from .training_spec import (
     n_step_from_environment, retention_from_environment,
-    training_budget_from_environment,
+    safety_replay_from_environment, training_budget_from_environment,
 )
 
 
-CHECKPOINT_SCHEMA = "training-resume-v7"
+CHECKPOINT_SCHEMA = "training-resume-v9"
 DEFAULT_REWARD_ID = "r1"
 CHECKPOINT_ENV = "BOMBERMAN_CHECKPOINT"
 FEATURE_ID_ENV = "BOMBERMAN_FEATURE_ID"
@@ -75,6 +75,7 @@ def load_common_configuration(self, *, feature_id: str, default_model: Path) -> 
     self.safe_exploration = self.safety_spec["mode"] in {"exploration", "all"}
     self.n_step = n_step_from_environment()
     self.retention_spec = retention_from_environment()
+    self.safety_replay_spec = safety_replay_from_environment()
     self.training_budget = training_budget_from_environment()
     configured_checkpoint = os.getenv(CHECKPOINT_ENV)
     self.model_file = (
@@ -89,6 +90,13 @@ def load_common_configuration(self, *, feature_id: str, default_model: Path) -> 
     self.safety_decisions = 0
     self.safety_interventions = 0
     self.safety_fallbacks = 0
+    self.robust_safety_interventions = 0
+    self.robust_to_v1_fallbacks = 0
+    self.v1_to_physical_fallbacks = 0
+    self.avoidable_escape_collapses = 0
+    self.own_bomb_cycles = 0
+    self._own_bomb_cycle_had_safe_alternative = False
+    self._own_bomb_cycle_collapse_recorded = False
     self._feature_cache_key = None
     self._feature_cache_value = None
     init_temporal_reward_state(self)
@@ -148,12 +156,14 @@ def validate_checkpoint(
     reward_id: str, hyperparameters: dict[str, Any],
     network_spec: dict[str, Any] | None, training: bool,
     training_task: str | None, safety_spec: dict[str, Any] | None = None,
+    safety_replay_spec: dict[str, Any] | None = None,
 ) -> None:
     checkpoint_schema = payload.get("checkpoint_schema")
     frozen_schemas = {
         "training-resume-v1", "training-resume-v2",
         "training-resume-v3", "training-resume-v4", "training-resume-v5",
-        "training-resume-v6", CHECKPOINT_SCHEMA,
+        "training-resume-v6", "training-resume-v7", "training-resume-v8",
+        CHECKPOINT_SCHEMA,
     }
     if checkpoint_schema not in frozen_schemas:
         raise ValueError("checkpoint uses an incompatible checkpoint schema")
@@ -188,6 +198,14 @@ def validate_checkpoint(
         != resolve_safety_spec(safety_spec)
     ):
         raise ValueError("checkpoint uses an incompatible safety specification")
+    if training and payload.get("checkpoint_schema") == CHECKPOINT_SCHEMA:
+        from .training_spec import resolve_safety_replay_spec
+        if payload.get(
+            "safety_replay_spec", resolve_safety_replay_spec()
+        ) != resolve_safety_replay_spec(
+            safety_replay_spec
+        ):
+            raise ValueError("checkpoint uses an incompatible safety replay specification")
     if training and payload.get("training_task") != training_task:
         try:
             previous = TASK_ORDER.index(payload.get("training_task"))

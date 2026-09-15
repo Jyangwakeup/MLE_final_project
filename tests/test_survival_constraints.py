@@ -4,6 +4,7 @@ from pathlib import Path
 import random
 import unittest
 from types import SimpleNamespace
+from unittest.mock import patch
 
 import numpy as np
 import torch
@@ -24,13 +25,20 @@ from agent_code.team_agent.feature_system.symmetry import symmetries
 from agent_code.team_agent.rewards import reward_from_events
 from agent_code.team_agent.safety import (
     avoidable_fatal_action, mask_for_decision, resolve_safety_spec,
+    safety_decision,
 )
+from agent_code.team_agent.temporal_safety_features import RobustRouteResult
 from tests.test_danger import WALL, make_game_state
 
 
 ALL_SAFETY = {
     "version": "survival-mask-v1", "mode": "all", "horizon": 7,
     "fallback": "physical_q",
+}
+ROBUST_SAFETY = {
+    "version": "survival-mask-v3", "mode": "all", "horizon": 7,
+    "required_independent_routes": 2,
+    "robust_fallback": "survival-mask-v1", "fallback": "physical_q",
 }
 
 
@@ -57,6 +65,55 @@ class SurvivalMaskTests(unittest.TestCase):
             allow_bomb=False, exploring=False)
         self.assertFalse(exploratory[ACTIONS.index("WAIT")])
         np.testing.assert_array_equal(greedy, physical)
+
+    def test_v3_contract_is_exact_and_versioned(self):
+        self.assertEqual(resolve_safety_spec(ROBUST_SAFETY), ROBUST_SAFETY)
+        invalid = dict(ROBUST_SAFETY, required_independent_routes=1)
+        with self.assertRaisesRegex(ValueError, "two independent routes"):
+            resolve_safety_spec(invalid)
+
+    def test_v3_vetoes_only_nonrobust_bomb_when_safe_alternative_exists(self):
+        state = make_game_state(position=(3, 3))
+        physical = np.ones(6, dtype=bool)
+        with patch(
+            "agent_code.team_agent.temporal_safety_features.robust_routes_after_first_step",
+            return_value=RobustRouteResult(1, 0.25),
+        ):
+            decision = safety_decision(
+                state, physical, ROBUST_SAFETY, allow_bomb=True,
+                exploring=False, own_bomb_pending=False)
+        self.assertFalse(decision.mask[ACTIONS.index("BOMB")])
+        np.testing.assert_array_equal(decision.mask[:5], np.ones(5, dtype=bool))
+
+    def test_v3_post_bomb_uses_robust_set_then_v1_fallback(self):
+        state = make_game_state(position=(3, 3), bombs_left=False)
+        physical = np.ones(6, dtype=bool)
+        physical[-1] = False
+        results = iter([
+            RobustRouteResult(2, 0.5), RobustRouteResult(1, 0.2),
+            RobustRouteResult(0, -1.0), RobustRouteResult(2, 0.5),
+            RobustRouteResult(1, 0.1),
+        ])
+        with patch(
+            "agent_code.team_agent.temporal_safety_features.robust_routes_after_first_step",
+            side_effect=lambda *args, **kwargs: next(results),
+        ):
+            decision = safety_decision(
+                state, physical, ROBUST_SAFETY, allow_bomb=True,
+                exploring=False, own_bomb_pending=True)
+        self.assertFalse(decision.robust_fallback)
+        np.testing.assert_array_equal(
+            decision.mask, [True, False, False, True, False, False])
+
+        with patch(
+            "agent_code.team_agent.temporal_safety_features.robust_routes_after_first_step",
+            return_value=RobustRouteResult(1, 0.1),
+        ):
+            fallback = safety_decision(
+                state, physical, ROBUST_SAFETY, allow_bomb=True,
+                exploring=False, own_bomb_pending=True)
+        self.assertTrue(fallback.robust_fallback)
+        self.assertFalse(fallback.physical_fallback)
 
     def test_frozen_greedy_vetoes_raw_q_argmax_and_records_intervention(self):
         state = self._danger_state()

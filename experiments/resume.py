@@ -20,10 +20,12 @@ from agent_code.team_agent.feature_system import (
     normalize_feature_id,
     validate_checkpoint_feature_contract,
 )
+from agent_code.learning_common.training_spec import resolve_safety_replay_spec
 
 
-CHECKPOINT_SCHEMA_VERSION = "training-resume-v7"
+CHECKPOINT_SCHEMA_VERSION = "training-resume-v9"
 MIGRATABLE_CHECKPOINT_SCHEMA = "training-resume-v6"
+TASK3_SAFETY_TRANSFER_PARENT_SCHEMA = "training-resume-v7"
 TASK_ORDER = ("coin_navigation", "crate_navigation", "weak_opponents", "full_match")
 RETAINED_GENERATIONS = 2
 TABLE_ALGORITHMS = frozenset(("q_learning", "double_q_learning"))
@@ -78,6 +80,8 @@ class LoadedSnapshot:
             "retention_spec": metadata.get("retention_spec", {}),
             "training_budget": metadata.get("training_budget", {}),
             "performance_stopping": metadata.get("performance_stopping"),
+            "safety_replay_spec": metadata.get(
+                "safety_replay_spec", resolve_safety_replay_spec()),
         }
 
 
@@ -194,6 +198,13 @@ def commit_training_snapshot(
             "agent_rng_state", "action_history_state",
             "safe_exploration_decisions", "safe_exploration_fallbacks",
         }
+        if learner.get("safety_spec", {}).get("version") == "survival-mask-v3":
+            required.update({
+                "robust_safety_interventions", "robust_to_v1_fallbacks",
+                "v1_to_physical_fallbacks", "avoidable_escape_collapses",
+                "own_bomb_escape_state", "own_bomb_cycles",
+                "safety_replay_spec",
+            })
         if algorithm in TABLE_ALGORITHMS:
             required.update(
                 {"q_table"} if algorithm == "q_learning"
@@ -273,6 +284,8 @@ def commit_training_snapshot(
                 "retention_spec": learner["retention_spec"],
                 "training_budget": learner["training_budget"],
                 "performance_stopping": performance_stopping,
+                "safety_replay_spec": learner.get(
+                    "safety_replay_spec", resolve_safety_replay_spec()),
             },
             "cumulative_completed_rounds": (
                 int(round_index)
@@ -432,6 +445,12 @@ def load_migration_snapshot(run_directory: Path) -> LoadedSnapshot:
         run_directory, expected_schema=MIGRATABLE_CHECKPOINT_SCHEMA)
 
 
+def load_task3_safety_transfer_snapshot(run_directory: Path) -> LoadedSnapshot:
+    """Load a complete v7 Task 2 snapshot for the explicit v9 transfer."""
+    return _load_training_snapshot(
+        run_directory, expected_schema=TASK3_SAFETY_TRANSFER_PARENT_SCHEMA)
+
+
 def materialize_learner_checkpoint(snapshot: LoadedSnapshot, destination: Path) -> None:
     """Create the child run's working checkpoint from a validated snapshot."""
     destination.parent.mkdir(parents=True, exist_ok=True)
@@ -472,6 +491,91 @@ def materialize_migrated_checkpoint(
         payload["training_budget"] = dict(training_budget)
         torch.save(payload, temporary)
     temporary.replace(destination)
+
+
+def materialize_task3_safety_checkpoint(
+    snapshot: LoadedSnapshot,
+    destination: Path,
+    *,
+    safety_spec: dict[str, Any],
+    exploration_spec: dict[str, Any],
+    training_budget: dict[str, Any],
+    safety_replay_spec: dict[str, Any],
+) -> None:
+    """Promote an intact v7 Task 2 learner into a clean v9 Task 3 stage."""
+    if snapshot.learner_path is None:
+        raise ValueError("Task 3 safety transfer requires a neural checkpoint")
+    try:
+        import torch
+    except ImportError as exception:
+        raise RuntimeError("PyTorch is required for Task 3 safety transfer") from exception
+    payload = torch.load(snapshot.learner_path, map_location="cpu", weights_only=True)
+    payload.update({
+        "checkpoint_schema": CHECKPOINT_SCHEMA_VERSION,
+        "training_task": "weak_opponents",
+        "safety_spec": dict(safety_spec),
+        "exploration_spec": dict(exploration_spec),
+        "training_budget": dict(training_budget),
+        "safety_replay_spec": dict(safety_replay_spec),
+        "stage_action_steps": 0,
+        "n_step_state": {
+            "n_step": int(payload.get("n_step", 4)),
+            "gamma": float(payload["hyperparameters"]["gamma"]),
+            "pending": [],
+        },
+        "action_history_state": {
+            "previous_action": None, "wait_streak": 0, "round": None,
+            "own_bomb_position": None, "own_bomb_pending": False,
+            "previous_position": None, "previous_coin_target": None,
+        },
+        "safety_decisions": 0,
+        "safety_interventions": 0,
+        "safety_fallbacks": 0,
+        "safe_exploration_decisions": 0,
+        "safe_exploration_fallbacks": 0,
+        "robust_safety_interventions": 0,
+        "robust_to_v1_fallbacks": 0,
+        "v1_to_physical_fallbacks": 0,
+        "avoidable_escape_collapses": 0,
+        "own_bomb_cycles": 0,
+        "own_bomb_escape_state": {
+            "had_safe_alternative": False, "collapse_recorded": False,
+        },
+    })
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    temporary = destination.with_name(destination.name + ".tmp")
+    torch.save(payload, temporary)
+    temporary.replace(destination)
+
+
+def validate_task3_safety_transfer(
+    parent: dict[str, Any], child: dict[str, Any], *, parent_status: str,
+) -> None:
+    """Validate the narrow v7 Task 2 to v9 robust-safety experiment seam."""
+    if parent.get("checkpoint_schema") != TASK3_SAFETY_TRANSFER_PARENT_SCHEMA:
+        raise ValueError("Task 3 safety transfer requires a training-resume-v7 parent")
+    if child.get("checkpoint_schema") != CHECKPOINT_SCHEMA_VERSION:
+        raise ValueError("Task 3 safety transfer target must use training-resume-v9")
+    if parent_status not in {"completed", "early_stopped"}:
+        raise ValueError("Task 3 safety transfer requires a completed Task 2 parent")
+    if parent.get("task") != "crate_navigation" or child.get("task") != "weak_opponents":
+        raise ValueError("Task 3 safety transfer must promote Task 2 directly to Task 3")
+    if child.get("safety_spec", {}).get("version") != "survival-mask-v3":
+        raise ValueError("Task 3 safety transfer requires survival-mask-v3")
+    for field in (
+        "algorithm", "seed", "feature_id", "feature_schema", "reward_id",
+        "reward_spec", "training_device_type", "training_device_name",
+        "agent_seed", "actions", "network_spec", "hyperparameters", "n_step",
+        "retention_spec",
+    ):
+        if parent.get(field) != child.get(field):
+            raise ValueError(f"Task 3 safety transfer {field} must match the parent")
+    if parent.get("algorithm") != "double_dqn":
+        raise ValueError("Task 3 safety transfer requires Double DQN")
+    if parent.get("feature_id") != "continuous-v2":
+        raise ValueError("Task 3 safety transfer requires 84-dimensional continuous-v2")
+    if parent.get("reward_id") != "r7_safe_credit_sparse":
+        raise ValueError("Task 3 safety transfer requires r7_safe_credit_sparse")
 
 
 def validate_v6_migration(
@@ -515,6 +619,7 @@ def validate_resume_transition(
         "algorithm", "seed", "checkpoint_schema", "reward_spec",
         "training_device_type", "training_device_name", "agent_seed",
         "source_commit", "source_hash", "safe_exploration", "safety_spec",
+        "safety_replay_spec",
     ):
         if parent.get(field) != child.get(field):
             raise ValueError(f"Resume {field} must match the parent run")
