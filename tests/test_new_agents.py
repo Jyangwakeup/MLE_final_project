@@ -402,6 +402,47 @@ class CheckpointTests(unittest.TestCase):
                 ):
                     self.assertIn(field, payload)
 
+    def test_neural_warm_start_loads_only_policy_weights(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "source.pt"
+            destination = root / "destination.pt"
+            source_env = {
+                "BOMBERMAN_CHECKPOINT": str(source),
+                "BOMBERMAN_FEATURE_ID": "continuous-v2",
+                "BOMBERMAN_REWARD_ID": "r1",
+                "BOMBERMAN_TRAINING_TASK": "coin_navigation",
+            }
+            with patch.dict(os.environ, source_env, clear=True):
+                original = self._self(True)
+                continuous_callbacks.setup(original)
+                continuous_train.setup_training(original)
+                continuous_train.end_of_round(original, game_state(), "WAIT", [])
+
+            warm_env = {
+                "BOMBERMAN_CHECKPOINT": str(destination),
+                "BOMBERMAN_INIT_CHECKPOINT": str(source),
+                "BOMBERMAN_FEATURE_ID": "continuous-v2",
+                "BOMBERMAN_REWARD_ID": "r5_conditional_loop",
+                "BOMBERMAN_TRAINING_TASK": "crate_navigation",
+            }
+            with patch.dict(os.environ, warm_env, clear=True):
+                warmed = self._self(True)
+                continuous_callbacks.setup(warmed)
+
+            source_payload = torch.load(source, map_location="cpu", weights_only=True)
+            for name, value in warmed.model.policy.state_dict().items():
+                torch.testing.assert_close(value.cpu(), source_payload["policy"][name])
+                torch.testing.assert_close(
+                    warmed.model.target.state_dict()[name].cpu(),
+                    source_payload["policy"][name],
+                )
+            self.assertEqual(warmed.reward_id, "r5_conditional_loop")
+            self.assertEqual(warmed.action_steps, 0)
+            self.assertEqual(warmed.model.updates, 0)
+            self.assertEqual(len(warmed.model.replay), 0)
+            self.assertFalse(warmed.model.optimizer.state)
+
     def test_terminal_transition_replaces_pending_transition(self):
         owner = self._self(True)
         owner.reward_id = "r1"
@@ -435,7 +476,7 @@ class CheckpointTests(unittest.TestCase):
             root = Path(directory)
             checkpoint = root / "checkpoint.pkl"
             payload = {
-                "checkpoint_schema": "training-resume-v7",
+                "checkpoint_schema": "training-resume-v8",
                 "algorithm": "double_q_learning", "actions": list(dq_callbacks.ACTIONS),
                 "feature_id": dq_callbacks.FEATURE_ID,
                 "feature_schema": dq_callbacks.FEATURE_SCHEMA,

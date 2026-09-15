@@ -192,6 +192,40 @@ REWARD_SPECS = {
         "avoidable_fatal_action": -20.0,
         "suicide_dominates_positive_events": 1.0,
     },
+    "r9_phase_resource": {
+        "step": -0.01,
+        "coin_early": 3.0, "coin_middle": 1.5, "coin_late": 1.0,
+        "crate_early": 0.2, "crate_middle": 0.05, "crate_late": 0.0,
+        "kill_early": 5.0, "kill_middle": 8.0, "kill_late": 7.5,
+        "killed_self": -30.0, "got_killed": -10.0,
+        "invalid_action": -0.1, "unsafe_bomb_penalty": -20.0,
+        "potential_gamma": 0.95, "potential_danger_weight": 1.0,
+        "phase_resource_potential": 1.0,
+        "suicide_dominates_positive_events": 1.0,
+    },
+    "r9_phase_combat": {
+        "step": -0.01,
+        "coin_early": 3.0, "coin_middle": 1.5, "coin_late": 1.0,
+        "crate_early": 0.2, "crate_middle": 0.05, "crate_late": 0.0,
+        "kill_early": 5.0, "kill_middle": 8.0, "kill_late": 7.5,
+        "killed_self": -30.0, "got_killed": -10.0,
+        "invalid_action": -0.1, "unsafe_bomb_penalty": -20.0,
+        "potential_gamma": 0.95, "potential_danger_weight": 1.0,
+        "phase_resource_potential": 1.0, "phase_combat_potential": 1.0,
+        "suicide_dominates_positive_events": 1.0,
+    },
+    "r9_phase_full": {
+        "step": -0.01,
+        "coin_early": 3.0, "coin_middle": 1.5, "coin_late": 1.0,
+        "crate_early": 0.2, "crate_middle": 0.05, "crate_late": 0.0,
+        "kill_early": 5.0, "kill_middle": 8.0, "kill_late": 7.5,
+        "killed_self": -30.0, "got_killed": -10.0,
+        "invalid_action": -0.1, "unsafe_bomb_penalty": -20.0,
+        "potential_gamma": 0.95, "potential_danger_weight": 1.0,
+        "phase_resource_potential": 1.0, "phase_combat_potential": 1.0,
+        "phase_mobility_potential": 1.0,
+        "suicide_dominates_positive_events": 1.0,
+    },
 }
 DEATH_EVENTS = frozenset((e.KILLED_SELF, e.GOT_KILLED))
 
@@ -253,6 +287,37 @@ def _event_reward(events: Sequence[str], spec: dict[str, float]) -> float:
     return float(reward)
 
 
+def _phase_event_reward(
+    events: Sequence[str], spec: dict[str, float], phase: dict[str, float],
+) -> float:
+    """Score real events using the observable phase before the action."""
+    early = float(phase["early_weight"])
+    middle = float(phase["middle_weight"])
+    late = float(phase["late_weight"])
+    values = {
+        e.COIN_COLLECTED: (
+            early * spec["coin_early"] + middle * spec["coin_middle"]
+            + late * spec["coin_late"]),
+        e.CRATE_DESTROYED: (
+            early * spec["crate_early"] + middle * spec["crate_middle"]
+            + late * spec["crate_late"]),
+        e.KILLED_OPPONENT: (
+            early * spec["kill_early"] + middle * spec["kill_middle"]
+            + late * spec["kill_late"]),
+        e.INVALID_ACTION: spec["invalid_action"],
+    }
+    suicide = e.KILLED_SELF in events
+    reward = spec["step"]
+    for event, value in values.items():
+        if not (suicide and value > 0.0):
+            reward += events.count(event) * value
+    if suicide:
+        reward += spec["killed_self"]
+    elif e.GOT_KILLED in events:
+        reward += spec["got_killed"]
+    return float(reward)
+
+
 def _state_potential(game_state: dict, spec: dict[str, float]) -> float:
     """Return a bounded, state-only progress and safety potential."""
     from agent_code.team_agent.danger import HORIZON, predict_danger
@@ -289,6 +354,37 @@ def _state_potential(game_state: dict, spec: dict[str, float]) -> float:
     return float(value)
 
 
+def _phase_potential(
+    game_state: dict, spec: dict[str, float], phase: dict[str, float],
+) -> float:
+    """Bounded state-only phase shaping; it never emits a preferred action."""
+    from agent_code.team_agent.phase import objective_closeness
+
+    value = _state_potential(game_state, spec)
+    early = float(phase["early_weight"])
+    middle = float(phase["middle_weight"])
+    late = float(phase["late_weight"])
+    score_margin = float(phase["score_margin"])
+    self_mobility = float(phase["self_mobility"])
+    if spec.get("phase_resource_potential", 0.0):
+        coin_closeness, crate_closeness = objective_closeness(game_state)
+        value += early * (0.5 * coin_closeness + 0.25 * crate_closeness)
+    if spec.get("phase_combat_potential", 0.0):
+        value += (
+            0.75 * (middle + 0.5 * late) * (1.0 - 0.25 * score_margin)
+            * self_mobility
+            * (0.5 * float(phase["opponent_closeness"])
+               + 0.5 * (1.0 - float(phase["opponent_mobility"])))
+        )
+    if spec.get("phase_mobility_potential", 0.0):
+        value += (
+            late * (1.0 + 0.25 * score_margin)
+            * (0.5 * float(phase["safe_action_fraction"])
+               + 0.5 * self_mobility)
+        )
+    return float(value)
+
+
 def _bomb_action_reward(game_state: dict, action: str | None, spec: dict[str, float]) -> float:
     if action != "BOMB" or "unsafe_bomb_penalty" not in spec:
         return 0.0
@@ -319,18 +415,32 @@ def reward_from_events(
     avoidable_wait: bool = False,
     diagnostic: dict | None = None,
     avoidable_fatal: bool = False,
+    old_phase_facts: dict[str, float] | None = None,
+    new_phase_facts: dict[str, float] | None = None,
 ) -> float:
     """Convert framework events and optional temporal context into a scalar."""
     spec = resolve_reward_spec(version)
     if conditional_loop and avoidable_wait:
         raise ValueError(
             "conditional loop and avoidable WAIT penalties are mutually exclusive")
-    reward = _event_reward(events, spec)
+    phase_reward = version.startswith("r9_phase_")
+    if phase_reward and old_phase_facts is None:
+        raise ValueError(f"{version} requires old_phase_facts")
+    reward = (
+        _phase_event_reward(events, spec, old_phase_facts)
+        if phase_reward else _event_reward(events, spec)
+    )
     if "potential_gamma" in spec and old_game_state is not None:
-        old_potential = _state_potential(old_game_state, spec)
+        old_potential = (
+            _phase_potential(old_game_state, spec, old_phase_facts)
+            if phase_reward else _state_potential(old_game_state, spec)
+        )
         next_potential = (
             0.0 if terminal or new_game_state is None
-            else _state_potential(new_game_state, spec)
+            else (
+                _phase_potential(new_game_state, spec, new_phase_facts)
+                if phase_reward else _state_potential(new_game_state, spec)
+            )
         )
         reward += spec["potential_gamma"] * next_potential - old_potential
     if old_game_state is not None:

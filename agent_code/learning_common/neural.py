@@ -145,5 +145,10 @@ class DoubleDQNLearner:
             if self.device.type == "cuda" and cuda_rng is not None:
                 torch.cuda.set_rng_state_all(cuda_rng)
 
+    def load_policy_weights(self, checkpoint: dict[str, Any]) -> None:
+        """Warm-start from policy weights while retaining fresh training state."""
+        self.policy.load_state_dict(checkpoint["policy"])
+        self.target.load_state_dict(checkpoint["policy"])
+
 
 __all__ = ["DoubleDQNLearner", "Transition", "double_dqn_next_values"]

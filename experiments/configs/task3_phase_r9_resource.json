@@ -1,0 +1,18 @@
+{
+  "algorithm": "double_dqn",
+  "feature_id": "continuous-phase-v1",
+  "feature_version": null,
+  "reward_id": "r9_phase_resource",
+  "reward_version": "r9_phase_resource",
+  "seed": 11,
+  "checkpoint": null,
+  "safety": {"version": "survival-mask-v1", "mode": "all", "horizon": 7, "fallback": "physical_q"},
+  "evaluation": {"device": "cpu", "seeds": [13000,13001,13002,13003,13004,13005,13006,13007,13008,13009,13010,13011,13012,13013,13014,13015,13016,13017,13018,13019], "n_rounds": 1, "navigation_diagnostics": true},
+  "training": {
+    "device": "cpu", "n_rounds": 500, "target_stage_action_steps": null,
+    "min_rounds": 1, "n_step": 4,
+    "exploration": {"version": "linear-v1", "start": 0.2, "end": 0.05, "decay_action_steps": 100000},
+    "retention": {"parent_fraction": 0.0, "distillation_weight": 2.0, "temperature": 1.0, "per_task_capacity": 20000, "current_warmup": 2000},
+    "early_stopping": {"enabled": false}
+  }
+}
