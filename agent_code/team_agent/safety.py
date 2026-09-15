@@ -12,6 +12,8 @@ import numpy as np
 
 SAFETY_VERSION = "survival-mask-v1"
 ROBUST_SAFETY_VERSION = "survival-mask-v3"
+OPPONENT_ROBUST_SAFETY_VERSION = "survival-mask-v4"
+CONTROLLABLE_SAFETY_VERSION = "survival-mask-v5"
 SAFETY_SPEC_ENV = "BOMBERMAN_SAFETY_SPEC"
 SAFETY_MODES = ("off", "exploration", "all")
 DEFAULT_SAFETY_SPEC = {
@@ -30,6 +32,14 @@ class SafetyDecision:
     robust_fallback: bool
     route_counts: tuple[int, ...]
     escape_slack: tuple[float, ...]
+    opponent_fallback: bool = False
+    opponent_scenario_counts: tuple[int, ...] = (0,) * 6
+    opponent_passing_counts: tuple[int, ...] = (0,) * 6
+    opponent_failing_profiles: tuple[tuple[str, ...] | None, ...] = (None,) * 6
+    opponent_failing_orders: tuple[tuple[int, ...] | None, ...] = (None,) * 6
+    robust_guarantee_loss: bool = False
+    robust_search_timed_out: bool = False
+    robust_states_evaluated: int = 0
 
 
 def resolve_safety_spec(
@@ -47,12 +57,27 @@ def resolve_safety_spec(
         raise ValueError("config.safety must be an object")
     version = value.get("version")
     required = {"version", "mode", "horizon", "fallback"}
-    if version == ROBUST_SAFETY_VERSION:
+    if version in {ROBUST_SAFETY_VERSION, OPPONENT_ROBUST_SAFETY_VERSION}:
         required |= {"required_independent_routes", "robust_fallback"}
+    if version == OPPONENT_ROBUST_SAFETY_VERSION:
+        required |= {
+            "opponent_transition_horizon", "opponent_action_space",
+            "include_opponent_bombs", "execution_orders",
+            "minimum_scenario_routes", "opponent_robust_fallback",
+        }
+    if version == CONTROLLABLE_SAFETY_VERSION:
+        required |= {
+            "opponent_action_space", "include_opponent_bombs",
+            "execution_orders", "danger_interval", "search_budget_ms",
+            "robust_fallback",
+        }
     if set(value) != required:
         raise ValueError(
             "config.safety must contain exactly: " + ", ".join(sorted(required)))
-    if version not in {SAFETY_VERSION, ROBUST_SAFETY_VERSION}:
+    if version not in {
+        SAFETY_VERSION, ROBUST_SAFETY_VERSION, OPPONENT_ROBUST_SAFETY_VERSION,
+        CONTROLLABLE_SAFETY_VERSION,
+    }:
         raise ValueError(f"Unsupported safety version: {value['version']!r}")
     if value["mode"] not in SAFETY_MODES:
         raise ValueError(f"Unsupported safety mode: {value['mode']!r}")
@@ -66,7 +91,7 @@ def resolve_safety_spec(
         "horizon": 7,
         "fallback": "physical_q",
     }
-    if version == ROBUST_SAFETY_VERSION:
+    if version in {ROBUST_SAFETY_VERSION, OPPONENT_ROBUST_SAFETY_VERSION}:
         if value["required_independent_routes"] != 2:
             raise ValueError("survival-mask-v3 requires two independent routes")
         if value["robust_fallback"] != SAFETY_VERSION:
@@ -75,6 +100,34 @@ def resolve_safety_spec(
             "required_independent_routes": 2,
             "robust_fallback": SAFETY_VERSION,
         })
+    if version == OPPONENT_ROBUST_SAFETY_VERSION:
+        expected = {
+            "opponent_transition_horizon": 1,
+            "opponent_action_space": "all_physical",
+            "include_opponent_bombs": True,
+            "execution_orders": "all",
+            "minimum_scenario_routes": 1,
+            "opponent_robust_fallback": ROBUST_SAFETY_VERSION,
+        }
+        for field, expected_value in expected.items():
+            if value[field] != expected_value:
+                raise ValueError(
+                    f"survival-mask-v4 requires {field}={expected_value!r}")
+        result.update(expected)
+    if version == CONTROLLABLE_SAFETY_VERSION:
+        expected = {
+            "opponent_action_space": "all_physical",
+            "include_opponent_bombs": True,
+            "execution_orders": "all",
+            "danger_interval": "own_bomb_and_lingering",
+            "search_budget_ms": 400,
+            "robust_fallback": SAFETY_VERSION,
+        }
+        for field, expected_value in expected.items():
+            if value[field] != expected_value:
+                raise ValueError(
+                    f"survival-mask-v5 requires {field}={expected_value!r}")
+        result.update(expected)
     return result
 
 
@@ -154,6 +207,7 @@ def mask_for_decision(
     allow_bomb: bool,
     exploring: bool,
     own_bomb_pending: bool = False,
+    own_bomb_state: Mapping[str, Any] | None = None,
 ) -> tuple[np.ndarray, bool]:
     """Apply the configured constraint for one behavior decision."""
     spec = resolve_safety_spec(safety_spec)
@@ -163,7 +217,8 @@ def mask_for_decision(
         return np.asarray(physical_mask, dtype=bool).copy(), False
     decision = safety_decision(
         game_state, physical_mask, spec, allow_bomb=allow_bomb,
-        exploring=exploring, own_bomb_pending=own_bomb_pending)
+        exploring=exploring, own_bomb_pending=own_bomb_pending,
+        own_bomb_state=own_bomb_state)
     return decision.mask, decision.physical_fallback
 
 
@@ -175,6 +230,7 @@ def safety_decision(
     allow_bomb: bool,
     exploring: bool,
     own_bomb_pending: bool = False,
+    own_bomb_state: Mapping[str, Any] | None = None,
 ) -> SafetyDecision:
     """Apply v1 or the own-bomb redundant-route veto."""
     from agent_code.team_agent.feature_system.common import ACTIONS
@@ -194,7 +250,66 @@ def safety_decision(
     base, physical_fallback = survival_mask(
         game_state, physical, allow_bomb=allow_bomb,
         horizon=int(spec["horizon"]))
-    if spec["version"] != ROBUST_SAFETY_VERSION or physical_fallback:
+    if spec["version"] == CONTROLLABLE_SAFETY_VERSION and not physical_fallback:
+        from agent_code.team_agent.controllable_survival import (
+            controllable_survival_actions, danger_interval_steps,
+        )
+        bomb_state = dict(own_bomb_state or {})
+        bomb_state.setdefault("pending", own_bomb_pending)
+        bomb_index = ACTIONS.index("BOMB")
+        if own_bomb_pending:
+            candidate_indices = np.flatnonzero(base).tolist()
+            candidate_indices = [index for index in candidate_indices
+                                 if index != bomb_index]
+            placing_bomb = False
+        else:
+            candidate_indices = [bomb_index] if base[bomb_index] else []
+            placing_bomb = True
+        candidates = tuple(ACTIONS[index] for index in candidate_indices)
+        remaining = danger_interval_steps(
+            bomb_state, placing_bomb=placing_bomb)
+        result = controllable_survival_actions(
+            game_state, candidates, remaining_steps=remaining,
+            budget_ms=int(spec["search_budget_ms"])) if candidates else None
+        proven = set(() if result is None else result.proven_actions)
+        selected = base.copy()
+        opponent_fallback = False
+        guarantee_loss = False
+        if own_bomb_pending:
+            robust = np.asarray(
+                [action in proven for action in ACTIONS], dtype=bool) & base
+            if robust.any():
+                selected = robust
+            else:
+                opponent_fallback = True
+                guarantee_loss = True
+        else:
+            safe_non_bomb = base.copy()
+            safe_non_bomb[bomb_index] = False
+            if safe_non_bomb.any() and "BOMB" not in proven:
+                selected[bomb_index] = False
+        counts = [0] * len(ACTIONS)
+        passing = [0] * len(ACTIONS)
+        if result is not None:
+            target_indices = candidate_indices or [bomb_index]
+            for index in target_indices:
+                counts[index] = int(result.scenarios_evaluated)
+                passing[index] = counts[index] if ACTIONS[index] in proven else 0
+        failing_profiles = [None] * len(ACTIONS)
+        failing_orders = [None] * len(ACTIONS)
+        if result is not None and candidate_indices:
+            failing_profiles[candidate_indices[0]] = result.first_failing_profile
+            failing_orders[candidate_indices[0]] = result.first_failing_order
+        return SafetyDecision(
+            selected, base.copy(), False, False, (0,) * 6, (-1.0,) * 6,
+            opponent_fallback, tuple(counts), tuple(passing),
+            tuple(failing_profiles), tuple(failing_orders), guarantee_loss,
+            False if result is None else result.timed_out,
+            0 if result is None else result.states_evaluated,
+        )
+    if spec["version"] not in {
+        ROBUST_SAFETY_VERSION, OPPONENT_ROBUST_SAFETY_VERSION,
+    } or physical_fallback:
         return SafetyDecision(
             base, base.copy(), physical_fallback, False,
             (0,) * 6, (-1.0,) * 6)
@@ -238,9 +353,51 @@ def safety_decision(
         safe_non_bomb[bomb_index] = False
         if base[bomb_index] and safe_non_bomb.any() and not robust[bomb_index]:
             selected[bomb_index] = False
+    if spec["version"] != OPPONENT_ROBUST_SAFETY_VERSION:
+        return SafetyDecision(
+            selected, base.copy(), False, robust_fallback,
+            tuple(routes), tuple(slack))
+
+    from agent_code.team_agent.temporal_safety_features import (
+        opponent_robust_survival_after_action,
+    )
+    scenario_counts = [0] * len(ACTIONS)
+    passing_counts = [0] * len(ACTIONS)
+    failing_profiles = [None] * len(ACTIONS)
+    failing_orders = [None] * len(ACTIONS)
+    opponent_safe = np.zeros(len(ACTIONS), dtype=bool)
+    opponent_candidates = (
+        np.flatnonzero(selected).tolist()
+        if own_bomb_pending else [bomb_index]
+    )
+    for index in opponent_candidates:
+        if not selected[index]:
+            continue
+        result = opponent_robust_survival_after_action(
+            game_state, ACTIONS[index], horizon=int(spec["horizon"]))
+        scenario_counts[index] = result.scenario_count
+        passing_counts[index] = result.passing_scenarios
+        failing_profiles[index] = result.first_failing_profile
+        failing_orders[index] = result.first_failing_order
+        opponent_safe[index] = result.survives_all
+
+    opponent_fallback = False
+    if own_bomb_pending:
+        opponent_selected = selected & opponent_safe
+        if opponent_selected.any():
+            selected = opponent_selected
+        else:
+            opponent_fallback = True
+    else:
+        safe_non_bomb = base.copy()
+        safe_non_bomb[bomb_index] = False
+        if selected[bomb_index] and safe_non_bomb.any() and not opponent_safe[bomb_index]:
+            selected[bomb_index] = False
     return SafetyDecision(
         selected, base.copy(), False, robust_fallback,
-        tuple(routes), tuple(slack))
+        tuple(routes), tuple(slack), opponent_fallback,
+        tuple(scenario_counts), tuple(passing_counts),
+        tuple(failing_profiles), tuple(failing_orders))
 
 
 def avoidable_fatal_action(

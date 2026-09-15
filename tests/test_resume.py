@@ -323,7 +323,7 @@ class ResumeProtocolTestCase(unittest.TestCase):
             materialize_learner_checkpoint(loaded, destination)
             restored = torch.load(destination, map_location="cpu", weights_only=True)
             self.assertEqual(restored["checkpoint_schema"], CHECKPOINT_SCHEMA_VERSION)
-            self.assertEqual(CHECKPOINT_SCHEMA_VERSION, "training-resume-v9")
+            self.assertEqual(CHECKPOINT_SCHEMA_VERSION, "training-resume-v11")
             self.assertIn("replay", restored)
 
 

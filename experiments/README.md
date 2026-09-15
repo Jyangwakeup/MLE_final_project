@@ -106,7 +106,7 @@ C 需要 B 提供的最小信息是：
 - checkpoint 版本元数据；以及
 - 训练指标的输出位置。
 
-当前新实验完整恢复 schema 为 `training-resume-v9`。Runner 只校验公开 checkpoint 合同，
+当前新实验完整恢复 schema 为 `training-resume-v11`。Runner 只校验公开 checkpoint 合同，
 不导入 `agent_code/q_learning_agent/` 或 `agent_code/dqn_agent/` 的私有学习实现。
 
 ### 运行时配置
@@ -452,7 +452,7 @@ python3 experiments/run.py \
 但按同一 seed 重建环境/对手随机流、从回合 1 开始并重置早停。只允许同 Task 或
 `1→2→3→4`，且算法、训练/Agent seed、动作顺序、特征版本、奖励版本、完整奖励表、
 训练设备、`source_commit`、`source_hash` 和 resume schema 必须一致。探索、n-step、回放保留和预算只可按直接 Task 晋级的预注册合同改变。
-当前新实验 schema 为 `training-resume-v9`；旧 snapshot 及冻结 final checkpoint 默认不能精确续训。完整 v6 Task 1 run 仍只能通过显式 `--migrate-resume-from`；完整 v7 Task 2 Double DQN 仅能通过 `--transfer-task3-safety-from` 建立 v9 安全实验子 run。普通 `--resume-from` 不自动迁移。
+当前新实验 schema 为 `training-resume-v11`；v10及更早 snapshot 和冻结 final checkpoint 默认不能精确续训。完整 v6 Task 1 run 仍只能通过显式 `--migrate-resume-from`；完整 v7 Task 2 Double DQN 仅能通过 `--transfer-task3-safety-from` 建立v11安全实验子run。普通`--resume-from`不自动迁移。
 同 Task 的早停配置也必须保持一致。
 
 每回合边界发布一代完整快照，`resume/` 只保留最新两代。最新一代校验失败时自动回退

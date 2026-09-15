@@ -1,0 +1,11 @@
+{
+  "algorithm": "double_dqn", "feature_id": "continuous-v2", "reward_id": "r7_safe_credit_sparse",
+  "safety": {
+    "version": "survival-mask-v5", "mode": "all", "horizon": 7,
+    "opponent_action_space": "all_physical", "include_opponent_bombs": true,
+    "execution_orders": "all", "danger_interval": "own_bomb_and_lingering",
+    "search_budget_ms": 400, "robust_fallback": "survival-mask-v1", "fallback": "physical_q"
+  },
+  "evaluation": {"device": "cpu", "seeds": [19200,19201,19202,19203,19204,19205,19206,19207,19208,19209,19210,19211,19212,19213,19214,19215,19216,19217,19218,19219], "n_rounds": 1, "navigation_diagnostics": true},
+  "training": {"device": "cpu"}
+}
