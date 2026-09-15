@@ -11,8 +11,11 @@ import torch
 from torch import nn
 
 
+PathTransition = namedtuple(
+    "PathTransition", "state action reward next_state done next_legal steps")
+PathTransition.__new__.__defaults__ = (1,)
 EncodedTransition = namedtuple(
-    "EncodedTransition", "state action reward next_state done next_legal")
+    "EncodedTransition", "state action reward next_state done next_legal steps")
 BINARY_CHANNELS = (0, 1, 2, 3, 4, 5, 7, 8, 9, 10, 11, 15)
 LEVEL_CHANNELS = (6, 12, 13, 14, 16)
 
@@ -57,6 +60,7 @@ class PathReplay:
             bool(transition.done),
             None if transition.next_legal is None else np.asarray(
                 transition.next_legal, dtype=bool).copy(),
+            int(getattr(transition, "steps", 1)),
         ))
 
     def sample_batch(self, size):
@@ -67,6 +71,7 @@ class PathReplay:
             "states": _decode_batch([item.state for item in items]),
             "actions": np.asarray([item.action for item in items], dtype=np.int64),
             "rewards": np.asarray([item.reward for item in items], dtype=np.float32),
+            "steps": np.asarray([item.steps for item in items], dtype=np.int64),
             "nonterminal_indices": np.asarray(nonterminal_indices, dtype=np.int64),
             "next_states": None if not nonterminal else _decode_batch(
                 [item.next_state for item in nonterminal]),
@@ -92,6 +97,7 @@ class PathReplay:
                 "reward": item.reward, "next_state": serialized_state(item.next_state),
                 "done": item.done,
                 "next_legal": None if item.next_legal is None else torch.from_numpy(item.next_legal),
+                "steps": item.steps,
             } for item in self.memory],
         }
 
@@ -113,6 +119,7 @@ class PathReplay:
                 float(item["reward"]), decoded_state(item["next_state"]),
                 bool(item["done"]), None if item["next_legal"] is None else np.asarray(
                     item["next_legal"], dtype=bool),
+                int(item.get("steps", 1)),
             ) for item in state["transitions"]), maxlen=self.capacity)
         self.random.setstate(state["rng_state"])
 
@@ -156,6 +163,7 @@ class PathDoubleDQNLearner:
         states = torch.as_tensor(batch["states"], dtype=torch.float32, device=self.device)
         actions = torch.as_tensor(batch["actions"], dtype=torch.long, device=self.device)
         rewards = torch.as_tensor(batch["rewards"], dtype=torch.float32, device=self.device)
+        steps = torch.as_tensor(batch["steps"], dtype=torch.float32, device=self.device)
         current = self.policy(states).gather(1, actions[:, None]).squeeze(1)
         next_values = torch.zeros(self.batch_size, dtype=torch.float32, device=self.device)
         if len(batch["nonterminal_indices"]):
@@ -168,7 +176,7 @@ class PathDoubleDQNLearner:
                 selected = online.argmax(dim=1, keepdim=True)
                 evaluated = self.target(next_states).gather(1, selected).squeeze(1)
             next_values[torch.as_tensor(batch["nonterminal_indices"], device=self.device)] = evaluated
-        loss = self.loss_function(current, rewards + self.gamma * next_values)
+        loss = self.loss_function(current, rewards + self.gamma ** steps * next_values)
         self.optimizer.zero_grad()
         loss.backward()
         nn.utils.clip_grad_norm_(self.policy.parameters(), self.gradient_clip)

@@ -83,9 +83,15 @@ def setup(self):
             raise ValueError(f"path CNN checkpoint has incompatible {name}")
     if checkpoint.get("reward_id", checkpoint.get("reward_version")) != self.reward_id:
         raise ValueError("path CNN checkpoint has incompatible reward ID")
+    checkpoint_n_step = int(checkpoint.get("n_step", 1))
+    if self.train and checkpoint_n_step != self.n_step:
+        raise ValueError("path CNN checkpoint has incompatible n-step contract")
+    if not self.train:
+        self.n_step = checkpoint_n_step
     if self.train and checkpoint.get("safety_spec") != resolve_safety_spec(self.safety_spec):
         raise ValueError("path CNN checkpoint has incompatible safety specification")
     self.model.load_checkpoint(checkpoint, training=self.train)
+    self.cnn_path_n_step_state = checkpoint.get("n_step_state")
     self.total_action_steps = int(checkpoint.get("total_action_steps", checkpoint["action_steps"]))
     self.stage_action_steps = int(checkpoint.get("stage_action_steps", self.total_action_steps))
     self.action_steps = self.total_action_steps
