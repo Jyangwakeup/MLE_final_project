@@ -526,6 +526,14 @@ def materialize_task3_safety_checkpoint(
         raise RuntimeError("PyTorch is required for Task 3 safety transfer") from exception
     payload = torch.load(snapshot.learner_path, map_location="cpu", weights_only=True)
     target_n_step = int(payload.get("n_step", 4) if n_step is None else n_step)
+    # The teacher embedded in a Task 2 checkpoint is the Task 1 policy that
+    # protected the previous curriculum transition.  Task 3 must instead
+    # distil from the immediately preceding Task 2 policy.  Materialization
+    # changes ``training_task`` before the learner loads the checkpoint, so do
+    # this explicitly rather than relying on load_checkpoint's task comparison.
+    payload["teacher"] = {
+        name: tensor.clone() for name, tensor in payload["policy"].items()
+    }
     payload.update({
         "checkpoint_schema": CHECKPOINT_SCHEMA_VERSION,
         "training_task": "weak_opponents",

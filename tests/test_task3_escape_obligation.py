@@ -155,7 +155,12 @@ class Task3EscapeContractTests(unittest.TestCase):
             self.assertTrue(torch.equal(child["policy"]["weight"], policy["weight"]))
             self.assertEqual(child["optimizer"]["state"][1]["step"], 9)
             self.assertEqual(child["replay"], payload["replay"])
+            # Task 3 must distil from the immediately preceding Task 2 policy.
+            # The teacher stored in a Task 2 checkpoint belongs to the older
+            # Task 1 -> Task 2 transition and must not leak into Task 3.
             self.assertTrue(torch.equal(
+                child["teacher"]["weight"], payload["policy"]["weight"]))
+            self.assertFalse(torch.equal(
                 child["teacher"]["weight"], payload["teacher"]["weight"]))
             self.assertEqual(child["total_action_steps"], 1234)
             self.assertEqual(child["stage_action_steps"], 0)
