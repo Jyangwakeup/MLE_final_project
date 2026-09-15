@@ -1286,7 +1286,7 @@ def _parser() -> argparse.ArgumentParser:
     resume_group = parser.add_mutually_exclusive_group()
     resume_group.add_argument(
         "--resume-from", type=Path,
-        help="Parent v7 training run used for exact or curriculum resume",
+        help="Parent v10 training run used for exact or curriculum resume",
     )
     resume_group.add_argument(
         "--migrate-resume-from", type=Path,
@@ -1294,7 +1294,7 @@ def _parser() -> argparse.ArgumentParser:
     )
     resume_group.add_argument(
         "--transfer-task3-safety-from", type=Path,
-        help="Complete v7 Task 2 run transferred explicitly into a v9 Task 3 child",
+        help="Complete v7 Task 2 run transferred explicitly into a v10 Task 3 child",
     )
     parser.add_argument(
         "--replay-policy", choices=("auto", *REPLAY_POLICIES), default="auto",

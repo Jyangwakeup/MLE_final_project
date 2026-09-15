@@ -28,6 +28,8 @@ FIELDS = (
     "replay_size", "safe_exploration_decisions", "safe_exploration_fallbacks",
     "safety_decisions", "safety_interventions", "safety_fallbacks", "checkpoint",
     "robust_safety_interventions", "robust_to_v1_fallbacks",
+    "opponent_robust_interventions", "opponent_to_v3_fallbacks",
+    "opponent_scenarios_evaluated",
     "v1_to_physical_fallbacks", "avoidable_escape_collapses",
     "own_bomb_cycles",
 )
@@ -133,6 +135,7 @@ def end_of_round(self, last_game_state, last_action, events):
     init_action_history(self)
     self._own_bomb_cycle_had_safe_alternative = False
     self._own_bomb_cycle_collapse_recorded = False
+    self._own_bomb_placement_certificate = None
     checkpoint = self.model.checkpoint()
     checkpoint.update({
         "checkpoint_schema": CHECKPOINT_SCHEMA,
@@ -163,6 +166,12 @@ def end_of_round(self, last_game_state, last_action, events):
             self, "robust_safety_interventions", 0)),
         "robust_to_v1_fallbacks": int(getattr(
             self, "robust_to_v1_fallbacks", 0)),
+        "opponent_robust_interventions": int(getattr(
+            self, "opponent_robust_interventions", 0)),
+        "opponent_to_v3_fallbacks": int(getattr(
+            self, "opponent_to_v3_fallbacks", 0)),
+        "opponent_scenarios_evaluated": int(getattr(
+            self, "opponent_scenarios_evaluated", 0)),
         "v1_to_physical_fallbacks": int(getattr(
             self, "v1_to_physical_fallbacks", 0)),
         "avoidable_escape_collapses": int(getattr(
@@ -173,6 +182,8 @@ def end_of_round(self, last_game_state, last_action, events):
                 self, "_own_bomb_cycle_had_safe_alternative", False)),
             "collapse_recorded": bool(getattr(
                 self, "_own_bomb_cycle_collapse_recorded", False)),
+            "placement_certificate": getattr(
+                self, "_own_bomb_placement_certificate", None),
         },
         "action_history_state": action_history_state(self),
         "n_step": self.n_step,
@@ -212,6 +223,12 @@ def _append_metrics(self, state):
             self, "robust_safety_interventions", 0)),
         "robust_to_v1_fallbacks": int(getattr(
             self, "robust_to_v1_fallbacks", 0)),
+        "opponent_robust_interventions": int(getattr(
+            self, "opponent_robust_interventions", 0)),
+        "opponent_to_v3_fallbacks": int(getattr(
+            self, "opponent_to_v3_fallbacks", 0)),
+        "opponent_scenarios_evaluated": int(getattr(
+            self, "opponent_scenarios_evaluated", 0)),
         "v1_to_physical_fallbacks": int(getattr(
             self, "v1_to_physical_fallbacks", 0)),
         "avoidable_escape_collapses": int(getattr(

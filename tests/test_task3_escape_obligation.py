@@ -26,6 +26,17 @@ V1 = {"version": "survival-mask-v1", "mode": "all", "horizon": 7,
 V3 = {"version": "survival-mask-v3", "mode": "all", "horizon": 7,
       "required_independent_routes": 2,
       "robust_fallback": "survival-mask-v1", "fallback": "physical_q"}
+V4 = {
+    "version": "survival-mask-v4", "mode": "all", "horizon": 7,
+    "required_independent_routes": 2,
+    "robust_fallback": "survival-mask-v1",
+    "opponent_transition_horizon": 1,
+    "opponent_action_space": "all_physical",
+    "include_opponent_bombs": True, "execution_orders": "all",
+    "minimum_scenario_routes": 1,
+    "opponent_robust_fallback": "survival-mask-v3",
+    "fallback": "physical_q",
+}
 
 
 def contract(task, schema, safety):
@@ -63,7 +74,7 @@ class Task3EscapeContractTests(unittest.TestCase):
 
     def test_transfer_is_narrow_and_explicit(self):
         parent = contract("crate_navigation", "training-resume-v7", V1)
-        child = contract("weak_opponents", CHECKPOINT_SCHEMA_VERSION, V3)
+        child = contract("weak_opponents", CHECKPOINT_SCHEMA_VERSION, V4)
         validate_task3_safety_transfer(parent, child, parent_status="completed")
         with self.assertRaisesRegex(ValueError, "Task 2 directly"):
             validate_task3_safety_transfer(
@@ -94,7 +105,7 @@ class Task3EscapeContractTests(unittest.TestCase):
             destination = root / "child.pt"
             safety_replay = resolve_safety_replay_spec()
             materialize_task3_safety_checkpoint(
-                snapshot, destination, safety_spec=V3,
+                snapshot, destination, safety_spec=V4,
                 exploration_spec={"version": "linear-v1", "start": 0.3,
                                   "end": 0.05, "decay_action_steps": 120000},
                 training_budget={"target_stage_action_steps": None, "min_rounds": 1},
@@ -108,7 +119,9 @@ class Task3EscapeContractTests(unittest.TestCase):
             self.assertEqual(child["total_action_steps"], 1234)
             self.assertEqual(child["stage_action_steps"], 0)
             self.assertEqual(child["n_step_state"]["pending"], [])
-            self.assertEqual(child["checkpoint_schema"], "training-resume-v9")
+            self.assertEqual(child["checkpoint_schema"], "training-resume-v10")
+            self.assertEqual(child["safety_spec"], V4)
+            self.assertEqual(child["opponent_scenarios_evaluated"], 0)
 
     def test_safety_replay_uses_48_8_8_and_round_trips_labels(self):
         replay = ReplayBuffer(200, seed=4)

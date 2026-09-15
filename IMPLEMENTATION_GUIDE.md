@@ -597,6 +597,19 @@ Task 3 长训练、安全 replay 对照、确认集和主验证均未运行，�
 `experiments/task3_escape_obligation_results.json` 和
 `docs/research/task3-escape-obligation-results.md`。
 
+### Task 3 对手鲁棒逃生实验（v4）
+
+v3 的残余 seed 12017 失败发生在放弹后的首次环境推进，因此下一轮不改变
+84维特征、r7奖励、网络或训练合同。v4在准备放弹和整个自身炸弹逃生责任期
+枚举对手全部物理合法动作、对手放弹及官方执行顺序；每个不同结果都必须至少
+保留一条H=7逃生路径。无v4动作时依次回退v3、v1和物理Q。
+
+固定流程为：七个已知死亡seed达到0自杀；16000–16019完成三个旧checkpoint
+在Task 1/2/3上的v3/v4配对；三个checkpoint分别在16100–16199完成Task 3
+冻结安全确认；之后才按seeds 11/22、再seed 33训练。训练后使用17000–17019
+确认，唯一候选使用18000–18099主验证。任一冻结门槛失败立即停止，不修改
+情景集合或fallback。完整合同见`experiments/task3_opponent_robust.json`。
+
 ### A：环境与特征
 
 - [ ] 石墙挡火、箱子不挡火、无连锁引爆。

@@ -196,10 +196,10 @@ class ExperimentRunTest(unittest.TestCase):
         self.assertLess(metadata["termination"]["completed_rounds"], 5)
         with (output / "checkpoints" / "final.pkl").open("rb") as file:
             checkpoint = pickle.load(file)
-        self.assertEqual(checkpoint["checkpoint_schema"], "training-resume-v9")
+        self.assertEqual(checkpoint["checkpoint_schema"], "training-resume-v10")
         self.assertTrue(checkpoint["safe_exploration"])
 
-    def test_objective_dqn_runner_writes_a_v9_60_dimensional_checkpoint(self):
+    def test_objective_dqn_runner_writes_a_v10_60_dimensional_checkpoint(self):
         output = self.output("objective-dqn")
         checkpoint = output / "checkpoints" / "final.pt"
         with patch.object(s, "MAX_STEPS", 3):
@@ -216,7 +216,7 @@ class ExperimentRunTest(unittest.TestCase):
 
         import torch
         payload = torch.load(checkpoint, map_location="cpu", weights_only=True)
-        self.assertEqual(payload["checkpoint_schema"], "training-resume-v9")
+        self.assertEqual(payload["checkpoint_schema"], "training-resume-v10")
         self.assertEqual(payload["feature_schema"]["vector_shape"], [60])
         self.assertEqual(payload["policy"]["layers.0.weight"].shape[1], 60)
         self.assertEqual(payload["network_spec"]["input_shape"], [60])

@@ -12,6 +12,7 @@ import numpy as np
 
 SAFETY_VERSION = "survival-mask-v1"
 ROBUST_SAFETY_VERSION = "survival-mask-v3"
+OPPONENT_ROBUST_SAFETY_VERSION = "survival-mask-v4"
 SAFETY_SPEC_ENV = "BOMBERMAN_SAFETY_SPEC"
 SAFETY_MODES = ("off", "exploration", "all")
 DEFAULT_SAFETY_SPEC = {
@@ -30,6 +31,11 @@ class SafetyDecision:
     robust_fallback: bool
     route_counts: tuple[int, ...]
     escape_slack: tuple[float, ...]
+    opponent_fallback: bool = False
+    opponent_scenario_counts: tuple[int, ...] = (0,) * 6
+    opponent_passing_counts: tuple[int, ...] = (0,) * 6
+    opponent_failing_profiles: tuple[tuple[str, ...] | None, ...] = (None,) * 6
+    opponent_failing_orders: tuple[tuple[int, ...] | None, ...] = (None,) * 6
 
 
 def resolve_safety_spec(
@@ -47,12 +53,20 @@ def resolve_safety_spec(
         raise ValueError("config.safety must be an object")
     version = value.get("version")
     required = {"version", "mode", "horizon", "fallback"}
-    if version == ROBUST_SAFETY_VERSION:
+    if version in {ROBUST_SAFETY_VERSION, OPPONENT_ROBUST_SAFETY_VERSION}:
         required |= {"required_independent_routes", "robust_fallback"}
+    if version == OPPONENT_ROBUST_SAFETY_VERSION:
+        required |= {
+            "opponent_transition_horizon", "opponent_action_space",
+            "include_opponent_bombs", "execution_orders",
+            "minimum_scenario_routes", "opponent_robust_fallback",
+        }
     if set(value) != required:
         raise ValueError(
             "config.safety must contain exactly: " + ", ".join(sorted(required)))
-    if version not in {SAFETY_VERSION, ROBUST_SAFETY_VERSION}:
+    if version not in {
+        SAFETY_VERSION, ROBUST_SAFETY_VERSION, OPPONENT_ROBUST_SAFETY_VERSION,
+    }:
         raise ValueError(f"Unsupported safety version: {value['version']!r}")
     if value["mode"] not in SAFETY_MODES:
         raise ValueError(f"Unsupported safety mode: {value['mode']!r}")
@@ -66,7 +80,7 @@ def resolve_safety_spec(
         "horizon": 7,
         "fallback": "physical_q",
     }
-    if version == ROBUST_SAFETY_VERSION:
+    if version in {ROBUST_SAFETY_VERSION, OPPONENT_ROBUST_SAFETY_VERSION}:
         if value["required_independent_routes"] != 2:
             raise ValueError("survival-mask-v3 requires two independent routes")
         if value["robust_fallback"] != SAFETY_VERSION:
@@ -75,6 +89,20 @@ def resolve_safety_spec(
             "required_independent_routes": 2,
             "robust_fallback": SAFETY_VERSION,
         })
+    if version == OPPONENT_ROBUST_SAFETY_VERSION:
+        expected = {
+            "opponent_transition_horizon": 1,
+            "opponent_action_space": "all_physical",
+            "include_opponent_bombs": True,
+            "execution_orders": "all",
+            "minimum_scenario_routes": 1,
+            "opponent_robust_fallback": ROBUST_SAFETY_VERSION,
+        }
+        for field, expected_value in expected.items():
+            if value[field] != expected_value:
+                raise ValueError(
+                    f"survival-mask-v4 requires {field}={expected_value!r}")
+        result.update(expected)
     return result
 
 
@@ -194,7 +222,9 @@ def safety_decision(
     base, physical_fallback = survival_mask(
         game_state, physical, allow_bomb=allow_bomb,
         horizon=int(spec["horizon"]))
-    if spec["version"] != ROBUST_SAFETY_VERSION or physical_fallback:
+    if spec["version"] not in {
+        ROBUST_SAFETY_VERSION, OPPONENT_ROBUST_SAFETY_VERSION,
+    } or physical_fallback:
         return SafetyDecision(
             base, base.copy(), physical_fallback, False,
             (0,) * 6, (-1.0,) * 6)
@@ -238,9 +268,51 @@ def safety_decision(
         safe_non_bomb[bomb_index] = False
         if base[bomb_index] and safe_non_bomb.any() and not robust[bomb_index]:
             selected[bomb_index] = False
+    if spec["version"] != OPPONENT_ROBUST_SAFETY_VERSION:
+        return SafetyDecision(
+            selected, base.copy(), False, robust_fallback,
+            tuple(routes), tuple(slack))
+
+    from agent_code.team_agent.temporal_safety_features import (
+        opponent_robust_survival_after_action,
+    )
+    scenario_counts = [0] * len(ACTIONS)
+    passing_counts = [0] * len(ACTIONS)
+    failing_profiles = [None] * len(ACTIONS)
+    failing_orders = [None] * len(ACTIONS)
+    opponent_safe = np.zeros(len(ACTIONS), dtype=bool)
+    opponent_candidates = (
+        np.flatnonzero(selected).tolist()
+        if own_bomb_pending else [bomb_index]
+    )
+    for index in opponent_candidates:
+        if not selected[index]:
+            continue
+        result = opponent_robust_survival_after_action(
+            game_state, ACTIONS[index], horizon=int(spec["horizon"]))
+        scenario_counts[index] = result.scenario_count
+        passing_counts[index] = result.passing_scenarios
+        failing_profiles[index] = result.first_failing_profile
+        failing_orders[index] = result.first_failing_order
+        opponent_safe[index] = result.survives_all
+
+    opponent_fallback = False
+    if own_bomb_pending:
+        opponent_selected = selected & opponent_safe
+        if opponent_selected.any():
+            selected = opponent_selected
+        else:
+            opponent_fallback = True
+    else:
+        safe_non_bomb = base.copy()
+        safe_non_bomb[bomb_index] = False
+        if selected[bomb_index] and safe_non_bomb.any() and not opponent_safe[bomb_index]:
+            selected[bomb_index] = False
     return SafetyDecision(
         selected, base.copy(), False, robust_fallback,
-        tuple(routes), tuple(slack))
+        tuple(routes), tuple(slack), opponent_fallback,
+        tuple(scenario_counts), tuple(passing_counts),
+        tuple(failing_profiles), tuple(failing_orders))
 
 
 def avoidable_fatal_action(

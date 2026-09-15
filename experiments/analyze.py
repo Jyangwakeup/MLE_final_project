@@ -99,6 +99,9 @@ SUMMARY_FIELDS = (
     "safety_fallback_rate",
     "robust_safety_interventions",
     "robust_to_v1_fallbacks",
+    "opponent_robust_interventions",
+    "opponent_to_v3_fallbacks",
+    "opponent_scenarios_evaluated",
     "v1_to_physical_fallbacks",
     "avoidable_escape_collapses",
     "navigation_decisions",
@@ -487,6 +490,12 @@ def _summary_row(
         "robust_safety_interventions": timing.get(
             "robust_safety_interventions", 0),
         "robust_to_v1_fallbacks": timing.get("robust_to_v1_fallbacks", 0),
+        "opponent_robust_interventions": timing.get(
+            "opponent_robust_interventions", 0),
+        "opponent_to_v3_fallbacks": timing.get(
+            "opponent_to_v3_fallbacks", 0),
+        "opponent_scenarios_evaluated": timing.get(
+            "opponent_scenarios_evaluated", 0),
         "v1_to_physical_fallbacks": timing.get("v1_to_physical_fallbacks", 0),
         "avoidable_escape_collapses": timing.get(
             "avoidable_escape_collapses", 0),
@@ -549,6 +558,9 @@ def summarize_runs(run_directories: Iterable[Path]) -> list[dict[str, Any]]:
             "safety_fallbacks": 0,
             "robust_safety_interventions": 0,
             "robust_to_v1_fallbacks": 0,
+            "opponent_robust_interventions": 0,
+            "opponent_to_v3_fallbacks": 0,
+            "opponent_scenarios_evaluated": 0,
             "v1_to_physical_fallbacks": 0,
             "avoidable_escape_collapses": 0,
         }
@@ -623,6 +635,12 @@ def summarize_runs(run_directories: Iterable[Path]) -> list[dict[str, Any]]:
                     safety.get("robust_intervened", False))
                 bucket["robust_to_v1_fallbacks"] += int(
                     safety.get("robust_to_v1_fallback", False))
+                bucket["opponent_robust_interventions"] += int(
+                    safety.get("opponent_robust_intervened", False))
+                bucket["opponent_to_v3_fallbacks"] += int(
+                    safety.get("opponent_to_v3_fallback", False))
+                bucket["opponent_scenarios_evaluated"] += sum(
+                    safety.get("opponent_scenario_counts", ()))
                 bucket["v1_to_physical_fallbacks"] += int(
                     safety.get("v1_to_physical_fallback", False))
                 bucket["avoidable_escape_collapses"] += int(

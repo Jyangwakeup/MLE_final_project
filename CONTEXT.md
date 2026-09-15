@@ -47,6 +47,18 @@ in the same own-bomb cycle had at least one safe alternative. It is counted
 once per bomb cycle.
 _Avoid_: Every death, unavoidable trap
 
+**Opponent transition scenario**:
+One possible next game state produced when every Agent chooses from its
+physical legal actions and the environment applies one permitted execution
+order. It includes resulting positions and newly placed bombs.
+_Avoid_: Predicted opponent move, most likely move
+
+**Opponent-robust-survivable action**:
+A robust-survivable action for which every opponent transition scenario keeps
+at least one horizon-surviving continuation. It is a veto criterion and does
+not rank the actions that remain.
+_Avoid_: Counter-strategy, opponent policy
+
 **Coin capability assessment**:
 A frozen, exploration-free Task 1 evaluation over the dedicated convergence seeds. Its primary result is mean game score; Task 1 requires every episode's score to equal its collected-coin count.
 _Avoid_: Training reward, recent training score
