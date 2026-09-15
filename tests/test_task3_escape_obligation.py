@@ -3,12 +3,16 @@ from pathlib import Path
 import random
 import tempfile
 import unittest
+from unittest.mock import patch
 
 import numpy as np
 import torch
 
 from agent_code.dqn_agent.model import ReplayBuffer, Transition
-from agent_code.learning_common.training_spec import resolve_safety_replay_spec
+from agent_code.learning_common.n_step import NStepAccumulator
+from agent_code.learning_common.training_spec import (
+    n_step_from_environment, resolve_safety_replay_spec,
+)
 from agent_code.team_agent.feature_system import ACTIONS, feature_schema_contract
 from agent_code.team_agent.rewards import resolve_reward_spec
 from agent_code.team_agent.temporal_safety_features import (
@@ -48,6 +52,39 @@ def contract(task, schema, safety):
 
 
 class Task3EscapeContractTests(unittest.TestCase):
+    def test_agent_accepts_preregistered_five_step_environment_contract(self):
+        with patch.dict("os.environ", {"BOMBERMAN_N_STEP": "5"}):
+            self.assertEqual(n_step_from_environment(), 5)
+
+    def test_five_steps_assign_self_death_to_the_bomb_action(self):
+        rewards = [-0.01, -0.01, -0.01, -0.01, -20.01]
+
+        def first_return(n_step):
+            accumulator = NStepAccumulator(n_step, 0.95)
+            emitted = []
+            for index, reward in enumerate(rewards):
+                done = index == len(rewards) - 1
+                emitted.extend(accumulator.append(Transition(
+                    np.asarray([index], dtype=np.float32),
+                    ACTIONS.index("BOMB") if index == 0 else ACTIONS.index("WAIT"),
+                    reward,
+                    None if done else np.asarray([index + 1], dtype=np.float32),
+                    done,
+                    None if done else np.ones(len(ACTIONS), dtype=bool),
+                    np.ones(len(ACTIONS), dtype=bool),
+                    "weak_opponents",
+                    1,
+                    "ordinary",
+                )))
+            return emitted[0]
+
+        four_step = first_return(4)
+        five_step = first_return(5)
+        self.assertFalse(four_step.done)
+        self.assertAlmostEqual(four_step.reward, -0.03709875)
+        self.assertTrue(five_step.done)
+        self.assertAlmostEqual(five_step.reward, -16.3353688125)
+
     def test_route_count_uses_vertex_capacity_and_caps_at_two(self):
         blocked = np.ones((8, 7, 7), dtype=bool)
         blocked[:, 1:6, 1:6] = False
@@ -65,6 +102,10 @@ class Task3EscapeContractTests(unittest.TestCase):
         parent = contract("crate_navigation", "training-resume-v7", V1)
         child = contract("weak_opponents", CHECKPOINT_SCHEMA_VERSION, V3)
         validate_task3_safety_transfer(parent, child, parent_status="completed")
+        credit_child = {**contract(
+            "weak_opponents", CHECKPOINT_SCHEMA_VERSION, V1), "n_step": 5}
+        validate_task3_safety_transfer(
+            parent, credit_child, parent_status="completed")
         with self.assertRaisesRegex(ValueError, "Task 2 directly"):
             validate_task3_safety_transfer(
                 parent, {**child, "task": "full_match"}, parent_status="completed")
@@ -98,7 +139,7 @@ class Task3EscapeContractTests(unittest.TestCase):
                 exploration_spec={"version": "linear-v1", "start": 0.3,
                                   "end": 0.05, "decay_action_steps": 120000},
                 training_budget={"target_stage_action_steps": None, "min_rounds": 1},
-                safety_replay_spec=safety_replay)
+                safety_replay_spec=safety_replay, n_step=5)
             child = torch.load(destination, map_location="cpu", weights_only=True)
             self.assertTrue(torch.equal(child["policy"]["weight"], policy["weight"]))
             self.assertEqual(child["optimizer"]["state"][1]["step"], 9)
@@ -107,6 +148,8 @@ class Task3EscapeContractTests(unittest.TestCase):
                 child["teacher"]["weight"], payload["teacher"]["weight"]))
             self.assertEqual(child["total_action_steps"], 1234)
             self.assertEqual(child["stage_action_steps"], 0)
+            self.assertEqual(child["n_step"], 5)
+            self.assertEqual(child["n_step_state"]["n_step"], 5)
             self.assertEqual(child["n_step_state"]["pending"], [])
             self.assertEqual(child["checkpoint_schema"], "training-resume-v9")
 

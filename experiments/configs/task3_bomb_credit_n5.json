@@ -1,0 +1,47 @@
+{
+  "algorithm": "double_dqn",
+  "feature_id": "continuous-v2",
+  "feature_version": null,
+  "reward_id": "r7_safe_credit_sparse",
+  "reward_version": "r7_safe_credit_sparse",
+  "checkpoint": null,
+  "safety": {
+    "version": "survival-mask-v1",
+    "mode": "all",
+    "horizon": 7,
+    "fallback": "physical_q"
+  },
+  "evaluation": {
+    "device": "cpu",
+    "seeds": [19000, 19001, 19002, 19003, 19004, 19005, 19006, 19007, 19008, 19009, 19010, 19011, 19012, 19013, 19014, 19015, 19016, 19017, 19018, 19019],
+    "n_rounds": 1,
+    "navigation_diagnostics": true
+  },
+  "training": {
+    "device": "cpu",
+    "n_rounds": 500,
+    "min_rounds": 1,
+    "n_step": 5,
+    "exploration": {
+      "version": "linear-v1",
+      "start": 0.3,
+      "end": 0.05,
+      "decay_action_steps": 120000
+    },
+    "retention": {
+      "parent_fraction": 0.75,
+      "distillation_weight": 2.0,
+      "temperature": 1.0,
+      "per_task_capacity": 20000,
+      "current_warmup": 2000
+    },
+    "safety_replay": {
+      "enabled": false,
+      "parent_samples": 48,
+      "ordinary_task3_samples": 8,
+      "own_bomb_cycle_samples": 8,
+      "fatal_prefix_steps": 4
+    },
+    "early_stopping": {"enabled": false}
+  }
+}

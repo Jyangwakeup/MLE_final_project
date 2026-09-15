@@ -31,8 +31,8 @@ DEFAULT_SAFETY_REPLAY_SPEC = {
 def n_step_from_environment(default: int = 1) -> int:
     raw = os.getenv(N_STEP_ENV)
     value = default if raw is None else int(raw)
-    if value not in {1, 4}:
-        raise ValueError("training.n_step must be 1 or 4")
+    if value not in {1, 4, 5}:
+        raise ValueError("training.n_step must be 1, 4, or 5")
     return value
 
 

@@ -795,8 +795,8 @@ def run_agent_session(
             raise ValueError("resolved safety specification conflicts with config.safety")
     safe_exploration = bool(
         training and safety_spec["mode"] in {"exploration", "all"})
-    if n_step not in {1, 4}:
-        raise ValueError("n_step must be 1 or 4")
+    if n_step not in {1, 4, 5}:
+        raise ValueError("n_step must be 1, 4, or 5")
     retention_spec = resolve_retention_spec(retention_spec)
     from agent_code.learning_common.training_spec import resolve_safety_replay_spec
     safety_replay_spec = resolve_safety_replay_spec(safety_replay_spec)
@@ -885,7 +885,8 @@ def run_agent_session(
                 resume_snapshot, checkpoint, safety_spec=safety_spec,
                 exploration_spec=exploration_spec,
                 training_budget=action_budget_config,
-                safety_replay_spec=safety_replay_spec)
+                safety_replay_spec=safety_replay_spec,
+                n_step=n_step)
         elif migration:
             materialize_migrated_checkpoint(
                 resume_snapshot, checkpoint, training_budget=action_budget_config)
