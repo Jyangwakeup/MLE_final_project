@@ -28,6 +28,25 @@ _Avoid_: Rule action, corrected action
 A decision state with no horizon-survivable physical legal action, in which the learner selects its highest-valued physical legal action without a safety veto.
 _Avoid_: Random fallback, rescue action
 
+**Own-bomb escape obligation**:
+The interval from selecting `BOMB` until that bomb is gone and every tile in
+its corresponding flame has cleared. During this interval the Agent must keep
+the strongest available escape redundancy; the obligation resets at a round
+boundary.
+_Avoid_: Bomb timer only, permanent caution mode
+
+**Robust-survivable action**:
+A horizon-survivable action with at least two internally vertex-disjoint paths
+through the time-expanded safety graph. It is a veto criterion, never a
+recommended movement direction.
+_Avoid_: Best escape action, scripted route
+
+**Avoidable escape collapse**:
+A transition into post-bomb no-safe-action fallback after an earlier decision
+in the same own-bomb cycle had at least one safe alternative. It is counted
+once per bomb cycle.
+_Avoid_: Every death, unavoidable trap
+
 **Coin capability assessment**:
 A frozen, exploration-free Task 1 evaluation over the dedicated convergence seeds. Its primary result is mean game score; Task 1 requires every episode's score to equal its collected-coin count.
 _Avoid_: Training reward, recent training score

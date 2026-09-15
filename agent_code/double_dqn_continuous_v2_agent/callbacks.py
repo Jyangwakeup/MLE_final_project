@@ -8,14 +8,15 @@ import torch
 
 from agent_code.dqn_agent.model import DQN
 from agent_code.learning_common.action_history import (
-    action_history_for_state, load_action_history_state, record_selected_action,
+    action_history_for_state, load_action_history_state, own_bomb_history_for_state,
+    record_selected_action,
 )
 from agent_code.learning_common.runtime import (
     CHECKPOINT_SCHEMA, adopt_checkpoint_reward, adopt_checkpoint_safety, effective_legal_mask,
     load_common_configuration, validate_checkpoint,
 )
 from agent_code.team_agent.exploration import epsilon_at
-from agent_code.team_agent.safety import mask_for_decision, survival_diagnostics
+from agent_code.team_agent.safety import safety_decision, survival_diagnostics
 from .features import ACTIONS, FEATURE_ID, FEATURE_SCHEMA, features_for_state
 
 
@@ -69,6 +70,7 @@ def setup(self):
         device=os.getenv("BOMBERMAN_TORCH_DEVICE", "cpu"),
         training_task=self.training_task,
         retention_spec=self.retention_spec,
+        safety_replay_spec=self.safety_replay_spec,
         double_dqn=True,
         hidden_size=128,
     )
@@ -98,6 +100,7 @@ def setup(self):
             reward_id=self.reward_id, hyperparameters=HYPERPARAMETERS,
             network_spec=runtime_network, training=self.train,
             training_task=self.training_task, safety_spec=self.safety_spec,
+            safety_replay_spec=self.safety_replay_spec,
         )
         self.model.load_checkpoint(
             checkpoint, training=self.train, training_task=self.training_task)
@@ -114,6 +117,20 @@ def setup(self):
         self.safety_decisions = int(checkpoint.get("safety_decisions", 0))
         self.safety_interventions = int(checkpoint.get("safety_interventions", 0))
         self.safety_fallbacks = int(checkpoint.get("safety_fallbacks", 0))
+        self.robust_safety_interventions = int(checkpoint.get(
+            "robust_safety_interventions", 0))
+        self.robust_to_v1_fallbacks = int(checkpoint.get(
+            "robust_to_v1_fallbacks", 0))
+        self.v1_to_physical_fallbacks = int(checkpoint.get(
+            "v1_to_physical_fallbacks", 0))
+        self.avoidable_escape_collapses = int(checkpoint.get(
+            "avoidable_escape_collapses", 0))
+        self.own_bomb_cycles = int(checkpoint.get("own_bomb_cycles", 0))
+        escape_state = checkpoint.get("own_bomb_escape_state", {})
+        self._own_bomb_cycle_had_safe_alternative = bool(
+            escape_state.get("had_safe_alternative", False))
+        self._own_bomb_cycle_collapse_recorded = bool(
+            escape_state.get("collapse_recorded", False))
         self._resume_n_step_state = (
             checkpoint.get("n_step_state") if same_task else None)
         if self.train:
@@ -157,14 +174,21 @@ def act(self, game_state):
         self.total_action_steps += 1
         self.action_steps = self.total_action_steps
         exploring = self.rng.random() < epsilon
-    legal, fallback = mask_for_decision(
+    own_bomb = own_bomb_history_for_state(self, game_state)
+    decision = safety_decision(
         game_state, physical, self.safety_spec,
-        allow_bomb=self.curriculum_allows_bomb, exploring=exploring)
+        allow_bomb=self.curriculum_allows_bomb, exploring=exploring,
+        own_bomb_pending=bool(own_bomb["pending"]))
+    legal, fallback = decision.mask, decision.physical_fallback
     enabled = self.safety_spec["mode"] == "all" or (
         self.safety_spec["mode"] == "exploration" and exploring)
     if enabled:
         self.safety_decisions += 1
         self.safety_fallbacks += int(fallback)
+        self.robust_to_v1_fallbacks = int(getattr(
+            self, "robust_to_v1_fallbacks", 0)) + int(decision.robust_fallback)
+        self.v1_to_physical_fallbacks = int(getattr(
+            self, "v1_to_physical_fallbacks", 0)) + int(decision.physical_fallback)
         if exploring:
             self.safe_exploration_decisions += 1
             self.safe_exploration_fallbacks += int(fallback)
@@ -179,15 +203,51 @@ def act(self, game_state):
         selected = self.rng.choice(tied) if self.train else tied[0]
     intervention = bool(enabled and not fallback and not legal[raw_index])
     self.safety_interventions += int(intervention)
+    robust_intervention = bool(
+        self.safety_spec["version"] == "survival-mask-v3"
+        and not decision.robust_fallback and not decision.physical_fallback
+        and decision.v1_mask[raw_index] and not legal[raw_index])
+    self.robust_safety_interventions = int(getattr(
+        self, "robust_safety_interventions", 0)) + int(robust_intervention)
     action = ACTIONS[selected]
+    if action == "BOMB":
+        self.own_bomb_cycles = int(getattr(self, "own_bomb_cycles", 0)) + 1
+    collapse_now = bool(
+        own_bomb["pending"] and decision.physical_fallback
+        and getattr(self, "_own_bomb_cycle_had_safe_alternative", False)
+        and not getattr(self, "_own_bomb_cycle_collapse_recorded", False))
     self.last_safety_diagnostic = {
         "raw_action": ACTIONS[raw_index], "selected_action": action,
         "intervened": intervention, "fallback": bool(fallback),
+        "robust_intervened": robust_intervention,
+        "robust_to_v1_fallback": bool(decision.robust_fallback),
+        "v1_to_physical_fallback": bool(decision.physical_fallback),
+        "own_bomb_pending": bool(own_bomb["pending"]),
+        "own_bomb_visible": bool(own_bomb["visible"]),
+        "own_bomb_timer": own_bomb["timer"],
+        "avoidable_escape_collapse": collapse_now,
+        "independent_routes": list(decision.route_counts),
+        "escape_slack": list(decision.escape_slack),
         "physical_mask": physical.astype(bool).tolist(),
         "decision_mask": legal.astype(bool).tolist(),
         **survival_diagnostics(
             game_state, physical, allow_bomb=self.curriculum_allows_bomb),
     }
+    self._last_decision_key = (game_state.get("round"), game_state.get("step"))
+    self._last_decision_mask = legal.copy()
+    self._last_had_safe_alternative = bool(
+        own_bomb["pending"] and legal.any() and not decision.physical_fallback)
+    if collapse_now:
+        self.avoidable_escape_collapses = int(getattr(
+            self, "avoidable_escape_collapses", 0)) + 1
+        self._own_bomb_cycle_collapse_recorded = True
+    if action == "BOMB" or own_bomb["pending"]:
+        self._own_bomb_cycle_had_safe_alternative = bool(
+            getattr(self, "_own_bomb_cycle_had_safe_alternative", False)
+            or self._last_had_safe_alternative)
+    else:
+        self._own_bomb_cycle_had_safe_alternative = False
+        self._own_bomb_cycle_collapse_recorded = False
     record_selected_action(self, game_state, action)
     return action
 

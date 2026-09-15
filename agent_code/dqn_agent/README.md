@@ -20,7 +20,7 @@ python experiments/run.py \
   --run-id iter_r1_dqn_discrete_objective_v1_r5_coin_potential_s11_t1_a100000_COMMIT
 ```
 
-DQN 根据实际 Feature schema 建立 40、50 或 60 维输入层。未配置 Feature 且没有 checkpoint 时默认 `discrete-q-v2`；冻结加载时从 checkpoint 推断并严格校验。当前精确恢复协议为 `training-resume-v7`；v1–v6 和旧 final checkpoint 默认仅支持冻结评估。Task 1 可通过同步冻结分数评估停止；Task 2 安全消融使用独立的84维 v2 与107维 v3 Double DQN。
+DQN 根据实际 Feature schema 建立 40、50 或 60 维输入层。未配置 Feature 且没有 checkpoint 时默认 `discrete-q-v2`；冻结加载时从 checkpoint 推断并严格校验。当前新实验精确恢复协议为 `training-resume-v9`；旧 snapshot 和 final checkpoint 默认仅支持冻结评估。Task 1 可通过同步冻结分数评估停止；Task 2 安全消融使用独立的84维 v2 与107维 v3 Double DQN。
 
 ## 冻结评估
 
