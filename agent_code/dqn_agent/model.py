@@ -31,8 +31,12 @@ DEFAULT_HIDDEN_SIZE = 64
 
 
 class QNetwork(nn.Module):
-    def __init__(self, input_size: int, action_count: int, hidden_size: int = 64):
+    def __init__(
+        self, input_size: int, action_count: int, hidden_size: int = 64,
+        exact_prefix_size: int | None = None,
+    ):
         super().__init__()
+        self.exact_prefix_size = exact_prefix_size
         self.layers = nn.Sequential(
             nn.Linear(input_size, hidden_size),
             nn.ReLU(),
@@ -42,6 +46,18 @@ class QNetwork(nn.Module):
         )
 
     def forward(self, x):
+        if self.exact_prefix_size is not None:
+            first = self.layers[0]
+            prefix = nn.functional.linear(
+                x[..., :self.exact_prefix_size],
+                first.weight[:, :self.exact_prefix_size], first.bias)
+            suffix = nn.functional.linear(
+                x[..., self.exact_prefix_size:],
+                first.weight[:, self.exact_prefix_size:], None)
+            x = prefix + suffix
+            for layer in self.layers[1:]:
+                x = layer(x)
+            return x
         return self.layers(x)
 
 
@@ -211,7 +227,7 @@ class DQN:
                  target_sync_interval=DEFAULT_TARGET_SYNC_INTERVAL,
                  device="cpu", deterministic=True,
                  training_task=None, retention_spec=None, double_dqn=False,
-                 hidden_size=DEFAULT_HIDDEN_SIZE):
+                 hidden_size=DEFAULT_HIDDEN_SIZE, exact_prefix_size=None):
         self.device = torch.device(device)
         if self.device.type == "cuda" and not torch.cuda.is_available():
             raise RuntimeError("CUDA was requested but is not available")
@@ -239,10 +255,13 @@ class DQN:
         self.double_dqn = bool(double_dqn)
         self.input_size = int(input_size)
         self.hidden_size = int(hidden_size)
+        self.exact_prefix_size = exact_prefix_size
         self.updates = 0
 
-        self.policy = QNetwork(input_size, action_count, hidden_size).to(self.device)
-        self.target = QNetwork(input_size, action_count, hidden_size).to(self.device)
+        self.policy = QNetwork(
+            input_size, action_count, hidden_size, exact_prefix_size).to(self.device)
+        self.target = QNetwork(
+            input_size, action_count, hidden_size, exact_prefix_size).to(self.device)
         self.target.load_state_dict(self.policy.state_dict())
         self.target.eval()
         self.optimizer = torch.optim.Adam(self.policy.parameters(), lr=learning_rate)
@@ -251,6 +270,61 @@ class DQN:
             int(self.retention_spec["per_task_capacity"]), seed)
         self.replay.configure(training_task)
         self.teacher = None
+        self.distillation_dataset = None
+        self.distillation_random = random.Random(seed + 104729)
+        self.distillation_dataset_hash = None
+
+    def load_distillation_dataset(self, dataset, dataset_hash=None):
+        """Install immutable teacher facts sampled independently of TD replay."""
+        if dataset is None:
+            self.distillation_dataset = None
+            self.distillation_dataset_hash = None
+            return
+        required = {"states", "legal_masks", "teacher_q"}
+        if not required.issubset(dataset):
+            raise ValueError("distillation dataset is missing required arrays")
+        states = np.asarray(dataset["states"], dtype=np.float32)
+        legal = np.asarray(dataset["legal_masks"], dtype=bool)
+        teacher_q = np.asarray(dataset["teacher_q"], dtype=np.float32)
+        if states.ndim != 2 or states.shape[1] != self.input_size:
+            raise ValueError("distillation states have an incompatible shape")
+        if legal.shape != (len(states), self.action_count):
+            raise ValueError("distillation legal masks have an incompatible shape")
+        if teacher_q.shape != legal.shape or not len(states):
+            raise ValueError("distillation teacher Q values have an incompatible shape")
+        if not legal.any(axis=1).all() or not np.isfinite(teacher_q).all():
+            raise ValueError("distillation dataset contains invalid rows")
+        self.distillation_dataset = {
+            "states": states.copy(), "legal_masks": legal.copy(),
+            "teacher_q": teacher_q.copy(),
+        }
+        self.distillation_dataset_hash = dataset_hash
+
+    def transfer_input_prefix(self, checkpoint, prefix_size: int):
+        """Expand a policy while preserving its exact function on a zero suffix."""
+        if not 0 < int(prefix_size) < self.input_size:
+            raise ValueError("transfer prefix size must be smaller than the new input")
+        for destination_network, source_key in (
+            (self.policy, "policy"), (self.target, "target"),
+        ):
+            source = checkpoint[source_key]
+            destination = destination_network.state_dict()
+            first = "layers.0.weight"
+            source_weight = source[first]
+            if source_weight.shape[1] != prefix_size:
+                raise ValueError("parent first layer has an incompatible input size")
+            if source_weight.shape[0] != destination[first].shape[0]:
+                raise ValueError("parent hidden size is incompatible")
+            destination[first].zero_()
+            destination[first][:, :prefix_size].copy_(source_weight)
+            for name, value in source.items():
+                if name == first:
+                    continue
+                if name not in destination or destination[name].shape != value.shape:
+                    raise ValueError("parent network architecture is incompatible")
+                destination[name].copy_(value)
+            destination_network.load_state_dict(destination)
+        self.updates = 0
 
     def q_values(self, state: np.ndarray) -> np.ndarray:
         with torch.no_grad():
@@ -326,6 +400,32 @@ class DQN:
             ) * (temperature ** 2)
             loss = loss + float(
                 self.retention_spec["distillation_weight"]) * distillation
+        if self.distillation_dataset is not None:
+            sample_size = min(self.batch_size, len(self.distillation_dataset["states"]))
+            indices = self.distillation_random.sample(
+                range(len(self.distillation_dataset["states"])), sample_size)
+            teacher_states = torch.as_tensor(
+                self.distillation_dataset["states"][indices],
+                dtype=torch.float32, device=self.device)
+            teacher_legal = torch.as_tensor(
+                self.distillation_dataset["legal_masks"][indices],
+                dtype=torch.bool, device=self.device)
+            teacher_q = torch.as_tensor(
+                self.distillation_dataset["teacher_q"][indices],
+                dtype=torch.float32, device=self.device)
+            temperature = float(self.retention_spec["temperature"])
+            minimum = torch.finfo(teacher_q.dtype).min
+            student_logits = self.policy(teacher_states).masked_fill(
+                ~teacher_legal, minimum)
+            teacher_logits = teacher_q.masked_fill(~teacher_legal, minimum)
+            teacher_probabilities = torch.softmax(
+                teacher_logits / temperature, dim=1)
+            distillation = nn.functional.kl_div(
+                torch.log_softmax(student_logits / temperature, dim=1),
+                teacher_probabilities, reduction="batchmean",
+            ) * (temperature ** 2)
+            loss = loss + float(
+                self.retention_spec["distillation_weight"]) * distillation
         self.optimizer.zero_grad()
         loss.backward()
         nn.utils.clip_grad_norm_(self.policy.parameters(), 10.0)
@@ -355,6 +455,18 @@ class DQN:
             "teacher": None if self.teacher is None else self.teacher.state_dict(),
             "retention_spec": self.retention_spec,
             "double_dqn": self.double_dqn,
+            "distillation_dataset": (
+                None if self.distillation_dataset is None else {
+                    "states": torch.as_tensor(
+                        self.distillation_dataset["states"], dtype=torch.float32),
+                    "legal_masks": torch.as_tensor(
+                        self.distillation_dataset["legal_masks"], dtype=torch.bool),
+                    "teacher_q": torch.as_tensor(
+                        self.distillation_dataset["teacher_q"], dtype=torch.float32),
+                }
+            ),
+            "distillation_dataset_hash": self.distillation_dataset_hash,
+            "distillation_rng_state": self.distillation_random.getstate(),
         }
         if self.device.type == "cuda":
             checkpoint["cuda_rng_state_all"] = torch.cuda.get_rng_state_all()
@@ -397,7 +509,18 @@ class DQN:
                 self.teacher.eval()
                 for parameter in self.teacher.parameters():
                     parameter.requires_grad_(False)
+        if training and checkpoint.get("distillation_dataset") is not None:
+            self.load_distillation_dataset(
+                checkpoint["distillation_dataset"],
+                checkpoint.get("distillation_dataset_hash"))
+            if "distillation_rng_state" in checkpoint:
+                self.distillation_random.setstate(checkpoint["distillation_rng_state"])
         if training and "torch_rng_state" in checkpoint:
             torch.set_rng_state(checkpoint["torch_rng_state"])
         if training and self.device.type == "cuda" and "cuda_rng_state_all" in checkpoint:
             torch.cuda.set_rng_state_all(checkpoint["cuda_rng_state_all"])
+
+    def load_policy_weights(self, checkpoint):
+        """Warm-start from policy weights while retaining fresh training state."""
+        self.policy.load_state_dict(checkpoint["policy"])
+        self.target.load_state_dict(checkpoint["policy"])

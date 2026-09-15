@@ -459,6 +459,40 @@ seed 11 优胜配置才从零复制 seeds 22/33。三训练 seed × 20 开发 se
 
 按预注册顺序选择 seed 22 checkpoint 作为 **Task 2 winner candidate**，并且只对该 checkpoint 使用 seeds 11000–11099 做一次主验证。结果为 Task 2 `7.25` coins（95% CI `[6.96, 7.53]`）、`100.26` crates（`[97.48, 103.02]`）、0% 自杀、0% 零放弹局、100% 炸弹存活；Task 1 父子均为 50 分，保留率 100%。invalid、timeout 和 skipped 均为 0，完整 act P95 为 `6.38 ms`、最大值 `20.58 ms`。全部联合门槛通过，因此该 seed 22 checkpoint 正式指定为 **Task 2 winner**。仓库内可直接加载的权重位于 [`agent_code/double_dqn_continuous_v2_agent/final.pt`](agent_code/double_dqn_continuous_v2_agent/final.pt)，机器清单与 640 局精简证据分别见 [`experiments/task2_winner.json`](experiments/task2_winner.json) 和 [`experiments/task2_winner_evaluations.csv`](experiments/task2_winner_evaluations.csv)。最终测试 seeds 20000–20099 仍未使用，本轮未启动 Task 3。
 
+### 8.9 Task 3 弱对手试验协议
+
+第一轮 Task 3 不修改 Feature、Reward 或 Safety：继续使用 84 维 `continuous-v2`、`r7_safe_credit_sparse` 和 `survival-mask-v1/all`，同时面对 `peaceful_agent` 与 `coin_collector_agent`。这样可以直接回答“加入弱对手训练是否有效”，不会把课程变化和奖励变化混在一起。完整预注册见 [`experiments/task3_pilot.json`](experiments/task3_pilot.json)，配置见 [`experiments/configs/task3_pilot_r7.json`](experiments/configs/task3_pilot_r7.json)，领域边界见 [`docs/adr/0004-pilot-task3-with-unchanged-r7.md`](docs/adr/0004-pilot-task3-with-unchanged-r7.md)。
+
+Task 2 三条父链属于源码提交 `814173b`，精确 v7 恢复要求源码身份相同；因此 Task 3 训练在该提交的隔离 worktree 中执行，但读取当前预注册配置并记录其 SHA256 和预注册提交。seeds 11、22、33 各自从对应父链晋级，不共享 seed 22 的公开权重。每段新增500局，累计500、1000、1500局时分别检查；一次通过即停止该链，动作数只控制 Task 3 的 `epsilon=0.30→0.05/120000 actions`，不控制停止。训练保持4-step return、75%旧Task replay、25%当前Task replay、蒸馏系数2和CPU单线程。
+
+开发 seeds 固定为12000–12019。每个父模型先分别在Task 1、2、3冻结评估；每个子checkpoint也分别评估Task 1、2、3，所有差值按相同训练seed与环境seed配对。Task 3必须同时满足：游戏分数比父模型增加至少0.5；击杀增加至少0.1或独占/并列第一率增加至少5个百分点；金币和炸箱分别保留父模型的90%。旧任务门槛为Task 1分数保留90%，以及Task 2金币和炸箱分别保留90%。Task 2/3自杀率不超过5%、炸弹存活率至少95%，Task 3零放弹局不超过10%；所有评估还要求invalid≤1%、act P95<50 ms、最大值<500 ms，并且没有异常、timeout或skipped action。
+
+只有三个训练seed全部独立通过，才按Task 3游戏分数、自杀率、击杀、第一名率、最低资源/旧任务保留率、时延和run ID选出一个 **Task 3 pilot candidate**。它只是开发集候选，`qualified_for_task4=false`；本轮不使用新的100-seed主验证，不启动Task 4，也不根据失败结果自动修改奖励。
+
+### 8.10 Task 3 弱对手试验结果
+
+三条链都完成了累计1500局，并在最后一个检查点使用开发 seeds 12000–12019 完成父子配对评估。seed 11 和 seed 33 通过全部门槛；seed 22 未通过。因此模型族按预注册的“三个训练 seed 必须全部独立通过”规则判定失败，没有创建 `task3_pilot_candidate.json`，没有执行100-seed主验证，也没有启动Task 4。机器可读汇总和360局逐seed证据分别见 [`experiments/task3_pilot_results.json`](experiments/task3_pilot_results.json) 与 [`experiments/task3_pilot_evaluations.csv`](experiments/task3_pilot_evaluations.csv)。
+
+| 训练 seed | 首次通过点 | Task 3 分数（父→子） | 金币（父→子） | 炸箱（父→子） | 击杀（父→子） | 第一名率（父→子） | 子模型自杀率 | 结论 |
+|---:|---:|---:|---:|---:|---:|---:|---:|---|
+| 11 | 1500局 | 5.15→6.10 | 3.40→4.85 | 39.75→56.50 | 0.35→0.25 | 40%→55% | 0% | 通过；以第一名率提升满足战斗门槛 |
+| 22 | 无 | 5.60→4.70 | 3.60→3.95 | 48.05→51.70 | 0.40→0.15 | 55%→30% | 35% | 失败：分数、战斗和安全均未通过 |
+| 33 | 1500局 | 5.10→6.75 | 3.35→4.75 | 38.20→52.40 | 0.35→0.40 | 35%→50% | 5% | 通过；安全门槛取等号 |
+
+三条链的Task 1回测均为50分，Task 2金币和炸箱均高于各自父模型，说明本轮的主要失败不是旧任务遗忘，也不是资源能力退化，而是 **seed 22在弱对手局面中的策略不稳定**：追加到1500局后分数与战斗指标反而低于父模型，自杀率仍为35%。因此当前证据不支持直接进入Task 4；下一轮应把“跨训练seed稳定降低对战自杀”作为首要问题，而不能用seed 11或33的单点成功替代模型族复现。
+
+### 8.11 Task 3 分阶段奖励与安全迭代
+
+下一轮使用117维 `continuous-phase-v1`。前107维保持 `continuous-v3`，后10维记录平滑的前/中/后期权重、箱子和对手消耗、分差、自身与最近对手机动性，以及后期机动性危机。局面进度为 `0.45×箱子消耗 + 0.30×对手淘汰 + 0.25×回合进度`；阶段权重连续混合，不按固定步数硬切。地图边缘停留只作诊断，因为边缘并不等于危险。
+
+四个首轮对照固定为 `phase+r7`、`phase+r9_resource`、`phase+r9_combat`、`phase+r9_full`，训练 seeds 为11和22。r9前期重金币/炸箱，中期提高自己击杀价值，后期保留击杀并增加机动性势；全程维持危险势和 `survival-mask-v1/all`。每条先跑500局，在13000–13019冻结评估；自杀超过10%立即淘汰，前两名才追加到1000局。只有最高名在分数不低于父模型、自杀不超过10%且保留率合格时可追加到1500局。完整合同见 [`experiments/task3_phase_iteration.json`](experiments/task3_phase_iteration.json)。
+
+Task 2父模型不能普通续训到新网络。`--transfer-task3-from` 显式读取v7父快照，把84维第一层复制进117维网络并把新增33列置零，同时重置optimizer和replay。训练专用seeds 6000–6099为每个父模型采集最多各10000条Task 1/2教师状态；每次更新使用32条Task 3 TD样本和32条冻结教师样本。迁移后的精确恢复版本为 `training-resume-v8`。
+
+若第一轮最高名任一seed自杀超过5%，才建立 `survival-mask-v2` 对照：仍先用v1，只在自身炸弹有效时否决逃生面积低于最佳安全动作75%的动作。若只剩战斗门槛失败，则从同一Task 2父模型重新迁移并跑250局静止目标、250局不放弹随机移动目标、500局正常弱对手。第三轮只允许组合第二轮已经分别有效的两个改动，不再改数值。
+
+优胜配置从自己的Task 2父模型新增seed 33，并让三seed在14000–14019重新确认。全部独立通过后只选一个candidate，在15000–15099做一次主验证；通过才命名 `task3_winner` 并允许进入Task 4，失败不测试第二名。Task 4入口保持获胜的117维特征、r9和Safety合同，对三名rule-based agent训练；本轮不启动Task 4，20000–20099继续封存。
+
 ## 9. 核心实验如何分配和解释
 
 | 实验 | 负责人 | 保持不变 | 唯一变化 | 要回答的问题 |

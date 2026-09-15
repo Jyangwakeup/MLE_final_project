@@ -37,7 +37,9 @@ _NEW_AGENTS = {
     "double_q_compact_agent", "double_dqn_continuous_agent",
     "cnn_double_dqn_agent", "hybrid_dueling_double_dqn_agent",
     "double_q_agent", "double_dqn_continuous_v2_agent",
-    "double_dqn_continuous_v3_agent", "cnn_path_double_dqn_agent",
+    "double_dqn_continuous_v3_agent",
+    "cnn_path_double_dqn_agent",
+    "double_dqn_phase_agent",
 }
 _BASELINE_FEATURE_IDS = {
     "discrete-v1", "discrete-q-v2", "discrete-objective-v1",
