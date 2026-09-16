@@ -633,6 +633,35 @@ robust guarantee loss和搜索超时均为0、炸弹存活率至少95%、零放�
 19300–19319和19400–19499；20000–20099继续封存。本轮不启动Task 4。完整合同见
 `experiments/task3_controllable_survival.json`。
 
+冻结准入最终通过：11个历史自炸seed均为0自杀；三个旧Task 3 checkpoint在
+19100–19199启用v5后自杀率均为0、炸弹存活率100%，没有搜索超时或guarantee
+loss，完整act最大值为312ms。v5本身因此保留，不回滚。
+
+首次seed-22训练暴露了独立的课程迁移错误：Task 3子模型继承的是Task 2 checkpoint
+内用于上一阶段的Task 1 teacher，而不是Task 2 policy。错误版本在开发集上只保留
+Task 2金币7.9%和炸箱11.3%。修复后500局模型的Task 3分数由父模型5.95提高到7.70，
+击杀由0.35提高到0.55，第一名率由35%提高到55%，冻结自杀率仍为0；Task 2金币和
+炸箱保留率恢复到82.9%和82.0%，但仍低于90%门槛，因此不得复制seeds 11/33。
+
+下一步使用`experiments/task3_retention_prefix.json`：保持学习合同不变，从同一父模型
+确定性重跑seed 22的前250局，并复用19200–19219进行父子Task 1/2/3冻结评估。
+只有250局checkpoint通过全部联合门槛，seeds 11/33才各自固定训练250局。若250局
+只失败于旧任务保留，下一轮才单独引入Task 1/2/3=`16/32/16`分层Replay，先检查
+250局、最多追加至500局；不得把早停与Replay变化合并成同一个无法归因的实验。
+直接父阶段teacher与最早合格checkpoint的定义见`CONTEXT.md`，取舍见ADR 0005。
+
+预注册提交推送并确认工作树干净后，后台只运行以下入口：
+
+```bash
+conda run --no-capture-output -n mle \
+  python experiments/task3_retention_prefix.py \
+  --manifest experiments/task3_retention_prefix.json
+```
+
+入口依次完成训练、确定性前缀核验、六组冻结评估、配对bootstrap和门槛JSON。
+退出码0表示全部通过，2表示能力/保留/安全门槛失败，1表示基础设施或产物完整性错误；
+三种情况均在`runs/task3_retention_prefix_evidence_s22_<commit>/result.json`留下证据。
+
 ### A：环境与特征
 
 - [ ] 石墙挡火、箱子不挡火、无连锁引爆。

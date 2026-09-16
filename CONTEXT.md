@@ -102,6 +102,16 @@ the fixed safety, capability-retention, bomb-use, invalid-action, and latency
 gates before any new Task 3 training is allowed.
 _Avoid_: Training result, Task 3 winner
 
+**Immediate-parent distillation teacher**:
+The frozen policy from the directly preceding curriculum stage. A Task 3 child
+uses its Task 2 parent's policy, never the older teacher embedded in that parent.
+_Avoid_: Inherited teacher, original teacher
+
+**Earliest passing curriculum checkpoint**:
+The first preregistered checkpoint that simultaneously passes capability,
+retention, safety, and engineering gates.
+_Avoid_: Final checkpoint, longest-trained checkpoint
+
 **Coin capability assessment**:
 A frozen, exploration-free Task 1 evaluation over the dedicated convergence seeds. Its primary result is mean game score; Task 1 requires every episode's score to equal its collected-coin count.
 _Avoid_: Training reward, recent training score
