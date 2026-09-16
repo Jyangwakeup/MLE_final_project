@@ -662,6 +662,37 @@ conda run --no-capture-output -n mle \
 退出码0表示全部通过，2表示能力/保留/安全门槛失败，1表示基础设施或产物完整性错误；
 三种情况均在`runs/task3_retention_prefix_evidence_s22_<commit>/result.json`留下证据。
 
+### Task 3冻结能力平台早停
+
+250局复制实验表明固定训练长度不能跨seed稳定工作：seeds 11/22通过全部门槛，
+但seed 33的Task 3分数从6.35降至5.45、击杀从0.45降至0.25，同时金币、炸箱和
+冻结安全能力保持。这不是安全或旧任务遗忘，而是较晚更新覆盖了父模型已有的战斗
+行为。因此新实验不再依据训练reward、loss或探索局分数停止。
+
+`experiments/task3_plateau_stopping.json`预注册`task3-plateau-v1`。每个训练seed从
+自己的Task 2父模型开始，每50局创建一个不可变v11子run并在19200–19219关闭探索
+评估Task 1/2/3。合格点必须通过现有全部能力、保留、安全和工程门槛；Task 3均分
+相对平台锚点提高至少0.25才重置两次检查的合格耐心。尚未出现合格点时，分数提高
+0.25或失败门槛减少会重置三次检查的失败耐心。最大训练300局。
+
+平台停止后选择历史最佳合格checkpoint，而不是最后一个checkpoint。达到300局仍在
+改善时可选择最佳合格点进入确认，但必须标记为budget-truncated，不得称为收敛。
+seed 33先运行；只有它合格，才按同一规则运行seeds 11/22。随后使用19300–19319
+确认三个训练seed，并只对唯一候选使用19400–19499做主验证。20000–20099仍封存，
+本流程不启动Task 4。
+
+后台入口为：
+
+```bash
+conda run --no-capture-output -n mle \
+  python experiments/task3_plateau_stopping.py \
+  --manifest experiments/task3_plateau_stopping.json
+```
+
+基础设施中断后使用同一命令增加`--resume`。控制器不会覆盖半成品，而是从最后一次
+完整50局子run创建不可变retry。退出码0表示主验证通过，2表示实验门槛失败，1表示
+基础设施错误。术语见`CONTEXT.md`，取舍见ADR 0006。
+
 ### A：环境与特征
 
 - [ ] 石墙挡火、箱子不挡火、无连锁引爆。

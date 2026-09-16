@@ -112,6 +112,34 @@ The first preregistered checkpoint that simultaneously passes capability,
 retention, safety, and engineering gates.
 _Avoid_: Final checkpoint, longest-trained checkpoint
 
+This remains the name of the completed retention-prefix experiment. New Task 3
+plateau experiments use a plateau-best qualified checkpoint instead.
+
+**Frozen multi-task assessment**:
+An exploration-free evaluation of one immutable checkpoint on Task 1, Task 2,
+and Task 3 using the same dedicated development worlds as its parent baseline.
+It is the only observation used by Task 3 plateau stopping.
+_Avoid_: Training reward curve, online training score
+
+**Performance plateau**:
+A preregistered sequence of frozen multi-task assessments with no meaningful
+official-score improvement and no qualifying gate progress for the applicable
+patience window. It can only be observed after checkpoints exist; it does not
+predict a future decline.
+_Avoid_: Convergence proof, loss plateau, predicted degradation
+
+**Plateau-best qualified checkpoint**:
+The best checkpoint that passes every capability, retention, safety, and
+engineering gate before a Task 3 performance plateau stops training. Later
+training checkpoints may be discarded without deleting their evidence.
+_Avoid_: Latest checkpoint, first passing checkpoint
+
+**Budget-truncated qualified checkpoint**:
+A best qualified checkpoint selected when the preregistered round cap is
+reached while meaningful improvement is still occurring. It may enter
+independent confirmation, but it is not described as plateau-converged.
+_Avoid_: Converged checkpoint, training failure
+
 **Coin capability assessment**:
 A frozen, exploration-free Task 1 evaluation over the dedicated convergence seeds. Its primary result is mean game score; Task 1 requires every episode's score to equal its collected-coin count.
 _Avoid_: Training reward, recent training score
