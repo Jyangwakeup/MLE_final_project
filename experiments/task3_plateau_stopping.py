@@ -393,15 +393,26 @@ def _validate_parent(parent: Path, expected_sha256: str) -> None:
 def validate_plateau_training_run(
     run: Path, *, local_rounds: int, cumulative_round: int,
 ) -> dict[str, Any]:
-    """Validate one immutable segment using cumulative generation numbers."""
+    """Validate one immutable segment and its Task 3-local generations."""
     metadata = _json(run / "metadata.json")
     if metadata.get("status") != "completed":
         raise ValueError("Plateau training segment is not completed")
     termination = metadata.get("termination", {})
     if int(termination.get("local_completed_rounds", -1)) != local_rounds:
         raise ValueError("Plateau segment has an unexpected local round count")
-    if int(termination.get("cumulative_completed_rounds", -1)) != cumulative_round:
-        raise ValueError("Plateau segment has an unexpected cumulative round count")
+    lineage = metadata.get("lineage", {})
+    parent_value = lineage.get("parent_run")
+    if not parent_value:
+        raise ValueError("Plateau segment has no parent run")
+    parent = Path(parent_value)
+    if not parent.is_absolute():
+        parent = (run.parent.parent / parent).resolve()
+    parent_metadata = _json(parent / "metadata.json")
+    parent_cumulative = int(parent_metadata.get(
+        "termination", {}).get("cumulative_completed_rounds", -1))
+    segment_cumulative = int(termination.get("cumulative_completed_rounds", -1))
+    if segment_cumulative != parent_cumulative + local_rounds:
+        raise ValueError("Plateau segment breaks parent cumulative round continuity")
     latest = _json(run / "resume" / "latest.json")
     generations = latest.get("generations", [])
     expected = [

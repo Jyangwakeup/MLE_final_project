@@ -122,13 +122,20 @@ class PlateauTrackerTests(unittest.TestCase):
 class PlateauInterfaceTests(unittest.TestCase):
     def test_segment_validation_uses_cumulative_generation_numbers(self):
         with tempfile.TemporaryDirectory() as directory:
-            run = Path(directory)
-            (run / "resume").mkdir()
+            root = Path(directory)
+            run = root / "run"
+            parent = root / "parent"
+            (run / "resume").mkdir(parents=True)
+            parent.mkdir()
+            (parent / "metadata.json").write_text(json.dumps({
+                "termination": {"cumulative_completed_rounds": 800},
+            }))
             (run / "metadata.json").write_text(json.dumps({
                 "status": "completed",
+                "lineage": {"parent_run": str(parent)},
                 "termination": {
                     "local_completed_rounds": 50,
-                    "cumulative_completed_rounds": 100,
+                    "cumulative_completed_rounds": 850,
                 },
             }))
             (run / "resume" / "latest.json").write_text(json.dumps({
@@ -152,6 +159,28 @@ class PlateauInterfaceTests(unittest.TestCase):
             self.assertEqual(loader.call_args_list[0].args[1], "generation-00000100")
             self.assertEqual(loader.call_args_list[1].args[1], "generation-00000099")
             self.assertEqual(result["final_updates"], 50)
+
+    def test_segment_validation_rejects_broken_lineage_rounds(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            run = root / "run"
+            parent = root / "parent"
+            (run / "resume").mkdir(parents=True)
+            parent.mkdir()
+            (parent / "metadata.json").write_text(json.dumps({
+                "termination": {"cumulative_completed_rounds": 800},
+            }))
+            (run / "metadata.json").write_text(json.dumps({
+                "status": "completed",
+                "lineage": {"parent_run": str(parent)},
+                "termination": {
+                    "local_completed_rounds": 50,
+                    "cumulative_completed_rounds": 849,
+                },
+            }))
+            with self.assertRaisesRegex(ValueError, "continuity"):
+                validate_plateau_training_run(
+                    run, local_rounds=50, cumulative_round=50)
 
     def test_direct_script_help_works(self):
         result = subprocess.run(
