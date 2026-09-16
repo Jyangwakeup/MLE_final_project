@@ -8,7 +8,7 @@ import events as e
 
 from agent_code.dqn_agent.model import Transition
 from agent_code.learning_common.action_history import (
-    action_history_state, init_action_history, own_bomb_history_for_state,
+    action_history_state, init_action_history, project_history, bomb_history,
 )
 from agent_code.learning_common.n_step import NStepAccumulator
 from agent_code.learning_common.runtime import CHECKPOINT_SCHEMA, effective_legal_mask
@@ -18,7 +18,7 @@ from agent_code.team_agent.rewards import reward_from_events
 from agent_code.team_agent.safety import avoidable_fatal_action, safety_decision
 from .callbacks import (
     ACTIONS, ALGORITHM, FEATURE_ID, FEATURE_SCHEMA, HYPERPARAMETERS,
-    NETWORK_SPEC, _features_for,
+    NETWORK_SPEC, decision_snapshot, features_from_history, LIFECYCLE_VERSION,
 )
 
 
@@ -48,37 +48,26 @@ def setup_training(self):
 
 
 def _transition(self, old_state, action, reward, new_state, done):
+    snapshot = decision_snapshot(self, old_state, action)
     safety_class = (
-        "own_bomb" if action == "BOMB" or bool(own_bomb_history_for_state(
-            self, old_state)["pending"]) else "ordinary")
-    old = _features_for(self, old_state)
-    old_legal = effective_legal_mask(
-        old.legal_mask, ACTIONS, self.curriculum_allows_bomb)
-    old_key = (old_state.get("round"), old_state.get("step"))
-    old_bomb = own_bomb_history_for_state(self, old_state)
-    if getattr(self, "_last_decision_key", None) == old_key:
-        old_legal = self._last_decision_mask.copy()
-    else:
-        old_legal = safety_decision(
-            old_state, old_legal, self.safety_spec,
-            allow_bomb=self.curriculum_allows_bomb, exploring=False,
-            own_bomb_pending=bool(old_bomb["pending"]),
-            own_bomb_state=old_bomb).mask
+        "own_bomb" if action == "BOMB" or snapshot.before.own_bomb_pending else "ordinary")
+    old_legal = snapshot.mask.copy()
     if done:
         return Transition(
-            old.vector.copy(), ACTIONS.index(action), reward, None, True, None,
+            snapshot.vector.copy(), ACTIONS.index(action), reward, None, True, None,
             old_legal, self.training_task, 1, safety_class)
-    new = _features_for(self, new_state)
+    next_history = project_history(snapshot.after, new_state)
+    new = features_from_history(self, new_state, next_history)
     next_legal = effective_legal_mask(
         new.legal_mask, ACTIONS, self.curriculum_allows_bomb)
-    next_bomb = own_bomb_history_for_state(self, new_state)
+    next_bomb = bomb_history(next_history, new_state)
     next_legal = safety_decision(
         new_state, next_legal, self.safety_spec,
         allow_bomb=self.curriculum_allows_bomb, exploring=False,
         own_bomb_pending=bool(next_bomb["pending"]),
         own_bomb_state=next_bomb).mask
     return Transition(
-        old.vector.copy(), ACTIONS.index(action), reward, new.vector.copy(),
+        snapshot.vector.copy(), ACTIONS.index(action), reward, new.vector.copy(),
         False, next_legal, old_legal, self.training_task, 1, safety_class)
 
 
@@ -95,11 +84,10 @@ def game_events_occurred(self, old_game_state, self_action, new_game_state, even
     key = (old_game_state.get("round"), old_game_state.get("step"))
     if self.pending is not None and self.pending[0] != key:
         _submit(self, self.pending[1])
-    old = _features_for(self, old_game_state)
+    snapshot = decision_snapshot(self, old_game_state, self_action)
     context = temporal_reward_context(
         self, self_action, old_game_state, new_game_state, events)
-    physical = effective_legal_mask(
-        old.legal_mask, ACTIONS, self.curriculum_allows_bomb)
+    physical = snapshot.physical
     context["avoidable_fatal"] = avoidable_fatal_action(
         old_game_state, self_action, physical,
         allow_bomb=self.curriculum_allows_bomb)
@@ -116,9 +104,7 @@ def end_of_round(self, last_game_state, last_action, events):
         key = (last_game_state.get("round"), last_game_state.get("step"))
         if self.pending is not None and self.pending[0] != key:
             _submit(self, self.pending[1])
-        last_features = _features_for(self, last_game_state)
-        physical = effective_legal_mask(
-            last_features.legal_mask, ACTIONS, self.curriculum_allows_bomb)
+        physical = decision_snapshot(self, last_game_state, last_action).physical
         reward = reward_from_events(
             events, self.reward_id, old_game_state=last_game_state,
             terminal=True, action=last_action,
@@ -137,12 +123,16 @@ def end_of_round(self, last_game_state, last_action, events):
     self.pending = None
     reset_temporal_reward_state(self)
     init_action_history(self)
+    self._decision_snapshot = None
+    self._feature_cache_key = None
+    self._feature_cache_value = None
     self._own_bomb_cycle_had_safe_alternative = False
     self._own_bomb_cycle_collapse_recorded = False
     self._own_bomb_placement_certificate = None
     checkpoint = self.model.checkpoint()
     checkpoint.update({
         "checkpoint_schema": CHECKPOINT_SCHEMA,
+        "lifecycle_version": LIFECYCLE_VERSION,
         "algorithm": ALGORITHM,
         "actions": list(ACTIONS),
         "feature_id": FEATURE_ID,

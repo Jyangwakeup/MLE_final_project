@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+from dataclasses import dataclass
 from pathlib import Path
 
 import numpy as np
@@ -9,7 +10,8 @@ import torch
 from agent_code.dqn_agent.model import DQN
 from agent_code.learning_common.action_history import (
     action_history_for_state, load_action_history_state, own_bomb_history_for_state,
-    record_selected_action,
+    record_selected_action, advance_observation, snapshot_history, HistorySnapshot,
+    project_history, bomb_history,
 )
 from agent_code.learning_common.runtime import (
     CHECKPOINT_SCHEMA, adopt_checkpoint_reward, adopt_checkpoint_safety, effective_legal_mask,
@@ -51,6 +53,41 @@ AGENT_METADATA = {
     "hyperparameters": HYPERPARAMETERS,
 }
 
+LIFECYCLE_VERSION = 'decision-snapshot-v1'
+
+
+def _immutable_array(value):
+    result = value.copy()
+    result.flags.writeable = False
+    return result
+
+
+@dataclass(frozen=True)
+class DecisionSnapshot:
+    key: tuple
+    before: HistorySnapshot
+    vector: np.ndarray
+    physical: np.ndarray
+    mask: np.ndarray
+    action: str
+    after: HistorySnapshot
+
+
+def decision_snapshot(owner, state, action):
+    snapshot = getattr(owner, '_decision_snapshot', None)
+    if (snapshot is None or snapshot.key != (state.get('round'), state.get('step'))
+            or snapshot.action != action):
+        raise ValueError('Training callback has no matching decision snapshot')
+    return snapshot
+
+
+def features_from_history(owner, state, history):
+    return features_for_state(
+        state, history.previous_action, history.wait_streak,
+        previous_position=history.previous_position,
+        previous_coin_target=history.previous_coin_target,
+        legacy78=getattr(owner, '_legacy78', False))
+
 
 def setup(self):
     load_common_configuration(self, feature_id=FEATURE_ID, default_model=MODEL_FILE)
@@ -58,6 +95,11 @@ def setup(self):
         torch.load(self.model_file, map_location="cpu", weights_only=True)
         if self.model_file.exists() else None
     )
+    self._decision_snapshot = None
+    if (checkpoint is not None and self.train
+            and checkpoint.get('training_task') == 'weak_opponents'
+            and checkpoint.get('lifecycle_version') != LIFECYCLE_VERSION):
+        raise ValueError('Old Task 3 checkpoints are frozen-evaluation only; transfer from Task 2')
     self._legacy78 = bool(
         checkpoint is not None
         and tuple(checkpoint.get("feature_schema", {}).get("vector_shape", ())) == (78,)
@@ -162,17 +204,14 @@ def setup(self):
 def _features_for(self, game_state):
     key = (game_state.get("round"), game_state.get("step"))
     if key != self._feature_cache_key:
-        previous_action, wait_streak = action_history_for_state(self, game_state)
         self._feature_cache_key = key
-        self._feature_cache_value = features_for_state(
-            game_state, previous_action, wait_streak,
-            previous_position=getattr(self, "feature_previous_position", None),
-            previous_coin_target=getattr(self, "feature_previous_coin_target", None),
-            legacy78=getattr(self, "_legacy78", False))
+        self._feature_cache_value = features_from_history(
+            self, game_state, project_history(snapshot_history(self), game_state))
     return self._feature_cache_value
 
 
 def act(self, game_state):
+    before = advance_observation(self, game_state)
     features = _features_for(self, game_state)
     physical = effective_legal_mask(
         features.legal_mask, ACTIONS, self.curriculum_allows_bomb)
@@ -324,6 +363,10 @@ def act(self, game_state):
         self._own_bomb_cycle_collapse_recorded = False
         self._own_bomb_placement_certificate = None
     record_selected_action(self, game_state, action)
+    self._decision_snapshot = DecisionSnapshot(
+        (game_state.get('round'), game_state.get('step')), before,
+        _immutable_array(features.vector), _immutable_array(physical),
+        _immutable_array(legal), action, snapshot_history(self))
     return action
 
 

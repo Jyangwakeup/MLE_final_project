@@ -38,7 +38,8 @@ def n_step_from_environment(default: int = 1) -> int:
 
 def resolve_retention_spec(value: Mapping[str, Any] | None = None) -> dict[str, Any]:
     raw = DEFAULT_RETENTION_SPEC if value is None else value
-    if not isinstance(raw, Mapping) or set(raw) != set(DEFAULT_RETENTION_SPEC):
+    if (not isinstance(raw, Mapping)
+            or set(raw) - {'task_samples'} != set(DEFAULT_RETENTION_SPEC)):
         raise ValueError(
             "training.retention must contain exactly: "
             + ", ".join(sorted(DEFAULT_RETENTION_SPEC)))
@@ -53,13 +54,22 @@ def resolve_retention_spec(value: Mapping[str, Any] | None = None) -> dict[str, 
         raise ValueError("training.retention.distillation_weight must be non-negative")
     if temperature <= 0.0:
         raise ValueError("training.retention.temperature must be positive")
-    return {
+    result = {
         "parent_fraction": parent_fraction,
         "distillation_weight": weight,
         "temperature": temperature,
         "per_task_capacity": capacity,
         "current_warmup": warmup,
     }
+    if 'task_samples' in raw:
+        quotas = raw['task_samples']
+        expected = {'coin_navigation': 16, 'crate_navigation': 32, 'weak_opponents': 16}
+        if quotas != expected or any(type(v) is not int for v in quotas.values()):
+            raise ValueError('Task 3 task_samples must be exactly 16/32/16')
+        if parent_fraction != 0.75:
+            raise ValueError('Task quotas require parent_fraction=0.75')
+        result['task_samples'] = dict(quotas)
+    return result
 
 
 def retention_from_environment() -> dict[str, Any]:

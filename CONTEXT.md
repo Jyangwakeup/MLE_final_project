@@ -2,6 +2,18 @@
 
 This context defines the project-specific language used to separate game legality, predicted survival, and learned action choice.
 
+**Decision history snapshot**:
+The immutable action history and admitted action set associated with one actual
+decision. Reconstructing its learning transition cannot advance or rewind the
+Agent's live history.
+_Avoid_: Current history for old states, mutable replay history
+
+**Task 3 qualified model**:
+A frozen model from a package whose three training seeds passed independent
+confirmation and whose single selected candidate passed main validation under
+the preregistered capability, retention, safety, and engineering gates.
+_Avoid_: Best development checkpoint, guaranteed strong opponent
+
 ## Language
 
 **Physical legal action**:

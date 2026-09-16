@@ -67,14 +67,24 @@ class ReplayBuffer:
         return self.random.sample(self._all_items(), size)
 
     def sample_batch(self, size: int, parent_fraction: float = 0.0,
-                     safety_replay_spec=None):
+                     safety_replay_spec=None, task_samples=None):
         current = list(self.partitions.get(self.current_task, ()))
         parents = [
             item for task, partition in self.partitions.items()
             if task != self.current_task for item in partition
         ]
         safety = dict(safety_replay_spec or {})
-        if safety.get("enabled") and parents and current:
+        if task_samples is not None:
+            if safety.get('enabled') or sum(task_samples.values()) != size:
+                raise ValueError('Task quotas conflict with batch size or safety replay')
+            items = []
+            for task, count in task_samples.items():
+                pool = list(self.partitions.get(task, ()))
+                if len(pool) < count:
+                    raise ValueError('Replay does not yet satisfy fixed task quotas')
+                items.extend(self.random.sample(pool, count))
+            self.random.shuffle(items)
+        elif safety.get("enabled") and parents and current:
             parent_count = int(safety["parent_samples"])
             safety_count = int(safety["own_bomb_cycle_samples"])
             ordinary_count = int(safety["ordinary_task3_samples"])
@@ -322,12 +332,16 @@ class DQN:
         return self._learn()
 
     def _learn(self):
+        task_samples = self.retention_spec.get('task_samples')
+        if task_samples and any(len(self.replay.partitions.get(task, ())) < count
+                                for task, count in task_samples.items()):
+            return None
         parent_fraction = (
             float(self.retention_spec["parent_fraction"])
             if self.teacher is not None else 0.0
         )
         batch = self.replay.sample_batch(
-            self.batch_size, parent_fraction, self.safety_replay_spec)
+            self.batch_size, parent_fraction, self.safety_replay_spec, task_samples)
         states = torch.as_tensor(
             batch["states"], dtype=torch.float32, device=self.device)
         actions = torch.as_tensor(

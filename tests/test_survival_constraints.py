@@ -150,11 +150,16 @@ class SurvivalMaskTests(unittest.TestCase):
             curriculum_allows_bomb=False, safety_spec=dict(ALL_SAFETY),
             training_task="crate_navigation",
             _feature_cache_key=None, _feature_cache_value=None,
+            train=False, rng=random.Random(1), safety_decisions=0,
+            safety_interventions=0, safety_fallbacks=0,
+            model=SimpleNamespace(q_values=lambda _: np.asarray(
+                [0., 10., 0., 0., 0., 0.], dtype=np.float32)),
         )
         init_action_history(owner)
         old = self._danger_state()
         new = copy.deepcopy(old)
         new["step"] = 2
+        self.assertEqual(v2_callbacks.act(owner, old), 'RIGHT')
         transition = v2_train._transition(owner, old, "RIGHT", 0.0, new, False)
         self.assertFalse(transition.next_legal[ACTIONS.index("WAIT")])
 
