@@ -724,6 +724,24 @@ conda run --no-capture-output -n mle \
 
 ## 13. 报告与复现材料如何积累
 
+### Task 3 生命周期修复与有限优化（2026-09-17）
+
+`79d1e87` 平台早停套餐在独立确认中失败：seed11通过，seed22失败于
+Task2金币保留、Task3得分与战斗提升，seed33失败于战斗提升；主验证未启动。
+随后确认训练回调读取旧状态会清掉自身炸弹责任，冻结推理没有该回调。
+修复采用决策前后不可变历史快照，不改变84维输入或v11回合结束快照格式。
+
+新合同为 `experiments/task3_lifecycle_campaign.json`，入口为
+`python experiments/task3_lifecycle_campaign.py`（基础设施恢复加 `--resume`）。
+先测试并对三个seed分别做20局独立诊断，然后从各自Task2父模型重建Task3。
+正式开发使用60个世界、三seed确认各100个世界、唯一候选主验证100个世界。
+最多运行A（仅修复）、P（16/32/16 Replay）、R（新奖励版本，仅kill5→15）
+和条件允许的PR。首个开发联合达标套餐进入确认，确认或主验证失败停止。
+不能续用受影响的旧Task3 Replay；父Task1/2 Replay保留的历史限制须随报告声明。
+预算开始时间、种子审计与原阈值写入manifest；24小时截止，不自动推送或启动Task4。
+结果 JSON 和自动报告位于带源码提交与manifest身份的campaign运行目录。
+本段是执行合同，不是通过结果。术语及取舍见ADR0007、ADR0008。
+
 报告的规定结构、篇幅、署名和提交边界见 [`PROJECT_REQUIREMENTS.md`](PROJECT_REQUIREMENTS.md)。本节只记录团队的写作分工和复现材料积累方式，不把报告拆成三个互不相关的个人成果。
 
 | 成员 | 主要写作内容 |

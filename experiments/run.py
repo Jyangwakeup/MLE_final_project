@@ -886,7 +886,8 @@ def run_agent_session(
                 exploration_spec=exploration_spec,
                 training_budget=action_budget_config,
                 safety_replay_spec=safety_replay_spec,
-                n_step=n_step)
+                n_step=n_step, reward_id=reward_version,
+                retention_spec=retention_spec)
         elif migration:
             materialize_migrated_checkpoint(
                 resume_snapshot, checkpoint, training_budget=action_budget_config)

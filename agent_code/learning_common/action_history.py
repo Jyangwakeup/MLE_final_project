@@ -2,6 +2,47 @@
 
 from __future__ import annotations
 
+from dataclasses import asdict, dataclass, replace
+
+
+@dataclass(frozen=True)
+class HistorySnapshot:
+    previous_action: str | None = None
+    wait_streak: int = 0
+    round: int | None = None
+    own_bomb_position: tuple | None = None
+    own_bomb_pending: bool = False
+    previous_position: tuple | None = None
+    previous_coin_target: tuple | None = None
+
+
+def snapshot_history(owner) -> HistorySnapshot:
+    return HistorySnapshot(**action_history_state(owner))
+
+
+def project_history(history: HistorySnapshot, game_state: dict) -> HistorySnapshot:
+    """Project a snapshot onto an observation without advancing live history."""
+    if history.round != game_state.get('round'):
+        history = HistorySnapshot(round=game_state.get('round'))
+    if bool(game_state['self'][2]):
+        history = replace(history, own_bomb_position=None, own_bomb_pending=False)
+    return history
+
+
+def advance_observation(owner, game_state: dict) -> HistorySnapshot:
+    history = project_history(snapshot_history(owner), game_state)
+    load_action_history_state(owner, asdict(history))
+    return history
+
+
+def bomb_history(history: HistorySnapshot, game_state: dict) -> dict[str, object]:
+    """Read bomb visibility from a state-specific immutable history."""
+    position = history.own_bomb_position
+    timer = next((int(timer) for pos, timer in game_state['bombs']
+                  if position is not None and tuple(pos) == position), None)
+    return dict(position=position, pending=history.own_bomb_pending,
+                visible=timer is not None, timer=timer)
+
 
 def init_action_history(owner) -> None:
     owner.feature_previous_action = None
@@ -80,17 +121,4 @@ def load_action_history_state(owner, state: dict | None) -> None:
 
 def own_bomb_history_for_state(owner, game_state: dict) -> dict[str, object]:
     """Return factual state for the most recently placed own bomb."""
-    action_history_for_state(owner, game_state)
-    position = getattr(owner, "feature_own_bomb_position", None)
-    timer = None
-    if position is not None:
-        for bomb_position, bomb_timer in game_state["bombs"]:
-            if tuple(bomb_position) == tuple(position):
-                timer = int(bomb_timer)
-                break
-    return {
-        "position": position,
-        "pending": bool(getattr(owner, "feature_own_bomb_pending", False)),
-        "visible": timer is not None,
-        "timer": timer,
-    }
+    return bomb_history(project_history(snapshot_history(owner), game_state), game_state)

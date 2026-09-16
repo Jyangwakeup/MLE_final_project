@@ -12,6 +12,8 @@ import os
 from pathlib import Path
 import subprocess
 import sys
+import time
+import signal
 from typing import Any, Mapping, Sequence
 
 if __package__ in (None, ""):
@@ -79,13 +81,24 @@ def _sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
-def _run_checked(command: Sequence[str], project_root: Path) -> None:
+def _run_checked(command: Sequence[str], project_root: Path, *, deadline=None) -> None:
     environment = dict(os.environ)
     environment.update(THREAD_ENVIRONMENT)
-    completed = subprocess.run(command, cwd=project_root, env=environment)
-    if completed.returncode:
+    process = subprocess.Popen(command, cwd=project_root, env=environment, start_new_session=True)
+    try:
+        code = process.wait(timeout=None if deadline is None else max(0, deadline-time.time()))
+    except BaseException:
+        if process.poll() is None:
+            os.killpg(process.pid, signal.SIGTERM)
+            try:
+                process.wait(timeout=10)
+            except subprocess.TimeoutExpired:
+                os.killpg(process.pid, signal.SIGKILL)
+                process.wait()
+        raise
+    if code:
         raise RuntimeError(
-            f"Subprocess exited with {completed.returncode}: {' '.join(command)}")
+            f"Subprocess exited with {code}: {' '.join(command)}")
 
 
 def resolve_plateau_spec(value: Mapping[str, Any]) -> dict[str, Any]:
@@ -333,8 +346,9 @@ def _run_evaluation_pair(
         "agent": manifest["agent"],
     }
     for index, task in enumerate((1, 2, 3)):
+        namespace = manifest.get('run_namespace', 'task3_plateau')
         base = project_root / "runs" / (
-            f"task3_plateau_{phase}_s{training_seed}_{role}_t{task}_"
+            f"{namespace}_{phase}_s{training_seed}_{role}_t{task}_"
             f"{evaluation_seeds[0]}_{evaluation_seeds[-1]}_{short_commit}")
         target, suffix = _unique_target(base)
         prefix = target.name
@@ -345,12 +359,23 @@ def _run_evaluation_pair(
             cpu=cpu_pool[(cpu_offset + index) % len(cpu_pool)],
         )
         processes.append((task, command, subprocess.Popen(
-            command, cwd=project_root, env=environment)))
+            command, cwd=project_root, env=environment, start_new_session=True)))
     failures = []
-    for task, command, process in processes:
-        code = process.wait()
-        if code:
-            failures.append({"task": task, "exit_code": code, "command": command})
+    try:
+        for task, command, process in processes:
+            deadline = manifest.get('deadline_epoch')
+            code = process.wait(timeout=None if deadline is None else max(0, deadline-time.time()))
+            if code:
+                failures.append({"task": task, "exit_code": code, "command": command})
+    finally:
+        for _, _, process in processes:
+            if process.poll() is None:
+                os.killpg(process.pid, signal.SIGTERM)
+                try:
+                    process.wait(timeout=10)
+                except subprocess.TimeoutExpired:
+                    os.killpg(process.pid, signal.SIGKILL)
+                    process.wait()
     if failures:
         raise RuntimeError(f"Frozen evaluation subprocesses failed: {failures}")
     summaries = {
@@ -457,8 +482,9 @@ def _train_segment(
     cumulative_round: int, parent_run: Path, previous_run: Path | None,
 ) -> Path:
     short_commit = _git(project_root, "rev-parse", "HEAD")[:7]
+    namespace = manifest.get('run_namespace', 'task3_plateau_ddqn_cv2_r7')
     base = project_root / "runs" / (
-        f"task3_plateau_ddqn_cv2_r7_s{seed}_c{cumulative_round:04d}_{short_commit}")
+        f"{namespace}_s{seed}_c{cumulative_round:04d}_{short_commit}")
     run, suffix = _unique_target(base)
     command = [
         "taskset", "-c", str(manifest["training_cpus"][str(seed)]),
@@ -474,7 +500,10 @@ def _train_segment(
         command.extend(("--transfer-task3-safety-from", str(parent_run)))
     else:
         command.extend(("--resume-from", str(previous_run)))
-    _run_checked(command, project_root)
+    if manifest.get('deadline_epoch') is None:
+        _run_checked(command, project_root)
+    else:
+        _run_checked(command, project_root, deadline=manifest['deadline_epoch'])
     validate_plateau_training_run(
         run,
         local_rounds=int(manifest["plateau_stopping"]["interval_rounds"]),

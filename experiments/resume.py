@@ -516,6 +516,8 @@ def materialize_task3_safety_checkpoint(
     training_budget: dict[str, Any],
     safety_replay_spec: dict[str, Any],
     n_step: int | None = None,
+    reward_id: str | None = None,
+    retention_spec: dict[str, Any] | None = None,
 ) -> None:
     """Promote an intact v7 Task 2 learner into a clean v11 Task 3 stage."""
     if snapshot.learner_path is None:
@@ -525,6 +527,27 @@ def materialize_task3_safety_checkpoint(
     except ImportError as exception:
         raise RuntimeError("PyTorch is required for Task 3 safety transfer") from exception
     payload = torch.load(snapshot.learner_path, map_location="cpu", weights_only=True)
+    if reward_id is not None and reward_id != payload['reward_id']:
+        from agent_code.team_agent.rewards import resolve_reward_spec
+        old_spec = resolve_reward_spec(payload['reward_id'])
+        new_spec = resolve_reward_spec(reward_id)
+        if (payload['reward_id'] != 'r7_safe_credit_sparse'
+                or reward_id != 'r9_task3_score_aligned'
+                or new_spec != {**old_spec, 'killed_opponent': 15.0}):
+            raise ValueError('Unsupported Task 3 reward transfer')
+        task_ids = set(payload['replay'].get('task_ids', []))
+        if not task_ids.issubset({'coin_navigation', 'crate_navigation'}):
+            raise ValueError('Reward transfer cannot reuse Task 3 replay')
+        # These curriculum stages contain no opponents. Check recorded episodes
+        # as well; scalar n-step rewards cannot be relabelled after the fact.
+        episodes = snapshot.run_directory / 'episodes.jsonl'
+        for line in episodes.read_text().splitlines():
+            episode = json.loads(line)
+            if len(episode['agents']) != 1 or any(a.get('kills', 0) for a in episode['agents']):
+                raise ValueError('Parent reward compatibility lacks no-opponent evidence')
+        payload.update(reward_id=reward_id, reward_version=reward_id, reward_spec=new_spec)
+    if retention_spec is not None:
+        payload['retention_spec'] = dict(retention_spec)
     target_n_step = int(payload.get("n_step", 4) if n_step is None else n_step)
     # The teacher embedded in a Task 2 checkpoint is the Task 1 policy that
     # protected the previous curriculum transition.  Task 3 must instead
@@ -536,6 +559,7 @@ def materialize_task3_safety_checkpoint(
     }
     payload.update({
         "checkpoint_schema": CHECKPOINT_SCHEMA_VERSION,
+        "lifecycle_version": "decision-snapshot-v1",
         "training_task": "weak_opponents",
         "safety_spec": dict(safety_spec),
         "exploration_spec": dict(exploration_spec),
@@ -599,10 +623,9 @@ def validate_task3_safety_transfer(
         raise ValueError(
             "Task 3 safety transfer requires survival-mask-v1, v3, v4, or v5")
     for field in (
-        "algorithm", "seed", "feature_id", "feature_schema", "reward_id",
-        "reward_spec", "training_device_type", "training_device_name",
+        "algorithm", "seed", "feature_id", "feature_schema",
+        "training_device_type", "training_device_name",
         "agent_seed", "actions", "network_spec", "hyperparameters",
-        "retention_spec",
     ):
         if parent.get(field) != child.get(field):
             raise ValueError(f"Task 3 safety transfer {field} must match the parent")
@@ -611,7 +634,19 @@ def validate_task3_safety_transfer(
     if parent.get("feature_id") != "continuous-v2":
         raise ValueError("Task 3 safety transfer requires 84-dimensional continuous-v2")
     if parent.get("reward_id") != "r7_safe_credit_sparse":
-        raise ValueError("Task 3 safety transfer requires r7_safe_credit_sparse")
+        raise ValueError("Task 3 safety transfer reward_id requires r7_safe_credit_sparse")
+    from agent_code.team_agent.rewards import resolve_reward_spec
+    child_reward = child.get('reward_id')
+    if child_reward not in {'r7_safe_credit_sparse', 'r9_task3_score_aligned'}:
+        raise ValueError('Unsupported Task 3 reward transfer')
+    if child.get('reward_spec') != resolve_reward_spec(child_reward):
+        raise ValueError('Task 3 reward specification mismatch')
+    old_retention = parent.get('retention_spec')
+    new_retention = child.get('retention_spec')
+    if new_retention != old_retention and new_retention != {
+            **old_retention, 'task_samples': {'coin_navigation': 16,
+            'crate_navigation': 32, 'weak_opponents': 16}}:
+        raise ValueError('Task 3 safety transfer retention_spec mismatch')
     parent_n_step = int(parent.get("n_step", 1))
     child_n_step = int(child.get("n_step", 1))
     if child_n_step not in {parent_n_step, 5}:
