@@ -245,6 +245,24 @@ class ConstrainedRewardTests(unittest.TestCase):
 
 
 class SafetyPreregistrationTests(unittest.TestCase):
+    def test_new_task2_quality_gate_is_strict_and_prospective(self):
+        gate = json.loads(Path(
+            "experiments/task2_quality_gate.json").read_text(encoding="utf-8"))
+        self.assertEqual(gate["status"], "prospective")
+        self.assertEqual(gate["coins_per_round"], 9)
+        self.assertGreaterEqual(gate["gates"]["task2_mean_coins_min"], 6.0)
+        self.assertLessEqual(
+            gate["gates"]["task2_zero_coin_round_rate_max"], 0.05)
+        self.assertGreaterEqual(gate["gates"]["task2_all_coins_rate_min"], 0.1)
+        self.assertLessEqual(gate["gates"]["task2_max_steps_rate_max"], 0.9)
+        self.assertLessEqual(
+            gate["gates"]["task2_long_wait_loop_rate_max"], 0.1)
+        self.assertLessEqual(
+            gate["gates"]["task2_long_ping_pong_loop_rate_max"], 0.05)
+        self.assertEqual(
+            gate["gates"]["zero_utility_bomb_rate_max"], 0.10)
+        self.assertEqual(gate["gates"]["crates_per_bomb_min"], 1.50)
+
     def test_manifest_freezes_safety_gates_and_seed_isolation(self):
         manifest = json.loads(Path(
             "experiments/task2_safety_ablation.json").read_text(encoding="utf-8"))

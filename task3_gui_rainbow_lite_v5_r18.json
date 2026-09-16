@@ -1,0 +1,42 @@
+{
+    "by_agent": {
+        "coin_collector_agent": {
+            "bombs": 20,
+            "coins": 6,
+            "crates": 66,
+            "invalid": 1,
+            "kills": 1,
+            "moves": 209,
+            "rounds": 1,
+            "score": 11,
+            "steps": 400,
+            "time": 0.12428975105285645
+        },
+        "peaceful_agent": {
+            "invalid": 125,
+            "moves": 77,
+            "rounds": 1,
+            "score": 0,
+            "steps": 202,
+            "time": 0.012596607208251953
+        },
+        "rainbow_lite_v5_agent": {
+            "bombs": 34,
+            "coins": 3,
+            "crates": 67,
+            "moves": 276,
+            "rounds": 1,
+            "score": 3,
+            "steps": 400,
+            "time": 1.5184576511383057
+        }
+    },
+    "by_round": {
+        "task3_gui_rainbow_lite_v5_r18 | Round 01 (2026-09-16 06-40-23)": {
+            "coins": 9,
+            "kills": 1,
+            "steps": 400,
+            "suicides": 0
+        }
+    }
+}

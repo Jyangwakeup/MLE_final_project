@@ -143,11 +143,42 @@ class ExperimentAnalysisTest(unittest.TestCase):
             run = self._write_run(temporary_directory, "task1", episodes)
             row = summarize_runs([run])[0]
             self.assertEqual(row["mean_coins"], 31.0)
+            self.assertEqual(row["min_coins_per_round"], 12.0)
+            self.assertEqual(row["max_coins_per_round"], 50.0)
+            self.assertEqual(row["zero_coin_round_count"], 0)
+            self.assertEqual(row["zero_coin_round_rate"], 0.0)
             self.assertEqual(row["all_coins_rate"], 0.5)
             self.assertEqual(row["max_steps_rate"], 0.5)
             self.assertEqual(row["long_wait_loop_rate"], 0.5)
             self.assertEqual(row["long_ping_pong_loop_rate"], 0.0)
             self.assertTrue(row["exploration_disabled"])
+
+    def test_bomb_efficiency_metrics_use_aggregate_counts(self):
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            first = _agent("a", 0, crates=3, bombs=2)
+            first["zero_utility_bombs"] = 1
+            second = _agent("a", 0, crates=6, bombs=4)
+            second["zero_utility_bombs"] = 0
+            run = self._write_run(
+                temporary_directory, "bomb-efficiency", [
+                    _episode("bomb-efficiency", 1, [first]),
+                    _episode("bomb-efficiency", 2, [second]),
+                ])
+            row = summarize_runs([run])[0]
+            self.assertEqual(row["zero_utility_bombs"], 1)
+            self.assertAlmostEqual(row["zero_utility_bomb_rate"], 1 / 6)
+            self.assertAlmostEqual(row["crates_per_bomb"], 1.5)
+
+    def test_zero_bomb_efficiency_metrics_are_null(self):
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            agent = _agent("a", 0, crates=0, bombs=0)
+            agent["zero_utility_bombs"] = 0
+            run = self._write_run(
+                temporary_directory, "zero-bombs",
+                [_episode("zero-bombs", 1, [agent])])
+            row = summarize_runs([run])[0]
+            self.assertIsNone(row["zero_utility_bomb_rate"])
+            self.assertIsNone(row["crates_per_bomb"])
 
     def test_coin_navigation_efficiency_and_action_diagnostics_are_aggregated(self):
         with tempfile.TemporaryDirectory() as temporary_directory:

@@ -18,6 +18,8 @@ import settings as s
 from experiments.run import (
     TASKS,
     _checkpoint_feature_contract,
+    _local_python_dependencies,
+    _source_hash,
     _task_settings,
     main as experiment_main,
     run_agent_evaluation,
@@ -54,6 +56,36 @@ class ExperimentRunTest(unittest.TestCase):
         path = RUNS_ROOT / f"test-experiment-{uuid.uuid4().hex}-{suffix}"
         self.outputs.append(path)
         return path
+
+    def test_source_dependencies_exclude_unrelated_agents(self):
+        dependencies = _local_python_dependencies([
+            PROJECT_ROOT / "experiments" / "run.py",
+            *(PROJECT_ROOT / "agent_code" / "rainbow_lite_agent").glob("*.py"),
+        ])
+        self.assertIn(
+            (PROJECT_ROOT / "agent_code/rainbow_lite_agent/callbacks.py").resolve(),
+            dependencies,
+        )
+        self.assertIn(
+            (PROJECT_ROOT / "agent_code/learning_common/runtime.py").resolve(),
+            dependencies,
+        )
+        self.assertNotIn(
+            (PROJECT_ROOT / "agent_code/double_q_lambda_agent/callbacks.py").resolve(),
+            dependencies,
+        )
+        self.assertNotIn(
+            (PROJECT_ROOT / "agent_code/learning_common/tile_coding.py").resolve(),
+            dependencies,
+        )
+
+    def test_agent_source_hash_is_independent_of_task_config(self):
+        task1 = PROJECT_ROOT / "experiments/configs/expected_sarsa_lambda_task1.json"
+        task2 = PROJECT_ROOT / "experiments/configs/expected_sarsa_lambda_task2.json"
+        self.assertEqual(
+            _source_hash("expected_sarsa_lambda_agent", task1),
+            _source_hash("expected_sarsa_lambda_agent", task2),
+        )
 
     def test_four_tasks_select_expected_scenario_and_agents(self):
         self.assertEqual(set(TASKS), {1, 2, 3, 4})

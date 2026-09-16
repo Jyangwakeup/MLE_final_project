@@ -199,7 +199,10 @@ def neural_end_round(self, last_game_state, last_action, events, *, actions,
             if self.pending is not None and self.pending[0] != key:
                 _submit(self, self.pending[1])
             reward_context = {}
-            if self.reward_id == "r5_conditional_loop":
+            if {
+                "conditional_loop_penalty", "avoidable_wait_penalty",
+                "history_loop_penalty_step", "history_wait_penalty_step",
+            }.intersection(self.reward_spec):
                 cached_features(self, last_game_state, extractor)
                 reward_context = temporal_reward_context(
                     self, last_action, last_game_state,

@@ -40,6 +40,11 @@ _NEW_AGENTS = {
     "double_dqn_continuous_v3_agent",
     "cnn_path_double_dqn_agent",
     "double_dqn_phase_agent",
+    "double_dqn_continuous_v4_agent",
+    "rainbow_lite_agent", "expected_sarsa_lambda_agent", "double_q_lambda_agent",
+    "rainbow_lite_no_safety_agent", "expected_sarsa_lambda_no_safety_agent",
+    "rainbow_lite_v5_agent",
+    "expected_sarsa_lambda_v5_agent",
 }
 _BASELINE_FEATURE_IDS = {
     "discrete-v1", "discrete-q-v2", "discrete-objective-v1",

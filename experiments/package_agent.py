@@ -22,11 +22,13 @@ SUPPORTED = {
     "double_dqn_phase_agent",
     "cnn_double_dqn_agent", "hybrid_dueling_double_dqn_agent",
     "cnn_path_double_dqn_agent",
+    "double_dqn_continuous_v4_agent",
+    "rainbow_lite_agent", "expected_sarsa_lambda_agent", "double_q_lambda_agent",
 }
 
 
 def _checkpoint_payload(path: Path, algorithm: str):
-    if algorithm == "double_q_learning":
+    if algorithm in {"double_q_learning", "expected_sarsa_lambda", "double_q_lambda"}:
         with path.open("rb") as file:
             return pickle.load(file)
     return torch.load(path, map_location="cpu", weights_only=True)
