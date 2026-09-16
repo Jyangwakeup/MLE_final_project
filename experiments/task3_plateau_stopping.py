@@ -58,6 +58,14 @@ def _git(project_root: Path, *arguments: str) -> str:
     ).stdout.strip()
 
 
+def _git_is_ancestor(project_root: Path, ancestor: str, descendant: str) -> bool:
+    """Return whether descendant preserves the preregistered source history."""
+    return subprocess.run(
+        ("git", "merge-base", "--is-ancestor", ancestor, descendant),
+        cwd=project_root, check=False, capture_output=True, text=True,
+    ).returncode == 0
+
+
 def _resolve(project_root: Path, raw: str) -> Path:
     path = Path(raw)
     return path if path.is_absolute() else project_root / path
@@ -688,8 +696,8 @@ def run_pipeline(
     if _git(project_root, "status", "--porcelain"):
         raise ValueError("Task 3 plateau experiment requires a clean worktree")
     base = str(manifest["source_base"])
-    if _git(project_root, "rev-parse", "HEAD^") != base:
-        raise ValueError("Plateau implementation must be the direct child of source_base")
+    if not _git_is_ancestor(project_root, base, commit):
+        raise ValueError("Plateau implementation must descend from source_base")
     short_commit = commit[:7]
     pipeline_path = (
         project_root / "runs" / f"task3_plateau_pipeline_{short_commit}" / "result.json")
