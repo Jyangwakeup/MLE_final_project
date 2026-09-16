@@ -459,6 +459,22 @@ seed 11 优胜配置才从零复制 seeds 22/33。三训练 seed × 20 开发 se
 
 按预注册顺序选择 seed 22 checkpoint 作为 **Task 2 winner candidate**，并且只对该 checkpoint 使用 seeds 11000–11099 做一次主验证。结果为 Task 2 `7.25` coins（95% CI `[6.96, 7.53]`）、`100.26` crates（`[97.48, 103.02]`）、0% 自杀、0% 零放弹局、100% 炸弹存活；Task 1 父子均为 50 分，保留率 100%。invalid、timeout 和 skipped 均为 0，完整 act P95 为 `6.38 ms`、最大值 `20.58 ms`。全部联合门槛通过，因此该 seed 22 checkpoint 正式指定为 **Task 2 winner**。仓库内可直接加载的权重位于 [`agent_code/double_dqn_continuous_v2_agent/final.pt`](agent_code/double_dqn_continuous_v2_agent/final.pt)，机器清单与 640 局精简证据分别见 [`experiments/task2_winner.json`](experiments/task2_winner.json) 和 [`experiments/task2_winner_evaluations.csv`](experiments/task2_winner_evaluations.csv)。最终测试 seeds 20000–20099 仍未使用，本轮未启动 Task 3。
 
+### 8.9 无生存 mask 的因果炸弹信用实验
+
+为检验能否只靠学习信号解决 Expected SARSA(lambda) 的 Task 2 自杀问题，新增
+`r11_causal_bomb_credit`。该版本保持 `survival-mask-v1/mode=off`，不删除任何物理合法
+动作；自杀时直接更新此前的放弹状态，炸箱奖励延迟到炸弹消失且智能体仍可放弹时结算，
+并把探索从 `0.15` 线性降至 `0.02`。seed 11 从对应 Task 1 权重 warm start，训练到
+150031 个阶段动作后于第 1747 局停止。
+
+seeds 10000–10019 的关闭探索 Task 2 评估为：`0.25` coins、`7.95` crates、100%
+自杀、0% 生存、0% 零放弹局、炸弹存活率 `53/69=76.81%`，invalid/timeout/skipped
+均为 0，完整 act P95 `8.05 ms`、最大值 `22.30 ms`。同 seeds 的 Task 1 回测为
+`49.8/50`，act P95 `19.15 ms`、最大值 `40.17 ms`。相较旧 r10 训练末期，平均回合
+被显著延长，但冻结策略仍在每局最终自杀；因此该实验明确失败，不复制 seeds 22/33，
+不具备 Task 3 晋级资格。结果表明单次终局/放弹回溯不足，下一轮若开展必须预注册密集
+存活余量奖励或更换学习器，不得继续堆叠同类终局惩罚。
+
 ## 9. 核心实验如何分配和解释
 
 | 实验 | 负责人 | 保持不变 | 唯一变化 | 要回答的问题 |

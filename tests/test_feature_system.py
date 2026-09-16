@@ -40,7 +40,8 @@ class RegistryAndBaselineTestCase(unittest.TestCase):
         self.assertEqual(available_feature_ids(), (
             "discrete-v1", "discrete-q-v2", "discrete-objective-v1",
             "discrete-compact-v1", "continuous-v1", "continuous-v2",
-            "continuous-v2-legacy78", "continuous-v3", "board-v1", "hybrid-v1",
+            "continuous-v2-legacy78", "continuous-v3", "continuous-v4", "continuous-v5",
+            "board-v1", "hybrid-v1",
         ))
         self.assertEqual(normalize_feature_id(legacy_version="v1"), "discrete-v1")
         with self.assertRaisesRegex(ValueError, "conflicts"):

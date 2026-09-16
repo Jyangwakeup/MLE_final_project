@@ -25,6 +25,8 @@ Task 1 的最终 reward 对照使用
 | `double_dqn_continuous_agent` | `double_dqn` | `continuous-v2`，84 维安全消融基线 | `final.pt` |
 | `double_dqn_continuous_v2_agent` | `double_dqn` | 新训练使用 84 维 `continuous-v2`；自动只读兼容旧 78 维 checkpoint | `final.pt` |
 | `double_dqn_continuous_v3_agent` | `double_dqn` | `continuous-v3`，显式安全余量消融 | `final.pt` |
+| `double_dqn_continuous_v4_agent` | `double_dqn` | `continuous-v4`，连续 WAIT 与 2–8 步周期历史 | `final.pt` |
+| `rainbow_lite_v5_agent` | `rainbow_lite` | `continuous-v5`，全局箱区密度与放弹后目标恢复 | `final.pt` |
 | `cnn_double_dqn_agent` | `cnn_double_dqn` | `board-v1` | `final.pt` |
 | `hybrid_dueling_double_dqn_agent` | `hybrid_dueling_double_dqn` | `hybrid-v1` | `final.pt` |
 

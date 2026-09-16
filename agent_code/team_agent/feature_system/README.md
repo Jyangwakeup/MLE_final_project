@@ -72,6 +72,8 @@ danger.shape = (HORIZON + 1, width, height)
 | `continuous-v2` | 历史感知 MLP Double DQN | vector 84 | 是 | 不兼容 |
 | `continuous-v2-legacy78` | 旧 Double DQN 冻结适配器 | vector 78 | 是 | 仅冻结加载 |
 | `continuous-v3` | Double DQN 安全特征消融 | vector 107 | 是 | v6 新谱系 |
+| `continuous-v4` | WAIT/周期历史 Double DQN | vector 126 | 是 | 与 v2/v3 不兼容 |
+| `continuous-v5` | 全局箱区与放弹目标恢复 Rainbow | vector 140 | 是 | 与 v4 不兼容 |
 | `board-v1` | CNN | board `12×W×H` | 主要为原始结构化通道 | 不兼容 |
 | `hybrid-v1` | CNN + MLP | board `12×W×H` + vector 70 | 两者组合 | 不兼容 |
 
