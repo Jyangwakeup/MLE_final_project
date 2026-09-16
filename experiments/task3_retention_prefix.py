@@ -7,6 +7,7 @@ import csv
 import hashlib
 import json
 import math
+import math
 import os
 from pathlib import Path
 import pickle
@@ -240,7 +241,11 @@ def evaluate_gates(
     checks: dict[str, dict[str, Any]] = {}
 
     def check(name: str, actual: float, threshold: float, operator: str) -> None:
-        passed = actual >= threshold if operator == ">=" else actual <= threshold
+        equal = math.isclose(actual, threshold, rel_tol=1e-12, abs_tol=1e-12)
+        passed = (
+            actual > threshold or equal
+            if operator == ">=" else actual < threshold or equal
+        )
         checks[name] = {
             "actual": actual, "operator": operator,
             "threshold": threshold, "passed": passed,
@@ -263,15 +268,19 @@ def evaluate_gates(
     kill_gain = float(child["task3"]["mean_kills"] - parent["task3"]["mean_kills"])
     first_gain = float(
         child["task3"]["first_place_rate"] - parent["task3"]["first_place_rate"])
+    kill_threshold = float(gates["task3_kill_gain"])
+    first_threshold = float(gates["task3_first_place_gain"])
     combat_passed = (
-        kill_gain >= float(gates["task3_kill_gain"])
-        or first_gain >= float(gates["task3_first_place_gain"])
+        kill_gain > kill_threshold
+        or math.isclose(kill_gain, kill_threshold, rel_tol=1e-12, abs_tol=1e-12)
+        or first_gain > first_threshold
+        or math.isclose(first_gain, first_threshold, rel_tol=1e-12, abs_tol=1e-12)
     )
     checks["task3_combat_gain"] = {
         "kill_gain": kill_gain,
-        "kill_threshold": float(gates["task3_kill_gain"]),
+        "kill_threshold": kill_threshold,
         "first_place_gain": first_gain,
-        "first_place_threshold": float(gates["task3_first_place_gain"]),
+        "first_place_threshold": first_threshold,
         "operator": "OR", "passed": combat_passed,
     }
     for task in ("task2", "task3"):

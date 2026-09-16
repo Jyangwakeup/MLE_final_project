@@ -85,6 +85,21 @@ class Task3RetentionPrefixTests(unittest.TestCase):
         self.assertTrue(passed)
         self.assertTrue(checks["task3_combat_gain"]["passed"])
 
+    def test_combat_boundary_tolerates_binary_float_representation(self):
+        parent = {task: metrics() for task in ("task1", "task2", "task3")}
+        parent["task3"]["first_place_rate"] = 0.45
+        child = {
+            "task1": metrics(),
+            "task2": metrics(),
+            "task3": metrics(mean_score=10.5, mean_kills=1.0,
+                             first_place_rate=0.5),
+        }
+        passed, checks = evaluate_gates(parent, child, GATES)
+        self.assertTrue(passed)
+        self.assertEqual(checks["task3_combat_gain"]["first_place_gain"],
+                         0.04999999999999999)
+        self.assertTrue(checks["task3_combat_gain"]["passed"])
+
     def test_retention_failure_is_reported_without_rounding(self):
         parent = {task: metrics() for task in ("task1", "task2", "task3")}
         child = {
