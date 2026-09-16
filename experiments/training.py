@@ -203,6 +203,7 @@ def run_training_mode(
     run_session: Callable,
     source_commit: str | None,
     source_hash: str,
+    source_hash_scope: str | None = None,
 ) -> Path:
     """Validate and execute the training-specific CLI branch."""
     if args.seeds is not None:
@@ -278,8 +279,12 @@ def run_training_mode(
     algorithm = agent_contract.algorithm
     init_checkpoint = args.init_from_checkpoint
     if init_checkpoint is not None:
-        if algorithm not in {"dqn", "double_dqn"}:
-            raise ValueError("--init-from-checkpoint only supports neural agents")
+        if algorithm not in {
+            "dqn", "double_dqn", "rainbow_lite", "expected_sarsa_lambda",
+        }:
+            raise ValueError(
+                "--init-from-checkpoint only supports neural agents and "
+                "expected_sarsa_lambda")
         init_checkpoint = Path(init_checkpoint).expanduser().resolve()
         if not init_checkpoint.is_file():
             raise FileNotFoundError(
@@ -348,6 +353,7 @@ def run_training_mode(
         "performance_stopping": performance_stopping,
         "source_commit": source_commit,
         "source_hash": source_hash,
+        "source_hash_scope": source_hash_scope,
         "network_spec": agent_contract.network_spec,
         "hyperparameters": agent_contract.hyperparameters,
     }

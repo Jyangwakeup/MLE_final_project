@@ -61,6 +61,7 @@ def extract(
         game_state, previous_action=previous_action,
         previous_position=previous_position,
         previous_coin_target=previous_coin_target,
+        _context=context,
     )
     base = base_features.vector.copy()
     area_scale = log1p(float(context.width * context.height))
@@ -70,10 +71,9 @@ def extract(
         base[offset + 6] = log1p(float(reachability.reachable_area)) / area_scale
     prefix = base
 
-    normal_danger, normal_blocked = temporal_maps(
-        game_state, HORIZON, hypothetical_bomb=False)
+    normal_danger, normal_blocked = context.normal_danger, context.normal_blocked
     bomb_maps = (
-        temporal_maps(game_state, HORIZON, hypothetical_bomb=True)
+        (context.bomb_danger, context.bomb_blocked)
         if bool(context.legal_mask[ACTIONS.index("BOMB")]) else None
     )
     safety_values = []
@@ -111,4 +111,4 @@ def extract(
         prefix, np.asarray(safety_values, dtype=np.float32),
         np.asarray(globals_, dtype=np.float32),
     )).astype(np.float32, copy=False)
-    return VectorFeatures(FEATURE_ID, vector, context.legal_mask.copy())
+    return VectorFeatures(FEATURE_ID, vector, context.legal_mask.copy(), context)

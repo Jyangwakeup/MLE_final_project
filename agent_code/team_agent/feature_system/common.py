@@ -40,7 +40,9 @@ class FeatureContext:
     position: tuple[int, int]
     legal_mask: np.ndarray
     normal_danger: np.ndarray
+    normal_blocked: np.ndarray
     bomb_danger: Optional[np.ndarray]
+    bomb_blocked: Optional[np.ndarray]
     earliest_danger: np.ndarray
     movement_reachability: Mapping[str, ReachabilityResult]
     bomb_reachability: Optional[ReachabilityResult]
@@ -212,6 +214,7 @@ def _build_context(game_state: dict, *, include_navigation: bool) -> FeatureCont
         movement_reachability[action] = result
 
     bomb_danger = None
+    bomb_blocked = None
     bomb_reachability = None
     if legal_mask[5]:
         bomb_danger, bomb_blocked = temporal_maps(
@@ -251,7 +254,9 @@ def _build_context(game_state: dict, *, include_navigation: bool) -> FeatureCont
         position=position,
         legal_mask=legal_mask,
         normal_danger=normal_danger,
+        normal_blocked=normal_blocked,
         bomb_danger=bomb_danger,
+        bomb_blocked=bomb_blocked,
         earliest_danger=earliest_danger_time(normal_danger),
         movement_reachability=movement_reachability,
         bomb_reachability=bomb_reachability,

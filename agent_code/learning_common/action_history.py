@@ -3,6 +3,9 @@
 from __future__ import annotations
 
 
+POSITION_HISTORY_LIMIT = 33
+
+
 def init_action_history(owner) -> None:
     owner.feature_previous_action = None
     owner.feature_wait_streak = 0
@@ -11,6 +14,8 @@ def init_action_history(owner) -> None:
     owner.feature_own_bomb_pending = False
     owner.feature_previous_position = None
     owner.feature_previous_coin_target = None
+    owner.feature_position_history = []
+    owner.feature_position_history_key = None
 
 
 def action_history_for_state(owner, game_state: dict) -> tuple[str | None, int]:
@@ -24,6 +29,14 @@ def action_history_for_state(owner, game_state: dict) -> tuple[str | None, int]:
         owner.feature_own_bomb_pending = False
         owner.feature_previous_position = None
         owner.feature_previous_coin_target = None
+        owner.feature_position_history = []
+        owner.feature_position_history_key = None
+    key = (round_index, game_state.get("step"))
+    if getattr(owner, "feature_position_history_key", None) != key:
+        history = list(getattr(owner, "feature_position_history", ()))
+        history.append(tuple(game_state["self"][3]))
+        owner.feature_position_history = history[-POSITION_HISTORY_LIMIT:]
+        owner.feature_position_history_key = key
     if bool(game_state["self"][2]):
         owner.feature_own_bomb_position = None
         owner.feature_own_bomb_pending = False
@@ -57,6 +70,8 @@ def action_history_state(owner) -> dict[str, object]:
         "own_bomb_pending": bool(getattr(owner, "feature_own_bomb_pending", False)),
         "previous_position": getattr(owner, "feature_previous_position", None),
         "previous_coin_target": getattr(owner, "feature_previous_coin_target", None),
+        "position_history": list(getattr(owner, "feature_position_history", ())),
+        "position_history_key": getattr(owner, "feature_position_history_key", None),
     }
 
 
@@ -76,6 +91,12 @@ def load_action_history_state(owner, state: dict | None) -> None:
     previous_target = state.get("previous_coin_target")
     owner.feature_previous_coin_target = (
         None if previous_target is None else tuple(previous_target))
+    owner.feature_position_history = [
+        tuple(position) for position in state.get("position_history", ())
+    ][-POSITION_HISTORY_LIMIT:]
+    history_key = state.get("position_history_key")
+    owner.feature_position_history_key = (
+        None if history_key is None else tuple(history_key))
 
 
 def own_bomb_history_for_state(owner, game_state: dict) -> dict[str, object]:

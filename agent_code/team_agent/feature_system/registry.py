@@ -6,7 +6,7 @@ from typing import Callable, Optional
 
 from . import (
     board_v1, continuous_v1, continuous_v2, continuous_v2_legacy78,
-    continuous_v3, discrete_compact_v1,
+    continuous_v3, continuous_v4, continuous_v5, discrete_compact_v1,
     discrete_objective_v1, discrete_q_v2, discrete_v1, hybrid_v1,
 )
 from .types import FeatureSchema
@@ -23,6 +23,8 @@ _MODULES = {
     continuous_v2.FEATURE_ID: continuous_v2,
     continuous_v2_legacy78.FEATURE_ID: continuous_v2_legacy78,
     continuous_v3.FEATURE_ID: continuous_v3,
+    continuous_v4.FEATURE_ID: continuous_v4,
+    continuous_v5.FEATURE_ID: continuous_v5,
     board_v1.FEATURE_ID: board_v1,
     hybrid_v1.FEATURE_ID: hybrid_v1,
 }
