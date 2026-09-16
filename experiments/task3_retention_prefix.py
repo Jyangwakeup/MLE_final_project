@@ -16,6 +16,12 @@ from typing import Any, Mapping, Sequence
 
 import numpy as np
 
+# ``python experiments/task3_retention_prefix.py`` puts only the experiments
+# directory on sys.path.  Add the repository root before importing sibling
+# packages so the documented direct invocation works outside ``python -m``.
+if __package__ in (None, ""):
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
 from experiments.compare_evaluations import compare_evaluations
 from experiments.resume import CHECKPOINT_SCHEMA_VERSION, _load_generation
 
@@ -308,8 +314,14 @@ def _evaluation_command(
     ]
 
 
-def run_pipeline(manifest_path: Path, project_root: Path) -> tuple[int, dict[str, Any]]:
+def run_pipeline(
+    manifest_path: Path, project_root: Path, *, attempt_suffix: str = "",
+) -> tuple[int, dict[str, Any]]:
     manifest = _json(manifest_path)
+    if attempt_suffix and not (
+        attempt_suffix.startswith("_retry") and attempt_suffix[6:].isdigit()
+    ):
+        raise ValueError("attempt suffix must be empty or match _retryN")
     commit = _git(project_root, "rev-parse", "HEAD")
     short_commit = commit[:7]
     if _git(project_root, "status", "--porcelain"):
@@ -323,14 +335,15 @@ def run_pipeline(manifest_path: Path, project_root: Path) -> tuple[int, dict[str
     parent_run = _resolve(project_root, manifest["parent_run"])
     reference_run = _resolve(project_root, manifest["reference_500_run"])
     parent_checkpoint = parent_run / "checkpoints" / "final.pt"
-    run_id = manifest["run_id_template"].format(commit=short_commit)
+    run_id = manifest["run_id_template"].format(commit=short_commit) + attempt_suffix
     candidate_run = project_root / "runs" / run_id
-    evidence_id = manifest["evidence_id_template"].format(commit=short_commit)
+    evidence_id = (
+        manifest["evidence_id_template"].format(commit=short_commit) + attempt_suffix)
     evidence_root = project_root / "runs" / evidence_id
     prefixes = {
         role: {
             task: manifest["evaluation_id_template"].format(
-                role=role, task=task, commit=short_commit)
+                role=role, task=task, commit=short_commit) + attempt_suffix
             for task in (1, 2, 3)
         } for role in ("parent", "child")
     }
@@ -430,9 +443,13 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--manifest", required=True, type=Path)
     parser.add_argument("--project-root", type=Path, default=Path.cwd())
+    parser.add_argument("--attempt-suffix", default="")
     args = parser.parse_args(argv)
     try:
-        code, _ = run_pipeline(args.manifest.resolve(), args.project_root.resolve())
+        code, _ = run_pipeline(
+            args.manifest.resolve(), args.project_root.resolve(),
+            attempt_suffix=args.attempt_suffix,
+        )
         return code
     except Exception as exception:
         print(f"error: {exception}", file=sys.stderr)

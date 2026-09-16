@@ -2,7 +2,7 @@
   "schema_version": "task3-retention-prefix-v1",
   "status": "preregistered",
   "branch": "task3-controllable-survival",
-  "expected_parent_commit": "b3b4685f869856ffc80168ae3f9128b974b834d7",
+  "expected_parent_commit": "6604775c7ebac69b3f3f647f3e9c6adc6849eb45",
   "agent": "double_dqn_continuous_v2_agent",
   "training_seed": 22,
   "training_rounds": 250,

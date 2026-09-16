@@ -2,6 +2,8 @@ import csv
 import json
 from pathlib import Path
 import pickle
+import subprocess
+import sys
 import tempfile
 import unittest
 from unittest import mock
@@ -57,6 +59,14 @@ GATES = {
 
 
 class Task3RetentionPrefixTests(unittest.TestCase):
+    def test_documented_script_invocation_imports_repository_modules(self):
+        root = Path(__file__).resolve().parents[1]
+        completed = subprocess.run(
+            [sys.executable, "experiments/task3_retention_prefix.py", "--help"],
+            cwd=root, capture_output=True, text=True,
+        )
+        self.assertEqual(completed.returncode, 0, completed.stderr)
+
     def test_gate_passes_exact_boundaries_and_uses_combat_or(self):
         parent = {task: metrics() for task in ("task1", "task2", "task3")}
         child = {
