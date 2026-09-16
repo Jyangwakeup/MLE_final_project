@@ -453,6 +453,17 @@ python3 experiments/run.py \
 `1→2→3→4`，且算法、训练/Agent seed、动作顺序、特征版本、奖励版本、完整奖励表、
 训练设备、`source_commit`、`source_hash` 和 resume schema 必须一致。探索、n-step、回放保留和预算只可按直接 Task 晋级的预注册合同改变。
 当前新实验 schema 为 `training-resume-v11`；v10及更早 snapshot 和冻结 final checkpoint 默认不能精确续训。完整 v6 Task 1 run 仍只能通过显式 `--migrate-resume-from`；完整 v7 Task 2 Double DQN 仅能通过 `--transfer-task3-safety-from` 建立v11安全实验子run。普通`--resume-from`不自动迁移。
+
+Task 3平台实验由`task3_plateau_stopping.py`编排50局不可变v11子run。它只使用
+冻结Task 1/2/3能力曲线作早停，先运行seed 33，再条件式复制seeds 11/22、确认并
+执行单候选主验证：
+
+```bash
+python experiments/task3_plateau_stopping.py \
+  --manifest experiments/task3_plateau_stopping.json
+```
+
+中断后显式添加`--resume`；已有run和评估目录永不覆盖。
 同 Task 的早停配置也必须保持一致。
 
 每回合边界发布一代完整快照，`resume/` 只保留最新两代。最新一代校验失败时自动回退
