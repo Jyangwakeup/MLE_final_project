@@ -305,7 +305,14 @@ def safety_decision(
         # exists either. Keep learned ranking among physical non-bomb actions.
         base = base.copy()
         base[ACTIONS.index("BOMB")] = False
-        return SafetyDecision(base, base.copy(), True, False, (0,) * 6, (-1.0,) * 6)
+        # A physical fallback cannot satisfy an active own-bomb obligation.
+        # Preserve the fallback action set, but never hide the missing proof
+        # simply because v1 already exhausted all horizon-survivable actions.
+        return SafetyDecision(
+            base, base.copy(), True, False, (0,) * 6, (-1.0,) * 6,
+            opponent_fallback=own_bomb_pending,
+            robust_guarantee_loss=own_bomb_pending,
+        )
     if spec["version"] in CONTROLLABLE_SAFETY_VERSIONS and not physical_fallback:
         from agent_code.team_agent.controllable_survival import (
             controllable_survival_actions, danger_interval_steps,
