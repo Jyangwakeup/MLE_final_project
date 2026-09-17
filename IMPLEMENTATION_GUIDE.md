@@ -903,3 +903,12 @@ OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 NUMEXPR_NUM_THREADS=1
 仅基础设施中断可在完整身份一致时加 `--resume`，半成品保留，重试目录独立。
 `runs/task4_shared_parent_20260917_<commit>/result.json` 记录当前阶段；
 只有 `status=passed` 且 `task4_qualified=true` 可报告 Task 4 通过。
+
+### 本轮 Task 4 实际结果
+
+源码 `013fef5` 的完整测试402项通过（1项跳过），但逻辑seed22的独立诊断
+（RNG22422）在第1局第57步触发 `robust_search_timed_out`。按合同终止，
+A/B正式训练、父基线、确认与主验证均未开始，Task 4未通过。
+完整act为406.534ms，已观察57次决策的部分样本P95为315.344ms；
+未修改安全机制或放宽门槛。详见
+[`Task 4冻结结果`](docs/research/task4-frozen-results.md)。

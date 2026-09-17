@@ -1,0 +1,88 @@
+{
+  "conclusion": "验证失败",
+  "reason": "diagnostic_safety_engineering_failure",
+  "task4_qualified": false,
+  "implementation_started_at": "2026-09-17T16:36:29Z",
+  "experiment_finished_at": "2026-09-17T18:58:46.035398+02:00",
+  "source_commit": "013fef5b6456606a9dc5a8665b4523c5f63374d9",
+  "manifest_sha256": "2aac777396b30314d98f5a74ea6039ad3c19de71644b8d9cf06bcee4cde6430b",
+  "config_sha256": {
+    "A": "6a1c9f9d0714afdf0ae4881f2d7a08b9208cd86dbab6e1962ade8e6c1e48118d",
+    "B": "8c5deb0ded4371942fc65bdbae577ec512c04c8b6407fb4329e05d925e187617"
+  },
+  "tests": {
+    "tests": 402,
+    "skipped": 1,
+    "result": "OK",
+    "seconds": 98.127
+  },
+  "stages": {
+    "diagnostic": {
+      "logical_seed": 22,
+      "actual_seed": 22422,
+      "completed_rounds": 0,
+      "interrupted_round": 1,
+      "decision_step": 57,
+      "observed_decisions": 57
+    },
+    "diagnostic_seeds_11_33": "not_started",
+    "mixed_baseline": "not_started",
+    "development_baselines": "not_started",
+    "A": "not_started",
+    "B": "not_started",
+    "confirmation": "not_started",
+    "main_validation": "not_started"
+  },
+  "partial_timing": {
+    "p95_seconds": 0.3153438091278076,
+    "max_seconds": 0.40653395652770996,
+    "note": "57 observed decisions in an interrupted round; not a completed frozen evaluation"
+  },
+  "safety_counts": {
+    "robust_search_timed_out": 1,
+    "robust_guarantee_loss": 0,
+    "avoidable_escape_collapse": 0,
+    "v1_to_physical_fallback": 0
+  },
+  "parent_weight": {
+    "path": "agent_code/double_dqn_continuous_v2_agent/task3_validated.pt",
+    "sha256": "b0b9e7ae9cbefa6523ed01e1d7a6d474b90b6272f9de1706ee80f1f109cc803d"
+  },
+  "initialization_only": {
+    "path": "/export/data/sfan/MLE_final_project_task4/runs/task4_shared_parent_20260917_A_2aac7773_diag_s22422_c0020_013fef5/checkpoints/final.pt",
+    "sha256": "81294e79fb6a2b1c76c68de500c8ab0e3beb64f303ed823c3fa300564dab5cf0",
+    "is_trained_task4": false,
+    "stage_action_steps": 0,
+    "updates": 356707
+  },
+  "frozen_metrics": null,
+  "paired_differences": null,
+  "bootstrap_intervals": null,
+  "diagnostic_evidence": {
+    "opponent_choice_counts": [
+      6,
+      3,
+      6
+    ],
+    "joint_profiles": 108,
+    "execution_orders": 24,
+    "raw_combinations_per_candidate": 2592,
+    "legal_candidates": [
+      "RIGHT",
+      "LEFT",
+      "WAIT"
+    ],
+    "proven_selected_action": "RIGHT",
+    "scenarios_evaluated_counter": 104,
+    "states_evaluated_counter": 55839,
+    "states_counter_includes_memo_hits": true
+  },
+  "artifacts": {
+    "runs/task4_shared_parent_20260917_013fef5/result.json": "9aa7d36e954131b9c7fb87d7702183c5a912781971750575411d0421cdbb2873",
+    "runs/task4_shared_parent_20260917_A_2aac7773_diag_s22422_c0020_013fef5/metadata.json": "922a8b2c40bd30d84377d2ad9e7c7bdf84406c8d36c2a1ed59dfbf91d3b04960",
+    "runs/task4_shared_parent_20260917_A_2aac7773_diag_s22422_c0020_013fef5/task4_safety_failure.json": "a952575d42dc6039192260568e7c03400e04e31b7a9925b988bcead1ef14d649",
+    "runs/task4_shared_parent_20260917_A_2aac7773_diag_s22422_c0020_013fef5/task4_failure_states.pkl": "cdabc7fe2034d98ca05eb6a9ad6fd66a2e2bcfb756bcce7eb59a9de7deb98dee",
+    "runs/task4_shared_parent_20260917_A_2aac7773_diag_s22422_c0020_013fef5/timing.jsonl": "a6669dddf3bd56d3049e1c340ca11b152e3996dc9ec2142ab31474e671f98868",
+    "runs/task4_admission/unittest.log": "58cb2666fd7231d6d12a1632d1ec7b7b117bd7c857732151692bf628906fead2"
+  }
+}
