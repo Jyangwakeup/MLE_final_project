@@ -26,17 +26,30 @@ def _leaves(root: Path) -> list[Path]:
     return leaves
 
 
+def _summary_rows(root: Path, leaves: list[Path]) -> list[dict[str, str]]:
+    """Read the aggregate multi-seed summary, or leaf summaries for one run."""
+    aggregate = root / f"{root.name}_summary" / "summary.csv"
+    if aggregate.is_file():
+        return list(csv.DictReader(aggregate.open(encoding="utf-8")))
+    rows: list[dict[str, str]] = []
+    for leaf in leaves:
+        summary = leaf / "summary" / "summary.csv"
+        if summary.is_file():
+            rows.extend(csv.DictReader(summary.open(encoding="utf-8")))
+    return rows
+
+
 def _summary(root: Path, agent: str) -> dict:
     episodes = []
-    summaries = []
-    for leaf in _leaves(root):
+    leaves = _leaves(root)
+    for leaf in leaves:
         for line in (leaf / "episodes.jsonl").read_text(encoding="utf-8").splitlines():
             episode = json.loads(line)
             target = next(item for item in episode["agents"] if item["name"] == agent)
             episodes.append((episode, target))
-        summary = leaf / "summary" / "summary.csv"
-        if summary.is_file():
-            summaries.extend(csv.DictReader(summary.open(encoding="utf-8")))
+    summaries = _summary_rows(root, leaves)
+    if not summaries:
+        raise ValueError(f"{root} contains no timing summary")
     count = len(episodes)
     steps = sum(int(episode["round_steps"]) for episode, _ in episodes)
     bombs = sum(float(target["bombs"]) for _, target in episodes)

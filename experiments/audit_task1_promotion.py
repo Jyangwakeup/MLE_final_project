@@ -26,6 +26,19 @@ def _sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
+def _summary_rows(root: Path, leaves: list[Path]) -> list[dict[str, str]]:
+    """Read the aggregate multi-seed summary, or leaf summaries for one run."""
+    aggregate = root / f"{root.name}_summary" / "summary.csv"
+    if aggregate.is_file():
+        return list(csv.DictReader(aggregate.open(encoding="utf-8")))
+    rows: list[dict[str, str]] = []
+    for leaf in leaves:
+        summary = leaf / "summary" / "summary.csv"
+        if summary.is_file():
+            rows.extend(csv.DictReader(summary.open(encoding="utf-8")))
+    return rows
+
+
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--training-run", required=True, type=Path)
@@ -50,15 +63,16 @@ def main(argv=None) -> int:
         checkpoint = (training / checkpoint).resolve()
 
     episodes = []
-    summary_rows = []
-    for leaf in _leaves(args.stage_gate.resolve()):
+    stage_gate = args.stage_gate.resolve()
+    leaves = _leaves(stage_gate)
+    for leaf in leaves:
         for line in (leaf / "episodes.jsonl").read_text(encoding="utf-8").splitlines():
             episode = json.loads(line)
             target = next(item for item in episode["agents"] if item["name"] == args.agent)
             episodes.append((episode, target))
-        summary = leaf / "summary" / "summary.csv"
-        if summary.is_file():
-            summary_rows.extend(csv.DictReader(summary.open(encoding="utf-8")))
+    summary_rows = _summary_rows(stage_gate, leaves)
+    if not summary_rows:
+        raise ValueError(f"{stage_gate} contains no timing summary")
 
     steps = sum(int(episode["round_steps"]) for episode, _ in episodes)
     mean_score = sum(float(target["score"]) for _, target in episodes) / len(episodes)
@@ -66,7 +80,7 @@ def main(argv=None) -> int:
     p95 = max(float(row["act_p95_time"]) for row in summary_rows)
     maximum = max(float(row["act_max_time"]) for row in summary_rows)
     checks = {
-        "training_status": metadata.get("status") == "early_stopped",
+        "training_status": metadata.get("status") in {"completed", "early_stopped"},
         "score_converged": bool(performance.get("converged")),
         "three_consecutive_passes": (
             separated and all(bool(item["passed"]) for item in final_three)

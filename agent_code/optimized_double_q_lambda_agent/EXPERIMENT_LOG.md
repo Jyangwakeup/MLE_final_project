@@ -76,12 +76,27 @@ checkpoint SHA-256 与最终指标。
 
 | 实验 ID | 阶段 | 状态 | 固定合同 | 验收 |
 |---|---|---|---|---|
-| T2-L01 | Task 1 正式父链，seed 11 | 已提交：Slurm `472900` | Double Q(lambda)、`continuous-v2`、`r7_safe_credit_potential`、safety-all | `9000--9019` 三次连续 mean score ≥48；随后 `10000--10019` 独立 stage gate。 |
-| T2-P01 | Task 2 pilot，seed 11 | 等待 T2-L01 | 同一合同，`classic`、BOMB enabled、150k actions / 至少500局 | Task 2 质量门槛、Task 1 保留率与 CPU 时延均通过。 |
+| T2-L01 | Task 1 正式父链，seed 11 | 已完成并晋级：Slurm `472900` | Double Q(lambda)、`continuous-v2`、`r7_safe_credit_potential`、safety-all | `9000--9019` 三次连续 mean score ≥48；随后 `10000--10019` 独立 stage gate。 |
+| T2-P01 | Task 2 pilot，seed 11 | 运行中：Slurm `472901` | 同一合同，`classic`、BOMB enabled、150k actions / 至少500局 | Task 2 质量门槛、Task 1 保留率与 CPU 时延均通过。 |
 
 T2-L01 的冻结性能评估从第 200 局开始，每 50 个新增训练回合执行一次；只有连续三次
 通过后才停止。其 `promotion_audit.json` 同时核验 checkpoint reload、独立打包文件、
 20-seed stage gate、无效动作率及 CPU 时延。T2-P01 仅在该审计文件为 `passed=true` 后执行。
+
+### T2-L01 正式父链结果（已完成）
+
+训练于 300 局、99,845 个 action steps 停止；停止原因是正式的
+`task1_score_converged`，并非 reward early stopping。`9000--9019` 上第 200、250、300 局
+的三次能力评估均为平均得分 **50.0 / 50**，连续通过次数为 1、2、3。随后固定最终
+checkpoint 在独立 `10000--10019` 上完成 20 局 stage gate，平均得分 **50.0 / 50**，
+无效动作率 0%，`act` P95 / max 为 **11.35 ms / 14.44 ms**。
+
+- 父 checkpoint：`runs/qlambda_formal_t1_s11_j472900/checkpoints/final.pkl`
+- SHA-256：`28f9e723d644da3568fc5e60fbb560b60abdc3a469f9ada264c8f915237894b4`
+- 审计：`runs/qlambda_formal_t1_s11_j472900/promotion_audit.json`，`passed=true`
+
+因此该 run 是 T2-P01 的唯一 `--resume-from` 父模型。此前 safety-off 的 96% checkpoint
+仍保留为 Task 1 对照与回退证据，但不参与此正式迁移链。
 
 Task 2 每 25k action steps 冻结一次候选；每个候选同时在 Task 1 和 Task 2 的
 `10000--10019` 上评估。选模必须满足 Task 2 quality gate（平均金币 ≥6、平均炸箱 ≥60、

@@ -899,11 +899,14 @@ def validate_resume_transition(
     for field in (
         "algorithm", "seed", "checkpoint_schema", "reward_spec",
         "training_device_type", "training_device_name", "agent_seed",
-        "source_commit", "source_hash", "safe_exploration", "safety_spec",
+        "source_hash", "safe_exploration", "safety_spec",
         "safety_replay_spec",
     ):
         if parent.get(field) != child.get(field):
             raise ValueError(f"Resume {field} must match the parent run")
+    # ``source_hash`` is the executable agent identity.  ``source_commit`` is
+    # retained in every manifest for provenance, but must not reject a resume
+    # after an unrelated documentation or experiment-log commit.
     parent_source_scope = parent.get("source_hash_scope")
     child_source_scope = child.get("source_hash_scope")
     if parent_source_scope != child_source_scope:
