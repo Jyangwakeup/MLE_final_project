@@ -67,6 +67,28 @@ checkpoint SHA-256 与最终指标。
 **正式通过 Task 1 的开发集与独立确认集验收**。后续迁移至 Task 2 时保留此文件
 作为可回退的 Task 1 checkpoint，不再以训练 reward 或单局结果替代冻结验收。
 
+## 正式 Task 1 → Task 2 训练链
+
+此前的 `T1-E01` 使用 safety `off`，因此虽已在开发集和独立确认集达到 96%，但不能作为
+使用 safety `all` 的正式 Task 2 `--resume-from` 父 run。本链从零重建 seed 11 的相同模型、
+`continuous-v2` 和 `r7_safe_credit_potential` 合同，只将 safety 固定为
+`survival-mask-v1/all`。
+
+| 实验 ID | 阶段 | 状态 | 固定合同 | 验收 |
+|---|---|---|---|---|
+| T2-L01 | Task 1 正式父链，seed 11 | 待提交 | Double Q(lambda)、`continuous-v2`、`r7_safe_credit_potential`、safety-all | `9000--9019` 三次连续 mean score ≥48；随后 `10000--10019` 独立 stage gate。 |
+| T2-P01 | Task 2 pilot，seed 11 | 等待 T2-L01 | 同一合同，`classic`、BOMB enabled、150k actions / 至少500局 | Task 2 质量门槛、Task 1 保留率与 CPU 时延均通过。 |
+
+T2-L01 的冻结性能评估从第 200 局开始，每 50 个新增训练回合执行一次；只有连续三次
+通过后才停止。其 `promotion_audit.json` 同时核验 checkpoint reload、独立打包文件、
+20-seed stage gate、无效动作率及 CPU 时延。T2-P01 仅在该审计文件为 `passed=true` 后执行。
+
+Task 2 每 25k action steps 冻结一次候选；每个候选同时在 Task 1 和 Task 2 的
+`10000--10019` 上评估。选模必须满足 Task 2 quality gate（平均金币 ≥6、平均炸箱 ≥60、
+自杀率 ≤5%、放弹存活率 ≥95%、每弹炸箱 ≥1.5 等）以及 Task 1 分数保留率 ≥90%。
+若 T2-P01 未通过，只根据少放弹、自杀、空放、循环或 tile/Q 值诊断修改一个因素，随后从
+T2-L01 父 run 重新开始 Task 2，不同时修改特征、奖励和超参数。
+
 重试使用本地且被 Git 忽略的 `.venv-compute` 环境：由
 `/home/students/ji/.local/bin/python3.10` 创建，并安装 CPU 训练依赖。
 
