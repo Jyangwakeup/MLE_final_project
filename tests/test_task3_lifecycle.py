@@ -131,6 +131,38 @@ class LifecycleTests(unittest.TestCase):
             np.testing.assert_array_equal(transition.next_state, self.owner._decision_snapshot.vector)
             train.end_of_round(self.owner, new, action, [])
 
+    def replay_escape_fixture(self, name):
+        cases = json.loads(Path('tests/fixtures/escape_collapse_states.json').read_text())[name]
+        diagnostics = []
+        for case in cases:
+            observed = case['state']
+            observed['field'] = np.asarray(observed['field'])
+            observed['explosion_map'] = np.asarray(observed['explosion_map'])
+            observed['self'] = (*observed['self'][:3], tuple(observed['self'][3]))
+            observed['others'] = [(*a[:3], tuple(a[3])) for a in observed['others']]
+            observed['bombs'] = [(tuple(p), timer) for p, timer in observed['bombs']]
+            observed['coins'] = [tuple(p) for p in observed['coins']]
+            index = callbacks.ACTIONS.index(case['action'])
+            self.owner.model.q_values = lambda x, i=index: np.eye(6, dtype=np.float32)[i]
+            self.assertEqual(callbacks.act(self.owner, observed), case['action'])
+            diagnostics.append(copy.deepcopy(self.owner.last_safety_diagnostic))
+        return diagnostics
+
+    def test_physical_fallback_placement_does_not_invent_safe_alternative(self):
+        rows = self.replay_escape_fixture('no_safe_placement')
+        self.assertTrue(all(r['v1_to_physical_fallback'] for r in rows))
+        self.assertFalse(any(rows[0]['survives_horizon']))
+        self.assertFalse(self.owner._own_bomb_placement_certificate['had_safe_non_bomb_alternative'])
+        self.assertFalse(any(r['avoidable_escape_collapse'] for r in rows))
+        self.assertTrue(self.owner.feature_own_bomb_pending)
+
+    def test_real_safe_placement_followed_by_collapse_still_counts(self):
+        rows = self.replay_escape_fixture('genuine_collapse')
+        self.assertFalse(rows[0]['v1_to_physical_fallback'])
+        self.assertTrue(self.owner._own_bomb_placement_certificate['had_safe_non_bomb_alternative'])
+        self.assertEqual(sum(r['avoidable_escape_collapse'] for r in rows), 1)
+        self.assertTrue(rows[-1]['avoidable_escape_collapse'])
+
 
 if __name__ == '__main__':
     unittest.main()

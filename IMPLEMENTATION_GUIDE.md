@@ -751,6 +751,12 @@ Task2金币保留、Task3得分与战斗提升，seed33失败于战斗提升；�
 按原协议停止，不更换候选；该权重不能标记为Task3合格。
 完整机器证据及复现命令见`experiments/results/task3_lifecycle_20260917.json`。
 
+后续诊断确认这次主验证计数将物理回退中的WAIT误记为安全替代动作。
+`escape-collapse-v2`修正该证书条件，保持策略、权重和零异常阈值不变。
+按新的`experiments/task3_counter_validation.json`进行冻结验证：同三个检查点
+在21000–21099确认，原唯一候选seed22/c150在全部确认通过后才进入21100–21199主验证。
+不重训、不重新选模；旧失败报告保留。设计边界见ADR0009，验证结果以新运行记录为准。
+
 报告的规定结构、篇幅、署名和提交边界见 [`PROJECT_REQUIREMENTS.md`](PROJECT_REQUIREMENTS.md)。本节只记录团队的写作分工和复现材料积累方式，不把报告拆成三个互不相关的个人成果。
 
 | 成员 | 主要写作内容 |
