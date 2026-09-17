@@ -1,3 +1,4 @@
+# Frozen scalar reference from dc72b17; no production kernel imports.
 """Finite-horizon adversarial viability for an own-bomb danger interval."""
 
 from __future__ import annotations
@@ -9,11 +10,11 @@ import numpy as np
 
 import settings as s
 
-from .opponent_transitions import (
+from agent_code.team_agent.opponent_transitions import (
     ACTIONS, canonical_state_key, enumerate_opponent_transition_scenarios,
 )
-from .danger import blast_coords
-from .temporal_safety_features import temporal_maps
+from agent_code.team_agent.danger import blast_coords
+from agent_code.team_agent.temporal_safety_features import temporal_maps
 
 
 class _BudgetExpired(RuntimeError):
@@ -167,19 +168,17 @@ def controllable_survival_actions(
                 for position in opponent_reach[time_step]:
                     free_now[position] = False
             allowed_now = free_now & ~robust_danger[time_step]
-            # WAIT may remain on a cell even when entry is blocked next step;
-            # movement must enter an unblocked next cell. Slice shifts preserve
-            # board boundaries, unlike wrapping rolls, and are the exact OR of
-            # the scalar five-action recurrence.
-            following = viable[time_step + 1]
-            enterable = following & ~blocked[time_step + 1]
-            reachable = following.copy()
-            reachable[1:, :] |= enterable[:-1, :]
-            reachable[:-1, :] |= enterable[1:, :]
-            reachable[:, 1:] |= enterable[:, :-1]
-            reachable[:, :-1] |= enterable[:, 1:]
-            viable[time_step] = allowed_now & reachable
-            examined += int(np.count_nonzero(allowed_now))
+            for x, y in np.argwhere(allowed_now):
+                examined += 1
+                for dx, dy in ((0, 0), (0, -1), (1, 0), (0, 1), (-1, 0)):
+                    xx, yy = int(x + dx), int(y + dy)
+                    if (0 <= xx < field.shape[0]
+                            and 0 <= yy < field.shape[1]
+                            and viable[time_step + 1, xx, yy]
+                            and (dx == 0 and dy == 0
+                                 or not blocked[time_step + 1, xx, yy])):
+                        viable[time_step, x, y] = True
+                        break
             check_budget()
         position = tuple(state["self"][3])
         result = bool(viable[0, position[0], position[1]])

@@ -157,6 +157,9 @@ class Campaign:
             self.state=self.read(self.path)
         else:self.state=dict(status='created',task4_qualified=False,arms={},diagnostics={})
         self.stop=threading.Event();self.check_identity()
+        if self.m.get('admission_prerequisites'):
+            from experiments.viability_prerequisites import validate
+            validate(self.root,self.m)
 
     def write(self,path,value):
         value.update(self.identity);p._write_json(path,value)

@@ -225,3 +225,8 @@ _Avoid_: Best training checkpoint, development winner
 **Equivalent action execution orders**:
 Execution orders for one fixed joint action that differ only by exchanges of independent actions, yielding identical concrete successor states and preserving the earliest scenario witness. All opponents remain represented.
 _Avoid_: Nearest-opponent approximation, predicted execution order
+
+
+**Equivalent viability propagation**:
+A computation of the same finite-horizon controllable survival set using whole-board Boolean operations, retaining the distinction between staying on a blocked cell and entering one. It does not change the modeled opponents or accepted proofs.
+_Avoid_: Reduced safety horizon, approximate survival

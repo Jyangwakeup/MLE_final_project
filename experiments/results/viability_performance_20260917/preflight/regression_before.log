@@ -1,0 +1,13 @@
+F
+======================================================================
+FAIL: test_historical_timeout_regression_runtime_budget_unchanged (tests.test_vectorized_viability.ViabilityTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/data/sfan/MLE_final_project_task4_fast/tests/test_vectorized_viability.py", line 58, in test_historical_timeout_regression_runtime_budget_unchanged
+    self.assertFalse(result.timed_out,(repeat,result))
+AssertionError: True is not false : (1, ControllableSurvivalResult(proven_actions=('RIGHT', 'DOWN'), scenarios_evaluated=276, states_evaluated=167323, timed_out=True, first_failing_profile=None, first_failing_order=None))
+
+----------------------------------------------------------------------
+Ran 1 test in 0.812s
+
+FAILED (failures=1)

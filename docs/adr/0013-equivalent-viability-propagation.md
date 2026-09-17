@@ -1,0 +1,3 @@
+# Vectorize the scalar viability recurrence without changing safety
+
+Accepted. Profiling the second preserved Task 4 timeout identifies the future viability proof as the dominant cost; replace its per-cell five-action backward recurrence with bounded Boolean shifts while preserving WAIT, entry blocking, complete results, counters and witnesses against an independent scalar reference. Keep every opponent and all runtime gates, retain both prior terminal campaigns, and admit a new campaign only after both failure corpora, full tests and three diagnostic short runs pass; no retrospective repair of old results or threshold relaxation is permitted.
