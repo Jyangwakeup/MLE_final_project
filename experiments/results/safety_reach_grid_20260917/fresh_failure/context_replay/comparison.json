@@ -1,0 +1,22 @@
+{
+  "scope": "Diagnostic repeat, original failure remains terminal; no qualification claim",
+  "prefix_actions_compared": 314,
+  "prefix_action_differences": [],
+  "matching_metadata": [
+    "seed",
+    "agent_seed",
+    "source_hash",
+    "config_sha256",
+    "checkpoint",
+    "expanded_config",
+    "dependencies",
+    "hardware"
+  ],
+  "sequence_calls": 200,
+  "sequence_timeouts": 0,
+  "sequence_max_ms": 282.74887800216675,
+  "whole_game_actions": 400,
+  "whole_game_max_ms": 290.9426689147949,
+  "step79_ms": 290.9426689147949,
+  "conclusion": "Same recorded actor action prefix and runtime identity; isolated and whole-game diagnostic repeat did not reproduce timeout. Original timing failure unresolved."
+}

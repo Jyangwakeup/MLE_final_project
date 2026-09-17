@@ -1,0 +1,1602 @@
+[
+  {
+    "repeat": 0,
+    "step": 60,
+    "ms": 26.599806733429432,
+    "cpu_ms": 26.521690000000042,
+    "timeout": false,
+    "states": 79412
+  },
+  {
+    "repeat": 0,
+    "step": 61,
+    "ms": 6.6874828189611435,
+    "cpu_ms": 6.675229999999921,
+    "timeout": false,
+    "states": 0
+  },
+  {
+    "repeat": 0,
+    "step": 62,
+    "ms": 166.64672177284956,
+    "cpu_ms": 166.01801000000017,
+    "timeout": false,
+    "states": 407365
+  },
+  {
+    "repeat": 0,
+    "step": 63,
+    "ms": 57.44931194931269,
+    "cpu_ms": 57.266299999999774,
+    "timeout": false,
+    "states": 179990
+  },
+  {
+    "repeat": 0,
+    "step": 64,
+    "ms": 48.77889808267355,
+    "cpu_ms": 48.640980000000056,
+    "timeout": false,
+    "states": 134002
+  },
+  {
+    "repeat": 0,
+    "step": 65,
+    "ms": 27.416217140853405,
+    "cpu_ms": 27.363029999999622,
+    "timeout": false,
+    "states": 113924
+  },
+  {
+    "repeat": 0,
+    "step": 66,
+    "ms": 14.729288406670094,
+    "cpu_ms": 14.673549999999924,
+    "timeout": false,
+    "states": 30496
+  },
+  {
+    "repeat": 0,
+    "step": 67,
+    "ms": 14.362065121531487,
+    "cpu_ms": 14.338709999999644,
+    "timeout": false,
+    "states": 32330
+  },
+  {
+    "repeat": 0,
+    "step": 68,
+    "ms": 7.938935421407223,
+    "cpu_ms": 7.921619999999852,
+    "timeout": false,
+    "states": 0
+  },
+  {
+    "repeat": 0,
+    "step": 69,
+    "ms": 75.63805859535933,
+    "cpu_ms": 75.4492499999997,
+    "timeout": false,
+    "states": 218110
+  },
+  {
+    "repeat": 0,
+    "step": 70,
+    "ms": 85.25089174509048,
+    "cpu_ms": 85.0606599999999,
+    "timeout": false,
+    "states": 214206
+  },
+  {
+    "repeat": 0,
+    "step": 71,
+    "ms": 67.55420006811619,
+    "cpu_ms": 67.4059800000002,
+    "timeout": false,
+    "states": 199716
+  },
+  {
+    "repeat": 0,
+    "step": 72,
+    "ms": 18.596281297504902,
+    "cpu_ms": 18.550999999999984,
+    "timeout": false,
+    "states": 66924
+  },
+  {
+    "repeat": 0,
+    "step": 73,
+    "ms": 38.212464191019535,
+    "cpu_ms": 38.13560999999987,
+    "timeout": false,
+    "states": 109858
+  },
+  {
+    "repeat": 0,
+    "step": 74,
+    "ms": 21.827466785907745,
+    "cpu_ms": 21.77820999999991,
+    "timeout": false,
+    "states": 91868
+  },
+  {
+    "repeat": 0,
+    "step": 75,
+    "ms": 25.23082308471203,
+    "cpu_ms": 25.17491000000005,
+    "timeout": false,
+    "states": 38184
+  },
+  {
+    "repeat": 0,
+    "step": 76,
+    "ms": 16.945432871580124,
+    "cpu_ms": 16.910719999999824,
+    "timeout": false,
+    "states": 67740
+  },
+  {
+    "repeat": 0,
+    "step": 77,
+    "ms": 13.09370156377554,
+    "cpu_ms": 13.053720000000268,
+    "timeout": false,
+    "states": 0
+  },
+  {
+    "repeat": 0,
+    "step": 78,
+    "ms": 88.26675452291965,
+    "cpu_ms": 88.02785999999996,
+    "timeout": false,
+    "states": 284884
+  },
+  {
+    "repeat": 0,
+    "step": 79,
+    "ms": 268.4262627735734,
+    "cpu_ms": 267.71777,
+    "timeout": false,
+    "states": 616094
+  },
+  {
+    "repeat": 1,
+    "step": 60,
+    "ms": 23.690556176006794,
+    "cpu_ms": 23.61928000000013,
+    "timeout": false,
+    "states": 79412
+  },
+  {
+    "repeat": 1,
+    "step": 61,
+    "ms": 6.617112085223198,
+    "cpu_ms": 6.60830999999984,
+    "timeout": false,
+    "states": 0
+  },
+  {
+    "repeat": 1,
+    "step": 62,
+    "ms": 172.60917741805315,
+    "cpu_ms": 171.84739999999988,
+    "timeout": false,
+    "states": 407365
+  },
+  {
+    "repeat": 1,
+    "step": 63,
+    "ms": 57.61989299207926,
+    "cpu_ms": 57.460540000000115,
+    "timeout": false,
+    "states": 179990
+  },
+  {
+    "repeat": 1,
+    "step": 64,
+    "ms": 49.75081793963909,
+    "cpu_ms": 49.59938000000008,
+    "timeout": false,
+    "states": 134002
+  },
+  {
+    "repeat": 1,
+    "step": 65,
+    "ms": 30.301418155431747,
+    "cpu_ms": 30.228740000000087,
+    "timeout": false,
+    "states": 113924
+  },
+  {
+    "repeat": 1,
+    "step": 66,
+    "ms": 15.479697845876217,
+    "cpu_ms": 15.428590000000408,
+    "timeout": false,
+    "states": 30496
+  },
+  {
+    "repeat": 1,
+    "step": 67,
+    "ms": 15.698179602622986,
+    "cpu_ms": 15.651319999999913,
+    "timeout": false,
+    "states": 32330
+  },
+  {
+    "repeat": 1,
+    "step": 68,
+    "ms": 8.442540653049946,
+    "cpu_ms": 8.418289999999828,
+    "timeout": false,
+    "states": 0
+  },
+  {
+    "repeat": 1,
+    "step": 69,
+    "ms": 82.97858759760857,
+    "cpu_ms": 81.7654400000003,
+    "timeout": false,
+    "states": 218110
+  },
+  {
+    "repeat": 1,
+    "step": 70,
+    "ms": 93.96087564527988,
+    "cpu_ms": 93.12918999999997,
+    "timeout": false,
+    "states": 214206
+  },
+  {
+    "repeat": 1,
+    "step": 71,
+    "ms": 75.46937558799982,
+    "cpu_ms": 74.12357999999975,
+    "timeout": false,
+    "states": 199716
+  },
+  {
+    "repeat": 1,
+    "step": 72,
+    "ms": 20.473431795835495,
+    "cpu_ms": 20.413709999999696,
+    "timeout": false,
+    "states": 66924
+  },
+  {
+    "repeat": 1,
+    "step": 73,
+    "ms": 42.27845650166273,
+    "cpu_ms": 41.585029999999804,
+    "timeout": false,
+    "states": 109858
+  },
+  {
+    "repeat": 1,
+    "step": 74,
+    "ms": 25.042500346899033,
+    "cpu_ms": 24.938320000000402,
+    "timeout": false,
+    "states": 91868
+  },
+  {
+    "repeat": 1,
+    "step": 75,
+    "ms": 28.35955750197172,
+    "cpu_ms": 27.747409999999917,
+    "timeout": false,
+    "states": 38184
+  },
+  {
+    "repeat": 1,
+    "step": 76,
+    "ms": 17.375688068568707,
+    "cpu_ms": 17.31755000000046,
+    "timeout": false,
+    "states": 67740
+  },
+  {
+    "repeat": 1,
+    "step": 77,
+    "ms": 13.931920751929283,
+    "cpu_ms": 13.903149999999975,
+    "timeout": false,
+    "states": 0
+  },
+  {
+    "repeat": 1,
+    "step": 78,
+    "ms": 93.68186350911856,
+    "cpu_ms": 93.36798999999996,
+    "timeout": false,
+    "states": 284884
+  },
+  {
+    "repeat": 1,
+    "step": 79,
+    "ms": 282.74887800216675,
+    "cpu_ms": 281.4065699999997,
+    "timeout": false,
+    "states": 616094
+  },
+  {
+    "repeat": 2,
+    "step": 60,
+    "ms": 22.863106802105904,
+    "cpu_ms": 22.809880000000504,
+    "timeout": false,
+    "states": 79412
+  },
+  {
+    "repeat": 2,
+    "step": 61,
+    "ms": 6.341409869492054,
+    "cpu_ms": 6.329039999999786,
+    "timeout": false,
+    "states": 0
+  },
+  {
+    "repeat": 2,
+    "step": 62,
+    "ms": 159.44151394069195,
+    "cpu_ms": 159.07185000000013,
+    "timeout": false,
+    "states": 407365
+  },
+  {
+    "repeat": 2,
+    "step": 63,
+    "ms": 57.3295708745718,
+    "cpu_ms": 57.174459999999705,
+    "timeout": false,
+    "states": 179990
+  },
+  {
+    "repeat": 2,
+    "step": 64,
+    "ms": 46.74530494958162,
+    "cpu_ms": 46.635870000000246,
+    "timeout": false,
+    "states": 134002
+  },
+  {
+    "repeat": 2,
+    "step": 65,
+    "ms": 27.933452278375626,
+    "cpu_ms": 27.865539999999633,
+    "timeout": false,
+    "states": 113924
+  },
+  {
+    "repeat": 2,
+    "step": 66,
+    "ms": 15.303614549338818,
+    "cpu_ms": 15.254670000000026,
+    "timeout": false,
+    "states": 30496
+  },
+  {
+    "repeat": 2,
+    "step": 67,
+    "ms": 14.944782480597496,
+    "cpu_ms": 14.900110000000133,
+    "timeout": false,
+    "states": 32330
+  },
+  {
+    "repeat": 2,
+    "step": 68,
+    "ms": 9.409060701727867,
+    "cpu_ms": 9.374740000000159,
+    "timeout": false,
+    "states": 0
+  },
+  {
+    "repeat": 2,
+    "step": 69,
+    "ms": 79.97357379645109,
+    "cpu_ms": 79.71072000000046,
+    "timeout": false,
+    "states": 218110
+  },
+  {
+    "repeat": 2,
+    "step": 70,
+    "ms": 91.58497955650091,
+    "cpu_ms": 91.24516999999966,
+    "timeout": false,
+    "states": 214206
+  },
+  {
+    "repeat": 2,
+    "step": 71,
+    "ms": 71.0487887263298,
+    "cpu_ms": 70.83432000000033,
+    "timeout": false,
+    "states": 199716
+  },
+  {
+    "repeat": 2,
+    "step": 72,
+    "ms": 19.81603354215622,
+    "cpu_ms": 19.770620000000072,
+    "timeout": false,
+    "states": 66924
+  },
+  {
+    "repeat": 2,
+    "step": 73,
+    "ms": 42.1304265037179,
+    "cpu_ms": 42.00974000000013,
+    "timeout": false,
+    "states": 109858
+  },
+  {
+    "repeat": 2,
+    "step": 74,
+    "ms": 25.54374560713768,
+    "cpu_ms": 25.45916000000048,
+    "timeout": false,
+    "states": 91868
+  },
+  {
+    "repeat": 2,
+    "step": 75,
+    "ms": 30.68965207785368,
+    "cpu_ms": 30.52204000000014,
+    "timeout": false,
+    "states": 38184
+  },
+  {
+    "repeat": 2,
+    "step": 76,
+    "ms": 20.504441112279892,
+    "cpu_ms": 20.419620000000194,
+    "timeout": false,
+    "states": 67740
+  },
+  {
+    "repeat": 2,
+    "step": 77,
+    "ms": 13.736248947679996,
+    "cpu_ms": 13.706329999999767,
+    "timeout": false,
+    "states": 0
+  },
+  {
+    "repeat": 2,
+    "step": 78,
+    "ms": 98.15962240099907,
+    "cpu_ms": 97.68598000000051,
+    "timeout": false,
+    "states": 284884
+  },
+  {
+    "repeat": 2,
+    "step": 79,
+    "ms": 280.2227297797799,
+    "cpu_ms": 279.2083599999993,
+    "timeout": false,
+    "states": 616094
+  },
+  {
+    "repeat": 3,
+    "step": 60,
+    "ms": 23.85460864752531,
+    "cpu_ms": 23.7879999999997,
+    "timeout": false,
+    "states": 79412
+  },
+  {
+    "repeat": 3,
+    "step": 61,
+    "ms": 6.208757869899273,
+    "cpu_ms": 6.193709999999797,
+    "timeout": false,
+    "states": 0
+  },
+  {
+    "repeat": 3,
+    "step": 62,
+    "ms": 166.85157362371683,
+    "cpu_ms": 166.23767000000012,
+    "timeout": false,
+    "states": 407365
+  },
+  {
+    "repeat": 3,
+    "step": 63,
+    "ms": 57.940986938774586,
+    "cpu_ms": 57.70130999999967,
+    "timeout": false,
+    "states": 179990
+  },
+  {
+    "repeat": 3,
+    "step": 64,
+    "ms": 48.363832756876945,
+    "cpu_ms": 48.21738999999958,
+    "timeout": false,
+    "states": 134002
+  },
+  {
+    "repeat": 3,
+    "step": 65,
+    "ms": 27.997182682156563,
+    "cpu_ms": 27.926479999999643,
+    "timeout": false,
+    "states": 113924
+  },
+  {
+    "repeat": 3,
+    "step": 66,
+    "ms": 14.80248011648655,
+    "cpu_ms": 14.766879999999816,
+    "timeout": false,
+    "states": 30496
+  },
+  {
+    "repeat": 3,
+    "step": 67,
+    "ms": 14.86877165734768,
+    "cpu_ms": 14.814389999999733,
+    "timeout": false,
+    "states": 32330
+  },
+  {
+    "repeat": 3,
+    "step": 68,
+    "ms": 8.037516847252846,
+    "cpu_ms": 8.013009999999987,
+    "timeout": false,
+    "states": 0
+  },
+  {
+    "repeat": 3,
+    "step": 69,
+    "ms": 76.86432264745235,
+    "cpu_ms": 76.65875,
+    "timeout": false,
+    "states": 218110
+  },
+  {
+    "repeat": 3,
+    "step": 70,
+    "ms": 86.70284692198038,
+    "cpu_ms": 86.45090000000089,
+    "timeout": false,
+    "states": 214206
+  },
+  {
+    "repeat": 3,
+    "step": 71,
+    "ms": 71.00753672420979,
+    "cpu_ms": 70.77335199999979,
+    "timeout": false,
+    "states": 199716
+  },
+  {
+    "repeat": 3,
+    "step": 72,
+    "ms": 20.826195366680622,
+    "cpu_ms": 20.76994400000043,
+    "timeout": false,
+    "states": 66924
+  },
+  {
+    "repeat": 3,
+    "step": 73,
+    "ms": 44.50593050569296,
+    "cpu_ms": 44.34049700000031,
+    "timeout": false,
+    "states": 109858
+  },
+  {
+    "repeat": 3,
+    "step": 74,
+    "ms": 25.467796251177788,
+    "cpu_ms": 25.316294999999656,
+    "timeout": false,
+    "states": 91868
+  },
+  {
+    "repeat": 3,
+    "step": 75,
+    "ms": 26.945321820676327,
+    "cpu_ms": 26.863644999999714,
+    "timeout": false,
+    "states": 38184
+  },
+  {
+    "repeat": 3,
+    "step": 76,
+    "ms": 17.60477013885975,
+    "cpu_ms": 17.583530999999653,
+    "timeout": false,
+    "states": 67740
+  },
+  {
+    "repeat": 3,
+    "step": 77,
+    "ms": 12.815339490771294,
+    "cpu_ms": 12.752557999999858,
+    "timeout": false,
+    "states": 0
+  },
+  {
+    "repeat": 3,
+    "step": 78,
+    "ms": 90.41470848023891,
+    "cpu_ms": 90.15307700000008,
+    "timeout": false,
+    "states": 284884
+  },
+  {
+    "repeat": 3,
+    "step": 79,
+    "ms": 266.4043912664056,
+    "cpu_ms": 265.3531400000002,
+    "timeout": false,
+    "states": 616094
+  },
+  {
+    "repeat": 4,
+    "step": 60,
+    "ms": 21.46297227591276,
+    "cpu_ms": 21.419911000000624,
+    "timeout": false,
+    "states": 79412
+  },
+  {
+    "repeat": 4,
+    "step": 61,
+    "ms": 5.793262273073196,
+    "cpu_ms": 5.784108999999482,
+    "timeout": false,
+    "states": 0
+  },
+  {
+    "repeat": 4,
+    "step": 62,
+    "ms": 155.90402577072382,
+    "cpu_ms": 155.57125399999984,
+    "timeout": false,
+    "states": 407365
+  },
+  {
+    "repeat": 4,
+    "step": 63,
+    "ms": 56.688982993364334,
+    "cpu_ms": 56.2275639999994,
+    "timeout": false,
+    "states": 179990
+  },
+  {
+    "repeat": 4,
+    "step": 64,
+    "ms": 48.42406325042248,
+    "cpu_ms": 48.30185799999942,
+    "timeout": false,
+    "states": 134002
+  },
+  {
+    "repeat": 4,
+    "step": 65,
+    "ms": 28.421547263860703,
+    "cpu_ms": 28.360930999999923,
+    "timeout": false,
+    "states": 113924
+  },
+  {
+    "repeat": 4,
+    "step": 66,
+    "ms": 15.217074193060398,
+    "cpu_ms": 15.178570999999863,
+    "timeout": false,
+    "states": 30496
+  },
+  {
+    "repeat": 4,
+    "step": 67,
+    "ms": 14.51184693723917,
+    "cpu_ms": 14.408640000000084,
+    "timeout": false,
+    "states": 32330
+  },
+  {
+    "repeat": 4,
+    "step": 68,
+    "ms": 8.203058503568172,
+    "cpu_ms": 8.18503100000001,
+    "timeout": false,
+    "states": 0
+  },
+  {
+    "repeat": 4,
+    "step": 69,
+    "ms": 75.9712615981698,
+    "cpu_ms": 75.7977959999998,
+    "timeout": false,
+    "states": 218110
+  },
+  {
+    "repeat": 4,
+    "step": 70,
+    "ms": 86.198671720922,
+    "cpu_ms": 85.97189299999997,
+    "timeout": false,
+    "states": 214206
+  },
+  {
+    "repeat": 4,
+    "step": 71,
+    "ms": 70.5303531140089,
+    "cpu_ms": 70.34053099999937,
+    "timeout": false,
+    "states": 199716
+  },
+  {
+    "repeat": 4,
+    "step": 72,
+    "ms": 19.582832232117653,
+    "cpu_ms": 19.50315099999944,
+    "timeout": false,
+    "states": 66924
+  },
+  {
+    "repeat": 4,
+    "step": 73,
+    "ms": 40.027422830462456,
+    "cpu_ms": 39.93137100000066,
+    "timeout": false,
+    "states": 109858
+  },
+  {
+    "repeat": 4,
+    "step": 74,
+    "ms": 23.169671185314655,
+    "cpu_ms": 23.083565000000306,
+    "timeout": false,
+    "states": 91868
+  },
+  {
+    "repeat": 4,
+    "step": 75,
+    "ms": 25.804349221289158,
+    "cpu_ms": 25.748597999999845,
+    "timeout": false,
+    "states": 38184
+  },
+  {
+    "repeat": 4,
+    "step": 76,
+    "ms": 17.27214641869068,
+    "cpu_ms": 17.22658199999927,
+    "timeout": false,
+    "states": 67740
+  },
+  {
+    "repeat": 4,
+    "step": 77,
+    "ms": 13.047341257333755,
+    "cpu_ms": 12.980230999999343,
+    "timeout": false,
+    "states": 0
+  },
+  {
+    "repeat": 4,
+    "step": 78,
+    "ms": 88.13692256808281,
+    "cpu_ms": 87.88832200000041,
+    "timeout": false,
+    "states": 284884
+  },
+  {
+    "repeat": 4,
+    "step": 79,
+    "ms": 267.90368743240833,
+    "cpu_ms": 266.26189500000044,
+    "timeout": false,
+    "states": 616094
+  },
+  {
+    "repeat": 5,
+    "step": 60,
+    "ms": 21.715654991567135,
+    "cpu_ms": 21.665419999999713,
+    "timeout": false,
+    "states": 79412
+  },
+  {
+    "repeat": 5,
+    "step": 61,
+    "ms": 5.812482908368111,
+    "cpu_ms": 5.8043000000003175,
+    "timeout": false,
+    "states": 0
+  },
+  {
+    "repeat": 5,
+    "step": 62,
+    "ms": 165.23909661918879,
+    "cpu_ms": 164.59500900000012,
+    "timeout": false,
+    "states": 407365
+  },
+  {
+    "repeat": 5,
+    "step": 63,
+    "ms": 59.16726961731911,
+    "cpu_ms": 58.6038870000003,
+    "timeout": false,
+    "states": 179990
+  },
+  {
+    "repeat": 5,
+    "step": 64,
+    "ms": 48.21395128965378,
+    "cpu_ms": 48.06376400000012,
+    "timeout": false,
+    "states": 134002
+  },
+  {
+    "repeat": 5,
+    "step": 65,
+    "ms": 30.724612064659595,
+    "cpu_ms": 30.500597999999712,
+    "timeout": false,
+    "states": 113924
+  },
+  {
+    "repeat": 5,
+    "step": 66,
+    "ms": 15.48109669238329,
+    "cpu_ms": 15.423961999999847,
+    "timeout": false,
+    "states": 30496
+  },
+  {
+    "repeat": 5,
+    "step": 67,
+    "ms": 15.989922918379307,
+    "cpu_ms": 15.902159999999554,
+    "timeout": false,
+    "states": 32330
+  },
+  {
+    "repeat": 5,
+    "step": 68,
+    "ms": 10.675495490431786,
+    "cpu_ms": 10.599969000001153,
+    "timeout": false,
+    "states": 0
+  },
+  {
+    "repeat": 5,
+    "step": 69,
+    "ms": 85.13037022203207,
+    "cpu_ms": 84.81978899999909,
+    "timeout": false,
+    "states": 218110
+  },
+  {
+    "repeat": 5,
+    "step": 70,
+    "ms": 86.43078338354826,
+    "cpu_ms": 86.16193399999972,
+    "timeout": false,
+    "states": 214206
+  },
+  {
+    "repeat": 5,
+    "step": 71,
+    "ms": 70.56734338402748,
+    "cpu_ms": 70.40691799999976,
+    "timeout": false,
+    "states": 199716
+  },
+  {
+    "repeat": 5,
+    "step": 72,
+    "ms": 20.145107991993427,
+    "cpu_ms": 20.097091000000233,
+    "timeout": false,
+    "states": 66924
+  },
+  {
+    "repeat": 5,
+    "step": 73,
+    "ms": 40.10795336216688,
+    "cpu_ms": 40.012402000000336,
+    "timeout": false,
+    "states": 109858
+  },
+  {
+    "repeat": 5,
+    "step": 74,
+    "ms": 22.92525675147772,
+    "cpu_ms": 22.87715800000001,
+    "timeout": false,
+    "states": 91868
+  },
+  {
+    "repeat": 5,
+    "step": 75,
+    "ms": 26.23557299375534,
+    "cpu_ms": 26.18636000000052,
+    "timeout": false,
+    "states": 38184
+  },
+  {
+    "repeat": 5,
+    "step": 76,
+    "ms": 17.127735540270805,
+    "cpu_ms": 17.09321799999941,
+    "timeout": false,
+    "states": 67740
+  },
+  {
+    "repeat": 5,
+    "step": 77,
+    "ms": 12.692106887698174,
+    "cpu_ms": 12.664308999999818,
+    "timeout": false,
+    "states": 0
+  },
+  {
+    "repeat": 5,
+    "step": 78,
+    "ms": 88.48662674427032,
+    "cpu_ms": 88.24176499999936,
+    "timeout": false,
+    "states": 284884
+  },
+  {
+    "repeat": 5,
+    "step": 79,
+    "ms": 270.74681781232357,
+    "cpu_ms": 269.5467110000003,
+    "timeout": false,
+    "states": 616094
+  },
+  {
+    "repeat": 6,
+    "step": 60,
+    "ms": 23.48815370351076,
+    "cpu_ms": 23.360902000000294,
+    "timeout": false,
+    "states": 79412
+  },
+  {
+    "repeat": 6,
+    "step": 61,
+    "ms": 6.324407644569874,
+    "cpu_ms": 6.304141999999402,
+    "timeout": false,
+    "states": 0
+  },
+  {
+    "repeat": 6,
+    "step": 62,
+    "ms": 153.4021683037281,
+    "cpu_ms": 153.01842199999882,
+    "timeout": false,
+    "states": 407365
+  },
+  {
+    "repeat": 6,
+    "step": 63,
+    "ms": 59.23441983759403,
+    "cpu_ms": 59.02056500000086,
+    "timeout": false,
+    "states": 179990
+  },
+  {
+    "repeat": 6,
+    "step": 64,
+    "ms": 49.04300067573786,
+    "cpu_ms": 48.87679800000022,
+    "timeout": false,
+    "states": 134002
+  },
+  {
+    "repeat": 6,
+    "step": 65,
+    "ms": 28.41652650386095,
+    "cpu_ms": 28.32953899999957,
+    "timeout": false,
+    "states": 113924
+  },
+  {
+    "repeat": 6,
+    "step": 66,
+    "ms": 15.07448311895132,
+    "cpu_ms": 15.040879999999035,
+    "timeout": false,
+    "states": 30496
+  },
+  {
+    "repeat": 6,
+    "step": 67,
+    "ms": 16.013244166970253,
+    "cpu_ms": 15.96123000000027,
+    "timeout": false,
+    "states": 32330
+  },
+  {
+    "repeat": 6,
+    "step": 68,
+    "ms": 9.234490804374218,
+    "cpu_ms": 9.210349999998257,
+    "timeout": false,
+    "states": 0
+  },
+  {
+    "repeat": 6,
+    "step": 69,
+    "ms": 79.1230145841837,
+    "cpu_ms": 78.75471999999917,
+    "timeout": false,
+    "states": 218110
+  },
+  {
+    "repeat": 6,
+    "step": 70,
+    "ms": 84.44367442280054,
+    "cpu_ms": 84.1921499999998,
+    "timeout": false,
+    "states": 214206
+  },
+  {
+    "repeat": 6,
+    "step": 71,
+    "ms": 66.66976120322943,
+    "cpu_ms": 66.52260999999982,
+    "timeout": false,
+    "states": 199716
+  },
+  {
+    "repeat": 6,
+    "step": 72,
+    "ms": 19.277927465736866,
+    "cpu_ms": 19.21547999999973,
+    "timeout": false,
+    "states": 66924
+  },
+  {
+    "repeat": 6,
+    "step": 73,
+    "ms": 38.53980544954538,
+    "cpu_ms": 38.454080000001056,
+    "timeout": false,
+    "states": 109858
+  },
+  {
+    "repeat": 6,
+    "step": 74,
+    "ms": 22.035897709429264,
+    "cpu_ms": 21.994510000000744,
+    "timeout": false,
+    "states": 91868
+  },
+  {
+    "repeat": 6,
+    "step": 75,
+    "ms": 25.087651796638966,
+    "cpu_ms": 25.038050000000922,
+    "timeout": false,
+    "states": 38184
+  },
+  {
+    "repeat": 6,
+    "step": 76,
+    "ms": 16.34130720049143,
+    "cpu_ms": 16.304099999999266,
+    "timeout": false,
+    "states": 67740
+  },
+  {
+    "repeat": 6,
+    "step": 77,
+    "ms": 12.2591033577919,
+    "cpu_ms": 12.2374599999997,
+    "timeout": false,
+    "states": 0
+  },
+  {
+    "repeat": 6,
+    "step": 78,
+    "ms": 88.51609658449888,
+    "cpu_ms": 88.17944000000111,
+    "timeout": false,
+    "states": 284884
+  },
+  {
+    "repeat": 6,
+    "step": 79,
+    "ms": 265.76013397425413,
+    "cpu_ms": 264.81248999999883,
+    "timeout": false,
+    "states": 616094
+  },
+  {
+    "repeat": 7,
+    "step": 60,
+    "ms": 22.598514333367348,
+    "cpu_ms": 22.544770000001435,
+    "timeout": false,
+    "states": 79412
+  },
+  {
+    "repeat": 7,
+    "step": 61,
+    "ms": 5.840172991156578,
+    "cpu_ms": 5.824479999999355,
+    "timeout": false,
+    "states": 0
+  },
+  {
+    "repeat": 7,
+    "step": 62,
+    "ms": 153.57637125998735,
+    "cpu_ms": 153.21408000000147,
+    "timeout": false,
+    "states": 407365
+  },
+  {
+    "repeat": 7,
+    "step": 63,
+    "ms": 54.682730697095394,
+    "cpu_ms": 54.55471000000145,
+    "timeout": false,
+    "states": 179990
+  },
+  {
+    "repeat": 7,
+    "step": 64,
+    "ms": 46.39298189431429,
+    "cpu_ms": 46.282850000000764,
+    "timeout": false,
+    "states": 134002
+  },
+  {
+    "repeat": 7,
+    "step": 65,
+    "ms": 27.065341360867023,
+    "cpu_ms": 26.982759999999217,
+    "timeout": false,
+    "states": 113924
+  },
+  {
+    "repeat": 7,
+    "step": 66,
+    "ms": 14.728649519383907,
+    "cpu_ms": 14.694929999999218,
+    "timeout": false,
+    "states": 30496
+  },
+  {
+    "repeat": 7,
+    "step": 67,
+    "ms": 15.321735292673111,
+    "cpu_ms": 15.224579999999932,
+    "timeout": false,
+    "states": 32330
+  },
+  {
+    "repeat": 7,
+    "step": 68,
+    "ms": 8.324080146849155,
+    "cpu_ms": 8.30984000000079,
+    "timeout": false,
+    "states": 0
+  },
+  {
+    "repeat": 7,
+    "step": 69,
+    "ms": 75.20403247326612,
+    "cpu_ms": 74.73639999999904,
+    "timeout": false,
+    "states": 218110
+  },
+  {
+    "repeat": 7,
+    "step": 70,
+    "ms": 88.62046897411346,
+    "cpu_ms": 88.3349200000012,
+    "timeout": false,
+    "states": 214206
+  },
+  {
+    "repeat": 7,
+    "step": 71,
+    "ms": 73.20417184382677,
+    "cpu_ms": 72.20758999999966,
+    "timeout": false,
+    "states": 199716
+  },
+  {
+    "repeat": 7,
+    "step": 72,
+    "ms": 19.420630298554897,
+    "cpu_ms": 19.28027000000121,
+    "timeout": false,
+    "states": 66924
+  },
+  {
+    "repeat": 7,
+    "step": 73,
+    "ms": 42.61082969605923,
+    "cpu_ms": 42.479469999999964,
+    "timeout": false,
+    "states": 109858
+  },
+  {
+    "repeat": 7,
+    "step": 74,
+    "ms": 25.589976459741592,
+    "cpu_ms": 25.477369999999055,
+    "timeout": false,
+    "states": 91868
+  },
+  {
+    "repeat": 7,
+    "step": 75,
+    "ms": 27.88146212697029,
+    "cpu_ms": 27.128809999998893,
+    "timeout": false,
+    "states": 38184
+  },
+  {
+    "repeat": 7,
+    "step": 76,
+    "ms": 22.130458615720272,
+    "cpu_ms": 20.931430000000972,
+    "timeout": false,
+    "states": 67740
+  },
+  {
+    "repeat": 7,
+    "step": 77,
+    "ms": 13.981260359287262,
+    "cpu_ms": 13.9198700000005,
+    "timeout": false,
+    "states": 0
+  },
+  {
+    "repeat": 7,
+    "step": 78,
+    "ms": 93.44844985753298,
+    "cpu_ms": 93.1542099999998,
+    "timeout": false,
+    "states": 284884
+  },
+  {
+    "repeat": 7,
+    "step": 79,
+    "ms": 268.88949889689684,
+    "cpu_ms": 267.9821199999992,
+    "timeout": false,
+    "states": 616094
+  },
+  {
+    "repeat": 8,
+    "step": 60,
+    "ms": 23.29939231276512,
+    "cpu_ms": 22.933109999998535,
+    "timeout": false,
+    "states": 79412
+  },
+  {
+    "repeat": 8,
+    "step": 61,
+    "ms": 6.269278004765511,
+    "cpu_ms": 6.258680000000183,
+    "timeout": false,
+    "states": 0
+  },
+  {
+    "repeat": 8,
+    "step": 62,
+    "ms": 160.30066460371017,
+    "cpu_ms": 159.75753000000026,
+    "timeout": false,
+    "states": 407365
+  },
+  {
+    "repeat": 8,
+    "step": 63,
+    "ms": 53.4219266846776,
+    "cpu_ms": 53.23701000000014,
+    "timeout": false,
+    "states": 179990
+  },
+  {
+    "repeat": 8,
+    "step": 64,
+    "ms": 46.20494972914457,
+    "cpu_ms": 46.10631000000076,
+    "timeout": false,
+    "states": 134002
+  },
+  {
+    "repeat": 8,
+    "step": 65,
+    "ms": 26.899070478975773,
+    "cpu_ms": 26.810060000000746,
+    "timeout": false,
+    "states": 113924
+  },
+  {
+    "repeat": 8,
+    "step": 66,
+    "ms": 14.237863942980766,
+    "cpu_ms": 14.208100000001167,
+    "timeout": false,
+    "states": 30496
+  },
+  {
+    "repeat": 8,
+    "step": 67,
+    "ms": 13.778548687696457,
+    "cpu_ms": 13.75477000000025,
+    "timeout": false,
+    "states": 32330
+  },
+  {
+    "repeat": 8,
+    "step": 68,
+    "ms": 7.643952965736389,
+    "cpu_ms": 7.628599999998542,
+    "timeout": false,
+    "states": 0
+  },
+  {
+    "repeat": 8,
+    "step": 69,
+    "ms": 74.81039967387915,
+    "cpu_ms": 74.66649000000025,
+    "timeout": false,
+    "states": 218110
+  },
+  {
+    "repeat": 8,
+    "step": 70,
+    "ms": 85.46570409089327,
+    "cpu_ms": 85.2332699999998,
+    "timeout": false,
+    "states": 214206
+  },
+  {
+    "repeat": 8,
+    "step": 71,
+    "ms": 73.09180125594139,
+    "cpu_ms": 72.57336999999886,
+    "timeout": false,
+    "states": 199716
+  },
+  {
+    "repeat": 8,
+    "step": 72,
+    "ms": 19.56175174564123,
+    "cpu_ms": 19.522549999999583,
+    "timeout": false,
+    "states": 66924
+  },
+  {
+    "repeat": 8,
+    "step": 73,
+    "ms": 39.47824705392122,
+    "cpu_ms": 39.378019999999125,
+    "timeout": false,
+    "states": 109858
+  },
+  {
+    "repeat": 8,
+    "step": 74,
+    "ms": 23.061979562044144,
+    "cpu_ms": 23.006540000000797,
+    "timeout": false,
+    "states": 91868
+  },
+  {
+    "repeat": 8,
+    "step": 75,
+    "ms": 26.64053812623024,
+    "cpu_ms": 26.563140000000374,
+    "timeout": false,
+    "states": 38184
+  },
+  {
+    "repeat": 8,
+    "step": 76,
+    "ms": 16.938144341111183,
+    "cpu_ms": 16.90535000000004,
+    "timeout": false,
+    "states": 67740
+  },
+  {
+    "repeat": 8,
+    "step": 77,
+    "ms": 13.168281875550747,
+    "cpu_ms": 13.143989999999661,
+    "timeout": false,
+    "states": 0
+  },
+  {
+    "repeat": 8,
+    "step": 78,
+    "ms": 89.3161864951253,
+    "cpu_ms": 89.01412999999891,
+    "timeout": false,
+    "states": 284884
+  },
+  {
+    "repeat": 8,
+    "step": 79,
+    "ms": 271.97518199682236,
+    "cpu_ms": 271.14835999999974,
+    "timeout": false,
+    "states": 616094
+  },
+  {
+    "repeat": 9,
+    "step": 60,
+    "ms": 24.54332448542118,
+    "cpu_ms": 24.381479999998845,
+    "timeout": false,
+    "states": 79412
+  },
+  {
+    "repeat": 9,
+    "step": 61,
+    "ms": 7.147788070142269,
+    "cpu_ms": 6.905200000000278,
+    "timeout": false,
+    "states": 0
+  },
+  {
+    "repeat": 9,
+    "step": 62,
+    "ms": 170.9094885736704,
+    "cpu_ms": 169.60188999999914,
+    "timeout": false,
+    "states": 407365
+  },
+  {
+    "repeat": 9,
+    "step": 63,
+    "ms": 59.57008432596922,
+    "cpu_ms": 58.5811800000009,
+    "timeout": false,
+    "states": 179990
+  },
+  {
+    "repeat": 9,
+    "step": 64,
+    "ms": 48.41157328337431,
+    "cpu_ms": 48.26979999999992,
+    "timeout": false,
+    "states": 134002
+  },
+  {
+    "repeat": 9,
+    "step": 65,
+    "ms": 28.39499618858099,
+    "cpu_ms": 28.29141000000135,
+    "timeout": false,
+    "states": 113924
+  },
+  {
+    "repeat": 9,
+    "step": 66,
+    "ms": 14.8445600643754,
+    "cpu_ms": 14.805329999999728,
+    "timeout": false,
+    "states": 30496
+  },
+  {
+    "repeat": 9,
+    "step": 67,
+    "ms": 14.186903834342957,
+    "cpu_ms": 14.157530000000307,
+    "timeout": false,
+    "states": 32330
+  },
+  {
+    "repeat": 9,
+    "step": 68,
+    "ms": 7.876195013523102,
+    "cpu_ms": 7.86087000000002,
+    "timeout": false,
+    "states": 0
+  },
+  {
+    "repeat": 9,
+    "step": 69,
+    "ms": 74.946160428226,
+    "cpu_ms": 74.76099999999875,
+    "timeout": false,
+    "states": 218110
+  },
+  {
+    "repeat": 9,
+    "step": 70,
+    "ms": 89.77839071303606,
+    "cpu_ms": 88.9970800000004,
+    "timeout": false,
+    "states": 214206
+  },
+  {
+    "repeat": 9,
+    "step": 71,
+    "ms": 69.00218594819307,
+    "cpu_ms": 68.81633000000065,
+    "timeout": false,
+    "states": 199716
+  },
+  {
+    "repeat": 9,
+    "step": 72,
+    "ms": 18.747263588011265,
+    "cpu_ms": 18.702689999999578,
+    "timeout": false,
+    "states": 66924
+  },
+  {
+    "repeat": 9,
+    "step": 73,
+    "ms": 38.609376177191734,
+    "cpu_ms": 38.47982000000094,
+    "timeout": false,
+    "states": 109858
+  },
+  {
+    "repeat": 9,
+    "step": 74,
+    "ms": 22.638714872300625,
+    "cpu_ms": 22.37759000000139,
+    "timeout": false,
+    "states": 91868
+  },
+  {
+    "repeat": 9,
+    "step": 75,
+    "ms": 25.758517906069756,
+    "cpu_ms": 25.65496000000067,
+    "timeout": false,
+    "states": 38184
+  },
+  {
+    "repeat": 9,
+    "step": 76,
+    "ms": 16.733720898628235,
+    "cpu_ms": 16.696910000000287,
+    "timeout": false,
+    "states": 67740
+  },
+  {
+    "repeat": 9,
+    "step": 77,
+    "ms": 12.802109122276306,
+    "cpu_ms": 12.77351999999965,
+    "timeout": false,
+    "states": 0
+  },
+  {
+    "repeat": 9,
+    "step": 78,
+    "ms": 86.66956704109907,
+    "cpu_ms": 86.4537900000002,
+    "timeout": false,
+    "states": 284884
+  },
+  {
+    "repeat": 9,
+    "step": 79,
+    "ms": 257.2585418820381,
+    "cpu_ms": 256.6011600000007,
+    "timeout": false,
+    "states": 616094
+  }
+]
