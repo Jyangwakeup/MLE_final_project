@@ -1,0 +1,3 @@
+# Frozen CPU inference dependencies for cnn_distilled_double_dqn_agent.
+numpy>=1.24,<3
+torch>=2.5,<2.6
