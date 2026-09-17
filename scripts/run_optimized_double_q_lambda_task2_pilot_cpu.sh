@@ -19,9 +19,16 @@ python_bin="/home/students/ji/mles/.venv-compute/bin/python"
 t1_config="experiments/configs/optimized_double_q_lambda_formal_task1.json"
 t2_config="experiments/configs/optimized_double_q_lambda_task2.json"
 parent_checkpoint="${parent_run}/checkpoints/final.pkl"
-parent_name="$(basename "${parent_run}")"
-parent_t1_eval="runs/${parent_name}_stage_gate"
 parent_t2_eval="runs/${run_id}_parent_task2"
+
+# A source-hash migration may create a new parent directory while retaining the
+# original frozen stage-gate run.  The promotion audit is the authority for it.
+parent_t1_eval="$("${python_bin}" - "${parent_run}/promotion_audit.json" <<'PY'
+import json
+import sys
+print(json.load(open(sys.argv[1], encoding="utf-8"))["stage_gate"])
+PY
+)"
 
 "${python_bin}" - "${parent_run}/promotion_audit.json" <<'PY'
 import json

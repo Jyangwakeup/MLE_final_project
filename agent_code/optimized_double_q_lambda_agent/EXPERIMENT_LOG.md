@@ -77,7 +77,7 @@ checkpoint SHA-256 与最终指标。
 | 实验 ID | 阶段 | 状态 | 固定合同 | 验收 |
 |---|---|---|---|---|
 | T2-L01 | Task 1 正式父链，seed 11 | 已完成并晋级：Slurm `472900` | Double Q(lambda)、`continuous-v2`、`r7_safe_credit_potential`、safety-all | `9000--9019` 三次连续 mean score ≥48；随后 `10000--10019` 独立 stage gate。 |
-| T2-P01 | Task 2 pilot，seed 11 | 运行中：Slurm `472901` | 同一合同，`classic`、BOMB enabled、150k actions / 至少500局 | Task 2 质量门槛、Task 1 保留率与 CPU 时延均通过。 |
+| T2-P01 | Task 2 pilot，seed 11 | 训练完成，未通过质量门槛：Slurm `472902` | 同一合同，`classic`、BOMB enabled、150k actions / 至少500局 | 保留安全放弹和 Task 1 能力；未达到金币、炸箱与循环门槛。 |
 
 T2-L01 的冻结性能评估从第 200 局开始，每 50 个新增训练回合执行一次；只有连续三次
 通过后才停止。其 `promotion_audit.json` 同时核验 checkpoint reload、独立打包文件、
@@ -103,6 +103,24 @@ Task 2 每 25k action steps 冻结一次候选；每个候选同时在 Task 1 �
 自杀率 ≤5%、放弹存活率 ≥95%、每弹炸箱 ≥1.5 等）以及 Task 1 分数保留率 ≥90%。
 若 T2-P01 未通过，只根据少放弹、自杀、空放、循环或 tile/Q 值诊断修改一个因素，随后从
 T2-L01 父 run 重新开始 Task 2，不同时修改特征、奖励和超参数。
+
+### T2-P01 seed 11 结果（训练完成，未晋级）
+
+`472902` 从 T2-L01 的已审计父 checkpoint 以 `--resume-from` 正式进入 Task 2，完成
+500 局、200,000 个 Task 2 action steps（超过预注册的 150k 目标）。训练正常结束；随后
+8 个不可变快照均完成 Task 1 / Task 2 各 20 局冻结评估。作业状态显示 failed 的唯一原因是
+选模脚本对迁移父 run 错拼了 stage-gate 目录；训练、checkpoint 和全部评估均已生成，修复后
+已在本地重跑选模，未进行额外训练。
+
+| checkpoint | Task 2 平均金币 | 平均炸箱 | 0 放弹局 | 自杀率 | 每弹炸箱 | 长 WAIT / 往返 | Task 1 保留 | 结论 |
+|---|---:|---:|---:|---:|---:|---:|---:|---|
+| `step_0175200.pkl`（最佳） | 3.60 / 9 | 54.2 | 0% | 0% | 3.78 | 70% / 60% | 100% | 未通过：平均金币 <6、平均炸箱 <60、跑满 400 步和循环率超限。 |
+| `step_0200000.pkl`（最终快照） | 3.45 / 9 | 50.2 | 0% | 0% | — | — | 100% | 后期未超过最佳快照。 |
+
+最佳 checkpoint 为 `runs/qlambda_t2_pilot_s11_j472902/checkpoints/snapshots/step_0175200.pkl`，
+SHA-256 为 `14d67cd834e8b0be68a2aac39ab27ca3867028cec433219c3a3dfeb52f9fc581`。它满足
+安全、无效动作、放弹存活、Task 1 保留及 CPU 时延门槛，但 19 个 Task 2 门槛仅通过 12 个，
+因此**不得**作为 Task 2 晋级模型，也不启动 seeds 22/33。
 
 重试使用本地且被 Git 忽略的 `.venv-compute` 环境：由
 `/home/students/ji/.local/bin/python3.10` 创建，并安装 CPU 训练依赖。
