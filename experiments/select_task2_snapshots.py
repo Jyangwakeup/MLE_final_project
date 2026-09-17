@@ -105,6 +105,7 @@ def main(argv=None) -> int:
         metavar=("CHECKPOINT", "TASK1_EVAL", "TASK2_EVAL"),
     )
     parser.add_argument("--output", required=True, type=Path)
+    parser.add_argument("--expected-episodes", type=int, default=20)
     args = parser.parse_args(argv)
     gate = json.loads(args.gate.read_text(encoding="utf-8"))["gates"]
     parent_task1 = _summary(args.parent_task1.resolve(), args.agent)
@@ -117,7 +118,7 @@ def main(argv=None) -> int:
         retention = task1["mean_score"] / parent_task1["mean_score"]
         crate_gain = task2["mean_crates"] - parent_task2["mean_crates"]
         checks = {
-            "episode_count": task2["episode_count"] == 20,
+            "episode_count": task2["episode_count"] == args.expected_episodes,
             "mean_coins": task2["mean_coins"] >= gate["task2_mean_coins_min"],
             "zero_coin_round_rate": task2["zero_coin_round_rate"] <= gate["task2_zero_coin_round_rate_max"],
             "mean_crates": task2["mean_crates"] >= gate["task2_mean_crates_min"],
@@ -150,6 +151,7 @@ def main(argv=None) -> int:
     candidates.sort(key=_ranking)
     payload = {
         "schema_version": "optimized-q-task2-selection-v1",
+        "expected_episodes": args.expected_episodes,
         "gate": str(args.gate.resolve()), "parent_task1": parent_task1,
         "parent_task2": parent_task2, "candidates": candidates,
         "best": candidates[0], "any_passed": any(item["passed"] for item in candidates),

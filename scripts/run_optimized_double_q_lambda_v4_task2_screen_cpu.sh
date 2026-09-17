@@ -41,7 +41,7 @@ PY
 "${python_bin}" -m experiments.run \
   --config "${t2_config}" --mode train --device cpu --task 2 \
   --agent optimized_double_q_lambda_v4_agent --seed "${seed}" --run-id "${run_id}" \
-  --resume-from "${parent_run}"
+  --runtime-migrate-from "${parent_run}"
 
 candidate_args=()
 for checkpoint in "runs/${run_id}/checkpoints/snapshots/"*.pkl; do

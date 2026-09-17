@@ -48,6 +48,11 @@ from experiments.resume import (
 from experiments.performance_stopping import (
     Task1PerformanceStopping, frozen_score_assessor, load_committed_history,
 )
+from experiments.task2_success_stopping import (
+    Task2SuccessStopping, frozen_quality_assessor,
+    load_committed_history as load_task2_success_history,
+    resolve_task2_success_stopping,
+)
 from experiments.training import (
     CompositeTrainingStop, TrainingActionBudget, TrainingEarlyStopping,
     early_stopping_config as _early_stopping_config,
@@ -526,6 +531,8 @@ class ExperimentWorld(BombeRLeWorld):
                 early_stopping_config=self._snapshot_config["early_stopping_config"],
                 performance_stopping=self._snapshot_config.get("performance_stopping"),
                 performance_history=self._snapshot_config.get("performance_history", []),
+                task2_success_stopping=self._snapshot_config.get("task2_success_stopping"),
+                task2_success_history=self._snapshot_config.get("task2_success_history", []),
             )
             self._materialize_checkpoint_snapshot()
 
@@ -548,10 +555,32 @@ class ExperimentWorld(BombeRLeWorld):
         snapshots.mkdir(parents=True, exist_ok=True)
         destination = snapshots / f"step_{action_steps:07d}{checkpoint.suffix}"
         shutil.copy2(checkpoint, destination)
+        # Candidate selection may prefer an earlier action milestone.  Preserve
+        # the matching complete runner snapshot as well as the inference
+        # checkpoint so a later extension can resume that exact candidate.
+        latest_path = self._output / "resume" / "latest.json"
+        latest = json.loads(latest_path.read_text(encoding="utf-8"))
+        generation = latest["generations"][0]
+        resume_snapshot = (
+            self._output / "checkpoints" / "resume_snapshots"
+            / destination.stem
+        )
+        resume_root = resume_snapshot / "resume"
+        resume_root.mkdir(parents=True, exist_ok=False)
+        shutil.copytree(
+            self._output / "resume" / generation,
+            resume_root / generation,
+        )
+        snapshot_latest = dict(latest)
+        snapshot_latest["generations"] = [generation]
+        snapshot_latest["generation_hash"] = latest["generation_hash"]
+        _write_json(resume_root / "latest.json", snapshot_latest)
+        shutil.copy2(self._output / "metadata.json", resume_snapshot / "metadata.json")
         _append_json_line(snapshots / "manifest.jsonl", {
             "action_steps": action_steps,
             "checkpoint": destination.name,
             "milestone": milestone,
+            "resume_snapshot": str(resume_snapshot.relative_to(self._output)),
         })
         self._checkpoint_snapshot_milestones.add(milestone)
 
@@ -914,6 +943,9 @@ def run_agent_session(
     progress_leave: bool = True,
     performance_stopping: dict[str, Any] | None = None,
     checkpoint_snapshot_interval: int | None = None,
+    task2_success_stopping: dict[str, Any] | None = None,
+    task2_success_context: dict[str, Path] | None = None,
+    runtime_migration_audit: dict[str, Any] | None = None,
     migration: bool = False,
     task3_safety_transfer: bool = False,
     task3_transfer: bool = False,
@@ -932,6 +964,15 @@ def run_agent_session(
     if checkpoint_snapshot_interval is not None:
         checkpoint_snapshot_interval = _positive_int(
             checkpoint_snapshot_interval, "checkpoint_snapshot_interval_action_steps")
+    task2_success_stopping = resolve_task2_success_stopping(
+        task2_success_stopping, task=task_name)
+    if task2_success_stopping is not None:
+        if not training:
+            raise ValueError("task2_success_stopping is only valid for training")
+        if early_stopping_config is not None:
+            raise ValueError("task2_success_stopping conflicts with reward early stopping")
+        if task2_success_context is None:
+            raise ValueError("Task 2 success stopping requires frozen-evaluation context")
     specs = _custom_agents(agent, opponents, training)
     checkpoint = None if checkpoint is None else checkpoint.resolve()
     init_checkpoint = (
@@ -1136,6 +1177,8 @@ def run_agent_session(
     metadata["safety_replay_spec"] = safety_replay_spec
     metadata["training_budget"] = action_budget_config
     metadata["performance_stopping"] = performance_stopping
+    metadata["task2_success_stopping"] = task2_success_stopping
+    metadata["runtime_migration"] = runtime_migration_audit
     metadata["transfer_contract"] = transfer_contract
     metadata["adaptation_triggers"] = list(adaptation_triggers)
     metadata["feature_id"] = contract.feature_id
@@ -1200,12 +1243,15 @@ def run_agent_session(
             } if task3_safety_transfer else None)
         ),
         "task3_transfer": transfer_contract,
+        "runtime_migration": runtime_migration_audit,
     }
     metadata["config_sha256"] = hashlib.sha256(
         json.dumps(expanded, sort_keys=True, separators=(",", ":")).encode("utf-8")
     ).hexdigest()
     metadata_path = output / "metadata.json"
     _write_json(metadata_path, metadata)
+    if runtime_migration_audit is not None:
+        _write_json(output / "runtime_migration.json", runtime_migration_audit)
 
     previous = {
         name: os.environ.get(name)
@@ -1290,6 +1336,18 @@ def run_agent_session(
             and resume_snapshot is not None and resume_kind == "same_task"
             else []
         )
+        snapshot_task2_success_history = (
+            resume_snapshot.runner_state.get("task2_success_history", [])
+            if resume_snapshot is not None and resume_kind == "same_task" else []
+        )
+        task2_success_history = (
+            load_task2_success_history(
+                resume_snapshot.run_directory, snapshot_task2_success_history,
+                task2_success_stopping,
+            )
+            if task2_success_stopping is not None and resume_snapshot is not None
+            and resume_kind == "same_task" else []
+        )
         world = ExperimentWorld(
             _world_args(output, scenario, seeds["environment_seed"], output.name),
             specs,
@@ -1315,6 +1373,8 @@ def run_agent_session(
                     "task": task_name,
                     "performance_stopping": performance_stopping,
                     "performance_history": performance_history,
+                    "task2_success_stopping": task2_success_stopping,
+                    "task2_success_history": task2_success_history,
                     "checkpoint_snapshot_interval": checkpoint_snapshot_interval,
                 }
                 if training and agent not in {
@@ -1371,8 +1431,28 @@ def run_agent_session(
                     resume_snapshot.generation,
                     resume_snapshot.generation_hash,
                 )
+        task2_success_stop = None
+        if training and task2_success_stopping is not None:
+            context = {name: Path(value).resolve() for name, value in task2_success_context.items()}
+            required_context = {"task1_config", "parent_task1", "parent_task2", "gate"}
+            if set(context) != required_context or not all(path.exists() for path in context.values()):
+                raise ValueError("Task 2 success stopping context is incomplete or missing")
+            assessor = frozen_quality_assessor(
+                project_root=PROJECT_ROOT, run_directory=output, agent=agent,
+                task1_config=context["task1_config"], task2_config=config_path,
+                gate_path=context["gate"], parent_task1=context["parent_task1"],
+                parent_task2=context["parent_task2"],
+                seeds=task2_success_stopping["evaluation_seeds"],
+                rounds_per_seed=task2_success_stopping["rounds_per_seed"],
+            )
+            task2_success_stop = Task2SuccessStopping(
+                task2_success_stopping, run_directory=output,
+                training_path=output / "training.csv", assessor=assessor,
+                history=task2_success_history,
+            )
+            world._snapshot_config["task2_success_history"] = task2_success_stop.history
         stopping = CompositeTrainingStop(
-            early_stopping, action_budget, performance_stop)
+            early_stopping, action_budget, performance_stop, task2_success_stop)
         completed_rounds = world_controller(
             world, n_rounds, gui=None, every_step=False, turn_based=False,
             make_video=False, update_interval=0.0, show_progress=show_progress,
@@ -1420,8 +1500,17 @@ def run_agent_session(
                         and performance_stop.result["reason"] == "task1_score_converged"),
                 }
             ),
+            "task2_success_stopping": (
+                None if task2_success_stop is None else {
+                    "result": task2_success_stop.result,
+                    "history": task2_success_stop.history,
+                    "converged": bool(task2_success_stop.result),
+                }
+            ),
             "completion_reason": (
-                performance_stop.result["reason"]
+                task2_success_stop.result["reason"]
+                if task2_success_stop is not None and task2_success_stop.result is not None
+                else performance_stop.result["reason"]
                 if performance_stop is not None and performance_stop.result is not None
                 else "stage_action_target_reached"
                 if action_budget is not None and action_budget.result is not None
@@ -1434,6 +1523,7 @@ def run_agent_session(
                 performance_stop.result is None
                 or performance_stop.result["reason"] == "task1_score_not_converged")
             else "early_stopped" if early_stopping is not None and early_stopping.result
+            else "completed_early" if task2_success_stop is not None and task2_success_stop.result
             else "completed"
         )
         _write_json(metadata_path, metadata)
@@ -1506,6 +1596,10 @@ def _parser() -> argparse.ArgumentParser:
         "--min-rounds", type=int,
         help="Minimum local rounds before an action target may stop training",
     )
+    parser.add_argument("--task2-success-task1-config", type=Path)
+    parser.add_argument("--task2-success-parent-task1", type=Path)
+    parser.add_argument("--task2-success-parent-task2", type=Path)
+    parser.add_argument("--task2-success-gate", type=Path)
     parser.add_argument(
         "--adaptation-trigger", action="append", default=[],
         choices=("suicide", "retention", "q_capability", "dqn_capability"),
@@ -1530,6 +1624,10 @@ def _parser() -> argparse.ArgumentParser:
     resume_group.add_argument(
         "--migrate-resume-from", type=Path,
         help="Complete v6 Task 1 run migrated explicitly into a v7 child",
+    )
+    resume_group.add_argument(
+        "--runtime-migrate-from", type=Path,
+        help="Audited runner-only migration from a qualified Task 1 parent",
     )
     resume_group.add_argument(
         "--transfer-task3-safety-from", type=Path,
@@ -1584,12 +1682,14 @@ def main(argv: Sequence[str] | None = None) -> int:
                 output_directory=_output_directory,
                 checkpoint_name=_checkpoint_name,
                 run_session=run_agent_session,
+                project_root=PROJECT_ROOT,
                 source_commit=_source_commit(),
                 source_hash=_source_hash(args.agent, args.config),
                 source_hash_scope=SOURCE_HASH_SCOPE,
             )
         else:
             if (args.resume_from is not None or args.migrate_resume_from is not None
+                    or args.runtime_migrate_from is not None
                     or args.transfer_task3_safety_from is not None
                     or args.transfer_task3_from is not None):
                 raise ValueError("resume and migration options are only valid with --mode train")

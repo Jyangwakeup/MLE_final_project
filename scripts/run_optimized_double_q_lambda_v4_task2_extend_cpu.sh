@@ -25,7 +25,11 @@ python_bin="/home/students/ji/mles/.venv-compute/bin/python"
 
 "${python_bin}" -m experiments.run --config "${t2_config}" --mode train \
   --device cpu --task 2 --agent optimized_double_q_lambda_v4_agent \
-  --seed "${seed}" --run-id "${run_id}" --resume-from "${parent_t2}"
+  --seed "${seed}" --run-id "${run_id}" --resume-from "${parent_t2}" \
+  --task2-success-task1-config "${t1_config}" \
+  --task2-success-parent-task1 "${parent_t1_eval}" \
+  --task2-success-parent-task2 "${parent_task2_eval}" \
+  --task2-success-gate experiments/task2_quality_gate.json
 
 candidate_args=()
 for checkpoint in "runs/${run_id}/checkpoints/snapshots/"*.pkl; do

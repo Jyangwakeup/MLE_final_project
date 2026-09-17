@@ -184,6 +184,8 @@ def commit_training_snapshot(
     early_stopping_config: dict[str, Any] | None = None,
     performance_stopping: dict[str, Any] | None = None,
     performance_history: list[dict[str, Any]] | None = None,
+    task2_success_stopping: dict[str, Any] | None = None,
+    task2_success_history: list[dict[str, Any]] | None = None,
 ) -> Path:
     """Atomically publish one complete round-boundary snapshot."""
     run_directory = Path(run_directory).resolve()
@@ -331,6 +333,8 @@ def commit_training_snapshot(
             "early_stopping_config": early_stopping_config,
             "early_stopping_rewards": list(early_stopping_rewards),
             "performance_history": list(performance_history or []),
+            "task2_success_stopping": task2_success_stopping,
+            "task2_success_history": list(task2_success_history or []),
             "numpy_rng_state": numpy_rng_state,
             "python_rng_state": python_rng_state,
             "world_rng_state": world_rng_state,
