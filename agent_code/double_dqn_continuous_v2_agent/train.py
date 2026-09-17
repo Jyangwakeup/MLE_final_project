@@ -133,6 +133,7 @@ def end_of_round(self, last_game_state, last_action, events):
     checkpoint.update({
         "checkpoint_schema": CHECKPOINT_SCHEMA,
         "lifecycle_version": LIFECYCLE_VERSION,
+        "transfer_contract": getattr(self, "transfer_contract", None),
         "algorithm": ALGORITHM,
         "actions": list(ACTIONS),
         "feature_id": FEATURE_ID,

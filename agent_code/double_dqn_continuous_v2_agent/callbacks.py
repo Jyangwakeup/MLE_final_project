@@ -97,6 +97,7 @@ def setup(self):
         torch.load(self.model_file, map_location="cpu", weights_only=True)
         if self.model_file.exists() else None
     )
+    self.transfer_contract = None if checkpoint is None else checkpoint.get("transfer_contract")
     self._decision_snapshot = None
     if (checkpoint is not None and self.train
             and checkpoint.get('training_task') == 'weak_opponents'

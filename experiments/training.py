@@ -229,13 +229,16 @@ def run_training_mode(
     resume_sources = [
         value for value in (
             args.resume_from, getattr(args, "migrate_resume_from", None), transfer_from,
-            getattr(args, "transfer_task3_safety_from", None))
+            getattr(args, "transfer_task3_safety_from", None),
+            getattr(args, "transfer_task4_from_checkpoint", None))
         if value is not None
     ]
     if len(resume_sources) > 1:
         raise ValueError("resume, migration, and Task 3 transfer are mutually exclusive")
     if resume_sources and getattr(args, "init_from_checkpoint", None) is not None:
         raise ValueError("resume/transfer and --init-from-checkpoint are mutually exclusive")
+    if config.get('task4_contract') and args.resume_from is None and getattr(args, 'transfer_task4_from_checkpoint', None) is None:
+        raise ValueError('Registered Task 4 requires explicit transfer or exact resume')
     training = config.get("training", {})
     if not isinstance(training, dict):
         raise ValueError("config.training must be an object")
@@ -339,6 +342,7 @@ def run_training_mode(
             raise ValueError("--distillation-dataset requires --transfer-task3-from")
         return run_session(
             *positional, init_checkpoint=init_checkpoint, device_info=device_info,
+            task4_transfer=getattr(args, "transfer_task4_from_checkpoint", None),
             action_budget_config=budget_config,
             safe_exploration=safe_exploration,
             safety_spec=safety_spec,
@@ -366,6 +370,10 @@ def run_training_mode(
         else load_migration_snapshot(parent_run) if migrating
         else load_training_snapshot(parent_run)
     )
+    if task_name == 'full_match' and args.agent == 'double_dqn_continuous_v2_agent':
+        from experiments.task4_transfer import validate_resume
+        validate_resume(snapshot.contract.get('transfer_contract'), root=Path(__file__).resolve().parents[1],
+                        config_path=args.config, seed=seed)
     metadata_path = parent_run / "metadata.json"
     if not metadata_path.is_file():
         raise ValueError("Parent run is missing metadata.json")

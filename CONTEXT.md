@@ -207,3 +207,16 @@ _Avoid_: Task 3 winner, best training reward
 **Task 3 winner**:
 The sole Task 3 winner candidate that also passes the one permitted 100-seed main validation. Only this designation may set `qualified_for_task4=true`.
 _Avoid_: Pilot candidate, runner-up
+
+
+**Task 4 transfer**:
+An explicit CPU migration from the registered Task 3 winner: preserve learned networks, Adam, cumulative updates/actions and old replay; replace the frozen teacher with the parent policy, reset stage state, and seed new learning RNG streams. It is distinct from exact same-experiment resume.
+_Avoid_: Warm start, ordinary resume
+
+**Shared-parent Task 4 replication**:
+Task 4 learning seeds 11, 22 and 33 initialized from the same Task 3 seed22/c150 checkpoint. It measures reproducibility of this transfer, not three independent complete curricula.
+_Avoid_: Three independent curriculum chains
+
+**Task 4 qualified model**:
+The unique candidate whose experiment arm passes every development and independent confirmation gate for all three shared-parent seeds, followed by its one permitted independent 100-world main validation.
+_Avoid_: Best training checkpoint, development winner

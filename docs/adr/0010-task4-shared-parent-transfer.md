@@ -1,0 +1,3 @@
+# Preserve learned state during explicit Task 4 transfer
+
+Accepted. Task 4 starts only from the registered Task 3 seed22/c150 CPU checkpoint, preserving policy, target, Adam, cumulative updates/actions and Task 1–3 replay; teacher becomes the frozen parent policy, while stage counters and all learning RNG streams reset for the new seed at an empty episode boundary. A/B retention sampling differs only in the old-task fraction (75% or 50%); parent replay is retained to isolate this change, without claiming historical Task 2 transitions were free of the prior lifecycle defect. Exact subsequent resume binds source, manifest, configuration, arm, checkpoint and opponent identities; old metadata remains unchanged and the attribution backup maps old source commits.
