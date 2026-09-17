@@ -1,0 +1,362 @@
+[
+  {
+    "step": 181,
+    "force_armed": false,
+    "horizon": 6,
+    "proven": [
+      "BOMB"
+    ],
+    "scenarios": 3,
+    "failed_profile": null,
+    "failed_order": null,
+    "timed_out": false
+  },
+  {
+    "step": 181,
+    "force_armed": false,
+    "horizon": 7,
+    "proven": [
+      "BOMB"
+    ],
+    "scenarios": 3,
+    "failed_profile": null,
+    "failed_order": null,
+    "timed_out": false
+  },
+  {
+    "step": 181,
+    "force_armed": false,
+    "horizon": 8,
+    "proven": [
+      "BOMB"
+    ],
+    "scenarios": 3,
+    "failed_profile": null,
+    "failed_order": null,
+    "timed_out": false
+  },
+  {
+    "step": 181,
+    "force_armed": true,
+    "horizon": 6,
+    "proven": [
+      "BOMB"
+    ],
+    "scenarios": 4,
+    "failed_profile": null,
+    "failed_order": null,
+    "timed_out": false
+  },
+  {
+    "step": 181,
+    "force_armed": true,
+    "horizon": 7,
+    "proven": [
+      "BOMB"
+    ],
+    "scenarios": 4,
+    "failed_profile": null,
+    "failed_order": null,
+    "timed_out": false
+  },
+  {
+    "step": 181,
+    "force_armed": true,
+    "horizon": 8,
+    "proven": [
+      "BOMB"
+    ],
+    "scenarios": 4,
+    "failed_profile": null,
+    "failed_order": null,
+    "timed_out": false
+  },
+  {
+    "step": 182,
+    "force_armed": false,
+    "horizon": 5,
+    "proven": [
+      "UP",
+      "DOWN",
+      "WAIT"
+    ],
+    "scenarios": 12,
+    "failed_profile": null,
+    "failed_order": null,
+    "timed_out": false
+  },
+  {
+    "step": 182,
+    "force_armed": false,
+    "horizon": 6,
+    "proven": [
+      "UP",
+      "DOWN",
+      "WAIT"
+    ],
+    "scenarios": 12,
+    "failed_profile": null,
+    "failed_order": null,
+    "timed_out": false
+  },
+  {
+    "step": 182,
+    "force_armed": false,
+    "horizon": 7,
+    "proven": [
+      "UP",
+      "DOWN",
+      "WAIT"
+    ],
+    "scenarios": 12,
+    "failed_profile": null,
+    "failed_order": null,
+    "timed_out": false
+  },
+  {
+    "step": 182,
+    "force_armed": false,
+    "horizon": 8,
+    "proven": [
+      "UP",
+      "DOWN",
+      "WAIT"
+    ],
+    "scenarios": 12,
+    "failed_profile": null,
+    "failed_order": null,
+    "timed_out": false
+  },
+  {
+    "step": 182,
+    "force_armed": true,
+    "horizon": 5,
+    "proven": [
+      "UP",
+      "WAIT"
+    ],
+    "scenarios": 15,
+    "failed_profile": [
+      "DOWN",
+      "BOMB"
+    ],
+    "failed_order": [
+      0,
+      1
+    ],
+    "timed_out": false
+  },
+  {
+    "step": 182,
+    "force_armed": true,
+    "horizon": 6,
+    "proven": [
+      "UP",
+      "WAIT"
+    ],
+    "scenarios": 14,
+    "failed_profile": [
+      "DOWN",
+      "LEFT"
+    ],
+    "failed_order": [
+      0,
+      1
+    ],
+    "timed_out": false
+  },
+  {
+    "step": 182,
+    "force_armed": true,
+    "horizon": 7,
+    "proven": [
+      "UP",
+      "WAIT"
+    ],
+    "scenarios": 14,
+    "failed_profile": [
+      "DOWN",
+      "LEFT"
+    ],
+    "failed_order": [
+      0,
+      1
+    ],
+    "timed_out": false
+  },
+  {
+    "step": 182,
+    "force_armed": true,
+    "horizon": 8,
+    "proven": [
+      "UP",
+      "WAIT"
+    ],
+    "scenarios": 14,
+    "failed_profile": [
+      "DOWN",
+      "LEFT"
+    ],
+    "failed_order": [
+      0,
+      1
+    ],
+    "timed_out": false
+  },
+  {
+    "step": 183,
+    "force_armed": false,
+    "horizon": 4,
+    "proven": [
+      "RIGHT",
+      "WAIT"
+    ],
+    "scenarios": 6,
+    "failed_profile": null,
+    "failed_order": null,
+    "timed_out": false
+  },
+  {
+    "step": 183,
+    "force_armed": false,
+    "horizon": 6,
+    "proven": [],
+    "scenarios": 6,
+    "failed_profile": [
+      "RIGHT",
+      "BOMB"
+    ],
+    "failed_order": [
+      0,
+      1
+    ],
+    "timed_out": false
+  },
+  {
+    "step": 183,
+    "force_armed": false,
+    "horizon": 7,
+    "proven": [],
+    "scenarios": 6,
+    "failed_profile": [
+      "RIGHT",
+      "BOMB"
+    ],
+    "failed_order": [
+      0,
+      1
+    ],
+    "timed_out": false
+  },
+  {
+    "step": 183,
+    "force_armed": false,
+    "horizon": 8,
+    "proven": [],
+    "scenarios": 6,
+    "failed_profile": [
+      "RIGHT",
+      "BOMB"
+    ],
+    "failed_order": [
+      0,
+      1
+    ],
+    "timed_out": false
+  },
+  {
+    "step": 183,
+    "force_armed": true,
+    "horizon": 4,
+    "proven": [
+      "RIGHT",
+      "WAIT"
+    ],
+    "scenarios": 6,
+    "failed_profile": null,
+    "failed_order": null,
+    "timed_out": false
+  },
+  {
+    "step": 183,
+    "force_armed": true,
+    "horizon": 6,
+    "proven": [],
+    "scenarios": 6,
+    "failed_profile": [
+      "RIGHT",
+      "BOMB"
+    ],
+    "failed_order": [
+      0,
+      1
+    ],
+    "timed_out": false
+  },
+  {
+    "step": 183,
+    "force_armed": true,
+    "horizon": 7,
+    "proven": [],
+    "scenarios": 6,
+    "failed_profile": [
+      "RIGHT",
+      "BOMB"
+    ],
+    "failed_order": [
+      0,
+      1
+    ],
+    "timed_out": false
+  },
+  {
+    "step": 183,
+    "force_armed": true,
+    "horizon": 8,
+    "proven": [],
+    "scenarios": 6,
+    "failed_profile": [
+      "RIGHT",
+      "BOMB"
+    ],
+    "failed_order": [
+      0,
+      1
+    ],
+    "timed_out": false
+  },
+  {
+    "step": 181,
+    "actual_transition_matches": [
+      {
+        "profile": [
+          "BOMB",
+          "UP"
+        ],
+        "order": [
+          0,
+          1
+        ]
+      }
+    ]
+  },
+  {
+    "step": 182,
+    "actual_transition_matches": []
+  },
+  {
+    "step": 183,
+    "actual_transition_matches": [
+      {
+        "profile": [
+          "RIGHT",
+          "BOMB"
+        ],
+        "order": [
+          0,
+          1
+        ]
+      }
+    ]
+  }
+]

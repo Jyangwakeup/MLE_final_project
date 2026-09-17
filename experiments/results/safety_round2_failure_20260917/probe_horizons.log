@@ -1,0 +1,25 @@
+{'step': 181, 'force_armed': False, 'horizon': 6, 'proven': ('BOMB',), 'scenarios': 3, 'failed_profile': None, 'failed_order': None, 'timed_out': False}
+{'step': 181, 'force_armed': False, 'horizon': 7, 'proven': ('BOMB',), 'scenarios': 3, 'failed_profile': None, 'failed_order': None, 'timed_out': False}
+{'step': 181, 'force_armed': False, 'horizon': 8, 'proven': ('BOMB',), 'scenarios': 3, 'failed_profile': None, 'failed_order': None, 'timed_out': False}
+{'step': 181, 'force_armed': True, 'horizon': 6, 'proven': ('BOMB',), 'scenarios': 4, 'failed_profile': None, 'failed_order': None, 'timed_out': False}
+{'step': 181, 'force_armed': True, 'horizon': 7, 'proven': ('BOMB',), 'scenarios': 4, 'failed_profile': None, 'failed_order': None, 'timed_out': False}
+{'step': 181, 'force_armed': True, 'horizon': 8, 'proven': ('BOMB',), 'scenarios': 4, 'failed_profile': None, 'failed_order': None, 'timed_out': False}
+{'step': 182, 'force_armed': False, 'horizon': 5, 'proven': ('UP', 'DOWN', 'WAIT'), 'scenarios': 12, 'failed_profile': None, 'failed_order': None, 'timed_out': False}
+{'step': 182, 'force_armed': False, 'horizon': 6, 'proven': ('UP', 'DOWN', 'WAIT'), 'scenarios': 12, 'failed_profile': None, 'failed_order': None, 'timed_out': False}
+{'step': 182, 'force_armed': False, 'horizon': 7, 'proven': ('UP', 'DOWN', 'WAIT'), 'scenarios': 12, 'failed_profile': None, 'failed_order': None, 'timed_out': False}
+{'step': 182, 'force_armed': False, 'horizon': 8, 'proven': ('UP', 'DOWN', 'WAIT'), 'scenarios': 12, 'failed_profile': None, 'failed_order': None, 'timed_out': False}
+{'step': 182, 'force_armed': True, 'horizon': 5, 'proven': ('UP', 'WAIT'), 'scenarios': 15, 'failed_profile': ('DOWN', 'BOMB'), 'failed_order': (0, 1), 'timed_out': False}
+{'step': 182, 'force_armed': True, 'horizon': 6, 'proven': ('UP', 'WAIT'), 'scenarios': 14, 'failed_profile': ('DOWN', 'LEFT'), 'failed_order': (0, 1), 'timed_out': False}
+{'step': 182, 'force_armed': True, 'horizon': 7, 'proven': ('UP', 'WAIT'), 'scenarios': 14, 'failed_profile': ('DOWN', 'LEFT'), 'failed_order': (0, 1), 'timed_out': False}
+{'step': 182, 'force_armed': True, 'horizon': 8, 'proven': ('UP', 'WAIT'), 'scenarios': 14, 'failed_profile': ('DOWN', 'LEFT'), 'failed_order': (0, 1), 'timed_out': False}
+{'step': 183, 'force_armed': False, 'horizon': 4, 'proven': ('RIGHT', 'WAIT'), 'scenarios': 6, 'failed_profile': None, 'failed_order': None, 'timed_out': False}
+{'step': 183, 'force_armed': False, 'horizon': 6, 'proven': (), 'scenarios': 6, 'failed_profile': ('RIGHT', 'BOMB'), 'failed_order': (0, 1), 'timed_out': False}
+{'step': 183, 'force_armed': False, 'horizon': 7, 'proven': (), 'scenarios': 6, 'failed_profile': ('RIGHT', 'BOMB'), 'failed_order': (0, 1), 'timed_out': False}
+{'step': 183, 'force_armed': False, 'horizon': 8, 'proven': (), 'scenarios': 6, 'failed_profile': ('RIGHT', 'BOMB'), 'failed_order': (0, 1), 'timed_out': False}
+{'step': 183, 'force_armed': True, 'horizon': 4, 'proven': ('RIGHT', 'WAIT'), 'scenarios': 6, 'failed_profile': None, 'failed_order': None, 'timed_out': False}
+{'step': 183, 'force_armed': True, 'horizon': 6, 'proven': (), 'scenarios': 6, 'failed_profile': ('RIGHT', 'BOMB'), 'failed_order': (0, 1), 'timed_out': False}
+{'step': 183, 'force_armed': True, 'horizon': 7, 'proven': (), 'scenarios': 6, 'failed_profile': ('RIGHT', 'BOMB'), 'failed_order': (0, 1), 'timed_out': False}
+{'step': 183, 'force_armed': True, 'horizon': 8, 'proven': (), 'scenarios': 6, 'failed_profile': ('RIGHT', 'BOMB'), 'failed_order': (0, 1), 'timed_out': False}
+TRANSITION 181 matched [{'profile': ('BOMB', 'UP'), 'order': (0, 1)}]
+TRANSITION 182 matched []
+TRANSITION 183 matched [{'profile': ('RIGHT', 'BOMB'), 'order': (0, 1)}]

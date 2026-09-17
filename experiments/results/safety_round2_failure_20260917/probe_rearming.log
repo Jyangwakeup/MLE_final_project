@@ -1,0 +1,13 @@
+MATCH except opponent bomb capacity ('DOWN', 'LEFT') predicted [('coin_collector_agent', 5, False, (np.int64(14), np.int64(13)))] actual [('coin_collector_agent', 5, True, (np.int64(14), np.int64(13)))]
+181 4 ControllableSurvivalResult(proven_actions=('BOMB',), scenarios_evaluated=3, states_evaluated=1791, timed_out=False, first_failing_profile=None, first_failing_order=None)
+181 5 ControllableSurvivalResult(proven_actions=('BOMB',), scenarios_evaluated=3, states_evaluated=2211, timed_out=False, first_failing_profile=None, first_failing_order=None)
+181 6 ControllableSurvivalResult(proven_actions=('BOMB',), scenarios_evaluated=3, states_evaluated=2622, timed_out=False, first_failing_profile=None, first_failing_order=None)
+181 7 ControllableSurvivalResult(proven_actions=('BOMB',), scenarios_evaluated=3, states_evaluated=3042, timed_out=False, first_failing_profile=None, first_failing_order=None)
+182 4 ControllableSurvivalResult(proven_actions=('UP', 'DOWN', 'WAIT'), scenarios_evaluated=12, states_evaluated=7107, timed_out=False, first_failing_profile=None, first_failing_order=None)
+182 5 ControllableSurvivalResult(proven_actions=('UP', 'DOWN', 'WAIT'), scenarios_evaluated=12, states_evaluated=8766, timed_out=False, first_failing_profile=None, first_failing_order=None)
+182 6 ControllableSurvivalResult(proven_actions=('UP', 'WAIT'), scenarios_evaluated=12, states_evaluated=10470, timed_out=False, first_failing_profile=('DOWN', 'LEFT'), first_failing_order=(0, 1))
+182 7 ControllableSurvivalResult(proven_actions=('UP', 'WAIT'), scenarios_evaluated=12, states_evaluated=12117, timed_out=False, first_failing_profile=('DOWN', 'LEFT'), first_failing_order=(0, 1))
+183 4 ControllableSurvivalResult(proven_actions=('RIGHT', 'WAIT'), scenarios_evaluated=6, states_evaluated=3542, timed_out=False, first_failing_profile=None, first_failing_order=None)
+183 5 ControllableSurvivalResult(proven_actions=(), scenarios_evaluated=6, states_evaluated=4416, timed_out=False, first_failing_profile=('RIGHT', 'BOMB'), first_failing_order=(0, 1))
+183 6 ControllableSurvivalResult(proven_actions=(), scenarios_evaluated=6, states_evaluated=5270, timed_out=False, first_failing_profile=('RIGHT', 'BOMB'), first_failing_order=(0, 1))
+183 7 ControllableSurvivalResult(proven_actions=(), scenarios_evaluated=6, states_evaluated=6104, timed_out=False, first_failing_profile=('RIGHT', 'BOMB'), first_failing_order=(0, 1))
