@@ -14,11 +14,14 @@
 | Confirmation | seeds 11000--11099, one round each, only after selection |
 | Ranking | all-coins rate, mean coins, coins/100 steps, completion steps, loop rate |
 
-## T1-E01 — submitted
+## T1-E01 — submitted (2026-09-17)
 
-| Candidate | Status | Training steps | Best snapshot | All coins | Mean coins | Notes |
-|---|---|---:|---|---:|---:|---|
-| Single-table Q baseline | planned | 100,000 | — | — | — | `discrete-q-v2 + r4_anti_oscillation` |
-| Watkins Double Q(lambda) | planned | 100,000 | — | — | — | `continuous-v2 + r7_safe_credit_potential` |
+| Candidate | Slurm job | Status | Training steps | Best snapshot | All coins | Mean coins | Notes |
+|---|---|---|---:|---|---:|---:|---|
+| Single-table Q baseline | `472859` | pending | 100,000 | — | — | — | `discrete-q-v2 + r4_anti_oscillation` |
+| Watkins Double Q(lambda) | `472860` | pending | 100,000 | — | — | — | `continuous-v2 + r7_safe_credit_potential` |
 
-Raw run directories, snapshot evaluation JSON, checkpoint SHA-256 and Slurm IDs are appended here after completion.
+Each job saves a live checkpoint and immutable snapshots every 25k action steps, then
+runs the five-seed frozen development evaluation and writes
+`best_task1_selection.json`. Raw run directories, snapshot evaluation JSON, checkpoint
+SHA-256 and completed metrics are appended here after completion.
