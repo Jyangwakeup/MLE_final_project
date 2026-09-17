@@ -13,3 +13,11 @@ Fixed-core CPU 3 timing used one warmup followed by ten alternating old/new samp
 ## Whole-game regression at ca68c8a
 
 World 24025 completed all 400 steps with score 7, one kill, 44 bombs and no learner death. All registered gates passed, including zero invalid actions, zero safety-search/guarantee/collapse events and complete-act P95/max 82.631/222.514ms. A separate raw audit checked 44 placements and 263 pending actions without clock or fallback findings. This resolves the recorded whole-game regression, not general safety admission or Task 4 qualification; next compare v5/v9 on the registered 60 engineering worlds for Tasks 1–3 before further strong-opponent sweeps.
+
+## Completed paired retention at 933de65
+
+All 360 games and all existing gates passed. Task1 score and Task2 coins/crates retained 100%; Task3 score/coins/crates retained 94.79%/98.60%/99.12%. Task3 score difference versus v5 was -0.4000 (10,000-sample paired 95% interval [-0.9833, 0.1667]), kills -0.0667 ([-0.1667, 0.0167]); this is not evidence of improved combat performance.
+
+The candidate raw audit covered 5,408 placements and 32,208 pending actions without clock, placement or selected-action proof inconsistencies. Candidate complete-act P95/max for Tasks1/2/3 were 9.135/13.931ms, 7.696/17.829ms and 23.515/54.831ms. All 180 pairs had matching world/opponent seeds, parent checkpoint and model identity; the registered parent SHA was rechecked. Task2/3 had zero self deaths and 100% bomb survival, and every Task3 game used bombs.
+
+The next frozen test reuses the registered 60 engineering worlds against three rule-based opponents. It is not formal training or independent confirmation/main validation, and any new engineering failure stops that run with evidence preserved.

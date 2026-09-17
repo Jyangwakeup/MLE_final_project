@@ -1,0 +1,3668 @@
+{
+  "v5_task1": {
+    "completed": 60,
+    "actions": 7624,
+    "p95_ms": 8.44883918762207,
+    "max_ms": 12.528181076049805,
+    "bombs_audited": 0,
+    "pending_actions": 0,
+    "issues": [],
+    "episodes": [
+      {
+        "seed": 24000,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24001,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24002,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24003,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24004,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24005,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24006,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24007,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24008,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24009,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24010,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24011,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24012,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24013,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24014,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24015,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24016,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24017,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24018,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24019,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24020,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24021,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24022,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24023,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24024,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24025,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24026,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24027,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24028,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24029,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24030,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24031,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24032,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24033,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24034,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24035,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24036,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24037,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24038,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24039,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24040,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24041,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24042,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24043,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24044,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24045,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24046,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24047,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24048,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24049,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24050,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24051,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24052,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24053,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24054,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24055,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24056,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24057,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24058,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24059,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      }
+    ]
+  },
+  "v9_task1": {
+    "completed": 60,
+    "actions": 7624,
+    "p95_ms": 9.134769439697266,
+    "max_ms": 13.931035995483398,
+    "bombs_audited": 0,
+    "pending_actions": 0,
+    "issues": [],
+    "episodes": [
+      {
+        "seed": 24000,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24001,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24002,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24003,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24004,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24005,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24006,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24007,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24008,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24009,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24010,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24011,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24012,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24013,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24014,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24015,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24016,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24017,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24018,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24019,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24020,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24021,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24022,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24023,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24024,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24025,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24026,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24027,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24028,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24029,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24030,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24031,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24032,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24033,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24034,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24035,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24036,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24037,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24038,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24039,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24040,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24041,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24042,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24043,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24044,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24045,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24046,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24047,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24048,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24049,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24050,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24051,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24052,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24053,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24054,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24055,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24056,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24057,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24058,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      },
+      {
+        "seed": 24059,
+        "score": 50,
+        "coins": 50,
+        "crates": 0,
+        "suicides": 0,
+        "bombs": 0,
+        "bombs_survived": 0,
+        "bombs_resolved": 0
+      }
+    ]
+  },
+  "v5_task2": {
+    "completed": 60,
+    "actions": 24000,
+    "p95_ms": 7.3223114013671875,
+    "max_ms": 13.967514038085938,
+    "bombs_audited": 0,
+    "pending_actions": 0,
+    "issues": [],
+    "episodes": [
+      {
+        "seed": 24000,
+        "score": 8,
+        "coins": 8,
+        "crates": 115,
+        "suicides": 0,
+        "bombs": 43,
+        "bombs_survived": 43,
+        "bombs_resolved": 43
+      },
+      {
+        "seed": 24001,
+        "score": 9,
+        "coins": 9,
+        "crates": 118,
+        "suicides": 0,
+        "bombs": 51,
+        "bombs_survived": 51,
+        "bombs_resolved": 51
+      },
+      {
+        "seed": 24002,
+        "score": 7,
+        "coins": 7,
+        "crates": 96,
+        "suicides": 0,
+        "bombs": 47,
+        "bombs_survived": 46,
+        "bombs_resolved": 46
+      },
+      {
+        "seed": 24003,
+        "score": 9,
+        "coins": 9,
+        "crates": 123,
+        "suicides": 0,
+        "bombs": 49,
+        "bombs_survived": 49,
+        "bombs_resolved": 49
+      },
+      {
+        "seed": 24004,
+        "score": 8,
+        "coins": 8,
+        "crates": 113,
+        "suicides": 0,
+        "bombs": 50,
+        "bombs_survived": 50,
+        "bombs_resolved": 50
+      },
+      {
+        "seed": 24005,
+        "score": 7,
+        "coins": 7,
+        "crates": 97,
+        "suicides": 0,
+        "bombs": 45,
+        "bombs_survived": 45,
+        "bombs_resolved": 45
+      },
+      {
+        "seed": 24006,
+        "score": 4,
+        "coins": 4,
+        "crates": 82,
+        "suicides": 0,
+        "bombs": 54,
+        "bombs_survived": 53,
+        "bombs_resolved": 53
+      },
+      {
+        "seed": 24007,
+        "score": 6,
+        "coins": 6,
+        "crates": 92,
+        "suicides": 0,
+        "bombs": 43,
+        "bombs_survived": 43,
+        "bombs_resolved": 43
+      },
+      {
+        "seed": 24008,
+        "score": 7,
+        "coins": 7,
+        "crates": 98,
+        "suicides": 0,
+        "bombs": 37,
+        "bombs_survived": 37,
+        "bombs_resolved": 37
+      },
+      {
+        "seed": 24009,
+        "score": 9,
+        "coins": 9,
+        "crates": 103,
+        "suicides": 0,
+        "bombs": 52,
+        "bombs_survived": 51,
+        "bombs_resolved": 51
+      },
+      {
+        "seed": 24010,
+        "score": 9,
+        "coins": 9,
+        "crates": 113,
+        "suicides": 0,
+        "bombs": 47,
+        "bombs_survived": 47,
+        "bombs_resolved": 47
+      },
+      {
+        "seed": 24011,
+        "score": 8,
+        "coins": 8,
+        "crates": 115,
+        "suicides": 0,
+        "bombs": 45,
+        "bombs_survived": 45,
+        "bombs_resolved": 45
+      },
+      {
+        "seed": 24012,
+        "score": 7,
+        "coins": 7,
+        "crates": 113,
+        "suicides": 0,
+        "bombs": 43,
+        "bombs_survived": 43,
+        "bombs_resolved": 43
+      },
+      {
+        "seed": 24013,
+        "score": 6,
+        "coins": 6,
+        "crates": 100,
+        "suicides": 0,
+        "bombs": 52,
+        "bombs_survived": 51,
+        "bombs_resolved": 51
+      },
+      {
+        "seed": 24014,
+        "score": 7,
+        "coins": 7,
+        "crates": 80,
+        "suicides": 0,
+        "bombs": 52,
+        "bombs_survived": 52,
+        "bombs_resolved": 52
+      },
+      {
+        "seed": 24015,
+        "score": 6,
+        "coins": 6,
+        "crates": 87,
+        "suicides": 0,
+        "bombs": 37,
+        "bombs_survived": 37,
+        "bombs_resolved": 37
+      },
+      {
+        "seed": 24016,
+        "score": 6,
+        "coins": 6,
+        "crates": 86,
+        "suicides": 0,
+        "bombs": 54,
+        "bombs_survived": 53,
+        "bombs_resolved": 53
+      },
+      {
+        "seed": 24017,
+        "score": 5,
+        "coins": 5,
+        "crates": 76,
+        "suicides": 0,
+        "bombs": 49,
+        "bombs_survived": 48,
+        "bombs_resolved": 48
+      },
+      {
+        "seed": 24018,
+        "score": 5,
+        "coins": 5,
+        "crates": 77,
+        "suicides": 0,
+        "bombs": 44,
+        "bombs_survived": 43,
+        "bombs_resolved": 43
+      },
+      {
+        "seed": 24019,
+        "score": 7,
+        "coins": 7,
+        "crates": 81,
+        "suicides": 0,
+        "bombs": 52,
+        "bombs_survived": 52,
+        "bombs_resolved": 52
+      },
+      {
+        "seed": 24020,
+        "score": 9,
+        "coins": 9,
+        "crates": 115,
+        "suicides": 0,
+        "bombs": 47,
+        "bombs_survived": 47,
+        "bombs_resolved": 47
+      },
+      {
+        "seed": 24021,
+        "score": 8,
+        "coins": 8,
+        "crates": 110,
+        "suicides": 0,
+        "bombs": 49,
+        "bombs_survived": 49,
+        "bombs_resolved": 49
+      },
+      {
+        "seed": 24022,
+        "score": 8,
+        "coins": 8,
+        "crates": 109,
+        "suicides": 0,
+        "bombs": 46,
+        "bombs_survived": 46,
+        "bombs_resolved": 46
+      },
+      {
+        "seed": 24023,
+        "score": 8,
+        "coins": 8,
+        "crates": 103,
+        "suicides": 0,
+        "bombs": 45,
+        "bombs_survived": 45,
+        "bombs_resolved": 45
+      },
+      {
+        "seed": 24024,
+        "score": 8,
+        "coins": 8,
+        "crates": 104,
+        "suicides": 0,
+        "bombs": 41,
+        "bombs_survived": 41,
+        "bombs_resolved": 41
+      },
+      {
+        "seed": 24025,
+        "score": 6,
+        "coins": 6,
+        "crates": 95,
+        "suicides": 0,
+        "bombs": 51,
+        "bombs_survived": 51,
+        "bombs_resolved": 51
+      },
+      {
+        "seed": 24026,
+        "score": 7,
+        "coins": 7,
+        "crates": 104,
+        "suicides": 0,
+        "bombs": 45,
+        "bombs_survived": 45,
+        "bombs_resolved": 45
+      },
+      {
+        "seed": 24027,
+        "score": 8,
+        "coins": 8,
+        "crates": 111,
+        "suicides": 0,
+        "bombs": 52,
+        "bombs_survived": 52,
+        "bombs_resolved": 52
+      },
+      {
+        "seed": 24028,
+        "score": 5,
+        "coins": 5,
+        "crates": 76,
+        "suicides": 0,
+        "bombs": 43,
+        "bombs_survived": 43,
+        "bombs_resolved": 43
+      },
+      {
+        "seed": 24029,
+        "score": 8,
+        "coins": 8,
+        "crates": 113,
+        "suicides": 0,
+        "bombs": 52,
+        "bombs_survived": 51,
+        "bombs_resolved": 51
+      },
+      {
+        "seed": 24030,
+        "score": 7,
+        "coins": 7,
+        "crates": 84,
+        "suicides": 0,
+        "bombs": 37,
+        "bombs_survived": 37,
+        "bombs_resolved": 37
+      },
+      {
+        "seed": 24031,
+        "score": 9,
+        "coins": 9,
+        "crates": 117,
+        "suicides": 0,
+        "bombs": 50,
+        "bombs_survived": 50,
+        "bombs_resolved": 50
+      },
+      {
+        "seed": 24032,
+        "score": 5,
+        "coins": 5,
+        "crates": 97,
+        "suicides": 0,
+        "bombs": 48,
+        "bombs_survived": 48,
+        "bombs_resolved": 48
+      },
+      {
+        "seed": 24033,
+        "score": 8,
+        "coins": 8,
+        "crates": 94,
+        "suicides": 0,
+        "bombs": 53,
+        "bombs_survived": 52,
+        "bombs_resolved": 52
+      },
+      {
+        "seed": 24034,
+        "score": 7,
+        "coins": 7,
+        "crates": 77,
+        "suicides": 0,
+        "bombs": 41,
+        "bombs_survived": 41,
+        "bombs_resolved": 41
+      },
+      {
+        "seed": 24035,
+        "score": 7,
+        "coins": 7,
+        "crates": 99,
+        "suicides": 0,
+        "bombs": 45,
+        "bombs_survived": 45,
+        "bombs_resolved": 45
+      },
+      {
+        "seed": 24036,
+        "score": 8,
+        "coins": 8,
+        "crates": 97,
+        "suicides": 0,
+        "bombs": 47,
+        "bombs_survived": 47,
+        "bombs_resolved": 47
+      },
+      {
+        "seed": 24037,
+        "score": 8,
+        "coins": 8,
+        "crates": 111,
+        "suicides": 0,
+        "bombs": 50,
+        "bombs_survived": 50,
+        "bombs_resolved": 50
+      },
+      {
+        "seed": 24038,
+        "score": 8,
+        "coins": 8,
+        "crates": 105,
+        "suicides": 0,
+        "bombs": 48,
+        "bombs_survived": 47,
+        "bombs_resolved": 47
+      },
+      {
+        "seed": 24039,
+        "score": 7,
+        "coins": 7,
+        "crates": 101,
+        "suicides": 0,
+        "bombs": 38,
+        "bombs_survived": 38,
+        "bombs_resolved": 38
+      },
+      {
+        "seed": 24040,
+        "score": 8,
+        "coins": 8,
+        "crates": 100,
+        "suicides": 0,
+        "bombs": 42,
+        "bombs_survived": 42,
+        "bombs_resolved": 42
+      },
+      {
+        "seed": 24041,
+        "score": 9,
+        "coins": 9,
+        "crates": 115,
+        "suicides": 0,
+        "bombs": 51,
+        "bombs_survived": 51,
+        "bombs_resolved": 51
+      },
+      {
+        "seed": 24042,
+        "score": 9,
+        "coins": 9,
+        "crates": 97,
+        "suicides": 0,
+        "bombs": 55,
+        "bombs_survived": 54,
+        "bombs_resolved": 54
+      },
+      {
+        "seed": 24043,
+        "score": 8,
+        "coins": 8,
+        "crates": 102,
+        "suicides": 0,
+        "bombs": 43,
+        "bombs_survived": 43,
+        "bombs_resolved": 43
+      },
+      {
+        "seed": 24044,
+        "score": 3,
+        "coins": 3,
+        "crates": 81,
+        "suicides": 0,
+        "bombs": 48,
+        "bombs_survived": 48,
+        "bombs_resolved": 48
+      },
+      {
+        "seed": 24045,
+        "score": 7,
+        "coins": 7,
+        "crates": 108,
+        "suicides": 0,
+        "bombs": 55,
+        "bombs_survived": 55,
+        "bombs_resolved": 55
+      },
+      {
+        "seed": 24046,
+        "score": 8,
+        "coins": 8,
+        "crates": 99,
+        "suicides": 0,
+        "bombs": 50,
+        "bombs_survived": 49,
+        "bombs_resolved": 49
+      },
+      {
+        "seed": 24047,
+        "score": 8,
+        "coins": 8,
+        "crates": 105,
+        "suicides": 0,
+        "bombs": 48,
+        "bombs_survived": 48,
+        "bombs_resolved": 48
+      },
+      {
+        "seed": 24048,
+        "score": 6,
+        "coins": 6,
+        "crates": 95,
+        "suicides": 0,
+        "bombs": 45,
+        "bombs_survived": 45,
+        "bombs_resolved": 45
+      },
+      {
+        "seed": 24049,
+        "score": 8,
+        "coins": 8,
+        "crates": 103,
+        "suicides": 0,
+        "bombs": 46,
+        "bombs_survived": 46,
+        "bombs_resolved": 46
+      },
+      {
+        "seed": 24050,
+        "score": 8,
+        "coins": 8,
+        "crates": 119,
+        "suicides": 0,
+        "bombs": 45,
+        "bombs_survived": 45,
+        "bombs_resolved": 45
+      },
+      {
+        "seed": 24051,
+        "score": 8,
+        "coins": 8,
+        "crates": 83,
+        "suicides": 0,
+        "bombs": 49,
+        "bombs_survived": 49,
+        "bombs_resolved": 49
+      },
+      {
+        "seed": 24052,
+        "score": 5,
+        "coins": 5,
+        "crates": 91,
+        "suicides": 0,
+        "bombs": 49,
+        "bombs_survived": 49,
+        "bombs_resolved": 49
+      },
+      {
+        "seed": 24053,
+        "score": 9,
+        "coins": 9,
+        "crates": 120,
+        "suicides": 0,
+        "bombs": 50,
+        "bombs_survived": 49,
+        "bombs_resolved": 49
+      },
+      {
+        "seed": 24054,
+        "score": 5,
+        "coins": 5,
+        "crates": 92,
+        "suicides": 0,
+        "bombs": 47,
+        "bombs_survived": 47,
+        "bombs_resolved": 47
+      },
+      {
+        "seed": 24055,
+        "score": 9,
+        "coins": 9,
+        "crates": 113,
+        "suicides": 0,
+        "bombs": 41,
+        "bombs_survived": 41,
+        "bombs_resolved": 41
+      },
+      {
+        "seed": 24056,
+        "score": 4,
+        "coins": 4,
+        "crates": 81,
+        "suicides": 0,
+        "bombs": 44,
+        "bombs_survived": 44,
+        "bombs_resolved": 44
+      },
+      {
+        "seed": 24057,
+        "score": 5,
+        "coins": 5,
+        "crates": 98,
+        "suicides": 0,
+        "bombs": 40,
+        "bombs_survived": 40,
+        "bombs_resolved": 40
+      },
+      {
+        "seed": 24058,
+        "score": 7,
+        "coins": 7,
+        "crates": 102,
+        "suicides": 0,
+        "bombs": 49,
+        "bombs_survived": 48,
+        "bombs_resolved": 48
+      },
+      {
+        "seed": 24059,
+        "score": 5,
+        "coins": 5,
+        "crates": 90,
+        "suicides": 0,
+        "bombs": 53,
+        "bombs_survived": 53,
+        "bombs_resolved": 53
+      }
+    ]
+  },
+  "v9_task2": {
+    "completed": 60,
+    "actions": 24000,
+    "p95_ms": 7.695913314819336,
+    "max_ms": 17.828702926635742,
+    "bombs_audited": 2824,
+    "pending_actions": 16866,
+    "issues": [],
+    "episodes": [
+      {
+        "seed": 24000,
+        "score": 8,
+        "coins": 8,
+        "crates": 115,
+        "suicides": 0,
+        "bombs": 43,
+        "bombs_survived": 43,
+        "bombs_resolved": 43
+      },
+      {
+        "seed": 24001,
+        "score": 9,
+        "coins": 9,
+        "crates": 118,
+        "suicides": 0,
+        "bombs": 51,
+        "bombs_survived": 51,
+        "bombs_resolved": 51
+      },
+      {
+        "seed": 24002,
+        "score": 7,
+        "coins": 7,
+        "crates": 96,
+        "suicides": 0,
+        "bombs": 47,
+        "bombs_survived": 46,
+        "bombs_resolved": 46
+      },
+      {
+        "seed": 24003,
+        "score": 9,
+        "coins": 9,
+        "crates": 123,
+        "suicides": 0,
+        "bombs": 49,
+        "bombs_survived": 49,
+        "bombs_resolved": 49
+      },
+      {
+        "seed": 24004,
+        "score": 8,
+        "coins": 8,
+        "crates": 113,
+        "suicides": 0,
+        "bombs": 50,
+        "bombs_survived": 50,
+        "bombs_resolved": 50
+      },
+      {
+        "seed": 24005,
+        "score": 7,
+        "coins": 7,
+        "crates": 97,
+        "suicides": 0,
+        "bombs": 45,
+        "bombs_survived": 45,
+        "bombs_resolved": 45
+      },
+      {
+        "seed": 24006,
+        "score": 4,
+        "coins": 4,
+        "crates": 82,
+        "suicides": 0,
+        "bombs": 54,
+        "bombs_survived": 53,
+        "bombs_resolved": 53
+      },
+      {
+        "seed": 24007,
+        "score": 6,
+        "coins": 6,
+        "crates": 92,
+        "suicides": 0,
+        "bombs": 43,
+        "bombs_survived": 43,
+        "bombs_resolved": 43
+      },
+      {
+        "seed": 24008,
+        "score": 7,
+        "coins": 7,
+        "crates": 98,
+        "suicides": 0,
+        "bombs": 37,
+        "bombs_survived": 37,
+        "bombs_resolved": 37
+      },
+      {
+        "seed": 24009,
+        "score": 9,
+        "coins": 9,
+        "crates": 103,
+        "suicides": 0,
+        "bombs": 52,
+        "bombs_survived": 51,
+        "bombs_resolved": 51
+      },
+      {
+        "seed": 24010,
+        "score": 9,
+        "coins": 9,
+        "crates": 113,
+        "suicides": 0,
+        "bombs": 47,
+        "bombs_survived": 47,
+        "bombs_resolved": 47
+      },
+      {
+        "seed": 24011,
+        "score": 8,
+        "coins": 8,
+        "crates": 115,
+        "suicides": 0,
+        "bombs": 45,
+        "bombs_survived": 45,
+        "bombs_resolved": 45
+      },
+      {
+        "seed": 24012,
+        "score": 7,
+        "coins": 7,
+        "crates": 113,
+        "suicides": 0,
+        "bombs": 43,
+        "bombs_survived": 43,
+        "bombs_resolved": 43
+      },
+      {
+        "seed": 24013,
+        "score": 6,
+        "coins": 6,
+        "crates": 100,
+        "suicides": 0,
+        "bombs": 52,
+        "bombs_survived": 51,
+        "bombs_resolved": 51
+      },
+      {
+        "seed": 24014,
+        "score": 7,
+        "coins": 7,
+        "crates": 80,
+        "suicides": 0,
+        "bombs": 52,
+        "bombs_survived": 52,
+        "bombs_resolved": 52
+      },
+      {
+        "seed": 24015,
+        "score": 6,
+        "coins": 6,
+        "crates": 87,
+        "suicides": 0,
+        "bombs": 37,
+        "bombs_survived": 37,
+        "bombs_resolved": 37
+      },
+      {
+        "seed": 24016,
+        "score": 6,
+        "coins": 6,
+        "crates": 86,
+        "suicides": 0,
+        "bombs": 54,
+        "bombs_survived": 53,
+        "bombs_resolved": 53
+      },
+      {
+        "seed": 24017,
+        "score": 5,
+        "coins": 5,
+        "crates": 76,
+        "suicides": 0,
+        "bombs": 49,
+        "bombs_survived": 48,
+        "bombs_resolved": 48
+      },
+      {
+        "seed": 24018,
+        "score": 5,
+        "coins": 5,
+        "crates": 77,
+        "suicides": 0,
+        "bombs": 44,
+        "bombs_survived": 43,
+        "bombs_resolved": 43
+      },
+      {
+        "seed": 24019,
+        "score": 7,
+        "coins": 7,
+        "crates": 81,
+        "suicides": 0,
+        "bombs": 52,
+        "bombs_survived": 52,
+        "bombs_resolved": 52
+      },
+      {
+        "seed": 24020,
+        "score": 9,
+        "coins": 9,
+        "crates": 115,
+        "suicides": 0,
+        "bombs": 47,
+        "bombs_survived": 47,
+        "bombs_resolved": 47
+      },
+      {
+        "seed": 24021,
+        "score": 8,
+        "coins": 8,
+        "crates": 110,
+        "suicides": 0,
+        "bombs": 49,
+        "bombs_survived": 49,
+        "bombs_resolved": 49
+      },
+      {
+        "seed": 24022,
+        "score": 8,
+        "coins": 8,
+        "crates": 109,
+        "suicides": 0,
+        "bombs": 46,
+        "bombs_survived": 46,
+        "bombs_resolved": 46
+      },
+      {
+        "seed": 24023,
+        "score": 8,
+        "coins": 8,
+        "crates": 103,
+        "suicides": 0,
+        "bombs": 45,
+        "bombs_survived": 45,
+        "bombs_resolved": 45
+      },
+      {
+        "seed": 24024,
+        "score": 8,
+        "coins": 8,
+        "crates": 104,
+        "suicides": 0,
+        "bombs": 41,
+        "bombs_survived": 41,
+        "bombs_resolved": 41
+      },
+      {
+        "seed": 24025,
+        "score": 6,
+        "coins": 6,
+        "crates": 95,
+        "suicides": 0,
+        "bombs": 51,
+        "bombs_survived": 51,
+        "bombs_resolved": 51
+      },
+      {
+        "seed": 24026,
+        "score": 7,
+        "coins": 7,
+        "crates": 104,
+        "suicides": 0,
+        "bombs": 45,
+        "bombs_survived": 45,
+        "bombs_resolved": 45
+      },
+      {
+        "seed": 24027,
+        "score": 8,
+        "coins": 8,
+        "crates": 111,
+        "suicides": 0,
+        "bombs": 52,
+        "bombs_survived": 52,
+        "bombs_resolved": 52
+      },
+      {
+        "seed": 24028,
+        "score": 5,
+        "coins": 5,
+        "crates": 76,
+        "suicides": 0,
+        "bombs": 43,
+        "bombs_survived": 43,
+        "bombs_resolved": 43
+      },
+      {
+        "seed": 24029,
+        "score": 8,
+        "coins": 8,
+        "crates": 113,
+        "suicides": 0,
+        "bombs": 52,
+        "bombs_survived": 51,
+        "bombs_resolved": 51
+      },
+      {
+        "seed": 24030,
+        "score": 7,
+        "coins": 7,
+        "crates": 84,
+        "suicides": 0,
+        "bombs": 37,
+        "bombs_survived": 37,
+        "bombs_resolved": 37
+      },
+      {
+        "seed": 24031,
+        "score": 9,
+        "coins": 9,
+        "crates": 117,
+        "suicides": 0,
+        "bombs": 50,
+        "bombs_survived": 50,
+        "bombs_resolved": 50
+      },
+      {
+        "seed": 24032,
+        "score": 5,
+        "coins": 5,
+        "crates": 97,
+        "suicides": 0,
+        "bombs": 48,
+        "bombs_survived": 48,
+        "bombs_resolved": 48
+      },
+      {
+        "seed": 24033,
+        "score": 8,
+        "coins": 8,
+        "crates": 94,
+        "suicides": 0,
+        "bombs": 53,
+        "bombs_survived": 52,
+        "bombs_resolved": 52
+      },
+      {
+        "seed": 24034,
+        "score": 7,
+        "coins": 7,
+        "crates": 77,
+        "suicides": 0,
+        "bombs": 41,
+        "bombs_survived": 41,
+        "bombs_resolved": 41
+      },
+      {
+        "seed": 24035,
+        "score": 7,
+        "coins": 7,
+        "crates": 99,
+        "suicides": 0,
+        "bombs": 45,
+        "bombs_survived": 45,
+        "bombs_resolved": 45
+      },
+      {
+        "seed": 24036,
+        "score": 8,
+        "coins": 8,
+        "crates": 97,
+        "suicides": 0,
+        "bombs": 47,
+        "bombs_survived": 47,
+        "bombs_resolved": 47
+      },
+      {
+        "seed": 24037,
+        "score": 8,
+        "coins": 8,
+        "crates": 111,
+        "suicides": 0,
+        "bombs": 50,
+        "bombs_survived": 50,
+        "bombs_resolved": 50
+      },
+      {
+        "seed": 24038,
+        "score": 8,
+        "coins": 8,
+        "crates": 105,
+        "suicides": 0,
+        "bombs": 48,
+        "bombs_survived": 47,
+        "bombs_resolved": 47
+      },
+      {
+        "seed": 24039,
+        "score": 7,
+        "coins": 7,
+        "crates": 101,
+        "suicides": 0,
+        "bombs": 38,
+        "bombs_survived": 38,
+        "bombs_resolved": 38
+      },
+      {
+        "seed": 24040,
+        "score": 8,
+        "coins": 8,
+        "crates": 100,
+        "suicides": 0,
+        "bombs": 42,
+        "bombs_survived": 42,
+        "bombs_resolved": 42
+      },
+      {
+        "seed": 24041,
+        "score": 9,
+        "coins": 9,
+        "crates": 115,
+        "suicides": 0,
+        "bombs": 51,
+        "bombs_survived": 51,
+        "bombs_resolved": 51
+      },
+      {
+        "seed": 24042,
+        "score": 9,
+        "coins": 9,
+        "crates": 97,
+        "suicides": 0,
+        "bombs": 55,
+        "bombs_survived": 54,
+        "bombs_resolved": 54
+      },
+      {
+        "seed": 24043,
+        "score": 8,
+        "coins": 8,
+        "crates": 102,
+        "suicides": 0,
+        "bombs": 43,
+        "bombs_survived": 43,
+        "bombs_resolved": 43
+      },
+      {
+        "seed": 24044,
+        "score": 3,
+        "coins": 3,
+        "crates": 81,
+        "suicides": 0,
+        "bombs": 48,
+        "bombs_survived": 48,
+        "bombs_resolved": 48
+      },
+      {
+        "seed": 24045,
+        "score": 7,
+        "coins": 7,
+        "crates": 108,
+        "suicides": 0,
+        "bombs": 55,
+        "bombs_survived": 55,
+        "bombs_resolved": 55
+      },
+      {
+        "seed": 24046,
+        "score": 8,
+        "coins": 8,
+        "crates": 99,
+        "suicides": 0,
+        "bombs": 50,
+        "bombs_survived": 49,
+        "bombs_resolved": 49
+      },
+      {
+        "seed": 24047,
+        "score": 8,
+        "coins": 8,
+        "crates": 105,
+        "suicides": 0,
+        "bombs": 48,
+        "bombs_survived": 48,
+        "bombs_resolved": 48
+      },
+      {
+        "seed": 24048,
+        "score": 6,
+        "coins": 6,
+        "crates": 95,
+        "suicides": 0,
+        "bombs": 45,
+        "bombs_survived": 45,
+        "bombs_resolved": 45
+      },
+      {
+        "seed": 24049,
+        "score": 8,
+        "coins": 8,
+        "crates": 103,
+        "suicides": 0,
+        "bombs": 46,
+        "bombs_survived": 46,
+        "bombs_resolved": 46
+      },
+      {
+        "seed": 24050,
+        "score": 8,
+        "coins": 8,
+        "crates": 119,
+        "suicides": 0,
+        "bombs": 45,
+        "bombs_survived": 45,
+        "bombs_resolved": 45
+      },
+      {
+        "seed": 24051,
+        "score": 8,
+        "coins": 8,
+        "crates": 83,
+        "suicides": 0,
+        "bombs": 49,
+        "bombs_survived": 49,
+        "bombs_resolved": 49
+      },
+      {
+        "seed": 24052,
+        "score": 5,
+        "coins": 5,
+        "crates": 91,
+        "suicides": 0,
+        "bombs": 49,
+        "bombs_survived": 49,
+        "bombs_resolved": 49
+      },
+      {
+        "seed": 24053,
+        "score": 9,
+        "coins": 9,
+        "crates": 120,
+        "suicides": 0,
+        "bombs": 50,
+        "bombs_survived": 49,
+        "bombs_resolved": 49
+      },
+      {
+        "seed": 24054,
+        "score": 5,
+        "coins": 5,
+        "crates": 92,
+        "suicides": 0,
+        "bombs": 47,
+        "bombs_survived": 47,
+        "bombs_resolved": 47
+      },
+      {
+        "seed": 24055,
+        "score": 9,
+        "coins": 9,
+        "crates": 113,
+        "suicides": 0,
+        "bombs": 41,
+        "bombs_survived": 41,
+        "bombs_resolved": 41
+      },
+      {
+        "seed": 24056,
+        "score": 4,
+        "coins": 4,
+        "crates": 81,
+        "suicides": 0,
+        "bombs": 44,
+        "bombs_survived": 44,
+        "bombs_resolved": 44
+      },
+      {
+        "seed": 24057,
+        "score": 5,
+        "coins": 5,
+        "crates": 98,
+        "suicides": 0,
+        "bombs": 40,
+        "bombs_survived": 40,
+        "bombs_resolved": 40
+      },
+      {
+        "seed": 24058,
+        "score": 7,
+        "coins": 7,
+        "crates": 102,
+        "suicides": 0,
+        "bombs": 49,
+        "bombs_survived": 48,
+        "bombs_resolved": 48
+      },
+      {
+        "seed": 24059,
+        "score": 5,
+        "coins": 5,
+        "crates": 90,
+        "suicides": 0,
+        "bombs": 53,
+        "bombs_survived": 53,
+        "bombs_resolved": 53
+      }
+    ]
+  },
+  "v5_task3": {
+    "completed": 60,
+    "actions": 24000,
+    "p95_ms": 14.199256896972656,
+    "max_ms": 165.83681106567383,
+    "bombs_audited": 0,
+    "pending_actions": 0,
+    "issues": [],
+    "episodes": [
+      {
+        "seed": 24000,
+        "score": 4,
+        "coins": 4,
+        "crates": 47,
+        "suicides": 0,
+        "bombs": 42,
+        "bombs_survived": 41,
+        "bombs_resolved": 41
+      },
+      {
+        "seed": 24001,
+        "score": 6,
+        "coins": 6,
+        "crates": 65,
+        "suicides": 0,
+        "bombs": 47,
+        "bombs_survived": 47,
+        "bombs_resolved": 47
+      },
+      {
+        "seed": 24002,
+        "score": 13,
+        "coins": 8,
+        "crates": 85,
+        "suicides": 0,
+        "bombs": 41,
+        "bombs_survived": 41,
+        "bombs_resolved": 41
+      },
+      {
+        "seed": 24003,
+        "score": 9,
+        "coins": 4,
+        "crates": 67,
+        "suicides": 0,
+        "bombs": 45,
+        "bombs_survived": 44,
+        "bombs_resolved": 44
+      },
+      {
+        "seed": 24004,
+        "score": 11,
+        "coins": 6,
+        "crates": 58,
+        "suicides": 0,
+        "bombs": 46,
+        "bombs_survived": 46,
+        "bombs_resolved": 46
+      },
+      {
+        "seed": 24005,
+        "score": 9,
+        "coins": 4,
+        "crates": 43,
+        "suicides": 0,
+        "bombs": 40,
+        "bombs_survived": 39,
+        "bombs_resolved": 39
+      },
+      {
+        "seed": 24006,
+        "score": 7,
+        "coins": 2,
+        "crates": 50,
+        "suicides": 0,
+        "bombs": 42,
+        "bombs_survived": 41,
+        "bombs_resolved": 41
+      },
+      {
+        "seed": 24007,
+        "score": 4,
+        "coins": 4,
+        "crates": 53,
+        "suicides": 0,
+        "bombs": 38,
+        "bombs_survived": 37,
+        "bombs_resolved": 37
+      },
+      {
+        "seed": 24008,
+        "score": 12,
+        "coins": 7,
+        "crates": 50,
+        "suicides": 0,
+        "bombs": 43,
+        "bombs_survived": 43,
+        "bombs_resolved": 43
+      },
+      {
+        "seed": 24009,
+        "score": 5,
+        "coins": 5,
+        "crates": 43,
+        "suicides": 0,
+        "bombs": 42,
+        "bombs_survived": 41,
+        "bombs_resolved": 41
+      },
+      {
+        "seed": 24010,
+        "score": 5,
+        "coins": 5,
+        "crates": 59,
+        "suicides": 0,
+        "bombs": 45,
+        "bombs_survived": 44,
+        "bombs_resolved": 44
+      },
+      {
+        "seed": 24011,
+        "score": 10,
+        "coins": 5,
+        "crates": 65,
+        "suicides": 0,
+        "bombs": 39,
+        "bombs_survived": 39,
+        "bombs_resolved": 39
+      },
+      {
+        "seed": 24012,
+        "score": 5,
+        "coins": 5,
+        "crates": 52,
+        "suicides": 0,
+        "bombs": 33,
+        "bombs_survived": 33,
+        "bombs_resolved": 33
+      },
+      {
+        "seed": 24013,
+        "score": 7,
+        "coins": 2,
+        "crates": 62,
+        "suicides": 0,
+        "bombs": 36,
+        "bombs_survived": 36,
+        "bombs_resolved": 36
+      },
+      {
+        "seed": 24014,
+        "score": 9,
+        "coins": 4,
+        "crates": 58,
+        "suicides": 0,
+        "bombs": 48,
+        "bombs_survived": 47,
+        "bombs_resolved": 47
+      },
+      {
+        "seed": 24015,
+        "score": 3,
+        "coins": 3,
+        "crates": 38,
+        "suicides": 0,
+        "bombs": 45,
+        "bombs_survived": 45,
+        "bombs_resolved": 45
+      },
+      {
+        "seed": 24016,
+        "score": 9,
+        "coins": 4,
+        "crates": 51,
+        "suicides": 0,
+        "bombs": 38,
+        "bombs_survived": 38,
+        "bombs_resolved": 38
+      },
+      {
+        "seed": 24017,
+        "score": 3,
+        "coins": 3,
+        "crates": 36,
+        "suicides": 0,
+        "bombs": 45,
+        "bombs_survived": 44,
+        "bombs_resolved": 44
+      },
+      {
+        "seed": 24018,
+        "score": 9,
+        "coins": 4,
+        "crates": 60,
+        "suicides": 0,
+        "bombs": 48,
+        "bombs_survived": 48,
+        "bombs_resolved": 48
+      },
+      {
+        "seed": 24019,
+        "score": 6,
+        "coins": 6,
+        "crates": 53,
+        "suicides": 0,
+        "bombs": 45,
+        "bombs_survived": 44,
+        "bombs_resolved": 44
+      },
+      {
+        "seed": 24020,
+        "score": 15,
+        "coins": 5,
+        "crates": 59,
+        "suicides": 0,
+        "bombs": 46,
+        "bombs_survived": 45,
+        "bombs_resolved": 45
+      },
+      {
+        "seed": 24021,
+        "score": 12,
+        "coins": 7,
+        "crates": 75,
+        "suicides": 0,
+        "bombs": 53,
+        "bombs_survived": 53,
+        "bombs_resolved": 53
+      },
+      {
+        "seed": 24022,
+        "score": 4,
+        "coins": 4,
+        "crates": 47,
+        "suicides": 0,
+        "bombs": 40,
+        "bombs_survived": 40,
+        "bombs_resolved": 40
+      },
+      {
+        "seed": 24023,
+        "score": 3,
+        "coins": 3,
+        "crates": 48,
+        "suicides": 0,
+        "bombs": 42,
+        "bombs_survived": 42,
+        "bombs_resolved": 42
+      },
+      {
+        "seed": 24024,
+        "score": 8,
+        "coins": 3,
+        "crates": 51,
+        "suicides": 0,
+        "bombs": 48,
+        "bombs_survived": 48,
+        "bombs_resolved": 48
+      },
+      {
+        "seed": 24025,
+        "score": 3,
+        "coins": 3,
+        "crates": 55,
+        "suicides": 0,
+        "bombs": 48,
+        "bombs_survived": 48,
+        "bombs_resolved": 48
+      },
+      {
+        "seed": 24026,
+        "score": 12,
+        "coins": 7,
+        "crates": 60,
+        "suicides": 0,
+        "bombs": 39,
+        "bombs_survived": 38,
+        "bombs_resolved": 38
+      },
+      {
+        "seed": 24027,
+        "score": 7,
+        "coins": 2,
+        "crates": 52,
+        "suicides": 0,
+        "bombs": 45,
+        "bombs_survived": 45,
+        "bombs_resolved": 45
+      },
+      {
+        "seed": 24028,
+        "score": 4,
+        "coins": 4,
+        "crates": 50,
+        "suicides": 0,
+        "bombs": 44,
+        "bombs_survived": 43,
+        "bombs_resolved": 43
+      },
+      {
+        "seed": 24029,
+        "score": 16,
+        "coins": 6,
+        "crates": 63,
+        "suicides": 0,
+        "bombs": 48,
+        "bombs_survived": 47,
+        "bombs_resolved": 47
+      },
+      {
+        "seed": 24030,
+        "score": 2,
+        "coins": 2,
+        "crates": 52,
+        "suicides": 0,
+        "bombs": 47,
+        "bombs_survived": 47,
+        "bombs_resolved": 47
+      },
+      {
+        "seed": 24031,
+        "score": 11,
+        "coins": 6,
+        "crates": 56,
+        "suicides": 0,
+        "bombs": 41,
+        "bombs_survived": 40,
+        "bombs_resolved": 40
+      },
+      {
+        "seed": 24032,
+        "score": 4,
+        "coins": 4,
+        "crates": 57,
+        "suicides": 0,
+        "bombs": 43,
+        "bombs_survived": 42,
+        "bombs_resolved": 42
+      },
+      {
+        "seed": 24033,
+        "score": 6,
+        "coins": 6,
+        "crates": 53,
+        "suicides": 0,
+        "bombs": 41,
+        "bombs_survived": 40,
+        "bombs_resolved": 40
+      },
+      {
+        "seed": 24034,
+        "score": 11,
+        "coins": 6,
+        "crates": 50,
+        "suicides": 0,
+        "bombs": 40,
+        "bombs_survived": 39,
+        "bombs_resolved": 39
+      },
+      {
+        "seed": 24035,
+        "score": 7,
+        "coins": 7,
+        "crates": 64,
+        "suicides": 0,
+        "bombs": 49,
+        "bombs_survived": 49,
+        "bombs_resolved": 49
+      },
+      {
+        "seed": 24036,
+        "score": 12,
+        "coins": 7,
+        "crates": 53,
+        "suicides": 0,
+        "bombs": 38,
+        "bombs_survived": 38,
+        "bombs_resolved": 38
+      },
+      {
+        "seed": 24037,
+        "score": 6,
+        "coins": 6,
+        "crates": 76,
+        "suicides": 0,
+        "bombs": 47,
+        "bombs_survived": 47,
+        "bombs_resolved": 47
+      },
+      {
+        "seed": 24038,
+        "score": 5,
+        "coins": 5,
+        "crates": 47,
+        "suicides": 0,
+        "bombs": 40,
+        "bombs_survived": 39,
+        "bombs_resolved": 39
+      },
+      {
+        "seed": 24039,
+        "score": 11,
+        "coins": 6,
+        "crates": 67,
+        "suicides": 0,
+        "bombs": 52,
+        "bombs_survived": 52,
+        "bombs_resolved": 52
+      },
+      {
+        "seed": 24040,
+        "score": 6,
+        "coins": 6,
+        "crates": 55,
+        "suicides": 0,
+        "bombs": 42,
+        "bombs_survived": 41,
+        "bombs_resolved": 41
+      },
+      {
+        "seed": 24041,
+        "score": 9,
+        "coins": 4,
+        "crates": 56,
+        "suicides": 0,
+        "bombs": 39,
+        "bombs_survived": 38,
+        "bombs_resolved": 38
+      },
+      {
+        "seed": 24042,
+        "score": 3,
+        "coins": 3,
+        "crates": 26,
+        "suicides": 0,
+        "bombs": 49,
+        "bombs_survived": 48,
+        "bombs_resolved": 48
+      },
+      {
+        "seed": 24043,
+        "score": 12,
+        "coins": 7,
+        "crates": 78,
+        "suicides": 0,
+        "bombs": 41,
+        "bombs_survived": 41,
+        "bombs_resolved": 41
+      },
+      {
+        "seed": 24044,
+        "score": 10,
+        "coins": 5,
+        "crates": 69,
+        "suicides": 0,
+        "bombs": 41,
+        "bombs_survived": 40,
+        "bombs_resolved": 40
+      },
+      {
+        "seed": 24045,
+        "score": 13,
+        "coins": 8,
+        "crates": 86,
+        "suicides": 0,
+        "bombs": 36,
+        "bombs_survived": 36,
+        "bombs_resolved": 36
+      },
+      {
+        "seed": 24046,
+        "score": 5,
+        "coins": 5,
+        "crates": 48,
+        "suicides": 0,
+        "bombs": 46,
+        "bombs_survived": 46,
+        "bombs_resolved": 46
+      },
+      {
+        "seed": 24047,
+        "score": 3,
+        "coins": 3,
+        "crates": 41,
+        "suicides": 0,
+        "bombs": 37,
+        "bombs_survived": 36,
+        "bombs_resolved": 36
+      },
+      {
+        "seed": 24048,
+        "score": 4,
+        "coins": 4,
+        "crates": 61,
+        "suicides": 0,
+        "bombs": 43,
+        "bombs_survived": 42,
+        "bombs_resolved": 42
+      },
+      {
+        "seed": 24049,
+        "score": 8,
+        "coins": 3,
+        "crates": 50,
+        "suicides": 0,
+        "bombs": 50,
+        "bombs_survived": 50,
+        "bombs_resolved": 50
+      },
+      {
+        "seed": 24050,
+        "score": 11,
+        "coins": 6,
+        "crates": 65,
+        "suicides": 0,
+        "bombs": 48,
+        "bombs_survived": 48,
+        "bombs_resolved": 48
+      },
+      {
+        "seed": 24051,
+        "score": 5,
+        "coins": 5,
+        "crates": 62,
+        "suicides": 0,
+        "bombs": 43,
+        "bombs_survived": 42,
+        "bombs_resolved": 42
+      },
+      {
+        "seed": 24052,
+        "score": 10,
+        "coins": 5,
+        "crates": 60,
+        "suicides": 0,
+        "bombs": 48,
+        "bombs_survived": 48,
+        "bombs_resolved": 48
+      },
+      {
+        "seed": 24053,
+        "score": 9,
+        "coins": 4,
+        "crates": 58,
+        "suicides": 0,
+        "bombs": 45,
+        "bombs_survived": 45,
+        "bombs_resolved": 45
+      },
+      {
+        "seed": 24054,
+        "score": 9,
+        "coins": 4,
+        "crates": 49,
+        "suicides": 0,
+        "bombs": 45,
+        "bombs_survived": 45,
+        "bombs_resolved": 45
+      },
+      {
+        "seed": 24055,
+        "score": 11,
+        "coins": 6,
+        "crates": 67,
+        "suicides": 0,
+        "bombs": 39,
+        "bombs_survived": 38,
+        "bombs_resolved": 38
+      },
+      {
+        "seed": 24056,
+        "score": 4,
+        "coins": 4,
+        "crates": 72,
+        "suicides": 0,
+        "bombs": 40,
+        "bombs_survived": 39,
+        "bombs_resolved": 39
+      },
+      {
+        "seed": 24057,
+        "score": 10,
+        "coins": 5,
+        "crates": 60,
+        "suicides": 0,
+        "bombs": 31,
+        "bombs_survived": 30,
+        "bombs_resolved": 30
+      },
+      {
+        "seed": 24058,
+        "score": 3,
+        "coins": 3,
+        "crates": 47,
+        "suicides": 0,
+        "bombs": 44,
+        "bombs_survived": 43,
+        "bombs_resolved": 43
+      },
+      {
+        "seed": 24059,
+        "score": 11,
+        "coins": 6,
+        "crates": 78,
+        "suicides": 0,
+        "bombs": 38,
+        "bombs_survived": 38,
+        "bombs_resolved": 38
+      }
+    ]
+  },
+  "v9_task3": {
+    "completed": 60,
+    "actions": 23983,
+    "p95_ms": 23.514747619628906,
+    "max_ms": 54.83078956604004,
+    "bombs_audited": 2584,
+    "pending_actions": 15342,
+    "issues": [],
+    "episodes": [
+      {
+        "seed": 24000,
+        "score": 4,
+        "coins": 4,
+        "crates": 47,
+        "suicides": 0,
+        "bombs": 42,
+        "bombs_survived": 41,
+        "bombs_resolved": 41
+      },
+      {
+        "seed": 24001,
+        "score": 6,
+        "coins": 6,
+        "crates": 65,
+        "suicides": 0,
+        "bombs": 47,
+        "bombs_survived": 47,
+        "bombs_resolved": 47
+      },
+      {
+        "seed": 24002,
+        "score": 13,
+        "coins": 8,
+        "crates": 85,
+        "suicides": 0,
+        "bombs": 41,
+        "bombs_survived": 41,
+        "bombs_resolved": 41
+      },
+      {
+        "seed": 24003,
+        "score": 9,
+        "coins": 4,
+        "crates": 67,
+        "suicides": 0,
+        "bombs": 45,
+        "bombs_survived": 44,
+        "bombs_resolved": 44
+      },
+      {
+        "seed": 24004,
+        "score": 5,
+        "coins": 5,
+        "crates": 51,
+        "suicides": 0,
+        "bombs": 37,
+        "bombs_survived": 36,
+        "bombs_resolved": 36
+      },
+      {
+        "seed": 24005,
+        "score": 9,
+        "coins": 4,
+        "crates": 43,
+        "suicides": 0,
+        "bombs": 40,
+        "bombs_survived": 39,
+        "bombs_resolved": 39
+      },
+      {
+        "seed": 24006,
+        "score": 7,
+        "coins": 2,
+        "crates": 50,
+        "suicides": 0,
+        "bombs": 44,
+        "bombs_survived": 43,
+        "bombs_resolved": 43
+      },
+      {
+        "seed": 24007,
+        "score": 4,
+        "coins": 4,
+        "crates": 53,
+        "suicides": 0,
+        "bombs": 38,
+        "bombs_survived": 37,
+        "bombs_resolved": 37
+      },
+      {
+        "seed": 24008,
+        "score": 10,
+        "coins": 5,
+        "crates": 49,
+        "suicides": 0,
+        "bombs": 47,
+        "bombs_survived": 46,
+        "bombs_resolved": 46
+      },
+      {
+        "seed": 24009,
+        "score": 5,
+        "coins": 5,
+        "crates": 43,
+        "suicides": 0,
+        "bombs": 46,
+        "bombs_survived": 45,
+        "bombs_resolved": 45
+      },
+      {
+        "seed": 24010,
+        "score": 5,
+        "coins": 5,
+        "crates": 59,
+        "suicides": 0,
+        "bombs": 45,
+        "bombs_survived": 44,
+        "bombs_resolved": 44
+      },
+      {
+        "seed": 24011,
+        "score": 10,
+        "coins": 5,
+        "crates": 65,
+        "suicides": 0,
+        "bombs": 39,
+        "bombs_survived": 39,
+        "bombs_resolved": 39
+      },
+      {
+        "seed": 24012,
+        "score": 12,
+        "coins": 7,
+        "crates": 78,
+        "suicides": 0,
+        "bombs": 52,
+        "bombs_survived": 52,
+        "bombs_resolved": 52
+      },
+      {
+        "seed": 24013,
+        "score": 2,
+        "coins": 2,
+        "crates": 59,
+        "suicides": 0,
+        "bombs": 50,
+        "bombs_survived": 50,
+        "bombs_resolved": 50
+      },
+      {
+        "seed": 24014,
+        "score": 10,
+        "coins": 5,
+        "crates": 64,
+        "suicides": 0,
+        "bombs": 46,
+        "bombs_survived": 45,
+        "bombs_resolved": 45
+      },
+      {
+        "seed": 24015,
+        "score": 3,
+        "coins": 3,
+        "crates": 38,
+        "suicides": 0,
+        "bombs": 45,
+        "bombs_survived": 45,
+        "bombs_resolved": 45
+      },
+      {
+        "seed": 24016,
+        "score": 9,
+        "coins": 4,
+        "crates": 51,
+        "suicides": 0,
+        "bombs": 43,
+        "bombs_survived": 42,
+        "bombs_resolved": 42
+      },
+      {
+        "seed": 24017,
+        "score": 3,
+        "coins": 3,
+        "crates": 36,
+        "suicides": 0,
+        "bombs": 45,
+        "bombs_survived": 44,
+        "bombs_resolved": 44
+      },
+      {
+        "seed": 24018,
+        "score": 9,
+        "coins": 4,
+        "crates": 68,
+        "suicides": 0,
+        "bombs": 35,
+        "bombs_survived": 35,
+        "bombs_resolved": 35
+      },
+      {
+        "seed": 24019,
+        "score": 6,
+        "coins": 6,
+        "crates": 53,
+        "suicides": 0,
+        "bombs": 45,
+        "bombs_survived": 44,
+        "bombs_resolved": 44
+      },
+      {
+        "seed": 24020,
+        "score": 10,
+        "coins": 5,
+        "crates": 59,
+        "suicides": 0,
+        "bombs": 41,
+        "bombs_survived": 40,
+        "bombs_resolved": 40
+      },
+      {
+        "seed": 24021,
+        "score": 12,
+        "coins": 7,
+        "crates": 75,
+        "suicides": 0,
+        "bombs": 53,
+        "bombs_survived": 53,
+        "bombs_resolved": 53
+      },
+      {
+        "seed": 24022,
+        "score": 4,
+        "coins": 4,
+        "crates": 47,
+        "suicides": 0,
+        "bombs": 40,
+        "bombs_survived": 40,
+        "bombs_resolved": 40
+      },
+      {
+        "seed": 24023,
+        "score": 4,
+        "coins": 4,
+        "crates": 45,
+        "suicides": 0,
+        "bombs": 35,
+        "bombs_survived": 35,
+        "bombs_resolved": 35
+      },
+      {
+        "seed": 24024,
+        "score": 8,
+        "coins": 3,
+        "crates": 51,
+        "suicides": 0,
+        "bombs": 48,
+        "bombs_survived": 48,
+        "bombs_resolved": 48
+      },
+      {
+        "seed": 24025,
+        "score": 3,
+        "coins": 3,
+        "crates": 57,
+        "suicides": 0,
+        "bombs": 45,
+        "bombs_survived": 45,
+        "bombs_resolved": 45
+      },
+      {
+        "seed": 24026,
+        "score": 6,
+        "coins": 6,
+        "crates": 57,
+        "suicides": 0,
+        "bombs": 42,
+        "bombs_survived": 42,
+        "bombs_resolved": 42
+      },
+      {
+        "seed": 24027,
+        "score": 8,
+        "coins": 3,
+        "crates": 46,
+        "suicides": 0,
+        "bombs": 42,
+        "bombs_survived": 42,
+        "bombs_resolved": 42
+      },
+      {
+        "seed": 24028,
+        "score": 4,
+        "coins": 4,
+        "crates": 49,
+        "suicides": 0,
+        "bombs": 42,
+        "bombs_survived": 42,
+        "bombs_resolved": 42
+      },
+      {
+        "seed": 24029,
+        "score": 16,
+        "coins": 6,
+        "crates": 63,
+        "suicides": 0,
+        "bombs": 48,
+        "bombs_survived": 47,
+        "bombs_resolved": 47
+      },
+      {
+        "seed": 24030,
+        "score": 2,
+        "coins": 2,
+        "crates": 52,
+        "suicides": 0,
+        "bombs": 49,
+        "bombs_survived": 48,
+        "bombs_resolved": 48
+      },
+      {
+        "seed": 24031,
+        "score": 11,
+        "coins": 6,
+        "crates": 56,
+        "suicides": 0,
+        "bombs": 44,
+        "bombs_survived": 43,
+        "bombs_resolved": 43
+      },
+      {
+        "seed": 24032,
+        "score": 4,
+        "coins": 4,
+        "crates": 57,
+        "suicides": 0,
+        "bombs": 43,
+        "bombs_survived": 42,
+        "bombs_resolved": 42
+      },
+      {
+        "seed": 24033,
+        "score": 6,
+        "coins": 6,
+        "crates": 53,
+        "suicides": 0,
+        "bombs": 41,
+        "bombs_survived": 40,
+        "bombs_resolved": 40
+      },
+      {
+        "seed": 24034,
+        "score": 11,
+        "coins": 6,
+        "crates": 50,
+        "suicides": 0,
+        "bombs": 40,
+        "bombs_survived": 39,
+        "bombs_resolved": 39
+      },
+      {
+        "seed": 24035,
+        "score": 7,
+        "coins": 7,
+        "crates": 64,
+        "suicides": 0,
+        "bombs": 49,
+        "bombs_survived": 49,
+        "bombs_resolved": 49
+      },
+      {
+        "seed": 24036,
+        "score": 13,
+        "coins": 8,
+        "crates": 51,
+        "suicides": 0,
+        "bombs": 43,
+        "bombs_survived": 43,
+        "bombs_resolved": 43
+      },
+      {
+        "seed": 24037,
+        "score": 5,
+        "coins": 5,
+        "crates": 57,
+        "suicides": 0,
+        "bombs": 43,
+        "bombs_survived": 43,
+        "bombs_resolved": 43
+      },
+      {
+        "seed": 24038,
+        "score": 5,
+        "coins": 5,
+        "crates": 47,
+        "suicides": 0,
+        "bombs": 40,
+        "bombs_survived": 39,
+        "bombs_resolved": 39
+      },
+      {
+        "seed": 24039,
+        "score": 12,
+        "coins": 7,
+        "crates": 71,
+        "suicides": 0,
+        "bombs": 41,
+        "bombs_survived": 41,
+        "bombs_resolved": 41
+      },
+      {
+        "seed": 24040,
+        "score": 6,
+        "coins": 6,
+        "crates": 55,
+        "suicides": 0,
+        "bombs": 32,
+        "bombs_survived": 32,
+        "bombs_resolved": 32
+      },
+      {
+        "seed": 24041,
+        "score": 9,
+        "coins": 4,
+        "crates": 56,
+        "suicides": 0,
+        "bombs": 39,
+        "bombs_survived": 38,
+        "bombs_resolved": 38
+      },
+      {
+        "seed": 24042,
+        "score": 3,
+        "coins": 3,
+        "crates": 26,
+        "suicides": 0,
+        "bombs": 49,
+        "bombs_survived": 48,
+        "bombs_resolved": 48
+      },
+      {
+        "seed": 24043,
+        "score": 12,
+        "coins": 7,
+        "crates": 78,
+        "suicides": 0,
+        "bombs": 41,
+        "bombs_survived": 41,
+        "bombs_resolved": 41
+      },
+      {
+        "seed": 24044,
+        "score": 10,
+        "coins": 5,
+        "crates": 66,
+        "suicides": 0,
+        "bombs": 41,
+        "bombs_survived": 40,
+        "bombs_resolved": 40
+      },
+      {
+        "seed": 24045,
+        "score": 11,
+        "coins": 6,
+        "crates": 62,
+        "suicides": 0,
+        "bombs": 42,
+        "bombs_survived": 42,
+        "bombs_resolved": 42
+      },
+      {
+        "seed": 24046,
+        "score": 2,
+        "coins": 2,
+        "crates": 46,
+        "suicides": 0,
+        "bombs": 44,
+        "bombs_survived": 43,
+        "bombs_resolved": 43
+      },
+      {
+        "seed": 24047,
+        "score": 3,
+        "coins": 3,
+        "crates": 45,
+        "suicides": 0,
+        "bombs": 39,
+        "bombs_survived": 38,
+        "bombs_resolved": 38
+      },
+      {
+        "seed": 24048,
+        "score": 4,
+        "coins": 4,
+        "crates": 61,
+        "suicides": 0,
+        "bombs": 43,
+        "bombs_survived": 42,
+        "bombs_resolved": 42
+      },
+      {
+        "seed": 24049,
+        "score": 8,
+        "coins": 3,
+        "crates": 54,
+        "suicides": 0,
+        "bombs": 47,
+        "bombs_survived": 47,
+        "bombs_resolved": 47
+      },
+      {
+        "seed": 24050,
+        "score": 3,
+        "coins": 3,
+        "crates": 58,
+        "suicides": 0,
+        "bombs": 44,
+        "bombs_survived": 44,
+        "bombs_resolved": 44
+      },
+      {
+        "seed": 24051,
+        "score": 5,
+        "coins": 5,
+        "crates": 63,
+        "suicides": 0,
+        "bombs": 41,
+        "bombs_survived": 40,
+        "bombs_resolved": 40
+      },
+      {
+        "seed": 24052,
+        "score": 10,
+        "coins": 5,
+        "crates": 60,
+        "suicides": 0,
+        "bombs": 49,
+        "bombs_survived": 48,
+        "bombs_resolved": 48
+      },
+      {
+        "seed": 24053,
+        "score": 11,
+        "coins": 6,
+        "crates": 65,
+        "suicides": 0,
+        "bombs": 42,
+        "bombs_survived": 42,
+        "bombs_resolved": 42
+      },
+      {
+        "seed": 24054,
+        "score": 9,
+        "coins": 4,
+        "crates": 48,
+        "suicides": 0,
+        "bombs": 43,
+        "bombs_survived": 43,
+        "bombs_resolved": 43
+      },
+      {
+        "seed": 24055,
+        "score": 11,
+        "coins": 6,
+        "crates": 68,
+        "suicides": 0,
+        "bombs": 46,
+        "bombs_survived": 45,
+        "bombs_resolved": 45
+      },
+      {
+        "seed": 24056,
+        "score": 3,
+        "coins": 3,
+        "crates": 56,
+        "suicides": 0,
+        "bombs": 39,
+        "bombs_survived": 38,
+        "bombs_resolved": 38
+      },
+      {
+        "seed": 24057,
+        "score": 5,
+        "coins": 5,
+        "crates": 66,
+        "suicides": 0,
+        "bombs": 41,
+        "bombs_survived": 41,
+        "bombs_resolved": 41
+      },
+      {
+        "seed": 24058,
+        "score": 9,
+        "coins": 4,
+        "crates": 46,
+        "suicides": 0,
+        "bombs": 43,
+        "bombs_survived": 42,
+        "bombs_resolved": 42
+      },
+      {
+        "seed": 24059,
+        "score": 11,
+        "coins": 6,
+        "crates": 78,
+        "suicides": 0,
+        "bombs": 38,
+        "bombs_survived": 38,
+        "bombs_resolved": 38
+      }
+    ]
+  }
+}
