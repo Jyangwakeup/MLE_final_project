@@ -35,9 +35,8 @@ from agent_code.learning_common.training_spec import (
 def allowed_n_steps(algorithm: str) -> set[int]:
     """Return replay horizons supported by a learning algorithm.
 
-    The distilled CNN uses a five-step variant in its Task 2 credit-assignment
-    ablation; the other current learners retain the established 1/4-step
-    contract.
+    The distilled CNN and Task 3 Double DQN support the registered five-step
+    credit-assignment experiments. Other learners retain the 1/4-step contract.
     """
     return {1, 4, 5} if algorithm in {"cnn_distilled_double_dqn", "double_dqn"} else {1, 4}
 

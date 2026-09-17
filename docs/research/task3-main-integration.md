@@ -21,7 +21,9 @@ remote phase distillation. No reward version, trained tensor or gate is retuned.
 
 Integration validation:
 
-- Full unittest: 388 tests, 1 skipped, all remaining tests passed.
+- Final full unittest after preserving local main history: 390 tests, 1 skipped,
+  all remaining tests passed (64.315 seconds).
+- Relative-import provenance regression included; targeted runner suite: 27 passed.
 - World 19489 replay: all 1012 recorded actions across all agents match the
   corrected frozen-source replay. Every previously recorded episode-agent
   metric matches. The remote runner additionally records `zero_utility_bombs`.
@@ -30,7 +32,8 @@ Integration validation:
 - Weight SHA-256 is unchanged:
   `b0b9e7ae9cbefa6523ed01e1d7a6d474b90b6272f9de1706ee80f1f109cc803d`.
 
-Logs: `/tmp/task3-merge-tests2.log`, `/tmp/task3-merge-equivalence.log`;
+Logs: `/tmp/task3-main-final-tests.log`, `/tmp/task3-merge-source-tests.log`,
+`/tmp/task3-merge-equivalence.log`;
 replay artifacts: `runs/task3_merge_equivalence_19489/`.
 These are integration checks, not a rerun of the 100-world selection protocol.
 The published frozen statistics continue to refer to source `7cc6f02`; the merge
