@@ -1,0 +1,92 @@
+{
+  "schema_version": "order-equivalence-admission-v1",
+  "campaign_id": "order_equivalence_20260917",
+  "started_at": "2026-09-17T17:17:31Z",
+  "deadline": "2026-09-17T21:17:31Z",
+  "budget_hours": 4,
+  "source_base": "ae86fac8d1a89622e6e0758947398f691d381d02",
+  "agent": "double_dqn_continuous_v2_agent",
+  "parent": {
+    "checkpoint": "agent_code/double_dqn_continuous_v2_agent/task3_validated.pt",
+    "checkpoint_sha256": "b0b9e7ae9cbefa6523ed01e1d7a6d474b90b6272f9de1706ee80f1f109cc803d",
+    "source_commit": "7cc6f0249c0ecb09a539614965c6ee3f758b26e3",
+    "history_backup_ref": "backup/pre-md-bh-attribution",
+    "rewritten_source_commit": "73e78be1a5e959fae33ee16ed0c8b345d7fe71f9",
+    "attribution_mapping_sha256": "e67f253d9ff704c2d7f3a87d0c49b0c5b60dc8b61f7a69c84f7d931433dd541b"
+  },
+  "training_seeds": [
+    11,
+    22,
+    33
+  ],
+  "diagnostic_training_seeds": {
+    "11": 22411,
+    "22": 22422,
+    "33": 22433
+  },
+  "rng_plan": {
+    "22411": {
+      "agent_seed": 22411,
+      "replay_seed": 22411,
+      "torch_seed": 22411,
+      "distillation_seed": 127140,
+      "environment_seed": 23411,
+      "official_opponent_seed": 25411
+    },
+    "22422": {
+      "agent_seed": 22422,
+      "replay_seed": 22422,
+      "torch_seed": 22422,
+      "distillation_seed": 127151,
+      "environment_seed": 23422,
+      "official_opponent_seed": 25422
+    },
+    "22433": {
+      "agent_seed": 22433,
+      "replay_seed": 22433,
+      "torch_seed": 22433,
+      "distillation_seed": 127162,
+      "environment_seed": 23433,
+      "official_opponent_seed": 25433
+    }
+  },
+  "opponents": [
+    "rule_based_agent",
+    "rule_based_agent",
+    "rule_based_agent"
+  ],
+  "opponent_hashes": {
+    "agent_code/rule_based_agent/callbacks.py": "78fae8121ffab5c849d69857aeaeabcee23e1015c923e5e701d9a2bce2c879f6",
+    "agent_code/peaceful_agent/callbacks.py": "db408b7c86d8d308e20b529da378c29a26deb11a34f4a2b69dd942491bc44d82",
+    "agent_code/coin_collector_agent/callbacks.py": "bb9007137dd89712c142b67ff8b26d81b075511e572ad334f94414d96eb40a9c"
+  },
+  "seat_order": [
+    "double_dqn_continuous_v2_agent",
+    "rule_based_agent",
+    "rule_based_agent",
+    "rule_based_agent"
+  ],
+  "cpus": [
+    0
+  ],
+  "cpu_model": "AMD EPYC 7452 32-Core Processor",
+  "arm_configs": {
+    "A": "experiments/configs/order_equivalence_A.json"
+  },
+  "evaluation_policy": "Engineering diagnostics only; no development, confirmation, main validation or sealed worlds.",
+  "prerequisites": {
+    "benchmark": {
+      "path": "experiments/results/order_equivalence_20260917/preflight/benchmark.json",
+      "sha256": "c166bd0489bfce1aa11fb30e512bf408e2ffc44649c6bbb75081721e5d2761bc"
+    },
+    "unittest": {
+      "path": "experiments/results/order_equivalence_20260917/preflight/unittest.log",
+      "sha256": "7087983050ffec496969a0f187b236576e3d30108a8fe0acf3084dfda80cdd54",
+      "test_count": 411
+    },
+    "equivalence": {
+      "path": "experiments/results/order_equivalence_20260917/preflight/equivalence.log",
+      "sha256": "e4fd78cdee62168463450d6d689fb66a1c14fbbd31c711bb853b9374217ae82f"
+    }
+  }
+}

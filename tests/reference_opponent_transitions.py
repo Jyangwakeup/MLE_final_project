@@ -1,3 +1,4 @@
+# Frozen reference from ae86fac; independent of production order reduction.
 """Pure opponent/action transitions used by robust bomb-safety search.
 
 The functions in this module intentionally live inside ``agent_code``: frozen
@@ -7,13 +8,12 @@ submission inference must not import the repository's environment module.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from functools import lru_cache
-from itertools import combinations, permutations, product
+from itertools import permutations, product
 
 import numpy as np
 
 import settings as s
-from .danger import blast_coords
+from agent_code.team_agent.danger import blast_coords
 
 
 ACTIONS = ("UP", "RIGHT", "DOWN", "LEFT", "WAIT", "BOMB")
@@ -147,56 +147,6 @@ def _progress_world(game_state, actors, bombs):
     }, self_alive)
 
 
-@lru_cache(maxsize=128)
-def _representative_orders(actor_count: int, dependencies: int) -> tuple[tuple[int, ...], ...]:
-    """Keep the earliest permutation for each dependent-pair orientation.
-
-    Adjacent independent actions commute at every reachable intermediate state.
-    Orders with the same dependent-pair orientations therefore produce the same
-    concrete result. Retaining the earliest preserves scenario evidence order.
-    """
-    pairs = tuple(combinations(range(actor_count), 2))
-    seen = set()
-    representatives = []
-    for order in permutations(range(actor_count)):
-        ranks = {actor: rank for rank, actor in enumerate(order)}
-        signature = sum(1 << bit for bit, (left, right) in enumerate(pairs)
-                        if dependencies & (1 << bit) and ranks[left] < ranks[right])
-        if signature not in seen:
-            seen.add(signature)
-            representatives.append(order)
-    return tuple(representatives)
-
-
-def _execution_orders(actors, action_profile):
-    """Conservative read/write dependencies for the fixed action phase.
-
-    BOMB pairs remain dependent to preserve the concrete bomb-list order.
-    Movement dependencies include initially occupied targets: this entrypoint
-    accepts an unfiltered own action, although opponent actions are filtered.
-    """
-    positions = [tuple(actor[3]) for actor in actors]
-    targets = [
-        (positions[i][0] + DIRECTIONS[action][0],
-         positions[i][1] + DIRECTIONS[action][1]) if action in DIRECTIONS else None
-        for i, action in enumerate(action_profile)
-    ]
-    dependencies = 0
-    for bit, (left, right) in enumerate(combinations(range(len(actors)), 2)):
-        a, b = action_profile[left], action_profile[right]
-        x, y = targets[left], targets[right]
-        dependent = (
-            (x is not None and y is not None
-             and (x == y or x == positions[right] or y == positions[left]))
-            or (x is not None and b == "BOMB" and x == positions[right])
-            or (y is not None and a == "BOMB" and y == positions[left])
-            or (a == b == "BOMB")
-        )
-        if dependent:
-            dependencies |= 1 << bit
-    return _representative_orders(len(actors), dependencies)
-
-
 def enumerate_opponent_transition_scenarios(
     game_state: dict, own_action: str, *, progress_world: bool = False,
 ) -> tuple[OpponentTransitionScenario, ...]:
@@ -219,7 +169,7 @@ def enumerate_opponent_transition_scenarios(
     unique = {}
     for opponent_actions in profiles:
         action_profile = (own_action, *opponent_actions)
-        for order in _execution_orders(actors, action_profile):
+        for order in permutations(range(len(actors))):
             updated, updated_bombs = _apply_action_phase(
                 game_state, action_profile, tuple(order))
             if progress_world:

@@ -220,3 +220,8 @@ _Avoid_: Three independent curriculum chains
 **Task 4 qualified model**:
 The unique candidate whose experiment arm passes every development and independent confirmation gate for all three shared-parent seeds, followed by its one permitted independent 100-world main validation.
 _Avoid_: Best training checkpoint, development winner
+
+
+**Equivalent action execution orders**:
+Execution orders for one fixed joint action that differ only by exchanges of independent actions, yielding identical concrete successor states and preserving the earliest scenario witness. All opponents remain represented.
+_Avoid_: Nearest-opponent approximation, predicted execution order

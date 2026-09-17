@@ -110,7 +110,7 @@ def candidate_key(point):
             -retention,max(t['act_p95_seconds'] for t in point['child']['summaries'].values()),point['seed'])
 
 
-def audit_training(directory,agent):
+def audit_training(directory,agent,*,check_timing=True):
     episodes=[json.loads(l) for l in (directory/'episodes.jsonl').read_text().splitlines()]
     deaths={e['round_index']:next(a for a in e['agents'] if a['name']==agent)
             for e in episodes if next(a for a in e['agents'] if a['name']==agent)['dead']}
@@ -136,7 +136,7 @@ def audit_training(directory,agent):
             fallback=last.get('safety',{}).get('v1_to_physical_fallback'))
     result=dict(rounds=len(episodes),deaths=classified,death_traces=traces,unresolved=unresolved,timing=timing)
     p._write_json(directory/'task4_training_audit.json',result)
-    if not timing or timing['act_p95_seconds']>.25 or timing['act_max_seconds']>.48:
+    if check_timing and (not timing or timing['act_p95_seconds']>.25 or timing['act_max_seconds']>.48):
         raise EngineeringFailure(f'Training complete act timing gate: {directory} {timing}')
     if unresolved:raise EngineeringFailure(f'Unexplained training self-death: {directory} rounds {unresolved}')
     return dict(rounds=len(episodes),deaths=classified,timing=timing,audit=str(directory/'task4_training_audit.json'))

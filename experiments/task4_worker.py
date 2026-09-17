@@ -65,6 +65,19 @@ def main(argv=None):
             directory=world._timing_path.parent
             (directory/f'task4_death_states_round{world.round:04d}.pkl').write_bytes(
                 pickle.dumps(list(traces.get(key,[]))))
+        if getattr(world,'_snapshot_config',None) and any(
+                a.name==AGENT and a.statistics.get('suicides',0) for a in world.agents):
+            from experiments.task4_campaign import audit_training, EngineeringFailure
+            world._timing_file.flush();world._episodes_file.flush()
+            directory=world._timing_path.parent
+            try:
+                audit_training(directory,AGENT,check_timing=False)
+            except EngineeringFailure as exc:
+                (directory/'task4_failure_states.pkl').write_bytes(pickle.dumps(list(traces.get(key,[]))))
+                (directory/'task4_safety_failure.json').write_text(json.dumps(dict(
+                    reason='unexplained_self_death',round=int(world.round),step=int(world.step),
+                    error=str(exc)),indent=2)+'\n')
+                raise
         traces.pop(key,None)
     run.ExperimentWorld.end_round = audited_end
     run.ExperimentWorld._append_timing = audited
