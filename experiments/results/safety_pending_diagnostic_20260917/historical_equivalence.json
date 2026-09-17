@@ -1,0 +1,1696 @@
+{
+  "reference_commit": "c8c9770",
+  "candidate_commit": "26fb14e93c20ebeb8dcad84ee492f0ed32999a9a",
+  "reference_safety_sha256": "ef7e4032f4a7f0a55275e2b00fd96d5de40518078eeedb11e258747da1ed30cc",
+  "candidate_safety_sha256": "8720d9e16cafdc05a7dbbb906b09ec82e4fc589e028c992cb4754e38f20d2de0",
+  "states": [
+    {
+      "corpus": "task4_shared_parent_20260917",
+      "step": 38,
+      "mask": [
+        false,
+        true,
+        false,
+        false,
+        true,
+        true
+      ],
+      "guarantee_loss": false,
+      "scenario_counts": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        36
+      ]
+    },
+    {
+      "corpus": "task4_shared_parent_20260917",
+      "step": 39,
+      "mask": [
+        false,
+        true,
+        false,
+        true,
+        true,
+        true
+      ],
+      "guarantee_loss": false,
+      "scenario_counts": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        48
+      ]
+    },
+    {
+      "corpus": "task4_shared_parent_20260917",
+      "step": 40,
+      "mask": [
+        false,
+        true,
+        false,
+        false,
+        true,
+        true
+      ],
+      "guarantee_loss": false,
+      "scenario_counts": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        32
+      ]
+    },
+    {
+      "corpus": "task4_shared_parent_20260917",
+      "step": 41,
+      "mask": [
+        false,
+        true,
+        false,
+        false,
+        true,
+        false
+      ],
+      "guarantee_loss": false,
+      "scenario_counts": [
+        0,
+        160,
+        0,
+        0,
+        160,
+        0
+      ]
+    },
+    {
+      "corpus": "task4_shared_parent_20260917",
+      "step": 42,
+      "mask": [
+        false,
+        true,
+        false,
+        false,
+        true,
+        false
+      ],
+      "guarantee_loss": false,
+      "scenario_counts": [
+        0,
+        120,
+        0,
+        0,
+        120,
+        0
+      ]
+    },
+    {
+      "corpus": "task4_shared_parent_20260917",
+      "step": 43,
+      "mask": [
+        true,
+        true,
+        false,
+        false,
+        true,
+        false
+      ],
+      "guarantee_loss": false,
+      "scenario_counts": [
+        120,
+        120,
+        0,
+        0,
+        120,
+        0
+      ]
+    },
+    {
+      "corpus": "task4_shared_parent_20260917",
+      "step": 44,
+      "mask": [
+        true,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "guarantee_loss": false,
+      "scenario_counts": [
+        24,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "corpus": "task4_shared_parent_20260917",
+      "step": 45,
+      "mask": [
+        true,
+        false,
+        false,
+        false,
+        true,
+        false
+      ],
+      "guarantee_loss": false,
+      "scenario_counts": [
+        48,
+        0,
+        0,
+        0,
+        48,
+        0
+      ]
+    },
+    {
+      "corpus": "task4_shared_parent_20260917",
+      "step": 46,
+      "mask": [
+        true,
+        false,
+        true,
+        true,
+        true,
+        false
+      ],
+      "guarantee_loss": false,
+      "scenario_counts": [
+        144,
+        0,
+        144,
+        144,
+        144,
+        0
+      ]
+    },
+    {
+      "corpus": "task4_shared_parent_20260917",
+      "step": 47,
+      "mask": [
+        false,
+        true,
+        false,
+        true,
+        true,
+        true
+      ],
+      "guarantee_loss": false,
+      "scenario_counts": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        60
+      ]
+    },
+    {
+      "corpus": "task4_shared_parent_20260917",
+      "step": 48,
+      "mask": [
+        true,
+        true,
+        true,
+        false,
+        true,
+        true
+      ],
+      "guarantee_loss": false,
+      "scenario_counts": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        27
+      ]
+    },
+    {
+      "corpus": "task4_shared_parent_20260917",
+      "step": 49,
+      "mask": [
+        true,
+        false,
+        true,
+        false,
+        true,
+        true
+      ],
+      "guarantee_loss": false,
+      "scenario_counts": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        33
+      ]
+    },
+    {
+      "corpus": "task4_shared_parent_20260917",
+      "step": 50,
+      "mask": [
+        true,
+        true,
+        false,
+        true,
+        true,
+        true
+      ],
+      "guarantee_loss": false,
+      "scenario_counts": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        28
+      ]
+    },
+    {
+      "corpus": "task4_shared_parent_20260917",
+      "step": 51,
+      "mask": [
+        false,
+        true,
+        false,
+        true,
+        true,
+        true
+      ],
+      "guarantee_loss": false,
+      "scenario_counts": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        116
+      ]
+    },
+    {
+      "corpus": "task4_shared_parent_20260917",
+      "step": 52,
+      "mask": [
+        true,
+        true,
+        false,
+        true,
+        true,
+        true
+      ],
+      "guarantee_loss": false,
+      "scenario_counts": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        55
+      ]
+    },
+    {
+      "corpus": "task4_shared_parent_20260917",
+      "step": 53,
+      "mask": [
+        true,
+        true,
+        false,
+        true,
+        true,
+        true
+      ],
+      "guarantee_loss": false,
+      "scenario_counts": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        36
+      ]
+    },
+    {
+      "corpus": "task4_shared_parent_20260917",
+      "step": 54,
+      "mask": [
+        false,
+        true,
+        false,
+        true,
+        true,
+        true
+      ],
+      "guarantee_loss": false,
+      "scenario_counts": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        22
+      ]
+    },
+    {
+      "corpus": "task4_shared_parent_20260917",
+      "step": 55,
+      "mask": [
+        false,
+        true,
+        false,
+        true,
+        true,
+        true
+      ],
+      "guarantee_loss": false,
+      "scenario_counts": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        105
+      ]
+    },
+    {
+      "corpus": "task4_shared_parent_20260917",
+      "step": 56,
+      "mask": [
+        false,
+        true,
+        false,
+        true,
+        true,
+        true
+      ],
+      "guarantee_loss": false,
+      "scenario_counts": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        30
+      ]
+    },
+    {
+      "corpus": "task4_shared_parent_20260917",
+      "step": 57,
+      "mask": [
+        false,
+        true,
+        false,
+        true,
+        true,
+        false
+      ],
+      "guarantee_loss": false,
+      "scenario_counts": [
+        0,
+        210,
+        0,
+        210,
+        210,
+        0
+      ]
+    },
+    {
+      "corpus": "order_equivalence_20260917",
+      "step": 76,
+      "mask": [
+        false,
+        true,
+        false,
+        true,
+        true,
+        true
+      ],
+      "guarantee_loss": false,
+      "scenario_counts": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        48
+      ]
+    },
+    {
+      "corpus": "order_equivalence_20260917",
+      "step": 77,
+      "mask": [
+        false,
+        true,
+        false,
+        true,
+        true,
+        true
+      ],
+      "guarantee_loss": false,
+      "scenario_counts": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        75
+      ]
+    },
+    {
+      "corpus": "order_equivalence_20260917",
+      "step": 78,
+      "mask": [
+        false,
+        true,
+        false,
+        false,
+        true,
+        true
+      ],
+      "guarantee_loss": false,
+      "scenario_counts": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        24
+      ]
+    },
+    {
+      "corpus": "order_equivalence_20260917",
+      "step": 79,
+      "mask": [
+        false,
+        true,
+        false,
+        true,
+        true,
+        true
+      ],
+      "guarantee_loss": false,
+      "scenario_counts": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        36
+      ]
+    },
+    {
+      "corpus": "order_equivalence_20260917",
+      "step": 80,
+      "mask": [
+        false,
+        true,
+        false,
+        true,
+        true,
+        true
+      ],
+      "guarantee_loss": false,
+      "scenario_counts": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        18
+      ]
+    },
+    {
+      "corpus": "order_equivalence_20260917",
+      "step": 81,
+      "mask": [
+        false,
+        true,
+        false,
+        true,
+        true,
+        true
+      ],
+      "guarantee_loss": false,
+      "scenario_counts": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        32
+      ]
+    },
+    {
+      "corpus": "order_equivalence_20260917",
+      "step": 82,
+      "mask": [
+        false,
+        true,
+        false,
+        false,
+        false,
+        false
+      ],
+      "guarantee_loss": false,
+      "scenario_counts": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "corpus": "order_equivalence_20260917",
+      "step": 83,
+      "mask": [
+        false,
+        true,
+        false,
+        false,
+        true,
+        true
+      ],
+      "guarantee_loss": false,
+      "scenario_counts": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        36
+      ]
+    },
+    {
+      "corpus": "order_equivalence_20260917",
+      "step": 84,
+      "mask": [
+        false,
+        true,
+        false,
+        true,
+        true,
+        true
+      ],
+      "guarantee_loss": false,
+      "scenario_counts": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        45
+      ]
+    },
+    {
+      "corpus": "order_equivalence_20260917",
+      "step": 85,
+      "mask": [
+        false,
+        true,
+        false,
+        true,
+        true,
+        true
+      ],
+      "guarantee_loss": false,
+      "scenario_counts": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        33
+      ]
+    },
+    {
+      "corpus": "order_equivalence_20260917",
+      "step": 86,
+      "mask": [
+        false,
+        true,
+        false,
+        false,
+        true,
+        false
+      ],
+      "guarantee_loss": false,
+      "scenario_counts": [
+        0,
+        62,
+        0,
+        62,
+        62,
+        0
+      ]
+    },
+    {
+      "corpus": "order_equivalence_20260917",
+      "step": 87,
+      "mask": [
+        false,
+        true,
+        false,
+        false,
+        false,
+        false
+      ],
+      "guarantee_loss": false,
+      "scenario_counts": [
+        0,
+        48,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "corpus": "order_equivalence_20260917",
+      "step": 88,
+      "mask": [
+        false,
+        true,
+        false,
+        false,
+        false,
+        false
+      ],
+      "guarantee_loss": false,
+      "scenario_counts": [
+        0,
+        45,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "corpus": "order_equivalence_20260917",
+      "step": 89,
+      "mask": [
+        true,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "guarantee_loss": false,
+      "scenario_counts": [
+        76,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "corpus": "order_equivalence_20260917",
+      "step": 90,
+      "mask": [
+        false,
+        false,
+        false,
+        false,
+        true,
+        false
+      ],
+      "guarantee_loss": false,
+      "scenario_counts": [
+        0,
+        0,
+        0,
+        0,
+        24,
+        0
+      ]
+    },
+    {
+      "corpus": "order_equivalence_20260917",
+      "step": 91,
+      "mask": [
+        true,
+        false,
+        true,
+        false,
+        true,
+        false
+      ],
+      "guarantee_loss": false,
+      "scenario_counts": [
+        240,
+        0,
+        240,
+        0,
+        240,
+        0
+      ]
+    },
+    {
+      "corpus": "order_equivalence_20260917",
+      "step": 92,
+      "mask": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "guarantee_loss": false,
+      "scenario_counts": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        48
+      ]
+    },
+    {
+      "corpus": "order_equivalence_20260917",
+      "step": 93,
+      "mask": [
+        false,
+        true,
+        false,
+        true,
+        true,
+        true
+      ],
+      "guarantee_loss": false,
+      "scenario_counts": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        84
+      ]
+    },
+    {
+      "corpus": "order_equivalence_20260917",
+      "step": 94,
+      "mask": [
+        true,
+        true,
+        true,
+        false,
+        true,
+        true
+      ],
+      "guarantee_loss": false,
+      "scenario_counts": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        44
+      ]
+    },
+    {
+      "corpus": "order_equivalence_20260917",
+      "step": 95,
+      "mask": [
+        false,
+        true,
+        true,
+        false,
+        true,
+        false
+      ],
+      "guarantee_loss": false,
+      "scenario_counts": [
+        0,
+        276,
+        276,
+        0,
+        276,
+        0
+      ]
+    },
+    {
+      "corpus": "viability_performance_20260917",
+      "step": 112,
+      "mask": [
+        false,
+        true,
+        false,
+        true,
+        true,
+        false
+      ],
+      "guarantee_loss": false,
+      "scenario_counts": [
+        0,
+        135,
+        0,
+        135,
+        135,
+        0
+      ]
+    },
+    {
+      "corpus": "viability_performance_20260917",
+      "step": 113,
+      "mask": [
+        false,
+        false,
+        false,
+        true,
+        true,
+        false
+      ],
+      "guarantee_loss": false,
+      "scenario_counts": [
+        0,
+        0,
+        0,
+        32,
+        32,
+        0
+      ]
+    },
+    {
+      "corpus": "viability_performance_20260917",
+      "step": 114,
+      "mask": [
+        true,
+        false,
+        false,
+        true,
+        true,
+        false
+      ],
+      "guarantee_loss": false,
+      "scenario_counts": [
+        90,
+        0,
+        0,
+        90,
+        90,
+        0
+      ]
+    },
+    {
+      "corpus": "viability_performance_20260917",
+      "step": 115,
+      "mask": [
+        true,
+        false,
+        false,
+        false,
+        true,
+        false
+      ],
+      "guarantee_loss": false,
+      "scenario_counts": [
+        72,
+        0,
+        0,
+        0,
+        72,
+        0
+      ]
+    },
+    {
+      "corpus": "viability_performance_20260917",
+      "step": 116,
+      "mask": [
+        true,
+        false,
+        false,
+        false,
+        true,
+        false
+      ],
+      "guarantee_loss": false,
+      "scenario_counts": [
+        32,
+        0,
+        0,
+        0,
+        32,
+        0
+      ]
+    },
+    {
+      "corpus": "viability_performance_20260917",
+      "step": 117,
+      "mask": [
+        true,
+        false,
+        true,
+        false,
+        true,
+        false
+      ],
+      "guarantee_loss": false,
+      "scenario_counts": [
+        54,
+        0,
+        54,
+        0,
+        54,
+        0
+      ]
+    },
+    {
+      "corpus": "viability_performance_20260917",
+      "step": 118,
+      "mask": [
+        true,
+        true,
+        false,
+        true,
+        true,
+        true
+      ],
+      "guarantee_loss": false,
+      "scenario_counts": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        20
+      ]
+    },
+    {
+      "corpus": "viability_performance_20260917",
+      "step": 119,
+      "mask": [
+        true,
+        false,
+        true,
+        false,
+        true,
+        true
+      ],
+      "guarantee_loss": false,
+      "scenario_counts": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        80
+      ]
+    },
+    {
+      "corpus": "viability_performance_20260917",
+      "step": 120,
+      "mask": [
+        true,
+        false,
+        true,
+        false,
+        true,
+        false
+      ],
+      "guarantee_loss": false,
+      "scenario_counts": [
+        132,
+        0,
+        132,
+        0,
+        132,
+        0
+      ]
+    },
+    {
+      "corpus": "viability_performance_20260917",
+      "step": 121,
+      "mask": [
+        true,
+        true,
+        false,
+        true,
+        true,
+        false
+      ],
+      "guarantee_loss": false,
+      "scenario_counts": [
+        96,
+        96,
+        0,
+        96,
+        96,
+        0
+      ]
+    },
+    {
+      "corpus": "viability_performance_20260917",
+      "step": 122,
+      "mask": [
+        true,
+        false,
+        true,
+        false,
+        false,
+        false
+      ],
+      "guarantee_loss": false,
+      "scenario_counts": [
+        44,
+        0,
+        44,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "corpus": "viability_performance_20260917",
+      "step": 123,
+      "mask": [
+        true,
+        true,
+        false,
+        true,
+        false,
+        false
+      ],
+      "guarantee_loss": false,
+      "scenario_counts": [
+        345,
+        345,
+        0,
+        345,
+        0,
+        0
+      ]
+    },
+    {
+      "corpus": "viability_performance_20260917",
+      "step": 124,
+      "mask": [
+        false,
+        true,
+        false,
+        false,
+        true,
+        false
+      ],
+      "guarantee_loss": false,
+      "scenario_counts": [
+        0,
+        36,
+        0,
+        0,
+        36,
+        0
+      ]
+    },
+    {
+      "corpus": "viability_performance_20260917",
+      "step": 125,
+      "mask": [
+        false,
+        true,
+        false,
+        true,
+        true,
+        false
+      ],
+      "guarantee_loss": false,
+      "scenario_counts": [
+        0,
+        24,
+        0,
+        24,
+        24,
+        0
+      ]
+    },
+    {
+      "corpus": "viability_performance_20260917",
+      "step": 126,
+      "mask": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "guarantee_loss": false,
+      "scenario_counts": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        12
+      ]
+    },
+    {
+      "corpus": "viability_performance_20260917",
+      "step": 127,
+      "mask": [
+        false,
+        true,
+        false,
+        true,
+        true,
+        true
+      ],
+      "guarantee_loss": false,
+      "scenario_counts": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        72
+      ]
+    },
+    {
+      "corpus": "viability_performance_20260917",
+      "step": 128,
+      "mask": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "guarantee_loss": false,
+      "scenario_counts": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        55
+      ]
+    },
+    {
+      "corpus": "viability_performance_20260917",
+      "step": 129,
+      "mask": [
+        false,
+        true,
+        false,
+        true,
+        true,
+        true
+      ],
+      "guarantee_loss": false,
+      "scenario_counts": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        30
+      ]
+    },
+    {
+      "corpus": "viability_performance_20260917",
+      "step": 130,
+      "mask": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "guarantee_loss": false,
+      "scenario_counts": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        55
+      ]
+    },
+    {
+      "corpus": "viability_performance_20260917",
+      "step": 131,
+      "mask": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        false
+      ],
+      "guarantee_loss": false,
+      "scenario_counts": [
+        700,
+        700,
+        700,
+        700,
+        700,
+        0
+      ]
+    },
+    {
+      "corpus": "viability_cache_20260917/baseline_failure",
+      "step": 190,
+      "mask": [
+        false,
+        true,
+        false,
+        false,
+        true,
+        false
+      ],
+      "guarantee_loss": false,
+      "scenario_counts": [
+        0,
+        32,
+        0,
+        0,
+        32,
+        0
+      ]
+    },
+    {
+      "corpus": "viability_cache_20260917/baseline_failure",
+      "step": 191,
+      "mask": [
+        false,
+        false,
+        true,
+        false,
+        true,
+        false
+      ],
+      "guarantee_loss": false,
+      "scenario_counts": [
+        0,
+        0,
+        60,
+        0,
+        60,
+        0
+      ]
+    },
+    {
+      "corpus": "viability_cache_20260917/baseline_failure",
+      "step": 192,
+      "mask": [
+        false,
+        false,
+        true,
+        false,
+        false,
+        false
+      ],
+      "guarantee_loss": false,
+      "scenario_counts": [
+        0,
+        0,
+        16,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "corpus": "viability_cache_20260917/baseline_failure",
+      "step": 193,
+      "mask": [
+        false,
+        false,
+        true,
+        false,
+        true,
+        false
+      ],
+      "guarantee_loss": false,
+      "scenario_counts": [
+        0,
+        0,
+        50,
+        0,
+        50,
+        0
+      ]
+    },
+    {
+      "corpus": "viability_cache_20260917/baseline_failure",
+      "step": 194,
+      "mask": [
+        true,
+        false,
+        true,
+        true,
+        true,
+        false
+      ],
+      "guarantee_loss": false,
+      "scenario_counts": [
+        64,
+        0,
+        64,
+        64,
+        64,
+        0
+      ]
+    },
+    {
+      "corpus": "viability_cache_20260917/baseline_failure",
+      "step": 195,
+      "mask": [
+        true,
+        false,
+        true,
+        false,
+        true,
+        true
+      ],
+      "guarantee_loss": false,
+      "scenario_counts": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        25
+      ]
+    },
+    {
+      "corpus": "viability_cache_20260917/baseline_failure",
+      "step": 196,
+      "mask": [
+        true,
+        false,
+        false,
+        false,
+        true,
+        false
+      ],
+      "guarantee_loss": false,
+      "scenario_counts": [
+        35,
+        0,
+        35,
+        0,
+        35,
+        0
+      ]
+    },
+    {
+      "corpus": "viability_cache_20260917/baseline_failure",
+      "step": 197,
+      "mask": [
+        true,
+        false,
+        false,
+        true,
+        true,
+        false
+      ],
+      "guarantee_loss": false,
+      "scenario_counts": [
+        90,
+        0,
+        0,
+        90,
+        90,
+        0
+      ]
+    },
+    {
+      "corpus": "viability_cache_20260917/baseline_failure",
+      "step": 198,
+      "mask": [
+        false,
+        true,
+        false,
+        true,
+        true,
+        false
+      ],
+      "guarantee_loss": false,
+      "scenario_counts": [
+        0,
+        48,
+        0,
+        48,
+        48,
+        0
+      ]
+    },
+    {
+      "corpus": "viability_cache_20260917/baseline_failure",
+      "step": 199,
+      "mask": [
+        false,
+        false,
+        false,
+        true,
+        false,
+        false
+      ],
+      "guarantee_loss": false,
+      "scenario_counts": [
+        0,
+        0,
+        0,
+        24,
+        0,
+        0
+      ]
+    },
+    {
+      "corpus": "viability_cache_20260917/baseline_failure",
+      "step": 200,
+      "mask": [
+        false,
+        false,
+        false,
+        true,
+        true,
+        false
+      ],
+      "guarantee_loss": false,
+      "scenario_counts": [
+        0,
+        0,
+        0,
+        32,
+        32,
+        0
+      ]
+    },
+    {
+      "corpus": "viability_cache_20260917/baseline_failure",
+      "step": 201,
+      "mask": [
+        false,
+        true,
+        false,
+        false,
+        true,
+        false
+      ],
+      "guarantee_loss": false,
+      "scenario_counts": [
+        0,
+        60,
+        0,
+        0,
+        60,
+        0
+      ]
+    },
+    {
+      "corpus": "viability_cache_20260917/baseline_failure",
+      "step": 202,
+      "mask": [
+        true,
+        false,
+        true,
+        true,
+        true,
+        false
+      ],
+      "guarantee_loss": false,
+      "scenario_counts": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        1
+      ]
+    },
+    {
+      "corpus": "viability_cache_20260917/baseline_failure",
+      "step": 203,
+      "mask": [
+        true,
+        false,
+        true,
+        false,
+        true,
+        false
+      ],
+      "guarantee_loss": false,
+      "scenario_counts": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        1
+      ]
+    },
+    {
+      "corpus": "viability_cache_20260917/baseline_failure",
+      "step": 204,
+      "mask": [
+        true,
+        false,
+        true,
+        true,
+        true,
+        false
+      ],
+      "guarantee_loss": false,
+      "scenario_counts": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        1
+      ]
+    },
+    {
+      "corpus": "viability_cache_20260917/baseline_failure",
+      "step": 205,
+      "mask": [
+        false,
+        false,
+        true,
+        false,
+        true,
+        false
+      ],
+      "guarantee_loss": false,
+      "scenario_counts": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        4
+      ]
+    },
+    {
+      "corpus": "viability_cache_20260917/baseline_failure",
+      "step": 206,
+      "mask": [
+        false,
+        false,
+        true,
+        false,
+        true,
+        false
+      ],
+      "guarantee_loss": false,
+      "scenario_counts": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        2
+      ]
+    },
+    {
+      "corpus": "viability_cache_20260917/baseline_failure",
+      "step": 207,
+      "mask": [
+        true,
+        false,
+        false,
+        false,
+        true,
+        false
+      ],
+      "guarantee_loss": false,
+      "scenario_counts": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        1
+      ]
+    },
+    {
+      "corpus": "viability_cache_20260917/baseline_failure",
+      "step": 208,
+      "mask": [
+        false,
+        false,
+        false,
+        false,
+        true,
+        false
+      ],
+      "guarantee_loss": false,
+      "scenario_counts": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "corpus": "viability_cache_20260917/baseline_failure",
+      "step": 209,
+      "mask": [
+        true,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "guarantee_loss": true,
+      "scenario_counts": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    }
+  ],
+  "status": "passed",
+  "count": 80,
+  "corpus_sha256": {
+    "task4_shared_parent_20260917": "6c691607fab58beb6f2c7f9688a3ad1f35d0228834fd0c3042643fffa7886c9f",
+    "order_equivalence_20260917": "c9b8ce3546ba50a278f85595dbc85188d717c894814367a187157444fd7669f6",
+    "viability_performance_20260917": "8a1045ab951728e4fccd30534f993c9ee4b26709f9850bc9038138123ba201f8",
+    "viability_cache_20260917/baseline_failure": "0636ea6f743ebee5ae375878ab4ad7e3a5a78c7ca7fa8fb9680737fa9c775150"
+  }
+}
