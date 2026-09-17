@@ -1,17 +1,21 @@
-"""Frozen v5/v7 engineering comparison; source-bound, paired, fail-fast."""
+"""Frozen paired safety engineering comparison; source-bound, paired, fail-fast."""
 from pathlib import Path
-import os,sys,subprocess,json,hashlib,time,threading,signal,csv
+import os,sys,subprocess,json,hashlib,time,threading,signal,csv,argparse
 from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor,as_completed
 root=Path(__file__).resolve().parents[1];sys.path.insert(0,str(root))
 from experiments.run import _source_hash
 from experiments.task4_campaign import engineering_checks
 from experiments.task3_retention_prefix import summarize_evaluation
-m_path=root/'experiments/safety_v7_retention_manifest.json';m=json.loads(m_path.read_text());commit=subprocess.check_output(['git','rev-parse','HEAD'],cwd=root,text=True).strip()
+parser=argparse.ArgumentParser(description=__doc__)
+parser.add_argument('--manifest',type=Path,default=root/'experiments/safety_v7_retention_manifest.json')
+m_path=parser.parse_args().manifest.resolve();m=json.loads(m_path.read_text());commit=subprocess.check_output(['git','rev-parse','HEAD'],cwd=root,text=True).strip()
 assert not subprocess.check_output(['git','status','--porcelain'],cwd=root,text=True)
 sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
 assert _source_hash('double_dqn_continuous_v2_agent')==m['runtime_source_sha256']
 for p,h in [(m['config'],m['config_sha256']),(m['reference_config'],m['reference_config_sha256']),(m['parent_checkpoint'],m['parent_sha256'])]:assert sha(root/p)==h
+for p,h in m['opponent_hashes'].items():assert sha(root/p)==h
+assert time.time()<datetime.fromisoformat(m['deadline_utc'].replace('Z','+00:00')).timestamp()
 out=root/'runs/certified_placement';state_path=out/f'retention_{commit[:7]}.json';assert not state_path.exists()
 state={'source_commit':commit,'manifest_sha256':sha(m_path),'status':'running','jobs':{},'task4_qualified':False};stop=threading.Event()
 def save():

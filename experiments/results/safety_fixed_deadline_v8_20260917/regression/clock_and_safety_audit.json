@@ -1,0 +1,16 @@
+{
+  "safety_stress_task3_703d59a_s24003": {
+    "actions": 400,
+    "bombs": 45,
+    "p95_ms": 40.740013122558594,
+    "max_ms": 58.763742446899414,
+    "issues": []
+  },
+  "safety_stress_task3_703d59a_s24266": {
+    "actions": 400,
+    "bombs": 40,
+    "p95_ms": 17.395973205566406,
+    "max_ms": 28.27930450439453,
+    "issues": []
+  }
+}
