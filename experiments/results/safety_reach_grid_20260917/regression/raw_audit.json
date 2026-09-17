@@ -1,0 +1,10 @@
+{
+  "completed": 1,
+  "actions": 400,
+  "placements": 44,
+  "pending_actions": 263,
+  "issues": [],
+  "deaths": [],
+  "p95_ms": 82.63111114501953,
+  "max_ms": 222.51415252685547
+}

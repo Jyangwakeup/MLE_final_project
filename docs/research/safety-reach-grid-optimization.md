@@ -9,3 +9,7 @@ The preserved reference is `tests/reference_named_reach_survival.py` from d205cf
 The original 008a99f run remains terminal. A future regression must use a newly frozen source identity and independent run directory; passing historical tests alone is not admission or Task 4 qualification. Submitted files are unchanged.
 
 Fixed-core CPU 3 timing used one warmup followed by ten alternating old/new samples per historical state, keeping the runtime 400ms budget. Across 200 measured calls per implementation, the named-set reference timed out ten times (P95 255.745ms, max 403.061ms); the grid implementation had zero timeouts (P95 128.727ms, max 185.085ms). These are complete safety-entry timings, not complete-act admission; full correctness comparisons used separate completed offline proofs, not the reference's timed-out partial outputs.
+
+## Whole-game regression at ca68c8a
+
+World 24025 completed all 400 steps with score 7, one kill, 44 bombs and no learner death. All registered gates passed, including zero invalid actions, zero safety-search/guarantee/collapse events and complete-act P95/max 82.631/222.514ms. A separate raw audit checked 44 placements and 263 pending actions without clock or fallback findings. This resolves the recorded whole-game regression, not general safety admission or Task 4 qualification; next compare v5/v9 on the registered 60 engineering worlds for Tasks 1–3 before further strong-opponent sweeps.
