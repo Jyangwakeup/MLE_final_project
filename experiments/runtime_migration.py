@@ -56,7 +56,8 @@ def _git(project_root: Path, *arguments: str) -> str:
         ["git", *arguments], cwd=project_root, text=True, capture_output=True)
     if completed.returncode:
         raise ValueError("Runtime migration requires Git provenance: " + completed.stderr.strip())
-    return completed.stdout.strip()
+    # Preserve the leading status column used by ``git status --porcelain``.
+    return completed.stdout.rstrip()
 
 
 def _dirty_runtime_paths(project_root: Path) -> list[str]:
