@@ -124,6 +124,30 @@ class ExperimentAnalysisTest(unittest.TestCase):
             self.assertEqual(summary_rows[-1]["agent_name"], "a")
             self.assertEqual(float(summary_rows[-1]["mean_score"]), 2.0)
 
+    def test_aggregate_p95_uses_all_decisions_not_mean_of_run_percentiles(self):
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            runs = []
+            for name, count, duration in (("fast", 90, .01), ("slow", 10, .45)):
+                run = self._write_run(temporary_directory, name,
+                    [_episode(name, 1, [_agent("a", 1), _agent("b", 0)])])
+                records = [dict(schema_version="timing-v1", run_id=name, agent_name="a", round_index=1,
+                    action="WAIT", think_time=duration, timed_out=False, skipped=False)
+                    for _ in range(count)]
+                records.append(dict(schema_version="timing-v1", run_id=name, agent_name="b", round_index=1,
+                    action="WAIT", think_time=9., timed_out=True, skipped=False))
+                (run / "timing.jsonl").write_text("".join(json.dumps(r)+"\n" for r in records))
+                runs.append(run)
+            output = Path(temporary_directory) / "summary"
+            analyze_runs(iter(runs), output)
+            with (output / "summary.csv").open() as handle:
+                row = next(r for r in csv.DictReader(handle)
+                    if r["run_id"]=="AVERAGE" and r["agent_name"]=="a")
+            self.assertAlmostEqual(float(row["act_p95_time"]), .45)
+            self.assertGreater(float(row["act_p95_time"]), .25)
+            self.assertAlmostEqual(float(row["act_mean_time"]), .054)
+            self.assertAlmostEqual(float(row["act_max_time"]), .45)
+            self.assertEqual(int(row["act_count"]), 100)
+
     def test_task1_completion_and_loop_rates_are_aggregated(self):
         with tempfile.TemporaryDirectory() as temporary_directory:
             first_agent = _agent("a", 50, coins=50)

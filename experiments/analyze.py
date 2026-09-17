@@ -765,7 +765,9 @@ def _weighted_mean(rows: list[dict[str, Any]], field: str, weight_field: str = "
     return sum(value * weight for value, weight in weighted_values) / total_weight
 
 
-def _average_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+def _average_rows(
+    rows: list[dict[str, Any]], pooled_times: dict[str, list[float]],
+) -> list[dict[str, Any]]:
     rows_by_agent: dict[str, list[dict[str, Any]]] = defaultdict(list)
     for row in rows:
         rows_by_agent[row["agent_name"]].append(row)
@@ -787,9 +789,7 @@ def _average_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
             float(row["zero_utility_bombs"]) for row in agent_rows)
         all_coins_count = sum(
             float(row["all_coins_count"]) for row in agent_rows)
-        act_times = [row["act_mean_time"] for row in agent_rows if row["act_mean_time"] is not None]
-        p95_times = [row["act_p95_time"] for row in agent_rows if row["act_p95_time"] is not None]
-        max_times = [row["act_max_time"] for row in agent_rows if row["act_max_time"] is not None]
+        act_times = pooled_times.get(agent_name, [])
         averages.append(
             {
                 "run_id": "AVERAGE",
@@ -875,8 +875,8 @@ def _average_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
                 "zero_score_tie_rate": _weighted_mean(agent_rows, "zero_score_tie_rate"),
                 "act_count": sum(int(row["act_count"]) for row in agent_rows),
                 "act_mean_time": mean(act_times) if act_times else None,
-                "act_p95_time": mean(p95_times) if p95_times else None,
-                "act_max_time": max(max_times) if max_times else None,
+                "act_p95_time": _percentile(act_times, 95),
+                "act_max_time": max(act_times) if act_times else None,
                 "act_timeout_count": sum(int(row["act_timeout_count"]) for row in agent_rows),
                 "act_skipped_count": sum(int(row["act_skipped_count"]) for row in agent_rows),
                 **{
@@ -964,12 +964,15 @@ def _average_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return averages
 
 
-def _write_summary(rows: list[dict[str, Any]], output_directory: Path) -> Path:
+def _write_summary(
+    rows: list[dict[str, Any]], output_directory: Path,
+    pooled_times: dict[str, list[float]],
+) -> Path:
     summary_path = output_directory / "summary.csv"
     with summary_path.open("w", newline="", encoding="utf-8") as file:
         writer = csv.DictWriter(file, fieldnames=SUMMARY_FIELDS)
         writer.writeheader()
-        writer.writerows([*rows, *_average_rows(rows)])
+        writer.writerows([*rows, *_average_rows(rows, pooled_times)])
     return summary_path
 
 
@@ -990,10 +993,17 @@ def _write_mean_score_chart(rows: list[dict[str, Any]], output_directory: Path) 
 
 def analyze_runs(run_directories: Iterable[Path], output_directory: Path) -> list[dict[str, Any]]:
     """Aggregate raw episodes and write ``summary.csv`` plus ``mean_score.png``."""
-    rows = summarize_runs(run_directories)
+    directories = list(run_directories)
+    rows = summarize_runs(directories)
+    # Quantiles cannot be averaged across worlds, even with equal weights.
+    pooled_times: dict[str, list[float]] = defaultdict(list)
+    for directory in directories:
+        for record in _read_timing(directory):
+            if record["think_time"] is not None:
+                pooled_times[record["agent_name"]].append(float(record["think_time"]))
     output = Path(output_directory)
     output.mkdir(parents=True, exist_ok=True)
-    _write_summary(rows, output)
+    _write_summary(rows, output, pooled_times)
     _write_mean_score_chart(rows, output)
     return rows
 

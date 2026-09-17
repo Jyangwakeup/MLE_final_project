@@ -1,0 +1,17 @@
+{
+  "safety_retention_v6_task1_125c514": {
+    "act_count": 7624,
+    "pooled_p95": 0.008375811576843261,
+    "max": 0.012819290161132812
+  },
+  "safety_retention_v6_task2_125c514": {
+    "act_count": 24000,
+    "pooled_p95": 0.0070894241333007806,
+    "max": 0.012103557586669922
+  },
+  "safety_retention_v6_task3_125c514": {
+    "act_count": 24000,
+    "pooled_p95": 0.01617341041564941,
+    "max": 0.042359113693237305
+  }
+}
