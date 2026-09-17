@@ -28,6 +28,16 @@ from experiments.agent_contracts import resolve_agent_contract
 from agent_code.learning_common.training_spec import resolve_retention_spec
 
 
+def allowed_n_steps(algorithm: str) -> set[int]:
+    """Return replay horizons supported by a learning algorithm.
+
+    The distilled CNN uses a five-step variant in its Task 2 credit-assignment
+    ablation; the other current learners retain the established 1/4-step
+    contract.
+    """
+    return {1, 4, 5} if algorithm == "cnn_distilled_double_dqn" else {1, 4}
+
+
 DEFAULT_REPLAY_PROGRESS_PERCENT = 10
 DEFAULT_EARLY_STOPPING_CONFIG = {
     "enabled": True,
@@ -272,11 +282,6 @@ def run_training_mode(
             safe_exploration if configured_safety is None else None),
     )
     effective_safe_exploration = safety_spec["mode"] in {"exploration", "all"}
-    n_step = training.get("n_step", 1)
-    if n_step not in {1, 4}:
-        raise ValueError("config.training.n_step must be 1 or 4")
-    retention_spec = resolve_retention_spec(training.get("retention"))
-    adaptation_triggers = tuple(getattr(args, "adaptation_trigger", ()) or ())
     configured_id = getattr(args, "feature_id", None) or config.get("feature_id")
     configured_legacy = (
         None if getattr(args, "feature_id", None) is not None
@@ -287,6 +292,14 @@ def run_training_mode(
     )
     agent_contract = resolve_agent_contract(args.agent, requested_feature_id)
     algorithm = agent_contract.algorithm
+    n_step = training.get("n_step", 1)
+    supported_n_steps = allowed_n_steps(algorithm)
+    if n_step not in supported_n_steps:
+        values = ", ".join(str(value) for value in sorted(supported_n_steps))
+        raise ValueError(
+            f"config.training.n_step must be one of {values} for {algorithm}")
+    retention_spec = resolve_retention_spec(training.get("retention"))
+    adaptation_triggers = tuple(getattr(args, "adaptation_trigger", ()) or ())
     init_checkpoint = args.init_from_checkpoint
     if init_checkpoint is not None:
         if algorithm not in {

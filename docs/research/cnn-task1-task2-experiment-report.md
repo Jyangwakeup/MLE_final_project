@@ -77,7 +77,8 @@ return（D04）按条件流水线正常跳过，避免在截止前扩大搜索�
 选定 Task 2 checkpoint 的 SHA-256 为
 `912d2f7ae7e53c075e4af238b1e648b69c836beba0467263e06f51947e359569`，本地生成路径为
 `runs/cnn_distilled_t2_wait_j472342/best_task2.pt`。该文件约 115 MB，超过 GitHub 普通
-文件限制，因而不随此源码提交；`final.pt`（Task 1，2.6 MB）随 agent 发布。训练入口包括
+文件限制，因此以 Git LFS 作为 agent 内的 `task2_best.pt` 发布；`final.pt`（Task 1，2.6 MB）
+也随 agent 发布。训练入口包括
 `scripts/run_cnn_distillation_task1_gpu.sh`、
 `scripts/run_cnn_distillation_task2_gpu.sh` 和
 `scripts/run_cnn_task2_wait_gpu.sh`；详见 agent README 与实验日志。

@@ -42,9 +42,9 @@ epsilon 0.20→0.05 做 50k 1-step DDQN 微调；pretrained/10k/25k/50k
 因此最佳模型是纯蒸馏 pretrained，而非微调 final。详见 `EXPERIMENT_LOG.md`。
 
 权重文件：`final.pt` 是默认加载的 Task 1 导航 checkpoint。D02 seed 22、200k steps 的
-Task 2 炸箱 checkpoint 因为超过 GitHub 普通文件 100 MB 限制，不随此源码副本发布；其
-SHA-256、生成路径和主验证结果记录在 `EXPERIMENT_LOG.md`。该模型在 Task 2 主验证达到
-平均 44.15 炸箱、0% 自杀，但不应被描述为全部金币通关模型。
+Task 2 炸箱 checkpoint 以 `task2_best.pt` 通过 Git LFS 发布；其 SHA-256、生成路径和主
+验证结果记录在 `EXPERIMENT_LOG.md`。该模型在 Task 2 主验证达到平均 44.15 炸箱、0% 自杀，
+但不应被描述为全部金币通关模型。
 
 ## Task 2 迁移协议
 
