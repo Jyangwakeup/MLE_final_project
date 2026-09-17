@@ -1,0 +1,15 @@
+{
+  "reference": "runs/task4_viability_20260917_A_a266e013_diag_s22422_c0020_1eaee8d/timing.jsonl",
+  "candidate": "runs/task4_viability_cache_20260917_A_674c1df1_diag_s22422_c0020_5445dfa/timing.jsonl",
+  "reference_sha256": "e64d4444c958853f93b376eb0eda8fdad26ecce971ca7d025beae300996c85a8",
+  "matched_prefix_decisions": 5061,
+  "compared_fields": [
+    "round_index",
+    "step",
+    "action",
+    "requested_action",
+    "safety"
+  ],
+  "differences": [],
+  "comparison_stops_before_reference_timeout": true
+}

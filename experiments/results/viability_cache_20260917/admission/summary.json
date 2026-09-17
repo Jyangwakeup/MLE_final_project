@@ -1,0 +1,537 @@
+{
+  "conclusion": "optimization_admission_passed",
+  "task4_qualified": false,
+  "source_commit": "5445dfaae85bc5889f6298ef76882077c0178184",
+  "manifest_sha256": "674c1df171c9cf3a6d40c21fde109063ab2b9ec910b2aac77bf89a3d34e93a8c",
+  "parent_sha256": "b0b9e7ae9cbefa6523ed01e1d7a6d474b90b6272f9de1706ee80f1f109cc803d",
+  "recorded_at": "2026-09-17T18:34:05.839270+00:00",
+  "diagnostics": {
+    "11": {
+      "audit": {
+        "audit": "/export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_cache_20260917_A_674c1df1_diag_s22411_c0020_5445dfa/task4_training_audit.json",
+        "deaths": {
+          "10": {
+            "category": "opponent_bomb",
+            "causes": [
+              {
+                "owner": "rule_based_agent_2",
+                "type": "opponent_bomb"
+              }
+            ],
+            "death_step": 191,
+            "fallback": true,
+            "own_bomb_pending": false
+          },
+          "16": {
+            "category": "opponent_bomb",
+            "causes": [
+              {
+                "owner": "rule_based_agent_1",
+                "type": "opponent_bomb"
+              }
+            ],
+            "death_step": 100,
+            "fallback": true,
+            "own_bomb_pending": true
+          },
+          "20": {
+            "category": "opponent_bomb",
+            "causes": [
+              {
+                "owner": "rule_based_agent_1",
+                "type": "opponent_bomb"
+              }
+            ],
+            "death_step": 70,
+            "fallback": true,
+            "own_bomb_pending": true
+          },
+          "9": {
+            "category": "opponent_bomb",
+            "causes": [
+              {
+                "owner": "rule_based_agent_0",
+                "type": "opponent_bomb"
+              }
+            ],
+            "death_step": 126,
+            "fallback": true,
+            "own_bomb_pending": false
+          }
+        },
+        "rounds": 20,
+        "timing": {
+          "act_max_seconds": 0.24520015716552734,
+          "act_p95_seconds": 0.05025976896286011
+        }
+      },
+      "checkpoint": "/export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_cache_20260917_A_674c1df1_diag_s22411_c0020_5445dfa/checkpoints/final.pt",
+      "checkpoint_sha256": "0c41728fb86cbccf39a78c7e5f6755b402353f0a105da9c414f159ffe4dd3056",
+      "run": "/export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_cache_20260917_A_674c1df1_diag_s22411_c0020_5445dfa",
+      "decisions": 6798,
+      "safety": {
+        "robust_search_timed_out": 0,
+        "robust_guarantee_loss": 0,
+        "avoidable_escape_collapse": 0,
+        "v1_to_physical_fallback": 14,
+        "timed_out": 0,
+        "skipped": 0
+      },
+      "self_bomb_deaths": 0,
+      "total_deaths": 4,
+      "replays": 20
+    },
+    "22": {
+      "audit": {
+        "audit": "/export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_cache_20260917_A_674c1df1_diag_s22422_c0020_5445dfa/task4_training_audit.json",
+        "deaths": {
+          "1": {
+            "category": "opponent_bomb",
+            "causes": [
+              {
+                "owner": "rule_based_agent_1",
+                "type": "opponent_bomb"
+              }
+            ],
+            "death_step": 123,
+            "fallback": true,
+            "own_bomb_pending": true
+          },
+          "7": {
+            "category": "opponent_bomb",
+            "causes": [
+              {
+                "owner": "rule_based_agent_0",
+                "type": "opponent_bomb"
+              }
+            ],
+            "death_step": 86,
+            "fallback": true,
+            "own_bomb_pending": true
+          }
+        },
+        "rounds": 20,
+        "timing": {
+          "act_max_seconds": 0.3280963897705078,
+          "act_p95_seconds": 0.04402811527252192
+        }
+      },
+      "checkpoint": "/export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_cache_20260917_A_674c1df1_diag_s22422_c0020_5445dfa/checkpoints/final.pt",
+      "checkpoint_sha256": "685058cc818c29be6ba0dde76ab329f99f0ece9f4e81415b30ee0d7503f83041",
+      "run": "/export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_cache_20260917_A_674c1df1_diag_s22422_c0020_5445dfa",
+      "decisions": 7275,
+      "safety": {
+        "robust_search_timed_out": 0,
+        "robust_guarantee_loss": 0,
+        "avoidable_escape_collapse": 0,
+        "v1_to_physical_fallback": 8,
+        "timed_out": 0,
+        "skipped": 0
+      },
+      "self_bomb_deaths": 0,
+      "total_deaths": 2,
+      "replays": 20
+    },
+    "33": {
+      "audit": {
+        "audit": "/export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_cache_20260917_A_674c1df1_diag_s22433_c0020_5445dfa/task4_training_audit.json",
+        "deaths": {
+          "12": {
+            "category": "opponent_bomb",
+            "causes": [
+              {
+                "owner": "rule_based_agent_1",
+                "type": "opponent_bomb"
+              }
+            ],
+            "death_step": 199,
+            "fallback": true,
+            "own_bomb_pending": false
+          },
+          "14": {
+            "category": "opponent_bomb",
+            "causes": [
+              {
+                "owner": "rule_based_agent_0",
+                "type": "opponent_bomb"
+              }
+            ],
+            "death_step": 76,
+            "fallback": true,
+            "own_bomb_pending": true
+          },
+          "9": {
+            "category": "opponent_bomb",
+            "causes": [
+              {
+                "owner": "rule_based_agent_1",
+                "type": "opponent_bomb"
+              }
+            ],
+            "death_step": 76,
+            "fallback": true,
+            "own_bomb_pending": false
+          }
+        },
+        "rounds": 20,
+        "timing": {
+          "act_max_seconds": 0.320354700088501,
+          "act_p95_seconds": 0.040247559547424316
+        }
+      },
+      "checkpoint": "/export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_cache_20260917_A_674c1df1_diag_s22433_c0020_5445dfa/checkpoints/final.pt",
+      "checkpoint_sha256": "b55c588200c2056d433e257226225fa5b675dc23b7734b4732bd4f53de4e1b0d",
+      "run": "/export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_cache_20260917_A_674c1df1_diag_s22433_c0020_5445dfa",
+      "decisions": 7151,
+      "safety": {
+        "robust_search_timed_out": 0,
+        "robust_guarantee_loss": 0,
+        "avoidable_escape_collapse": 0,
+        "v1_to_physical_fallback": 7,
+        "timed_out": 0,
+        "skipped": 0
+      },
+      "self_bomb_deaths": 0,
+      "total_deaths": 3,
+      "replays": 20
+    }
+  },
+  "raw_artifacts": {
+    "/export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_cache_20260917_A_674c1df1_diag_s22411_c0020_5445dfa/timing.jsonl": {
+      "sha256": "b3fd9881b61e36d56e642220d1b0d091f07095dd8f9f2bf991d046d472c630c2",
+      "bytes": 15198047
+    },
+    "/export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_cache_20260917_A_674c1df1_diag_s22411_c0020_5445dfa/episodes.jsonl": {
+      "sha256": "99eac71c4fa34a790b4dbcc43bcaf652c94ebced5ca4a32bc29484ec79761c98",
+      "bytes": 46364
+    },
+    "/export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_cache_20260917_A_674c1df1_diag_s22411_c0020_5445dfa/metadata.json": {
+      "sha256": "f37fa838fd29c2d05e7df2857e6c66406b3a6a3f294f7fbaa3c0cc4fe96bbd50",
+      "bytes": 15199
+    },
+    "/export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_cache_20260917_A_674c1df1_diag_s22411_c0020_5445dfa/checkpoints/final.pt": {
+      "sha256": "0c41728fb86cbccf39a78c7e5f6755b402353f0a105da9c414f159ffe4dd3056",
+      "bytes": 48630272
+    },
+    "/export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_cache_20260917_A_674c1df1_diag_s22411_c0020_5445dfa/task4_death_states_round0020.pkl": {
+      "sha256": "9548bfa3bd7aae77d9e56a8a6cfe2068162a2f2f6c8e1cc5fb51558ba90d3c05",
+      "bytes": 104791
+    },
+    "/export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_cache_20260917_A_674c1df1_diag_s22411_c0020_5445dfa/task4_death_states_round0010.pkl": {
+      "sha256": "dc3d046b8df2ad82bf1d65fd9e4c9920b0dd91764d424e91385a0cd13d263d44",
+      "bytes": 103632
+    },
+    "/export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_cache_20260917_A_674c1df1_diag_s22411_c0020_5445dfa/task4_death_states_round0016.pkl": {
+      "sha256": "cb13c50c9fd21ce1640ead6eb09f589b8baf2a6fc3d9fb23b93a425c36f76335",
+      "bytes": 103711
+    },
+    "/export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_cache_20260917_A_674c1df1_diag_s22411_c0020_5445dfa/task4_death_states_round0009.pkl": {
+      "sha256": "92d258f13b3b66a48575d87181015c0b242bc0303a1b3031b2126d2bec8a4f17",
+      "bytes": 103647
+    },
+    "/export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_cache_20260917_A_674c1df1_diag_s22411_c0020_5445dfa/replays/round_00009.pt": {
+      "sha256": "a74a39c16f5b7855cbe081fa24ac1c36e1239c40c5ccd27f34d5be87ab43815f",
+      "bytes": 17316
+    },
+    "/export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_cache_20260917_A_674c1df1_diag_s22411_c0020_5445dfa/replays/round_00008.pt": {
+      "sha256": "f788c050455b6fc8b08ae4558ba48d7955792f5ad4f70e5bb5469e86f5fce58d",
+      "bytes": 29056
+    },
+    "/export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_cache_20260917_A_674c1df1_diag_s22411_c0020_5445dfa/replays/round_00020.pt": {
+      "sha256": "baa368c50daf3c6b26883d7ac9d56174559510d763d36f0d83cf390d2c78a7b8",
+      "bytes": 15425
+    },
+    "/export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_cache_20260917_A_674c1df1_diag_s22411_c0020_5445dfa/replays/round_00018.pt": {
+      "sha256": "beb3675e11f401340e2a1aa105e244b67ece8fd939c2dc5942b5858b0ad38536",
+      "bytes": 29819
+    },
+    "/export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_cache_20260917_A_674c1df1_diag_s22411_c0020_5445dfa/replays/round_00019.pt": {
+      "sha256": "5e85bacb300ad1ad0e4e458dc2cf9569873698fb309d2d9b17f9230756698ab3",
+      "bytes": 26401
+    },
+    "/export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_cache_20260917_A_674c1df1_diag_s22411_c0020_5445dfa/replays/round_00013.pt": {
+      "sha256": "ba4071e88fcdec8edbed222c3ea6fb26261c71d9f37387c95464e13fc5d22182",
+      "bytes": 29256
+    },
+    "/export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_cache_20260917_A_674c1df1_diag_s22411_c0020_5445dfa/replays/round_00004.pt": {
+      "sha256": "241b551f40da7604f509fe937b028c5d99b6791f6a3529d95a21232f74e0b0e3",
+      "bytes": 24607
+    },
+    "/export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_cache_20260917_A_674c1df1_diag_s22411_c0020_5445dfa/replays/round_00005.pt": {
+      "sha256": "db986031541ce06ae82f213c7949c6b4a47d767e7ae21fe3d321a91fda37ab8d",
+      "bytes": 25078
+    },
+    "/export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_cache_20260917_A_674c1df1_diag_s22411_c0020_5445dfa/replays/round_00012.pt": {
+      "sha256": "76fb8bea5162c6044b7bafc10821fd25513b55bfac0d415aac069654cfb59184",
+      "bytes": 26771
+    },
+    "/export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_cache_20260917_A_674c1df1_diag_s22411_c0020_5445dfa/replays/round_00010.pt": {
+      "sha256": "72b42bdbde86652308f2998e2ec303a0077c36a24902d19d062a3402ca51c882",
+      "bytes": 19084
+    },
+    "/export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_cache_20260917_A_674c1df1_diag_s22411_c0020_5445dfa/replays/round_00007.pt": {
+      "sha256": "57e67acb2817e0a20c40cde25d541fb2a877a8fb1065749b4d38680b6f4f470b",
+      "bytes": 28533
+    },
+    "/export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_cache_20260917_A_674c1df1_diag_s22411_c0020_5445dfa/replays/round_00006.pt": {
+      "sha256": "1cc4f7bffa3bec553f0b55f86fdaf343a72aec93ff455476a5fed7649e76017f",
+      "bytes": 28053
+    },
+    "/export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_cache_20260917_A_674c1df1_diag_s22411_c0020_5445dfa/replays/round_00011.pt": {
+      "sha256": "4f7373dc55864b9dad729fa9927654234cf36a9830ce4dcce2bcbe2fa048d7b4",
+      "bytes": 25943
+    },
+    "/export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_cache_20260917_A_674c1df1_diag_s22411_c0020_5445dfa/replays/round_00002.pt": {
+      "sha256": "12dcc92d6674a7626076bb00f271a14d1e6743598e096ee156df19c6ad5e2fa4",
+      "bytes": 21721
+    },
+    "/export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_cache_20260917_A_674c1df1_diag_s22411_c0020_5445dfa/replays/round_00015.pt": {
+      "sha256": "ec13631afc911a1dc671bddd1a571836b1787b42b4285065360337f272c67cac",
+      "bytes": 24710
+    },
+    "/export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_cache_20260917_A_674c1df1_diag_s22411_c0020_5445dfa/replays/round_00014.pt": {
+      "sha256": "737c7f67804f6da8e409bd78a657f645610192fc870a2bd49883b18005fca42f",
+      "bytes": 26033
+    },
+    "/export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_cache_20260917_A_674c1df1_diag_s22411_c0020_5445dfa/replays/round_00003.pt": {
+      "sha256": "2cc28e48aa1c28e17545289083b56bfe7cbf997c6f5ec156c3c0a5e8c8b11f20",
+      "bytes": 25955
+    },
+    "/export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_cache_20260917_A_674c1df1_diag_s22411_c0020_5445dfa/replays/round_00001.pt": {
+      "sha256": "64d49d66a262555ba72ede7dd4c7db9af32d693968f6bf5fd0f9a40bc21a7509",
+      "bytes": 29326
+    },
+    "/export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_cache_20260917_A_674c1df1_diag_s22411_c0020_5445dfa/replays/round_00016.pt": {
+      "sha256": "ef68e27234bbac68577e961e7e988b89f02a14e9313766b187e684ec5fe98b8a",
+      "bytes": 23874
+    },
+    "/export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_cache_20260917_A_674c1df1_diag_s22411_c0020_5445dfa/replays/round_00017.pt": {
+      "sha256": "36db7b645c48ff0ebc603910f4b83536653b50c2abf1706c30bdc4b6e098f466",
+      "bytes": 28752
+    },
+    "/export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_cache_20260917_A_674c1df1_diag_s22411_c0020_5445dfa/replays/manifest.jsonl": {
+      "sha256": "41e559ee7cd183cf025ca5ca40f8273f4f8cda8b1f23c2e6b0cdfbb3ea40fd35",
+      "bytes": 2832
+    },
+    "/export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_cache_20260917_A_674c1df1_diag_s22422_c0020_5445dfa/timing.jsonl": {
+      "sha256": "8df6d700be5a53c64d162ec2478bcd57442da2fde6b5e3750ea85562b341bf00",
+      "bytes": 16070363
+    },
+    "/export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_cache_20260917_A_674c1df1_diag_s22422_c0020_5445dfa/episodes.jsonl": {
+      "sha256": "840c1113b80aef9a8387b76ee95cde2c3f03e0681e0864d1fc5cb7167cad7d3e",
+      "bytes": 46149
+    },
+    "/export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_cache_20260917_A_674c1df1_diag_s22422_c0020_5445dfa/metadata.json": {
+      "sha256": "a0d2cc526f9bb2030a51f180190ff165e53b3617de2cbfc398e354c48d680e06",
+      "bytes": 15199
+    },
+    "/export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_cache_20260917_A_674c1df1_diag_s22422_c0020_5445dfa/checkpoints/final.pt": {
+      "sha256": "685058cc818c29be6ba0dde76ab329f99f0ece9f4e81415b30ee0d7503f83041",
+      "bytes": 48973312
+    },
+    "/export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_cache_20260917_A_674c1df1_diag_s22422_c0020_5445dfa/task4_death_states_round0007.pkl": {
+      "sha256": "4009127d4b3bf6a17a2b398e555deb9fb332da98d22968218dfa018880344131",
+      "bytes": 104520
+    },
+    "/export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_cache_20260917_A_674c1df1_diag_s22422_c0020_5445dfa/task4_death_states_round0001.pkl": {
+      "sha256": "eb3673ee766c6bc9fb5b917a071987ecac78c6fc0849d54d21de8f3546cc48a0",
+      "bytes": 103617
+    },
+    "/export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_cache_20260917_A_674c1df1_diag_s22422_c0020_5445dfa/replays/round_00019.pt": {
+      "sha256": "f81ca5a5ccd3db38dcb2a704c67a45bd833b4f658518aa6b73587949de74d4a3",
+      "bytes": 24886
+    },
+    "/export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_cache_20260917_A_674c1df1_diag_s22422_c0020_5445dfa/replays/round_00020.pt": {
+      "sha256": "15e2eb593dde699d670d0587a8a4481ce828844bafbb5e548f9551573f948fad",
+      "bytes": 24292
+    },
+    "/export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_cache_20260917_A_674c1df1_diag_s22422_c0020_5445dfa/replays/round_00018.pt": {
+      "sha256": "ea6aa1bf2e1e7a3dfc037d37526185786c4b0e00ead68ace004f0e4b0c06c45f",
+      "bytes": 24695
+    },
+    "/export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_cache_20260917_A_674c1df1_diag_s22422_c0020_5445dfa/replays/round_00008.pt": {
+      "sha256": "8192a0a16f1d73d2624b38ddb74d6f02b945d6d50d830587dc3787b61d20bdfc",
+      "bytes": 28051
+    },
+    "/export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_cache_20260917_A_674c1df1_diag_s22422_c0020_5445dfa/replays/round_00009.pt": {
+      "sha256": "4dd8bd669c8fdf34f52352c69f7bee48580e7a983a2acb35fd6c9cc6d38e24cf",
+      "bytes": 25365
+    },
+    "/export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_cache_20260917_A_674c1df1_diag_s22422_c0020_5445dfa/replays/round_00017.pt": {
+      "sha256": "9f2e37ffe515df066993764e8b0f6c0667aa68364e4dbf6d456e155c840294e1",
+      "bytes": 26669
+    },
+    "/export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_cache_20260917_A_674c1df1_diag_s22422_c0020_5445dfa/replays/round_00001.pt": {
+      "sha256": "066f44bd01afb0df3a2bd4ab601cc8290e8a28a18a0dc65acaf585f8c649a1d2",
+      "bytes": 25138
+    },
+    "/export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_cache_20260917_A_674c1df1_diag_s22422_c0020_5445dfa/replays/round_00016.pt": {
+      "sha256": "fafa89a818368170252b9097a3688afc5914622b24856f946ba645979f416761",
+      "bytes": 28345
+    },
+    "/export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_cache_20260917_A_674c1df1_diag_s22422_c0020_5445dfa/replays/round_00014.pt": {
+      "sha256": "efa5b2aacbfedc3e04e89cab5b7c832a97b19ebbd0b5aa385e23ca3ade5b4647",
+      "bytes": 24919
+    },
+    "/export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_cache_20260917_A_674c1df1_diag_s22422_c0020_5445dfa/replays/round_00003.pt": {
+      "sha256": "7ff7a9dabb41398f89eb4b06ef1dd95a103c3f53da10d02786edcaadff1be638",
+      "bytes": 26620
+    },
+    "/export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_cache_20260917_A_674c1df1_diag_s22422_c0020_5445dfa/replays/round_00002.pt": {
+      "sha256": "a925885d30bb3c824adbd5f53d48420dd8a61fbdd405c73d7e7acc5ec5ca866d",
+      "bytes": 20882
+    },
+    "/export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_cache_20260917_A_674c1df1_diag_s22422_c0020_5445dfa/replays/round_00015.pt": {
+      "sha256": "fba664582f25b1a1c07f608591efbe5c8b9044b7dfbddde496ee5625ad276250",
+      "bytes": 29200
+    },
+    "/export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_cache_20260917_A_674c1df1_diag_s22422_c0020_5445dfa/replays/round_00006.pt": {
+      "sha256": "114a0c7bc6289321526cda0060d1617e33776db8937d93823f8a978e02be1fb7",
+      "bytes": 28501
+    },
+    "/export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_cache_20260917_A_674c1df1_diag_s22422_c0020_5445dfa/replays/round_00011.pt": {
+      "sha256": "addcb00add967347123fc3d3603e1a607fcb4cf577dfd9f6b93a2811d3f62ee4",
+      "bytes": 27811
+    },
+    "/export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_cache_20260917_A_674c1df1_diag_s22422_c0020_5445dfa/replays/round_00010.pt": {
+      "sha256": "3b9d5dd6a12c8efed252bb1f16711db8c3a84b2d842c895dd01b6c0f5a39ce2f",
+      "bytes": 28858
+    },
+    "/export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_cache_20260917_A_674c1df1_diag_s22422_c0020_5445dfa/replays/round_00007.pt": {
+      "sha256": "7fc0d9301e0dda9b40fd4a23ce04e615962c7c0ea33c8efcd265092ef8160ce5",
+      "bytes": 26062
+    },
+    "/export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_cache_20260917_A_674c1df1_diag_s22422_c0020_5445dfa/replays/round_00005.pt": {
+      "sha256": "c2b7341653ee0f17178580c24d8cf5e374358ae3bdcd2a66837bebd57af8c88f",
+      "bytes": 29389
+    },
+    "/export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_cache_20260917_A_674c1df1_diag_s22422_c0020_5445dfa/replays/round_00012.pt": {
+      "sha256": "2ee25b9e58d754bbb4645b54a942c23bfb40a0833f0444b4a2e398f6febc1165",
+      "bytes": 25046
+    },
+    "/export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_cache_20260917_A_674c1df1_diag_s22422_c0020_5445dfa/replays/round_00013.pt": {
+      "sha256": "652449cbcacb7276af34ed41780fe082ceb3a4d8df9c63d48cffc294cb52f106",
+      "bytes": 27868
+    },
+    "/export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_cache_20260917_A_674c1df1_diag_s22422_c0020_5445dfa/replays/round_00004.pt": {
+      "sha256": "834dcd8cb469ce387b370d786f433aaf9f79537e77d03015dc3a737b5f4c7f54",
+      "bytes": 25301
+    },
+    "/export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_cache_20260917_A_674c1df1_diag_s22422_c0020_5445dfa/replays/manifest.jsonl": {
+      "sha256": "53bf47d2765ba5352f5f57fba6a482e736504924ba800bb3dceafc124cd211e0",
+      "bytes": 2833
+    },
+    "/export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_cache_20260917_A_674c1df1_diag_s22433_c0020_5445dfa/timing.jsonl": {
+      "sha256": "a7d31352ff9656dba5ec9a620b4201e05a15f2158db354d08665d9091e90e2f9",
+      "bytes": 15742514
+    },
+    "/export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_cache_20260917_A_674c1df1_diag_s22433_c0020_5445dfa/episodes.jsonl": {
+      "sha256": "3ee878c9c47cd5015d1ce9d428fb1cc945053258dd1b62eee1e921a773a09e93",
+      "bytes": 45985
+    },
+    "/export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_cache_20260917_A_674c1df1_diag_s22433_c0020_5445dfa/metadata.json": {
+      "sha256": "89e7f32a25a8608bba578be30c58be30d0955cccb7f2ce0d4c0495aa036b514a",
+      "bytes": 15199
+    },
+    "/export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_cache_20260917_A_674c1df1_diag_s22433_c0020_5445dfa/checkpoints/final.pt": {
+      "sha256": "b55c588200c2056d433e257226225fa5b675dc23b7734b4732bd4f53de4e1b0d",
+      "bytes": 48884032
+    },
+    "/export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_cache_20260917_A_674c1df1_diag_s22433_c0020_5445dfa/task4_death_states_round0012.pkl": {
+      "sha256": "2c9a132e18d23105e180528eb85945bd293edc4e673be6b98e9cb8a999b6beaa",
+      "bytes": 103809
+    },
+    "/export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_cache_20260917_A_674c1df1_diag_s22433_c0020_5445dfa/task4_death_states_round0014.pkl": {
+      "sha256": "64818ce630240be758c1c93983b40d434ccd656439e630877011453a45e4582a",
+      "bytes": 104557
+    },
+    "/export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_cache_20260917_A_674c1df1_diag_s22433_c0020_5445dfa/task4_death_states_round0009.pkl": {
+      "sha256": "f3df53585cf208f8abd7a6574bd3bc6f740975eff54f4608c5146eb06f810442",
+      "bytes": 104658
+    },
+    "/export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_cache_20260917_A_674c1df1_diag_s22433_c0020_5445dfa/replays/round_00020.pt": {
+      "sha256": "64a64b1e6f3ed45c04faead4c90b385c27dc24bf986bf20f41fd92fdb5c23c69",
+      "bytes": 26232
+    },
+    "/export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_cache_20260917_A_674c1df1_diag_s22433_c0020_5445dfa/replays/round_00018.pt": {
+      "sha256": "2a273e1af53b267f55693555c2b5e44e9ab1822fd88ee15328fc68b9d7995975",
+      "bytes": 25306
+    },
+    "/export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_cache_20260917_A_674c1df1_diag_s22433_c0020_5445dfa/replays/round_00019.pt": {
+      "sha256": "24795a8eb3b7fef49973c560c50931fbb1d056c5fed97477489307a0ccf51dc4",
+      "bytes": 22064
+    },
+    "/export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_cache_20260917_A_674c1df1_diag_s22433_c0020_5445dfa/replays/round_00009.pt": {
+      "sha256": "c83c7634af5efe33a6d4152b3354832a7a4d600e754835b9b0e4f1c1e8115c69",
+      "bytes": 18984
+    },
+    "/export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_cache_20260917_A_674c1df1_diag_s22433_c0020_5445dfa/replays/round_00008.pt": {
+      "sha256": "f469b4221b8f7d495b3e955042a1cb3a92d4f13878638813c25c4823f4c28483",
+      "bytes": 27697
+    },
+    "/export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_cache_20260917_A_674c1df1_diag_s22433_c0020_5445dfa/replays/round_00002.pt": {
+      "sha256": "7095ef1714fadc81ff6a1b2e7074fbfe3da5ace57e5c7583e628908d84c839df",
+      "bytes": 28770
+    },
+    "/export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_cache_20260917_A_674c1df1_diag_s22433_c0020_5445dfa/replays/round_00015.pt": {
+      "sha256": "41a72f26fada54baf9df6c2b3bb2a51194168b3a0b6af4e661d46af37336d23f",
+      "bytes": 26024
+    },
+    "/export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_cache_20260917_A_674c1df1_diag_s22433_c0020_5445dfa/replays/round_00014.pt": {
+      "sha256": "af1a9d3e5422ba53e4694ddf2d3b66395dd34103fc3e1592b4b647eb04609885",
+      "bytes": 21410
+    },
+    "/export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_cache_20260917_A_674c1df1_diag_s22433_c0020_5445dfa/replays/round_00003.pt": {
+      "sha256": "b34c9e703880f8c4389feabd0df1998cb45e8afde71cb70c5bb883c3985d5f8d",
+      "bytes": 25539
+    },
+    "/export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_cache_20260917_A_674c1df1_diag_s22433_c0020_5445dfa/replays/round_00001.pt": {
+      "sha256": "1e153f25f840f8447ff89bc667bf23f49347fa60c3afe03a7e51af8f324b07e6",
+      "bytes": 28402
+    },
+    "/export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_cache_20260917_A_674c1df1_diag_s22433_c0020_5445dfa/replays/round_00016.pt": {
+      "sha256": "13e27b4f7b8d45b825e886738549d3dad38f542af3fbfd0004ad26e49e984a74",
+      "bytes": 28256
+    },
+    "/export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_cache_20260917_A_674c1df1_diag_s22433_c0020_5445dfa/replays/round_00017.pt": {
+      "sha256": "350976c38e65d8764690da65ef197eedb57e84ca32e56d5828d0bd2d5e8ccd88",
+      "bytes": 28058
+    },
+    "/export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_cache_20260917_A_674c1df1_diag_s22433_c0020_5445dfa/replays/round_00013.pt": {
+      "sha256": "ccb1d37e81e4bb68ddbabe2bb0b4637b823104cb27639b84204c8419e4bd8dbc",
+      "bytes": 25653
+    },
+    "/export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_cache_20260917_A_674c1df1_diag_s22433_c0020_5445dfa/replays/round_00004.pt": {
+      "sha256": "7cfb20e2298f16a50da0362049bb4a82e0410be6ff854bceb0b2d13fc6e700ef",
+      "bytes": 25692
+    },
+    "/export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_cache_20260917_A_674c1df1_diag_s22433_c0020_5445dfa/replays/round_00005.pt": {
+      "sha256": "03f011a605bed1857d4613be6c50b654b4dd5daf1ab0d5e89e0c479d86b9fb0e",
+      "bytes": 25725
+    },
+    "/export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_cache_20260917_A_674c1df1_diag_s22433_c0020_5445dfa/replays/round_00012.pt": {
+      "sha256": "420d42b0e03ea2b347ae94714eb1cea922b9efa51a2c37b5937fd4ee8f5769fc",
+      "bytes": 26762
+    },
+    "/export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_cache_20260917_A_674c1df1_diag_s22433_c0020_5445dfa/replays/round_00010.pt": {
+      "sha256": "c8cf6d2d2478409d9827cf57c4eb9638222d0556ac746fe13cbb472bd98b0f7d",
+      "bytes": 24822
+    },
+    "/export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_cache_20260917_A_674c1df1_diag_s22433_c0020_5445dfa/replays/round_00007.pt": {
+      "sha256": "e8738a1c8419e173afbcaa798316b33ef9253280600c7bb7e2e53a3a785d5492",
+      "bytes": 26156
+    },
+    "/export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_cache_20260917_A_674c1df1_diag_s22433_c0020_5445dfa/replays/round_00006.pt": {
+      "sha256": "90659de76b520e6b1ac2efae75b172cbb6194b38850ef6e6a1a95dbe8b0104ba",
+      "bytes": 29229
+    },
+    "/export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_cache_20260917_A_674c1df1_diag_s22433_c0020_5445dfa/replays/round_00011.pt": {
+      "sha256": "23406c486b68fb4755f0a597d75b48610f4b7ffd3e23cdcecad519e1501e26ae",
+      "bytes": 30307
+    },
+    "/export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_cache_20260917_A_674c1df1_diag_s22433_c0020_5445dfa/replays/manifest.jsonl": {
+      "sha256": "239082050250336aa3f0b9a4572912fa0f968b57f36d2328c4e8bcf8536f0a3b",
+      "bytes": 2831
+    }
+  }
+}
