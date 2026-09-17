@@ -1,0 +1,1157 @@
+[
+  {
+    "step": 190,
+    "actions": [
+      "RIGHT",
+      "WAIT"
+    ],
+    "remaining": 4,
+    "implementations": {
+      "original": {
+        "seconds": 0.04408016614615917,
+        "result": {
+          "proven_actions": [
+            "RIGHT",
+            "WAIT"
+          ],
+          "scenarios_evaluated": 32,
+          "states_evaluated": 20080,
+          "timed_out": false,
+          "first_failing_profile": null,
+          "first_failing_order": null
+        }
+      },
+      "vectorized": {
+        "seconds": 0.011425613425672054,
+        "result": {
+          "proven_actions": [
+            "RIGHT",
+            "WAIT"
+          ],
+          "scenarios_evaluated": 32,
+          "states_evaluated": 20080,
+          "timed_out": false,
+          "first_failing_profile": null,
+          "first_failing_order": null
+        }
+      },
+      "cached": {
+        "seconds": 0.005496799014508724,
+        "result": {
+          "proven_actions": [
+            "RIGHT",
+            "WAIT"
+          ],
+          "scenarios_evaluated": 32,
+          "states_evaluated": 20080,
+          "timed_out": false,
+          "first_failing_profile": null,
+          "first_failing_order": null
+        }
+      }
+    }
+  },
+  {
+    "step": 191,
+    "actions": [
+      "DOWN",
+      "WAIT"
+    ],
+    "remaining": 3,
+    "implementations": {
+      "original": {
+        "seconds": 0.05847098212689161,
+        "result": {
+          "proven_actions": [
+            "DOWN",
+            "WAIT"
+          ],
+          "scenarios_evaluated": 60,
+          "states_evaluated": 29204,
+          "timed_out": false,
+          "first_failing_profile": null,
+          "first_failing_order": null
+        }
+      },
+      "vectorized": {
+        "seconds": 0.01421765424311161,
+        "result": {
+          "proven_actions": [
+            "DOWN",
+            "WAIT"
+          ],
+          "scenarios_evaluated": 60,
+          "states_evaluated": 29204,
+          "timed_out": false,
+          "first_failing_profile": null,
+          "first_failing_order": null
+        }
+      },
+      "cached": {
+        "seconds": 0.008892296813428402,
+        "result": {
+          "proven_actions": [
+            "DOWN",
+            "WAIT"
+          ],
+          "scenarios_evaluated": 60,
+          "states_evaluated": 29204,
+          "timed_out": false,
+          "first_failing_profile": null,
+          "first_failing_order": null
+        }
+      }
+    }
+  },
+  {
+    "step": 192,
+    "actions": [
+      "DOWN"
+    ],
+    "remaining": 2,
+    "implementations": {
+      "original": {
+        "seconds": 0.012508495710790157,
+        "result": {
+          "proven_actions": [
+            "DOWN"
+          ],
+          "scenarios_evaluated": 16,
+          "states_evaluated": 5368,
+          "timed_out": false,
+          "first_failing_profile": null,
+          "first_failing_order": null
+        }
+      },
+      "vectorized": {
+        "seconds": 0.002890900708734989,
+        "result": {
+          "proven_actions": [
+            "DOWN"
+          ],
+          "scenarios_evaluated": 16,
+          "states_evaluated": 5368,
+          "timed_out": false,
+          "first_failing_profile": null,
+          "first_failing_order": null
+        }
+      },
+      "cached": {
+        "seconds": 0.0028027500957250595,
+        "result": {
+          "proven_actions": [
+            "DOWN"
+          ],
+          "scenarios_evaluated": 16,
+          "states_evaluated": 5368,
+          "timed_out": false,
+          "first_failing_profile": null,
+          "first_failing_order": null
+        }
+      }
+    }
+  },
+  {
+    "step": 193,
+    "actions": [
+      "DOWN",
+      "WAIT"
+    ],
+    "remaining": 1,
+    "implementations": {
+      "original": {
+        "seconds": 0.007430039346218109,
+        "result": {
+          "proven_actions": [
+            "DOWN",
+            "WAIT"
+          ],
+          "scenarios_evaluated": 50,
+          "states_evaluated": 0,
+          "timed_out": false,
+          "first_failing_profile": null,
+          "first_failing_order": null
+        }
+      },
+      "vectorized": {
+        "seconds": 0.0017204778268933296,
+        "result": {
+          "proven_actions": [
+            "DOWN",
+            "WAIT"
+          ],
+          "scenarios_evaluated": 50,
+          "states_evaluated": 0,
+          "timed_out": false,
+          "first_failing_profile": null,
+          "first_failing_order": null
+        }
+      },
+      "cached": {
+        "seconds": 0.0017039179801940918,
+        "result": {
+          "proven_actions": [
+            "DOWN",
+            "WAIT"
+          ],
+          "scenarios_evaluated": 50,
+          "states_evaluated": 0,
+          "timed_out": false,
+          "first_failing_profile": null,
+          "first_failing_order": null
+        }
+      }
+    }
+  },
+  {
+    "step": 194,
+    "actions": [
+      "UP",
+      "DOWN",
+      "LEFT",
+      "WAIT"
+    ],
+    "remaining": 1,
+    "implementations": {
+      "original": {
+        "seconds": 0.00960888434201479,
+        "result": {
+          "proven_actions": [
+            "UP",
+            "DOWN",
+            "LEFT",
+            "WAIT"
+          ],
+          "scenarios_evaluated": 64,
+          "states_evaluated": 0,
+          "timed_out": false,
+          "first_failing_profile": null,
+          "first_failing_order": null
+        }
+      },
+      "vectorized": {
+        "seconds": 0.002344864420592785,
+        "result": {
+          "proven_actions": [
+            "UP",
+            "DOWN",
+            "LEFT",
+            "WAIT"
+          ],
+          "scenarios_evaluated": 64,
+          "states_evaluated": 0,
+          "timed_out": false,
+          "first_failing_profile": null,
+          "first_failing_order": null
+        }
+      },
+      "cached": {
+        "seconds": 0.0022116731852293015,
+        "result": {
+          "proven_actions": [
+            "UP",
+            "DOWN",
+            "LEFT",
+            "WAIT"
+          ],
+          "scenarios_evaluated": 64,
+          "states_evaluated": 0,
+          "timed_out": false,
+          "first_failing_profile": null,
+          "first_failing_order": null
+        }
+      }
+    }
+  },
+  {
+    "step": 195,
+    "actions": [
+      "BOMB"
+    ],
+    "remaining": 6,
+    "implementations": {
+      "original": {
+        "seconds": 0.05776754580438137,
+        "result": {
+          "proven_actions": [
+            "BOMB"
+          ],
+          "scenarios_evaluated": 25,
+          "states_evaluated": 22679,
+          "timed_out": false,
+          "first_failing_profile": null,
+          "first_failing_order": null
+        }
+      },
+      "vectorized": {
+        "seconds": 0.016055533662438393,
+        "result": {
+          "proven_actions": [
+            "BOMB"
+          ],
+          "scenarios_evaluated": 25,
+          "states_evaluated": 22679,
+          "timed_out": false,
+          "first_failing_profile": null,
+          "first_failing_order": null
+        }
+      },
+      "cached": {
+        "seconds": 0.015852761454880238,
+        "result": {
+          "proven_actions": [
+            "BOMB"
+          ],
+          "scenarios_evaluated": 25,
+          "states_evaluated": 22679,
+          "timed_out": false,
+          "first_failing_profile": null,
+          "first_failing_order": null
+        }
+      }
+    }
+  },
+  {
+    "step": 196,
+    "actions": [
+      "UP",
+      "DOWN",
+      "WAIT"
+    ],
+    "remaining": 5,
+    "implementations": {
+      "original": {
+        "seconds": 0.06553997937589884,
+        "result": {
+          "proven_actions": [
+            "UP",
+            "WAIT"
+          ],
+          "scenarios_evaluated": 35,
+          "states_evaluated": 27447,
+          "timed_out": false,
+          "first_failing_profile": [
+            "DOWN",
+            "WAIT",
+            "DOWN"
+          ],
+          "first_failing_order": [
+            0,
+            1,
+            2
+          ]
+        }
+      },
+      "vectorized": {
+        "seconds": 0.016466978006064892,
+        "result": {
+          "proven_actions": [
+            "UP",
+            "WAIT"
+          ],
+          "scenarios_evaluated": 35,
+          "states_evaluated": 27447,
+          "timed_out": false,
+          "first_failing_profile": [
+            "DOWN",
+            "WAIT",
+            "DOWN"
+          ],
+          "first_failing_order": [
+            0,
+            1,
+            2
+          ]
+        }
+      },
+      "cached": {
+        "seconds": 0.00879166554659605,
+        "result": {
+          "proven_actions": [
+            "UP",
+            "WAIT"
+          ],
+          "scenarios_evaluated": 35,
+          "states_evaluated": 27447,
+          "timed_out": false,
+          "first_failing_profile": [
+            "DOWN",
+            "WAIT",
+            "DOWN"
+          ],
+          "first_failing_order": [
+            0,
+            1,
+            2
+          ]
+        }
+      }
+    }
+  },
+  {
+    "step": 197,
+    "actions": [
+      "UP",
+      "LEFT",
+      "WAIT"
+    ],
+    "remaining": 4,
+    "implementations": {
+      "original": {
+        "seconds": 0.12018471956253052,
+        "result": {
+          "proven_actions": [
+            "UP",
+            "LEFT",
+            "WAIT"
+          ],
+          "scenarios_evaluated": 90,
+          "states_evaluated": 57888,
+          "timed_out": false,
+          "first_failing_profile": null,
+          "first_failing_order": null
+        }
+      },
+      "vectorized": {
+        "seconds": 0.02804144285619259,
+        "result": {
+          "proven_actions": [
+            "UP",
+            "LEFT",
+            "WAIT"
+          ],
+          "scenarios_evaluated": 90,
+          "states_evaluated": 57888,
+          "timed_out": false,
+          "first_failing_profile": null,
+          "first_failing_order": null
+        }
+      },
+      "cached": {
+        "seconds": 0.011182911694049835,
+        "result": {
+          "proven_actions": [
+            "UP",
+            "LEFT",
+            "WAIT"
+          ],
+          "scenarios_evaluated": 90,
+          "states_evaluated": 57888,
+          "timed_out": false,
+          "first_failing_profile": null,
+          "first_failing_order": null
+        }
+      }
+    }
+  },
+  {
+    "step": 198,
+    "actions": [
+      "RIGHT",
+      "LEFT",
+      "WAIT"
+    ],
+    "remaining": 3,
+    "implementations": {
+      "original": {
+        "seconds": 0.04448678158223629,
+        "result": {
+          "proven_actions": [
+            "RIGHT",
+            "LEFT",
+            "WAIT"
+          ],
+          "scenarios_evaluated": 48,
+          "states_evaluated": 23604,
+          "timed_out": false,
+          "first_failing_profile": null,
+          "first_failing_order": null
+        }
+      },
+      "vectorized": {
+        "seconds": 0.009823545813560486,
+        "result": {
+          "proven_actions": [
+            "RIGHT",
+            "LEFT",
+            "WAIT"
+          ],
+          "scenarios_evaluated": 48,
+          "states_evaluated": 23604,
+          "timed_out": false,
+          "first_failing_profile": null,
+          "first_failing_order": null
+        }
+      },
+      "cached": {
+        "seconds": 0.004622260108590126,
+        "result": {
+          "proven_actions": [
+            "RIGHT",
+            "LEFT",
+            "WAIT"
+          ],
+          "scenarios_evaluated": 48,
+          "states_evaluated": 23604,
+          "timed_out": false,
+          "first_failing_profile": null,
+          "first_failing_order": null
+        }
+      }
+    }
+  },
+  {
+    "step": 199,
+    "actions": [
+      "LEFT"
+    ],
+    "remaining": 2,
+    "implementations": {
+      "original": {
+        "seconds": 0.0177240502089262,
+        "result": {
+          "proven_actions": [
+            "LEFT"
+          ],
+          "scenarios_evaluated": 24,
+          "states_evaluated": 8164,
+          "timed_out": false,
+          "first_failing_profile": null,
+          "first_failing_order": null
+        }
+      },
+      "vectorized": {
+        "seconds": 0.0041364943608641624,
+        "result": {
+          "proven_actions": [
+            "LEFT"
+          ],
+          "scenarios_evaluated": 24,
+          "states_evaluated": 8164,
+          "timed_out": false,
+          "first_failing_profile": null,
+          "first_failing_order": null
+        }
+      },
+      "cached": {
+        "seconds": 0.004089043475687504,
+        "result": {
+          "proven_actions": [
+            "LEFT"
+          ],
+          "scenarios_evaluated": 24,
+          "states_evaluated": 8164,
+          "timed_out": false,
+          "first_failing_profile": null,
+          "first_failing_order": null
+        }
+      }
+    }
+  },
+  {
+    "step": 200,
+    "actions": [
+      "LEFT",
+      "WAIT"
+    ],
+    "remaining": 1,
+    "implementations": {
+      "original": {
+        "seconds": 0.0043768566101789474,
+        "result": {
+          "proven_actions": [
+            "LEFT",
+            "WAIT"
+          ],
+          "scenarios_evaluated": 32,
+          "states_evaluated": 0,
+          "timed_out": false,
+          "first_failing_profile": null,
+          "first_failing_order": null
+        }
+      },
+      "vectorized": {
+        "seconds": 0.0011273529380559921,
+        "result": {
+          "proven_actions": [
+            "LEFT",
+            "WAIT"
+          ],
+          "scenarios_evaluated": 32,
+          "states_evaluated": 0,
+          "timed_out": false,
+          "first_failing_profile": null,
+          "first_failing_order": null
+        }
+      },
+      "cached": {
+        "seconds": 0.0011145919561386108,
+        "result": {
+          "proven_actions": [
+            "LEFT",
+            "WAIT"
+          ],
+          "scenarios_evaluated": 32,
+          "states_evaluated": 0,
+          "timed_out": false,
+          "first_failing_profile": null,
+          "first_failing_order": null
+        }
+      }
+    }
+  },
+  {
+    "step": 201,
+    "actions": [
+      "RIGHT",
+      "WAIT"
+    ],
+    "remaining": 1,
+    "implementations": {
+      "original": {
+        "seconds": 0.008216898888349533,
+        "result": {
+          "proven_actions": [
+            "RIGHT",
+            "WAIT"
+          ],
+          "scenarios_evaluated": 60,
+          "states_evaluated": 0,
+          "timed_out": false,
+          "first_failing_profile": null,
+          "first_failing_order": null
+        }
+      },
+      "vectorized": {
+        "seconds": 0.001831110566854477,
+        "result": {
+          "proven_actions": [
+            "RIGHT",
+            "WAIT"
+          ],
+          "scenarios_evaluated": 60,
+          "states_evaluated": 0,
+          "timed_out": false,
+          "first_failing_profile": null,
+          "first_failing_order": null
+        }
+      },
+      "cached": {
+        "seconds": 0.0018139202147722244,
+        "result": {
+          "proven_actions": [
+            "RIGHT",
+            "WAIT"
+          ],
+          "scenarios_evaluated": 60,
+          "states_evaluated": 0,
+          "timed_out": false,
+          "first_failing_profile": null,
+          "first_failing_order": null
+        }
+      }
+    }
+  },
+  {
+    "step": 202,
+    "actions": [
+      "BOMB"
+    ],
+    "remaining": 6,
+    "implementations": {
+      "original": {
+        "seconds": 0.005110936239361763,
+        "result": {
+          "proven_actions": [],
+          "scenarios_evaluated": 1,
+          "states_evaluated": 915,
+          "timed_out": false,
+          "first_failing_profile": [
+            "BOMB",
+            "WAIT",
+            "WAIT"
+          ],
+          "first_failing_order": [
+            0,
+            1,
+            2
+          ]
+        }
+      },
+      "vectorized": {
+        "seconds": 0.0014546159654855728,
+        "result": {
+          "proven_actions": [],
+          "scenarios_evaluated": 1,
+          "states_evaluated": 915,
+          "timed_out": false,
+          "first_failing_profile": [
+            "BOMB",
+            "WAIT",
+            "WAIT"
+          ],
+          "first_failing_order": [
+            0,
+            1,
+            2
+          ]
+        }
+      },
+      "cached": {
+        "seconds": 0.0014408761635422707,
+        "result": {
+          "proven_actions": [],
+          "scenarios_evaluated": 1,
+          "states_evaluated": 915,
+          "timed_out": false,
+          "first_failing_profile": [
+            "BOMB",
+            "WAIT",
+            "WAIT"
+          ],
+          "first_failing_order": [
+            0,
+            1,
+            2
+          ]
+        }
+      }
+    }
+  },
+  {
+    "step": 203,
+    "actions": [
+      "BOMB"
+    ],
+    "remaining": 6,
+    "implementations": {
+      "original": {
+        "seconds": 0.003932492807507515,
+        "result": {
+          "proven_actions": [],
+          "scenarios_evaluated": 1,
+          "states_evaluated": 900,
+          "timed_out": false,
+          "first_failing_profile": [
+            "BOMB",
+            "WAIT",
+            "WAIT"
+          ],
+          "first_failing_order": [
+            0,
+            1,
+            2
+          ]
+        }
+      },
+      "vectorized": {
+        "seconds": 0.0010725921019911766,
+        "result": {
+          "proven_actions": [],
+          "scenarios_evaluated": 1,
+          "states_evaluated": 900,
+          "timed_out": false,
+          "first_failing_profile": [
+            "BOMB",
+            "WAIT",
+            "WAIT"
+          ],
+          "first_failing_order": [
+            0,
+            1,
+            2
+          ]
+        }
+      },
+      "cached": {
+        "seconds": 0.0010340819135308266,
+        "result": {
+          "proven_actions": [],
+          "scenarios_evaluated": 1,
+          "states_evaluated": 900,
+          "timed_out": false,
+          "first_failing_profile": [
+            "BOMB",
+            "WAIT",
+            "WAIT"
+          ],
+          "first_failing_order": [
+            0,
+            1,
+            2
+          ]
+        }
+      }
+    }
+  },
+  {
+    "step": 204,
+    "actions": [
+      "BOMB"
+    ],
+    "remaining": 6,
+    "implementations": {
+      "original": {
+        "seconds": 0.004388406872749329,
+        "result": {
+          "proven_actions": [],
+          "scenarios_evaluated": 1,
+          "states_evaluated": 903,
+          "timed_out": false,
+          "first_failing_profile": [
+            "BOMB",
+            "WAIT",
+            "WAIT"
+          ],
+          "first_failing_order": [
+            0,
+            1,
+            2
+          ]
+        }
+      },
+      "vectorized": {
+        "seconds": 0.0011948328465223312,
+        "result": {
+          "proven_actions": [],
+          "scenarios_evaluated": 1,
+          "states_evaluated": 903,
+          "timed_out": false,
+          "first_failing_profile": [
+            "BOMB",
+            "WAIT",
+            "WAIT"
+          ],
+          "first_failing_order": [
+            0,
+            1,
+            2
+          ]
+        }
+      },
+      "cached": {
+        "seconds": 0.001204242929816246,
+        "result": {
+          "proven_actions": [],
+          "scenarios_evaluated": 1,
+          "states_evaluated": 903,
+          "timed_out": false,
+          "first_failing_profile": [
+            "BOMB",
+            "WAIT",
+            "WAIT"
+          ],
+          "first_failing_order": [
+            0,
+            1,
+            2
+          ]
+        }
+      }
+    }
+  },
+  {
+    "step": 205,
+    "actions": [
+      "BOMB"
+    ],
+    "remaining": 6,
+    "implementations": {
+      "original": {
+        "seconds": 0.01191943883895874,
+        "result": {
+          "proven_actions": [],
+          "scenarios_evaluated": 4,
+          "states_evaluated": 3769,
+          "timed_out": false,
+          "first_failing_profile": [
+            "BOMB",
+            "UP",
+            "WAIT"
+          ],
+          "first_failing_order": [
+            0,
+            1,
+            2
+          ]
+        }
+      },
+      "vectorized": {
+        "seconds": 0.0028638606891036034,
+        "result": {
+          "proven_actions": [],
+          "scenarios_evaluated": 4,
+          "states_evaluated": 3769,
+          "timed_out": false,
+          "first_failing_profile": [
+            "BOMB",
+            "UP",
+            "WAIT"
+          ],
+          "first_failing_order": [
+            0,
+            1,
+            2
+          ]
+        }
+      },
+      "cached": {
+        "seconds": 0.002880481071770191,
+        "result": {
+          "proven_actions": [],
+          "scenarios_evaluated": 4,
+          "states_evaluated": 3769,
+          "timed_out": false,
+          "first_failing_profile": [
+            "BOMB",
+            "UP",
+            "WAIT"
+          ],
+          "first_failing_order": [
+            0,
+            1,
+            2
+          ]
+        }
+      }
+    }
+  },
+  {
+    "step": 206,
+    "actions": [
+      "BOMB"
+    ],
+    "remaining": 6,
+    "implementations": {
+      "original": {
+        "seconds": 0.005515919998288155,
+        "result": {
+          "proven_actions": [],
+          "scenarios_evaluated": 2,
+          "states_evaluated": 1918,
+          "timed_out": false,
+          "first_failing_profile": [
+            "BOMB",
+            "WAIT",
+            "DOWN"
+          ],
+          "first_failing_order": [
+            0,
+            1,
+            2
+          ]
+        }
+      },
+      "vectorized": {
+        "seconds": 0.0014291247352957726,
+        "result": {
+          "proven_actions": [],
+          "scenarios_evaluated": 2,
+          "states_evaluated": 1918,
+          "timed_out": false,
+          "first_failing_profile": [
+            "BOMB",
+            "WAIT",
+            "DOWN"
+          ],
+          "first_failing_order": [
+            0,
+            1,
+            2
+          ]
+        }
+      },
+      "cached": {
+        "seconds": 0.0013530449941754341,
+        "result": {
+          "proven_actions": [],
+          "scenarios_evaluated": 2,
+          "states_evaluated": 1918,
+          "timed_out": false,
+          "first_failing_profile": [
+            "BOMB",
+            "WAIT",
+            "DOWN"
+          ],
+          "first_failing_order": [
+            0,
+            1,
+            2
+          ]
+        }
+      }
+    }
+  },
+  {
+    "step": 207,
+    "actions": [
+      "BOMB"
+    ],
+    "remaining": 6,
+    "implementations": {
+      "original": {
+        "seconds": 0.0035266485065221786,
+        "result": {
+          "proven_actions": [],
+          "scenarios_evaluated": 1,
+          "states_evaluated": 963,
+          "timed_out": false,
+          "first_failing_profile": [
+            "BOMB",
+            "WAIT",
+            "WAIT"
+          ],
+          "first_failing_order": [
+            0,
+            1,
+            2
+          ]
+        }
+      },
+      "vectorized": {
+        "seconds": 0.0008821887895464897,
+        "result": {
+          "proven_actions": [],
+          "scenarios_evaluated": 1,
+          "states_evaluated": 963,
+          "timed_out": false,
+          "first_failing_profile": [
+            "BOMB",
+            "WAIT",
+            "WAIT"
+          ],
+          "first_failing_order": [
+            0,
+            1,
+            2
+          ]
+        }
+      },
+      "cached": {
+        "seconds": 0.0008664587512612343,
+        "result": {
+          "proven_actions": [],
+          "scenarios_evaluated": 1,
+          "states_evaluated": 963,
+          "timed_out": false,
+          "first_failing_profile": [
+            "BOMB",
+            "WAIT",
+            "WAIT"
+          ],
+          "first_failing_order": [
+            0,
+            1,
+            2
+          ]
+        }
+      }
+    }
+  },
+  {
+    "step": 208,
+    "actions": [],
+    "remaining": 6,
+    "implementations": {
+      "original": {
+        "seconds": 1.6830861568450928e-05,
+        "result": {
+          "proven_actions": [],
+          "scenarios_evaluated": 0,
+          "states_evaluated": 0,
+          "timed_out": false,
+          "first_failing_profile": null,
+          "first_failing_order": null
+        }
+      },
+      "vectorized": {
+        "seconds": 3.359280526638031e-06,
+        "result": {
+          "proven_actions": [],
+          "scenarios_evaluated": 0,
+          "states_evaluated": 0,
+          "timed_out": false,
+          "first_failing_profile": null,
+          "first_failing_order": null
+        }
+      },
+      "cached": {
+        "seconds": 2.8694048523902893e-06,
+        "result": {
+          "proven_actions": [],
+          "scenarios_evaluated": 0,
+          "states_evaluated": 0,
+          "timed_out": false,
+          "first_failing_profile": null,
+          "first_failing_order": null
+        }
+      }
+    }
+  },
+  {
+    "step": 209,
+    "actions": [
+      "UP"
+    ],
+    "remaining": 5,
+    "implementations": {
+      "original": {
+        "seconds": 0.0028233500197529793,
+        "result": {
+          "proven_actions": [],
+          "scenarios_evaluated": 1,
+          "states_evaluated": 806,
+          "timed_out": false,
+          "first_failing_profile": [
+            "UP",
+            "WAIT",
+            "WAIT"
+          ],
+          "first_failing_order": [
+            0,
+            1,
+            2
+          ]
+        }
+      },
+      "vectorized": {
+        "seconds": 0.0007514674216508865,
+        "result": {
+          "proven_actions": [],
+          "scenarios_evaluated": 1,
+          "states_evaluated": 806,
+          "timed_out": false,
+          "first_failing_profile": [
+            "UP",
+            "WAIT",
+            "WAIT"
+          ],
+          "first_failing_order": [
+            0,
+            1,
+            2
+          ]
+        }
+      },
+      "cached": {
+        "seconds": 0.000685177743434906,
+        "result": {
+          "proven_actions": [],
+          "scenarios_evaluated": 1,
+          "states_evaluated": 806,
+          "timed_out": false,
+          "first_failing_profile": [
+            "UP",
+            "WAIT",
+            "WAIT"
+          ],
+          "first_failing_order": [
+            0,
+            1,
+            2
+          ]
+        }
+      }
+    }
+  }
+]

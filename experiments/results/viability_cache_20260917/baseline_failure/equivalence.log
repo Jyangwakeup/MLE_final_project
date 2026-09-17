@@ -1,0 +1,67 @@
+20 states: original enumeration + scalar, vectorized, cached proofs equal
+{
+  "step": 209,
+  "actions": [
+    "UP"
+  ],
+  "remaining": 5,
+  "implementations": {
+    "original": {
+      "seconds": 0.0028233500197529793,
+      "result": {
+        "proven_actions": [],
+        "scenarios_evaluated": 1,
+        "states_evaluated": 806,
+        "timed_out": false,
+        "first_failing_profile": [
+          "UP",
+          "WAIT",
+          "WAIT"
+        ],
+        "first_failing_order": [
+          0,
+          1,
+          2
+        ]
+      }
+    },
+    "vectorized": {
+      "seconds": 0.0007514674216508865,
+      "result": {
+        "proven_actions": [],
+        "scenarios_evaluated": 1,
+        "states_evaluated": 806,
+        "timed_out": false,
+        "first_failing_profile": [
+          "UP",
+          "WAIT",
+          "WAIT"
+        ],
+        "first_failing_order": [
+          0,
+          1,
+          2
+        ]
+      }
+    },
+    "cached": {
+      "seconds": 0.000685177743434906,
+      "result": {
+        "proven_actions": [],
+        "scenarios_evaluated": 1,
+        "states_evaluated": 806,
+        "timed_out": false,
+        "first_failing_profile": [
+          "UP",
+          "WAIT",
+          "WAIT"
+        ],
+        "first_failing_order": [
+          0,
+          1,
+          2
+        ]
+      }
+    }
+  }
+}

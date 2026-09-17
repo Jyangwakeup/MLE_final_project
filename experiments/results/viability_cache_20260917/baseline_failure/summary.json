@@ -1,0 +1,23 @@
+{
+  "source_commit": "5445dfaae85bc5889f6298ef76882077c0178184",
+  "status": "stopped_engineering_failure",
+  "task4_qualified": false,
+  "reason": "robust_guarantee_loss",
+  "diagnostic_rounds": 60,
+  "mixed_worlds": 20,
+  "development_parent_completed": {
+    "1": 39,
+    "2": 26,
+    "3": 13,
+    "4": 8
+  },
+  "formal_training_rounds": 0,
+  "confirmation_worlds": 0,
+  "main_validation_worlds": 0,
+  "artifact_sha256": {
+    "/export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_cache_20260917_A_674c1df1_development_parent_t4_5445dfa/task4_viability_cache_20260917_A_674c1df1_development_parent_t4_5445dfa_s23008/task4_failure_states.pkl": "37d1c2b1e7a251190ca386237aef8b6085c5bc22e39081d7f55f4cf308e97fec",
+    "/export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_cache_20260917_A_674c1df1_development_parent_t4_5445dfa/task4_viability_cache_20260917_A_674c1df1_development_parent_t4_5445dfa_s23008/timing.jsonl": "2386b7240003d6a32f68bbec17aada25251626b80bdbb31fa7a80fdc11732853",
+    "/export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_cache_20260917_A_674c1df1_development_parent_t4_5445dfa/task4_viability_cache_20260917_A_674c1df1_development_parent_t4_5445dfa_s23008/metadata.json": "b1d14361c31432d56d52fb4dd4fa22fd7fe425cccc6d28253cfe40b34fb43bbf",
+    "/export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_cache_20260917_5445dfa/result.json": "354ebb173340c636e964aa825cf19ff34dfeea015a5929771261e83dea0dbde9"
+  }
+}
