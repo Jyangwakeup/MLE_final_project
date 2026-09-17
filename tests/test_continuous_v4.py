@@ -5,7 +5,7 @@ import unittest
 import numpy as np
 
 from agent_code.learning_common.action_history import (
-    action_history_for_state, action_history_state, init_action_history,
+    advance_observation, action_history_for_state, action_history_state, init_action_history,
     load_action_history_state, record_selected_action,
 )
 from agent_code.learning_common.temporal_reward import (
@@ -88,12 +88,14 @@ class ContinuousV4FeatureTests(unittest.TestCase):
         init_action_history(owner)
         first = make_game_state(position=(3, 3))
         first.update(round=1, step=1)
-        action_history_for_state(owner, first)
-        action_history_for_state(owner, first)
+        advance_observation(owner, first)
+        advance_observation(owner, first)
         record_selected_action(owner, first, "WAIT")
         second = make_game_state(position=(4, 3))
         second.update(round=1, step=2)
         self.assertEqual(action_history_for_state(owner, second), ("WAIT", 1))
+        self.assertEqual(owner.feature_position_history, [(3, 3)])
+        advance_observation(owner, second)
         self.assertEqual(owner.feature_position_history, [(3, 3), (4, 3)])
 
         clone = SimpleNamespace()
@@ -104,6 +106,7 @@ class ContinuousV4FeatureTests(unittest.TestCase):
         next_round = make_game_state(position=(3, 3))
         next_round.update(round=2, step=1)
         self.assertEqual(action_history_for_state(clone, next_round), (None, 0))
+        advance_observation(clone, next_round)
         self.assertEqual(clone.feature_position_history, [(3, 3)])
 
 

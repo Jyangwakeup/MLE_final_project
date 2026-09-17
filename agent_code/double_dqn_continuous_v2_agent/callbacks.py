@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+from dataclasses import dataclass
 from pathlib import Path
 
 import numpy as np
@@ -8,15 +9,21 @@ import torch
 
 from agent_code.dqn_agent.model import DQN
 from agent_code.learning_common.action_history import (
-    action_history_for_state, load_action_history_state, record_selected_action,
+    action_history_for_state, load_action_history_state, own_bomb_history_for_state,
+    record_selected_action, advance_observation, snapshot_history, HistorySnapshot,
+    project_history, bomb_history,
 )
 from agent_code.learning_common.runtime import (
     CHECKPOINT_SCHEMA, adopt_checkpoint_reward, adopt_checkpoint_safety, effective_legal_mask,
     load_common_configuration, validate_checkpoint,
 )
 from agent_code.team_agent.exploration import epsilon_at
+from agent_code.team_agent.safety import (
+    CONTROLLABLE_SAFETY_VERSION, OPPONENT_ROBUST_SAFETY_VERSION,
+    ROBUST_SAFETY_VERSION,
+    safety_decision, survival_diagnostics,
+)
 from agent_code.team_agent.distillation_capture import maybe_capture_teacher_row
-from agent_code.team_agent.safety import mask_for_decision, survival_diagnostics
 from .features import ACTIONS, FEATURE_ID, FEATURE_SCHEMA, features_for_state
 
 
@@ -47,6 +54,42 @@ AGENT_METADATA = {
     "hyperparameters": HYPERPARAMETERS,
 }
 
+LIFECYCLE_VERSION = 'decision-snapshot-v1'
+SAFETY_DIAGNOSTIC_VERSION = 'escape-collapse-v2'
+
+
+def _immutable_array(value):
+    result = value.copy()
+    result.flags.writeable = False
+    return result
+
+
+@dataclass(frozen=True)
+class DecisionSnapshot:
+    key: tuple
+    before: HistorySnapshot
+    vector: np.ndarray
+    physical: np.ndarray
+    mask: np.ndarray
+    action: str
+    after: HistorySnapshot
+
+
+def decision_snapshot(owner, state, action):
+    snapshot = getattr(owner, '_decision_snapshot', None)
+    if (snapshot is None or snapshot.key != (state.get('round'), state.get('step'))
+            or snapshot.action != action):
+        raise ValueError('Training callback has no matching decision snapshot')
+    return snapshot
+
+
+def features_from_history(owner, state, history):
+    return features_for_state(
+        state, history.previous_action, history.wait_streak,
+        previous_position=history.previous_position,
+        previous_coin_target=history.previous_coin_target,
+        legacy78=getattr(owner, '_legacy78', False))
+
 
 def setup(self):
     load_common_configuration(self, feature_id=FEATURE_ID, default_model=MODEL_FILE)
@@ -54,6 +97,11 @@ def setup(self):
         torch.load(self.model_file, map_location="cpu", weights_only=True)
         if self.model_file.exists() else None
     )
+    self._decision_snapshot = None
+    if (checkpoint is not None and self.train
+            and checkpoint.get('training_task') == 'weak_opponents'
+            and checkpoint.get('lifecycle_version') != LIFECYCLE_VERSION):
+        raise ValueError('Old Task 3 checkpoints are frozen-evaluation only; transfer from Task 2')
     self._legacy78 = bool(
         checkpoint is not None
         and tuple(checkpoint.get("feature_schema", {}).get("vector_shape", ())) == (78,)
@@ -70,6 +118,7 @@ def setup(self):
         device=os.getenv("BOMBERMAN_TORCH_DEVICE", "cpu"),
         training_task=self.training_task,
         retention_spec=self.retention_spec,
+        safety_replay_spec=self.safety_replay_spec,
         double_dqn=True,
         hidden_size=128,
     )
@@ -99,6 +148,7 @@ def setup(self):
             reward_id=self.reward_id, hyperparameters=HYPERPARAMETERS,
             network_spec=runtime_network, training=self.train,
             training_task=self.training_task, safety_spec=self.safety_spec,
+            safety_replay_spec=self.safety_replay_spec,
         )
         self.model.load_checkpoint(
             checkpoint, training=self.train, training_task=self.training_task)
@@ -115,6 +165,34 @@ def setup(self):
         self.safety_decisions = int(checkpoint.get("safety_decisions", 0))
         self.safety_interventions = int(checkpoint.get("safety_interventions", 0))
         self.safety_fallbacks = int(checkpoint.get("safety_fallbacks", 0))
+        self.robust_safety_interventions = int(checkpoint.get(
+            "robust_safety_interventions", 0))
+        self.robust_to_v1_fallbacks = int(checkpoint.get(
+            "robust_to_v1_fallbacks", 0))
+        self.opponent_robust_interventions = int(checkpoint.get(
+            "opponent_robust_interventions", 0))
+        self.opponent_to_v3_fallbacks = int(checkpoint.get(
+            "opponent_to_v3_fallbacks", 0))
+        self.opponent_scenarios_evaluated = int(checkpoint.get(
+            "opponent_scenarios_evaluated", 0))
+        self.robust_guarantee_losses = int(checkpoint.get(
+            "robust_guarantee_losses", 0))
+        self.robust_search_timeouts = int(checkpoint.get(
+            "robust_search_timeouts", 0))
+        self.robust_states_evaluated = int(checkpoint.get(
+            "robust_states_evaluated", 0))
+        self.v1_to_physical_fallbacks = int(checkpoint.get(
+            "v1_to_physical_fallbacks", 0))
+        self.avoidable_escape_collapses = int(checkpoint.get(
+            "avoidable_escape_collapses", 0))
+        self.own_bomb_cycles = int(checkpoint.get("own_bomb_cycles", 0))
+        escape_state = checkpoint.get("own_bomb_escape_state", {})
+        self._own_bomb_cycle_had_safe_alternative = bool(
+            escape_state.get("had_safe_alternative", False))
+        self._own_bomb_cycle_collapse_recorded = bool(
+            escape_state.get("collapse_recorded", False))
+        self._own_bomb_placement_certificate = escape_state.get(
+            "placement_certificate")
         self._resume_n_step_state = (
             checkpoint.get("n_step_state") if same_task else None)
         if self.train:
@@ -128,17 +206,14 @@ def setup(self):
 def _features_for(self, game_state):
     key = (game_state.get("round"), game_state.get("step"))
     if key != self._feature_cache_key:
-        previous_action, wait_streak = action_history_for_state(self, game_state)
         self._feature_cache_key = key
-        self._feature_cache_value = features_for_state(
-            game_state, previous_action, wait_streak,
-            previous_position=getattr(self, "feature_previous_position", None),
-            previous_coin_target=getattr(self, "feature_previous_coin_target", None),
-            legacy78=getattr(self, "_legacy78", False))
+        self._feature_cache_value = features_from_history(
+            self, game_state, project_history(snapshot_history(self), game_state))
     return self._feature_cache_value
 
 
 def act(self, game_state):
+    before = advance_observation(self, game_state)
     features = _features_for(self, game_state)
     physical = effective_legal_mask(
         features.legal_mask, ACTIONS, self.curriculum_allows_bomb)
@@ -159,14 +234,36 @@ def act(self, game_state):
         self.total_action_steps += 1
         self.action_steps = self.total_action_steps
         exploring = self.rng.random() < epsilon
-    legal, fallback = mask_for_decision(
+    own_bomb = own_bomb_history_for_state(self, game_state)
+    decision = safety_decision(
         game_state, physical, self.safety_spec,
-        allow_bomb=self.curriculum_allows_bomb, exploring=exploring)
+        allow_bomb=self.curriculum_allows_bomb, exploring=exploring,
+        own_bomb_pending=bool(own_bomb["pending"]), own_bomb_state=own_bomb)
+    legal, fallback = decision.mask, decision.physical_fallback
     enabled = self.safety_spec["mode"] == "all" or (
         self.safety_spec["mode"] == "exploration" and exploring)
     if enabled:
         self.safety_decisions += 1
         self.safety_fallbacks += int(fallback)
+        self.robust_to_v1_fallbacks = int(getattr(
+            self, "robust_to_v1_fallbacks", 0)) + int(decision.robust_fallback)
+        self.opponent_to_v3_fallbacks = int(getattr(
+            self, "opponent_to_v3_fallbacks", 0)) + int(
+                decision.opponent_fallback)
+        self.opponent_scenarios_evaluated = int(getattr(
+            self, "opponent_scenarios_evaluated", 0)) + sum(
+                decision.opponent_scenario_counts)
+        self.robust_guarantee_losses = int(getattr(
+            self, "robust_guarantee_losses", 0)) + int(
+                decision.robust_guarantee_loss)
+        self.robust_search_timeouts = int(getattr(
+            self, "robust_search_timeouts", 0)) + int(
+                decision.robust_search_timed_out)
+        self.robust_states_evaluated = int(getattr(
+            self, "robust_states_evaluated", 0)) + int(
+                decision.robust_states_evaluated)
+        self.v1_to_physical_fallbacks = int(getattr(
+            self, "v1_to_physical_fallbacks", 0)) + int(decision.physical_fallback)
         if exploring:
             self.safe_exploration_decisions += 1
             self.safe_exploration_fallbacks += int(fallback)
@@ -181,16 +278,101 @@ def act(self, game_state):
         selected = self.rng.choice(tied) if self.train else tied[0]
     intervention = bool(enabled and not fallback and not legal[raw_index])
     self.safety_interventions += int(intervention)
+    robust_intervention = bool(
+        self.safety_spec["version"] in {
+            ROBUST_SAFETY_VERSION, OPPONENT_ROBUST_SAFETY_VERSION,
+            CONTROLLABLE_SAFETY_VERSION,
+        }
+        and not decision.robust_fallback and not decision.physical_fallback
+        and decision.v1_mask[raw_index] and not legal[raw_index]
+        and decision.route_counts[raw_index] < 2)
+    self.robust_safety_interventions = int(getattr(
+        self, "robust_safety_interventions", 0)) + int(robust_intervention)
+    opponent_intervention = bool(
+        self.safety_spec["version"] in {
+            OPPONENT_ROBUST_SAFETY_VERSION, CONTROLLABLE_SAFETY_VERSION,
+        }
+        and not decision.opponent_fallback
+        and decision.v1_mask[raw_index] and not legal[raw_index]
+        and decision.opponent_scenario_counts[raw_index] > 0
+        and decision.opponent_passing_counts[raw_index]
+        < decision.opponent_scenario_counts[raw_index])
+    self.opponent_robust_interventions = int(getattr(
+        self, "opponent_robust_interventions", 0)) + int(opponent_intervention)
     action = ACTIONS[selected]
+    if action == "BOMB":
+        self.own_bomb_cycles = int(getattr(self, "own_bomb_cycles", 0)) + 1
+    collapse_now = bool(
+        own_bomb["pending"] and (
+            decision.physical_fallback or decision.robust_guarantee_loss)
+        and getattr(self, "_own_bomb_cycle_had_safe_alternative", False)
+        and not getattr(self, "_own_bomb_cycle_collapse_recorded", False))
     self.last_safety_diagnostic = {
+        "diagnostic_version": SAFETY_DIAGNOSTIC_VERSION,
         "raw_action": ACTIONS[raw_index], "selected_action": action,
         "intervened": intervention, "fallback": bool(fallback),
+        "robust_intervened": robust_intervention,
+        "robust_to_v1_fallback": bool(decision.robust_fallback),
+        "opponent_robust_intervened": opponent_intervention,
+        "opponent_to_v3_fallback": bool(decision.opponent_fallback),
+        "robust_guarantee_loss": bool(decision.robust_guarantee_loss),
+        "robust_search_timed_out": bool(decision.robust_search_timed_out),
+        "robust_states_evaluated": int(decision.robust_states_evaluated),
+        "v1_to_physical_fallback": bool(decision.physical_fallback),
+        "own_bomb_pending": bool(own_bomb["pending"]),
+        "own_bomb_visible": bool(own_bomb["visible"]),
+        "own_bomb_timer": own_bomb["timer"],
+        "avoidable_escape_collapse": collapse_now,
+        "independent_routes": list(decision.route_counts),
+        "escape_slack": list(decision.escape_slack),
+        "opponent_scenario_counts": list(decision.opponent_scenario_counts),
+        "opponent_passing_counts": list(decision.opponent_passing_counts),
+        "opponent_failing_profiles": [
+            None if value is None else list(value)
+            for value in decision.opponent_failing_profiles
+        ],
+        "opponent_failing_orders": [
+            None if value is None else list(value)
+            for value in decision.opponent_failing_orders
+        ],
         "physical_mask": physical.astype(bool).tolist(),
         "decision_mask": legal.astype(bool).tolist(),
         **survival_diagnostics(
             game_state, physical, allow_bomb=self.curriculum_allows_bomb),
     }
+    self._last_decision_key = (game_state.get("round"), game_state.get("step"))
+    self._last_decision_mask = legal.copy()
+    self._last_had_safe_alternative = bool(
+        own_bomb["pending"] and legal.any() and not decision.physical_fallback)
+    placement_safe_alternative = bool(
+        enabled and not decision.physical_fallback
+        and action == "BOMB"
+        and decision.v1_mask[:ACTIONS.index("BOMB")].any())
+    if collapse_now:
+        self.avoidable_escape_collapses = int(getattr(
+            self, "avoidable_escape_collapses", 0)) + 1
+        self._own_bomb_cycle_collapse_recorded = True
+    if action == "BOMB":
+        bomb_index = ACTIONS.index("BOMB")
+        self._own_bomb_placement_certificate = {
+            "had_safe_non_bomb_alternative": placement_safe_alternative,
+            "independent_routes": int(decision.route_counts[bomb_index]),
+            "scenario_count": int(decision.opponent_scenario_counts[bomb_index]),
+            "passing_scenarios": int(decision.opponent_passing_counts[bomb_index]),
+        }
+    if action == "BOMB" or own_bomb["pending"]:
+        self._own_bomb_cycle_had_safe_alternative = bool(
+            getattr(self, "_own_bomb_cycle_had_safe_alternative", False)
+            or self._last_had_safe_alternative or placement_safe_alternative)
+    else:
+        self._own_bomb_cycle_had_safe_alternative = False
+        self._own_bomb_cycle_collapse_recorded = False
+        self._own_bomb_placement_certificate = None
     record_selected_action(self, game_state, action)
+    self._decision_snapshot = DecisionSnapshot(
+        (game_state.get('round'), game_state.get('step')), before,
+        _immutable_array(features.vector), _immutable_array(physical),
+        _immutable_array(legal), action, snapshot_history(self))
     return action
 
 

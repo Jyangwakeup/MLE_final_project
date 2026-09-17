@@ -1,0 +1,15 @@
+{
+  "algorithm": "double_dqn",
+  "feature_id": "continuous-v2",
+  "reward_id": "r7_safe_credit_sparse",
+  "safety": {
+    "version": "survival-mask-v4", "mode": "all", "horizon": 7,
+    "required_independent_routes": 2, "robust_fallback": "survival-mask-v1",
+    "opponent_transition_horizon": 1, "opponent_action_space": "all_physical",
+    "include_opponent_bombs": true, "execution_orders": "all",
+    "minimum_scenario_routes": 1, "opponent_robust_fallback": "survival-mask-v3",
+    "fallback": "physical_q"
+  },
+  "evaluation": {"device": "cpu", "seeds": [16100,16101,16102,16103,16104,16105,16106,16107,16108,16109,16110,16111,16112,16113,16114,16115,16116,16117,16118,16119,16120,16121,16122,16123,16124,16125,16126,16127,16128,16129,16130,16131,16132,16133,16134,16135,16136,16137,16138,16139,16140,16141,16142,16143,16144,16145,16146,16147,16148,16149,16150,16151,16152,16153,16154,16155,16156,16157,16158,16159,16160,16161,16162,16163,16164,16165,16166,16167,16168,16169,16170,16171,16172,16173,16174,16175,16176,16177,16178,16179,16180,16181,16182,16183,16184,16185,16186,16187,16188,16189,16190,16191,16192,16193,16194,16195,16196,16197,16198,16199], "n_rounds": 1, "navigation_diagnostics": true},
+  "training": {"device": "cpu"}
+}

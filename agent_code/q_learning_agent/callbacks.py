@@ -36,7 +36,7 @@ TRAINING_TASK_ENV = "BOMBERMAN_TRAINING_TASK"
 REWARD_VERSION_ENV = "BOMBERMAN_REWARD_VERSION"
 FEATURE_ID_ENV = "BOMBERMAN_FEATURE_ID"
 REWARD_ID_ENV = "BOMBERMAN_REWARD_ID"
-CHECKPOINT_SCHEMA_VERSION = "training-resume-v8"
+CHECKPOINT_SCHEMA_VERSION = "training-resume-v11"
 HYPERPARAMETERS = {"learning_rate": 0.15, "discount_factor": 0.95}
 
 
@@ -208,6 +208,8 @@ def setup(self):
 
 
 def act(self, game_state: dict) -> str:
+    from agent_code.learning_common.action_history import advance_observation
+    advance_observation(self, game_state)
     features = _features_for(self, game_state)
     state = features.state_key
     legal_mask = features.legal_mask.copy()

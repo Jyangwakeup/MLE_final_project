@@ -105,6 +105,16 @@ SUMMARY_FIELDS = (
     "safety_intervention_rate",
     "safety_fallbacks",
     "safety_fallback_rate",
+    "robust_safety_interventions",
+    "robust_to_v1_fallbacks",
+    "opponent_robust_interventions",
+    "opponent_to_v3_fallbacks",
+    "opponent_scenarios_evaluated",
+    "robust_guarantee_losses",
+    "robust_search_timeouts",
+    "robust_states_evaluated",
+    "v1_to_physical_fallbacks",
+    "avoidable_escape_collapses",
     "navigation_decisions",
     "coin_distance_comparable_count",
     "coin_target_observation_count",
@@ -512,6 +522,21 @@ def _summary_row(
         "safety_fallback_rate": (
             timing.get("safety_fallbacks", 0) / timing.get("safety_decisions", 0)
             if timing.get("safety_decisions", 0) else None),
+        "robust_safety_interventions": timing.get(
+            "robust_safety_interventions", 0),
+        "robust_to_v1_fallbacks": timing.get("robust_to_v1_fallbacks", 0),
+        "opponent_robust_interventions": timing.get(
+            "opponent_robust_interventions", 0),
+        "opponent_to_v3_fallbacks": timing.get(
+            "opponent_to_v3_fallbacks", 0),
+        "opponent_scenarios_evaluated": timing.get(
+            "opponent_scenarios_evaluated", 0),
+        "robust_guarantee_losses": timing.get("robust_guarantee_losses", 0),
+        "robust_search_timeouts": timing.get("robust_search_timeouts", 0),
+        "robust_states_evaluated": timing.get("robust_states_evaluated", 0),
+        "v1_to_physical_fallbacks": timing.get("v1_to_physical_fallbacks", 0),
+        "avoidable_escape_collapses": timing.get(
+            "avoidable_escape_collapses", 0),
         "navigation_decisions": navigation_decisions,
         "coin_distance_comparable_count": comparable,
         "coin_target_observation_count": target_observations,
@@ -569,6 +594,16 @@ def summarize_runs(run_directories: Iterable[Path]) -> list[dict[str, Any]]:
             "longest_wait_streaks": [],
             "safety_decisions": 0, "safety_interventions": 0,
             "safety_fallbacks": 0,
+            "robust_safety_interventions": 0,
+            "robust_to_v1_fallbacks": 0,
+            "opponent_robust_interventions": 0,
+            "opponent_to_v3_fallbacks": 0,
+            "opponent_scenarios_evaluated": 0,
+            "robust_guarantee_losses": 0,
+            "robust_search_timeouts": 0,
+            "robust_states_evaluated": 0,
+            "v1_to_physical_fallbacks": 0,
+            "avoidable_escape_collapses": 0,
         }
     )
     q_by_agent: dict[tuple[str, str], dict[str, float]] = defaultdict(
@@ -639,6 +674,26 @@ def summarize_runs(run_directories: Iterable[Path]) -> list[dict[str, Any]]:
                 bucket["safety_interventions"] += int(
                     safety.get("intervened", False))
                 bucket["safety_fallbacks"] += int(safety.get("fallback", False))
+                bucket["robust_safety_interventions"] += int(
+                    safety.get("robust_intervened", False))
+                bucket["robust_to_v1_fallbacks"] += int(
+                    safety.get("robust_to_v1_fallback", False))
+                bucket["opponent_robust_interventions"] += int(
+                    safety.get("opponent_robust_intervened", False))
+                bucket["opponent_to_v3_fallbacks"] += int(
+                    safety.get("opponent_to_v3_fallback", False))
+                bucket["opponent_scenarios_evaluated"] += sum(
+                    safety.get("opponent_scenario_counts", ()))
+                bucket["robust_guarantee_losses"] += int(
+                    safety.get("robust_guarantee_loss", False))
+                bucket["robust_search_timeouts"] += int(
+                    safety.get("robust_search_timed_out", False))
+                bucket["robust_states_evaluated"] += int(
+                    safety.get("robust_states_evaluated", 0))
+                bucket["v1_to_physical_fallbacks"] += int(
+                    safety.get("v1_to_physical_fallback", False))
+                bucket["avoidable_escape_collapses"] += int(
+                    safety.get("avoidable_escape_collapse", False))
             navigation = record.get("navigation")
             if navigation is not None:
                 bucket["navigation_decisions"] += 1

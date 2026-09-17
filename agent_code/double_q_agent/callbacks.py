@@ -86,6 +86,8 @@ def _values(table, state):
 
 
 def act(self, game_state):
+    from agent_code.learning_common.action_history import advance_observation
+    advance_observation(self, game_state)
     features = _features_for(self, game_state)
     legal = features.legal_mask.copy()
     if not self.curriculum_allows_bomb:

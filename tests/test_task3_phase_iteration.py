@@ -1,4 +1,6 @@
 import copy
+import csv
+import hashlib
 import json
 from pathlib import Path
 from types import SimpleNamespace
@@ -159,8 +161,8 @@ class TransferAndMaskTests(unittest.TestCase):
         manifest = json.loads((
             ROOT / "experiments" / "task3_phase_iteration.json"
         ).read_text(encoding="utf-8"))
-        self.assertEqual(CHECKPOINT_SCHEMA_VERSION, "training-resume-v8")
-        self.assertEqual(manifest["checkpoint_schema"], CHECKPOINT_SCHEMA_VERSION)
+        self.assertEqual(CHECKPOINT_SCHEMA_VERSION, "training-resume-v11")
+        self.assertEqual(manifest["checkpoint_schema"], "training-resume-v8")  # historical protocol
         self.assertEqual(manifest["round1"]["training_seeds"], [11, 22])
         self.assertEqual(manifest["main_validation"]["seeds"], {
             "start": 15000, "end": 15099})
@@ -174,7 +176,7 @@ class TransferAndMaskTests(unittest.TestCase):
             "feature_schema": {"vector_shape": [84]},
         }
         child = {
-            "checkpoint_schema": "training-resume-v8", "task": "weak_opponents",
+            "checkpoint_schema": CHECKPOINT_SCHEMA_VERSION, "task": "weak_opponents",
             "algorithm": "double_dqn", "seed": 22, "agent_seed": 22,
             "actions": list(ACTIONS), "feature_id": "continuous-phase-v1",
             "feature_schema": {"vector_shape": [117]},
@@ -218,6 +220,35 @@ class TransferAndMaskTests(unittest.TestCase):
             arm("stable", [0, 0], [1, 1]),
         ])
         self.assertEqual(ranked[0]["run_id"], "stable")
+
+    def test_published_phase_failure_evidence_is_complete_and_sealed(self):
+        result = json.loads((
+            ROOT / "experiments" / "task3_phase_results.json"
+        ).read_text(encoding="utf-8"))
+        evidence_path = ROOT / result["evidence"]["path"]
+        with evidence_path.open(encoding="utf-8", newline="") as file:
+            rows = list(csv.DictReader(file))
+        digest = hashlib.sha256(evidence_path.read_bytes()).hexdigest()
+
+        self.assertEqual(result["designation"], "task3_phase_iteration_failure")
+        self.assertFalse(result["qualified_for_task4"])
+        self.assertFalse(result["stopping_decision"]["round3_started"])
+        self.assertFalse(result["stopping_decision"]["seed33_started"])
+        self.assertEqual(len(rows), 720)
+        self.assertEqual(result["evidence"]["rows"], len(rows))
+        self.assertEqual(result["evidence"]["sha256"], digest)
+        self.assertEqual(
+            {int(row["environment_seed"]) for row in rows},
+            set(range(13000, 13020)),
+        )
+        self.assertTrue(all(
+            float(row["score"]) == float(row["coins"])
+            for row in rows if row["task"] == "coin_navigation"
+        ))
+        self.assertEqual(
+            result["best_failed_configuration"]["arm"],
+            "phase_r7_mask_v2",
+        )
 
 
 if __name__ == "__main__":

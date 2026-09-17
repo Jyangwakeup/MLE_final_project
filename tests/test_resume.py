@@ -196,11 +196,9 @@ class ResumeProtocolTestCase(unittest.TestCase):
         legacy_parent = dict(parent)
         legacy_parent.pop("source_hash_scope")
         legacy_child = {**legacy_parent, "source_hash": "different-source"}
-        self.assertEqual(
+        with self.assertRaisesRegex(ValueError, "source_hash"):
             validate_resume_transition(
-                legacy_parent, legacy_child, parent_status="running"),
-            "same_task",
-        )
+                legacy_parent, legacy_child, parent_status="running")
 
     def test_resume_rejects_new_feature_schema_mismatch(self):
         parent = {
@@ -333,7 +331,7 @@ class ResumeProtocolTestCase(unittest.TestCase):
             materialize_learner_checkpoint(loaded, destination)
             restored = torch.load(destination, map_location="cpu", weights_only=True)
             self.assertEqual(restored["checkpoint_schema"], CHECKPOINT_SCHEMA_VERSION)
-            self.assertEqual(CHECKPOINT_SCHEMA_VERSION, "training-resume-v8")
+            self.assertEqual(CHECKPOINT_SCHEMA_VERSION, "training-resume-v11")
             self.assertIn("replay", restored)
 
 

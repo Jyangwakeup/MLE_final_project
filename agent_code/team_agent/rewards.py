@@ -440,6 +440,9 @@ REWARD_SPECS["r18_wait_attractor_escape"] = {
     "history_wait_penalty_cap": 5,
     "useful_bomb_counts_as_wait_progress": 1.0,
 }
+REWARD_SPECS['r9_task3_score_aligned'] = {
+    **REWARD_SPECS['r7_safe_credit_sparse'], 'killed_opponent': 15.0,
+}
 DEATH_EVENTS = frozenset((e.KILLED_SELF, e.GOT_KILLED))
 
 

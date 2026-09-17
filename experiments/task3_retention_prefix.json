@@ -1,0 +1,62 @@
+{
+  "schema_version": "task3-retention-prefix-v1",
+  "status": "preregistered",
+  "branch": "task3-controllable-survival",
+  "expected_parent_commit": "6604775c7ebac69b3f3f647f3e9c6adc6849eb45",
+  "agent": "double_dqn_continuous_v2_agent",
+  "training_seed": 22,
+  "training_rounds": 250,
+  "parent_run": "/export/data/sfan/MLE_final_project/runs/task2winner_replica_cv2_r7_s22_t2_v7_814173b",
+  "reference_500_run": "runs/task3_controllable_v5_teacherfix_ddqn_cv2_r7_s22_t3_c0500_b3b4685",
+  "training_config": "experiments/configs/task3_controllable_safety_train_v5.json",
+  "evaluation_config": "experiments/configs/task3_controllable_safety_dev_v5.json",
+  "evaluation_seeds": [19200, 19201, 19202, 19203, 19204, 19205, 19206, 19207, 19208, 19209, 19210, 19211, 19212, 19213, 19214, 19215, 19216, 19217, 19218, 19219],
+  "bootstrap": {"samples": 10000, "reported_only": true},
+  "cpus": {
+    "training": 36,
+    "evaluation": {
+      "parent": {"1": 0, "2": 8, "3": 32},
+      "child": {"1": 4, "2": 36, "3": 40}
+    }
+  },
+  "run_id_template": "task3_controllable_v5_teacherfix_ddqn_cv2_r7_s22_t3_c0250_{commit}",
+  "evidence_id_template": "task3_retention_prefix_evidence_s22_{commit}",
+  "evaluation_id_template": "task3_retention_prefix_s22_{role}_t{task}_19200_19219_{commit}",
+  "basis_evidence": {
+    "incorrect_teacher_500_rounds": {
+      "task2_coin_retention": 0.079,
+      "task2_crate_retention": 0.113,
+      "task3_mean_score": 4.10,
+      "task3_suicide_rate": 0.0
+    },
+    "immediate_parent_teacher_500_rounds": {
+      "run": "runs/task3_controllable_v5_teacherfix_ddqn_cv2_r7_s22_t3_c0500_b3b4685",
+      "task1_score_retention": 1.0,
+      "task2_coin_retention": 0.8285714285714285,
+      "task2_crate_retention": 0.8201476793248945,
+      "task3_score_gain": 1.75,
+      "task3_kill_gain": 0.20,
+      "task3_first_place_gain": 0.20,
+      "task3_suicide_rate": 0.0
+    }
+  },
+  "gates": {
+    "minimum_retention": 0.90,
+    "task3_score_gain": 0.5,
+    "task3_kill_gain": 0.1,
+    "task3_first_place_gain": 0.05,
+    "maximum_suicide_rate": 0.05,
+    "minimum_bomb_survival_rate": 0.95,
+    "maximum_zero_bomb_round_rate": 0.10,
+    "maximum_invalid_rate": 0.01,
+    "maximum_act_p95_seconds": 0.25,
+    "maximum_act_seconds": 0.48
+  },
+  "pass_action": "stop_for_review_then_replicate_fixed_250_rounds_on_seeds_11_and_33",
+  "retention_failure_action": {
+    "action": "stop_for_review_then_test_stratified_replay",
+    "batch_allocation": {"coin_navigation": 16, "crate_navigation": 32, "weak_opponents": 16},
+    "checkpoints": [250, 500]
+  },
+  "other_failure_action": "stop_without_reward_feature_safety_or_replay_changes"
+}

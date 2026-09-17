@@ -91,11 +91,11 @@ class DistillationLossTests(unittest.TestCase):
 
 
 class DistilledAgentContractTests(unittest.TestCase):
-    def test_five_step_return_is_reserved_for_the_distilled_cnn(self):
+    def test_five_step_return_supports_distilled_cnn_and_task3_double_dqn(self):
         from experiments.training import allowed_n_steps
 
         self.assertEqual(allowed_n_steps("cnn_distilled_double_dqn"), {1, 4, 5})
-        self.assertEqual(allowed_n_steps("double_dqn"), {1, 4})
+        self.assertEqual(allowed_n_steps("double_dqn"), {1, 4, 5})
 
     def test_task2_reward_and_n5_configs_are_single_variable_ablations(self):
         root = Path(__file__).resolve().parents[1] / "experiments" / "configs"

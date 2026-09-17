@@ -62,6 +62,17 @@ class SubmissionPackageTest(unittest.TestCase):
             with zipfile.ZipFile(archive) as zipped:
                 names = zipped.namelist()
                 self.assertIn("double_q_compact_agent/final.pkl", names)
+                self.assertIn(
+                    "double_q_compact_agent/_vendor/team_agent/opponent_transitions.py",
+                    names,
+                )
+                self.assertIn(
+                    "double_q_compact_agent/_vendor/team_agent/controllable_survival.py",
+                    names,
+                )
+                self.assertIn(
+                    "double_q_compact_agent/_vendor/dqn_model.py", names,
+                )
                 self.assertTrue(any("/_vendor/team_agent/feature_system/" in n for n in names))
                 self.assertFalse(any("/logs/" in n for n in names))
                 zipped.extractall(root / "unpacked")

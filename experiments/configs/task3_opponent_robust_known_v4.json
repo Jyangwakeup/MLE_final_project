@@ -1,0 +1,15 @@
+{
+  "algorithm": "double_dqn",
+  "feature_id": "continuous-v2",
+  "reward_id": "r7_safe_credit_sparse",
+  "safety": {
+    "version": "survival-mask-v4", "mode": "all", "horizon": 7,
+    "required_independent_routes": 2, "robust_fallback": "survival-mask-v1",
+    "opponent_transition_horizon": 1, "opponent_action_space": "all_physical",
+    "include_opponent_bombs": true, "execution_orders": "all",
+    "minimum_scenario_routes": 1, "opponent_robust_fallback": "survival-mask-v3",
+    "fallback": "physical_q"
+  },
+  "evaluation": {"device": "cpu", "seeds": [12000, 12005, 12008, 12011, 12015, 12017, 12019], "n_rounds": 1, "navigation_diagnostics": true},
+  "training": {"device": "cpu"}
+}

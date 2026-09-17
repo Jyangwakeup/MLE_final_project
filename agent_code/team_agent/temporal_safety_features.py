@@ -50,6 +50,25 @@ class SafetyMarginResult:
     survivable_second_actions: int
 
 
+@dataclass(frozen=True)
+class RobustRouteResult:
+    """Redundant escape routes after one fixed first action."""
+
+    independent_routes: int
+    escape_slack: float
+
+
+@dataclass(frozen=True)
+class OpponentRobustResult:
+    """Survival result across all distinct opponent transition scenarios."""
+
+    survives_all: bool
+    scenario_count: int
+    passing_scenarios: int
+    first_failing_profile: tuple[str, ...] | None
+    first_failing_order: tuple[int, ...] | None
+
+
 def _bomb_explosion_time(timer: int) -> int:
     """Return the future step at which an existing bomb explodes."""
     return timer + 1
@@ -243,6 +262,151 @@ def safety_margin_after_first_step(
             ):
                 second_actions += 1
     return SafetyMarginResult(slack, second_actions)
+
+
+def robust_routes_after_first_step(
+        position: tuple, first_action: str,
+        danger: np.ndarray, blocked: np.ndarray,
+        *, required_routes: int = 2,
+) -> RobustRouteResult:
+    """Count internally vertex-disjoint paths in the time-expanded graph.
+
+    The state immediately after ``first_action`` is the shared source.  Every
+    later position-time vertex has unit capacity, so two routes may not rely on
+    the same future bottleneck.  The artificial sink is shared.  Flow is capped
+    because the safety contract currently needs only the distinction 0/1/2.
+    """
+    if required_routes < 1:
+        raise ValueError("required_routes must be positive")
+    first = _advance(position, first_action, 1, danger, blocked)
+    if first is None:
+        return RobustRouteResult(0, -1.0)
+    margin = safety_margin_after_first_step(
+        position, first_action, danger, blocked).escape_slack
+    horizon = danger.shape[0] - 1
+    if horizon == 1:
+        return RobustRouteResult(required_routes, margin)
+
+    # Residual graph for vertex-split max flow.  Integer capacities and the
+    # tiny H=7 board keep this dependency-free implementation cheap.
+    residual: dict[object, dict[object, int]] = {}
+
+    def edge(left, right, capacity):
+        residual.setdefault(left, {})[right] = capacity
+        residual.setdefault(right, {}).setdefault(left, 0)
+
+    source, sink = ("source",), ("sink",)
+    reachable = {(1, first[0], first[1])}
+    frontier = set(reachable)
+    for time_step in range(2, horizon + 1):
+        following = set()
+        for _, x, y in frontier:
+            for action in ACTIONS:
+                successor = _advance((x, y), action, time_step, danger, blocked)
+                if successor is not None:
+                    following.add((time_step, successor[0], successor[1]))
+        reachable |= following
+        frontier = following
+
+    start = (1, first[0], first[1])
+    edge(source, (start, "out"), required_routes)
+    for node in reachable:
+        if node == start:
+            continue
+        edge((node, "in"), (node, "out"), 1)
+    for node in reachable:
+        time_step, x, y = node
+        if time_step == horizon:
+            edge((node, "out"), sink, 1)
+            continue
+        for action in ACTIONS:
+            successor = _advance((x, y), action, time_step + 1, danger, blocked)
+            candidate = None if successor is None else (
+                time_step + 1, successor[0], successor[1])
+            if candidate not in reachable:
+                continue
+            left = (node, "out")
+            right = (candidate, "in")
+            edge(left, right, required_routes)
+
+    flow = 0
+    while flow < required_routes:
+        parent = {source: None}
+        queue = [source]
+        for node in queue:
+            if sink in parent:
+                break
+            for target, capacity in residual.get(node, {}).items():
+                if capacity > 0 and target not in parent:
+                    parent[target] = node
+                    queue.append(target)
+        if sink not in parent:
+            break
+        node = sink
+        while parent[node] is not None:
+            previous = parent[node]
+            residual[previous][node] -= 1
+            residual[node][previous] += 1
+            node = previous
+        flow += 1
+    return RobustRouteResult(flow, margin)
+
+
+def _survives_from_completed_action(
+    position: tuple[int, int], danger: np.ndarray, blocked: np.ndarray,
+) -> bool:
+    """Whether a position after this action can survive the remaining horizon."""
+    if danger[1, position[0], position[1]]:
+        return False
+    frontier = {position}
+    for time_step in range(2, danger.shape[0]):
+        following = set()
+        for current in frontier:
+            for action in ACTIONS:
+                successor = _advance(current, action, time_step, danger, blocked)
+                if successor is not None:
+                    following.add(successor)
+        if not following:
+            return False
+        frontier = following
+    return bool(frontier)
+
+
+def opponent_robust_survival_after_action(
+    game_state: dict,
+    action: str,
+    *,
+    horizon: int = HORIZON,
+) -> OpponentRobustResult:
+    """Require one H-surviving continuation in every opponent next-step outcome."""
+    from .opponent_transitions import enumerate_opponent_transition_scenarios
+
+    scenarios = enumerate_opponent_transition_scenarios(game_state, action)
+    passing = 0
+    danger_cache: dict[tuple, np.ndarray] = {}
+    for scenario in scenarios:
+        bomb_key = tuple(sorted(
+            (tuple(position), int(timer))
+            for position, timer in scenario.game_state["bombs"]))
+        danger = danger_cache.get(bomb_key)
+        if danger is None:
+            danger = predict_danger(
+                scenario.game_state, hypothetical_bomb=False,
+                horizon=horizon).danger
+            danger_cache[bomb_key] = danger
+        schedule = _bomb_schedule(scenario.game_state, False)
+        blocked = _initial_blocked(
+            scenario.game_state["field"], scenario.game_state, horizon)
+        _mark_destroyed_crates(
+            blocked, scenario.game_state["field"], schedule)
+        _mark_bomb_occupancy(blocked, schedule)
+        position = tuple(scenario.game_state["self"][3])
+        if not _survives_from_completed_action(position, danger, blocked):
+            return OpponentRobustResult(
+                False, len(scenarios), passing,
+                scenario.action_profile, scenario.execution_order)
+        passing += 1
+    return OpponentRobustResult(True, len(scenarios), passing, None, None)
 
 
 def detailed_reachability_all_first_steps(

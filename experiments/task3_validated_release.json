@@ -1,0 +1,16 @@
+{
+  "schema_version": "task3-frozen-release-v1",
+  "training_seed": 22,
+  "checkpoint_rounds": 150,
+  "checkpoint": "agent_code/double_dqn_continuous_v2_agent/task3_validated.pt",
+  "checkpoint_sha256": "b0b9e7ae9cbefa6523ed01e1d7a6d474b90b6272f9de1706ee80f1f109cc803d",
+  "checkpoint_bytes": 43737024,
+  "config": "experiments/configs/task3_lifecycle_A.json",
+  "config_sha256": "a41bc49dc26ca5be609c52dca2ea5c4981089d9dc748bef1a9ed446cbb2a8869",
+  "validated_source_commit": "7cc6f0249c0ecb09a539614965c6ee3f758b26e3",
+  "validated_result_commit": "da3e858",
+  "validation_evidence": "experiments/results/task3_counter_validation_20260917.json",
+  "validation_report": "docs/research/task3-counter-validation-results.md",
+  "integration_report": "docs/research/task3-main-integration.md",
+  "task4_started": false
+}

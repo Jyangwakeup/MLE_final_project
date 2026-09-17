@@ -42,6 +42,7 @@ from experiments.resume import (
     commit_training_snapshot,
     materialize_learner_checkpoint,
     materialize_migrated_checkpoint,
+    materialize_task3_safety_checkpoint,
     materialize_task3_transfer_checkpoint,
 )
 from experiments.performance_stopping import (
@@ -654,8 +655,17 @@ def _local_python_dependencies(seeds: Sequence[Path]) -> set[Path]:
         for node in ast.walk(tree):
             if isinstance(node, ast.Import):
                 modules.update(alias.name for alias in node.names)
-            elif isinstance(node, ast.ImportFrom) and node.level == 0 and node.module:
-                modules.add(node.module)
+            elif isinstance(node, ast.ImportFrom):
+                package = list(path.relative_to(PROJECT_ROOT).parts[:-1])
+                if node.level:
+                    package = package[:len(package) - node.level + 1]
+                    prefix = ".".join(package + (node.module.split(".") if node.module else []))
+                else:
+                    prefix = node.module or ""
+                if prefix:
+                    modules.add(prefix)
+                    modules.update(prefix + "." + alias.name for alias in node.names
+                                   if alias.name != "*")
         for module in modules:
             base = PROJECT_ROOT.joinpath(*module.split("."))
             candidate = base.with_suffix(".py")
@@ -896,6 +906,7 @@ def run_agent_session(
     safety_spec: dict[str, Any] | None = None,
     n_step: int = 1,
     retention_spec: dict[str, Any] | None = None,
+    safety_replay_spec: dict[str, Any] | None = None,
     adaptation_triggers: Sequence[str] = (),
     feature_id_override: str | None = None,
     reward_id_override: str | None = None,
@@ -904,6 +915,7 @@ def run_agent_session(
     performance_stopping: dict[str, Any] | None = None,
     checkpoint_snapshot_interval: int | None = None,
     migration: bool = False,
+    task3_safety_transfer: bool = False,
     task3_transfer: bool = False,
     distillation_path: Path | None = None,
 ) -> Path:
@@ -955,9 +967,11 @@ def run_agent_session(
             raise ValueError("resolved safety specification conflicts with config.safety")
     safe_exploration = bool(
         training and safety_spec["mode"] in {"exploration", "all"})
-    if n_step not in {1, 4}:
-        raise ValueError("n_step must be 1 or 4")
+    if n_step not in {1, 4, 5}:
+        raise ValueError("n_step must be 1, 4, or 5")
     retention_spec = resolve_retention_spec(retention_spec)
+    from agent_code.learning_common.training_spec import resolve_safety_replay_spec
+    safety_replay_spec = resolve_safety_replay_spec(safety_replay_spec)
     adaptation_triggers = tuple(adaptation_triggers)
     allowed_adaptation_triggers = {
         "suicide", "retention", "q_capability", "dqn_capability",
@@ -975,6 +989,7 @@ def run_agent_session(
     training_config["safe_exploration"] = safe_exploration
     training_config["n_step"] = n_step
     training_config["retention"] = retention_spec
+    training_config["safety_replay"] = safety_replay_spec
     training_config["action_budget"] = action_budget_config
     training_config["performance_stopping"] = performance_stopping
     expanded["training"] = training_config
@@ -1038,7 +1053,15 @@ def run_agent_session(
         checkpoint.parent.mkdir(parents=True, exist_ok=True)
     transfer_contract = None
     if resume_snapshot is not None:
-        if task3_transfer:
+        if task3_safety_transfer:
+            materialize_task3_safety_checkpoint(
+                resume_snapshot, checkpoint, safety_spec=safety_spec,
+                exploration_spec=exploration_spec,
+                training_budget=action_budget_config,
+                safety_replay_spec=safety_replay_spec,
+                n_step=n_step, reward_id=reward_version,
+                retention_spec=retention_spec)
+        elif task3_transfer:
             if distillation_path is None:
                 raise ValueError("Task 3 transfer requires a distillation dataset")
             transfer_contract = materialize_task3_transfer_checkpoint(
@@ -1110,6 +1133,7 @@ def run_agent_session(
     metadata["safety_spec"] = safety_spec
     metadata["n_step"] = n_step
     metadata["retention_spec"] = retention_spec
+    metadata["safety_replay_spec"] = safety_replay_spec
     metadata["training_budget"] = action_budget_config
     metadata["performance_stopping"] = performance_stopping
     metadata["transfer_contract"] = transfer_contract
@@ -1169,7 +1193,11 @@ def run_agent_session(
                 "to": CHECKPOINT_SCHEMA_VERSION,
                 "history_initialized": "empty",
             }
-            if migration else None
+            if migration else ({
+                "from": "training-resume-v7",
+                "to": CHECKPOINT_SCHEMA_VERSION,
+                "reason": "own-bomb escape obligation experiment",
+            } if task3_safety_transfer else None)
         ),
         "task3_transfer": transfer_contract,
     }
@@ -1192,6 +1220,7 @@ def run_agent_session(
             "BOMBERMAN_SAFE_EXPLORATION", "BOMBERMAN_N_STEP",
             "BOMBERMAN_SAFETY_SPEC",
             "BOMBERMAN_RETENTION_SPEC", "BOMBERMAN_TRAINING_BUDGET",
+            "BOMBERMAN_SAFETY_REPLAY_SPEC",
             "BOMBERMAN_CAPTURE_ENVIRONMENT_SEED", "BOMBERMAN_CAPTURE_TASK_ID",
         )
     }
@@ -1224,6 +1253,8 @@ def run_agent_session(
         os.environ["BOMBERMAN_N_STEP"] = str(n_step)
         os.environ["BOMBERMAN_RETENTION_SPEC"] = json.dumps(
             retention_spec, sort_keys=True, separators=(",", ":"))
+        os.environ["BOMBERMAN_SAFETY_REPLAY_SPEC"] = json.dumps(
+            safety_replay_spec, sort_keys=True, separators=(",", ":"))
         os.environ["BOMBERMAN_TRAINING_BUDGET"] = json.dumps(
             action_budget_config, sort_keys=True, separators=(",", ":"))
         if (os.getenv("BOMBERMAN_DISTILLATION_CAPTURE")
@@ -1494,15 +1525,19 @@ def _parser() -> argparse.ArgumentParser:
     resume_group = parser.add_mutually_exclusive_group()
     resume_group.add_argument(
         "--resume-from", type=Path,
-        help="Parent v7 training run used for exact or curriculum resume",
+        help="Parent v11 training run used for exact or curriculum resume",
     )
     resume_group.add_argument(
         "--migrate-resume-from", type=Path,
         help="Complete v6 Task 1 run migrated explicitly into a v7 child",
     )
     resume_group.add_argument(
+        "--transfer-task3-safety-from", type=Path,
+        help="Complete v7 Task 2 run transferred explicitly into a v11 Task 3 child",
+    )
+    resume_group.add_argument(
         "--transfer-task3-from", type=Path,
-        help="Complete v7 Task 2 run explicitly transferred into a v8 phase agent",
+        help="Complete v7 Task 2 run explicitly transferred into a v11 phase agent",
     )
     parser.add_argument(
         "--distillation-dataset", type=Path,
@@ -1555,6 +1590,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             )
         else:
             if (args.resume_from is not None or args.migrate_resume_from is not None
+                    or args.transfer_task3_safety_from is not None
                     or args.transfer_task3_from is not None):
                 raise ValueError("resume and migration options are only valid with --mode train")
             if args.adaptation_trigger:

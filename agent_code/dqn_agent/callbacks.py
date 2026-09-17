@@ -43,7 +43,7 @@ REWARD_VERSION_ENV = "BOMBERMAN_REWARD_VERSION"
 TORCH_DEVICE_ENV = "BOMBERMAN_TORCH_DEVICE"
 FEATURE_ID_ENV = "BOMBERMAN_FEATURE_ID"
 REWARD_ID_ENV = "BOMBERMAN_REWARD_ID"
-CHECKPOINT_SCHEMA_VERSION = "training-resume-v8"
+CHECKPOINT_SCHEMA_VERSION = "training-resume-v11"
 
 
 def network_spec(input_size: int) -> dict:
@@ -219,6 +219,8 @@ def setup(self):
 
 
 def act(self, game_state: dict) -> str:
+    from agent_code.learning_common.action_history import advance_observation
+    advance_observation(self, game_state)
     extracted = _features_for(self, game_state)
     features = extracted.vector
     legal = extracted.legal_mask.copy()

@@ -476,7 +476,7 @@ class CheckpointTests(unittest.TestCase):
             root = Path(directory)
             checkpoint = root / "checkpoint.pkl"
             payload = {
-                "checkpoint_schema": "training-resume-v8",
+                "checkpoint_schema": "training-resume-v11",
                 "algorithm": "double_q_learning", "actions": list(dq_callbacks.ACTIONS),
                 "feature_id": dq_callbacks.FEATURE_ID,
                 "feature_schema": dq_callbacks.FEATURE_SCHEMA,

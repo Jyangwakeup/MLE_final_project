@@ -11,6 +11,7 @@ from typing import Any, Mapping
 N_STEP_ENV = "BOMBERMAN_N_STEP"
 RETENTION_SPEC_ENV = "BOMBERMAN_RETENTION_SPEC"
 TRAINING_BUDGET_ENV = "BOMBERMAN_TRAINING_BUDGET"
+SAFETY_REPLAY_SPEC_ENV = "BOMBERMAN_SAFETY_REPLAY_SPEC"
 DEFAULT_RETENTION_SPEC = {
     "parent_fraction": 0.5,
     "distillation_weight": 1.0,
@@ -18,19 +19,27 @@ DEFAULT_RETENTION_SPEC = {
     "per_task_capacity": 20_000,
     "current_warmup": 2_000,
 }
+DEFAULT_SAFETY_REPLAY_SPEC = {
+    "enabled": False,
+    "parent_samples": 48,
+    "ordinary_task3_samples": 8,
+    "own_bomb_cycle_samples": 8,
+    "fatal_prefix_steps": 4,
+}
 
 
 def n_step_from_environment(default: int = 1) -> int:
     raw = os.getenv(N_STEP_ENV)
     value = default if raw is None else int(raw)
-    if value not in {1, 4}:
-        raise ValueError("training.n_step must be 1 or 4")
+    if value not in {1, 4, 5}:
+        raise ValueError("training.n_step must be 1, 4, or 5")
     return value
 
 
 def resolve_retention_spec(value: Mapping[str, Any] | None = None) -> dict[str, Any]:
     raw = DEFAULT_RETENTION_SPEC if value is None else value
-    if not isinstance(raw, Mapping) or set(raw) != set(DEFAULT_RETENTION_SPEC):
+    if (not isinstance(raw, Mapping)
+            or set(raw) - {'task_samples'} != set(DEFAULT_RETENTION_SPEC)):
         raise ValueError(
             "training.retention must contain exactly: "
             + ", ".join(sorted(DEFAULT_RETENTION_SPEC)))
@@ -45,13 +54,22 @@ def resolve_retention_spec(value: Mapping[str, Any] | None = None) -> dict[str, 
         raise ValueError("training.retention.distillation_weight must be non-negative")
     if temperature <= 0.0:
         raise ValueError("training.retention.temperature must be positive")
-    return {
+    result = {
         "parent_fraction": parent_fraction,
         "distillation_weight": weight,
         "temperature": temperature,
         "per_task_capacity": capacity,
         "current_warmup": warmup,
     }
+    if 'task_samples' in raw:
+        quotas = raw['task_samples']
+        expected = {'coin_navigation': 16, 'crate_navigation': 32, 'weak_opponents': 16}
+        if quotas != expected or any(type(v) is not int for v in quotas.values()):
+            raise ValueError('Task 3 task_samples must be exactly 16/32/16')
+        if parent_fraction != 0.75:
+            raise ValueError('Task quotas require parent_fraction=0.75')
+        result['task_samples'] = dict(quotas)
+    return result
 
 
 def retention_from_environment() -> dict[str, Any]:
@@ -63,6 +81,38 @@ def retention_from_environment() -> dict[str, Any]:
     except json.JSONDecodeError as exception:
         raise ValueError(f"{RETENTION_SPEC_ENV} must be valid JSON") from exception
     return resolve_retention_spec(value)
+
+
+def resolve_safety_replay_spec(value: Mapping[str, Any] | None = None) -> dict[str, Any]:
+    raw = DEFAULT_SAFETY_REPLAY_SPEC if value is None else value
+    if not isinstance(raw, Mapping) or set(raw) != set(DEFAULT_SAFETY_REPLAY_SPEC):
+        raise ValueError(
+            "training.safety_replay must contain exactly: "
+            + ", ".join(sorted(DEFAULT_SAFETY_REPLAY_SPEC)))
+    result = {"enabled": raw["enabled"]}
+    if not isinstance(result["enabled"], bool):
+        raise ValueError("training.safety_replay.enabled must be a boolean")
+    for name in (
+        "parent_samples", "ordinary_task3_samples", "own_bomb_cycle_samples",
+        "fatal_prefix_steps",
+    ):
+        result[name] = _positive_int(raw[name], name)
+    if sum(result[name] for name in (
+        "parent_samples", "ordinary_task3_samples", "own_bomb_cycle_samples"
+    )) != 64:
+        raise ValueError("training.safety_replay sample counts must sum to 64")
+    return result
+
+
+def safety_replay_from_environment() -> dict[str, Any]:
+    raw = os.getenv(SAFETY_REPLAY_SPEC_ENV)
+    if raw is None:
+        return resolve_safety_replay_spec()
+    try:
+        value = json.loads(raw)
+    except json.JSONDecodeError as exception:
+        raise ValueError(f"{SAFETY_REPLAY_SPEC_ENV} must be valid JSON") from exception
+    return resolve_safety_replay_spec(value)
 
 
 def training_budget_from_environment() -> dict[str, Any]:

@@ -1,0 +1,66 @@
+{
+  "schema_version": "task3-plateau-v1",
+  "status": "preregistered",
+  "branch": "task3-controllable-survival",
+  "source_base": "4ee68490cac40e94aff62ef02cc6caaad0596e69",
+  "agent": "double_dqn_continuous_v2_agent",
+  "algorithm": "double_dqn",
+  "feature_id": "continuous-v2",
+  "feature_dimension": 84,
+  "reward_id": "r7_safe_credit_sparse",
+  "safety_version": "survival-mask-v5",
+  "checkpoint_schema": "training-resume-v11",
+  "n_step": 5,
+  "training_seed_order": [33, 11, 22],
+  "training_checkpoints": [50, 100, 150, 200, 250, 300],
+  "plateau_stopping": {
+    "version": "task3-plateau-v1",
+    "interval_rounds": 50,
+    "max_total_rounds": 300,
+    "minimum_score_improvement": 0.25,
+    "qualified_patience": 2,
+    "unqualified_patience": 3
+  },
+  "development_seeds": [19200, 19201, 19202, 19203, 19204, 19205, 19206, 19207, 19208, 19209, 19210, 19211, 19212, 19213, 19214, 19215, 19216, 19217, 19218, 19219],
+  "confirmation_seeds": [19300, 19301, 19302, 19303, 19304, 19305, 19306, 19307, 19308, 19309, 19310, 19311, 19312, 19313, 19314, 19315, 19316, 19317, 19318, 19319],
+  "main_validation_seeds": [19400, 19401, 19402, 19403, 19404, 19405, 19406, 19407, 19408, 19409, 19410, 19411, 19412, 19413, 19414, 19415, 19416, 19417, 19418, 19419, 19420, 19421, 19422, 19423, 19424, 19425, 19426, 19427, 19428, 19429, 19430, 19431, 19432, 19433, 19434, 19435, 19436, 19437, 19438, 19439, 19440, 19441, 19442, 19443, 19444, 19445, 19446, 19447, 19448, 19449, 19450, 19451, 19452, 19453, 19454, 19455, 19456, 19457, 19458, 19459, 19460, 19461, 19462, 19463, 19464, 19465, 19466, 19467, 19468, 19469, 19470, 19471, 19472, 19473, 19474, 19475, 19476, 19477, 19478, 19479, 19480, 19481, 19482, 19483, 19484, 19485, 19486, 19487, 19488, 19489, 19490, 19491, 19492, 19493, 19494, 19495, 19496, 19497, 19498, 19499],
+  "reserved_final_test_seeds": [20000, 20001, 20002, 20003, 20004, 20005, 20006, 20007, 20008, 20009, 20010, 20011, 20012, 20013, 20014, 20015, 20016, 20017, 20018, 20019, 20020, 20021, 20022, 20023, 20024, 20025, 20026, 20027, 20028, 20029, 20030, 20031, 20032, 20033, 20034, 20035, 20036, 20037, 20038, 20039, 20040, 20041, 20042, 20043, 20044, 20045, 20046, 20047, 20048, 20049, 20050, 20051, 20052, 20053, 20054, 20055, 20056, 20057, 20058, 20059, 20060, 20061, 20062, 20063, 20064, 20065, 20066, 20067, 20068, 20069, 20070, 20071, 20072, 20073, 20074, 20075, 20076, 20077, 20078, 20079, 20080, 20081, 20082, 20083, 20084, 20085, 20086, 20087, 20088, 20089, 20090, 20091, 20092, 20093, 20094, 20095, 20096, 20097, 20098, 20099],
+  "task2_parents": {
+    "11": {
+      "run": "/export/data/sfan/MLE_final_project/runs/scoreconv_ddqn_cv2_r7_s11_t2_v7_814173b",
+      "checkpoint_sha256": "91fc3d5e346768ed8928a63baf1b62f6a11bd1f2e816c1fb8d27a16ab00479f1"
+    },
+    "22": {
+      "run": "/export/data/sfan/MLE_final_project/runs/task2winner_replica_cv2_r7_s22_t2_v7_814173b",
+      "checkpoint_sha256": "74cf3fca33acb59f003949006c7401a5a9f58c1785dd8b294b548bd7bd307715"
+    },
+    "33": {
+      "run": "/export/data/sfan/MLE_final_project/runs/task2winner_replica_cv2_r7_s33_t2_v7_814173b",
+      "checkpoint_sha256": "afa8092e2be3c1402ec634c988d3c739f1563fe62b4eb4b7b59a19ef8e21a94c"
+    }
+  },
+  "configs": {
+    "training": "experiments/configs/task3_controllable_safety_train_v5.json",
+    "development": "experiments/configs/task3_controllable_safety_dev_v5.json",
+    "confirmation": "experiments/configs/task3_controllable_safety_confirm_v5.json",
+    "main_validation": "experiments/configs/task3_controllable_safety_main_v5.json"
+  },
+  "training_cpus": {"11": 4, "22": 36, "33": 40},
+  "cpus": [0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 44, 48, 52, 56, 60, 1, 5],
+  "bootstrap_samples": 10000,
+  "gates": {
+    "minimum_retention": 0.9,
+    "task3_score_gain": 0.5,
+    "task3_kill_gain": 0.1,
+    "task3_first_place_gain": 0.05,
+    "maximum_suicide_rate": 0.05,
+    "minimum_bomb_survival_rate": 0.95,
+    "maximum_zero_bomb_round_rate": 0.1,
+    "maximum_invalid_rate": 0.01,
+    "maximum_act_p95_seconds": 0.25,
+    "maximum_act_seconds": 0.48
+  },
+  "failure_policy": "stop_without_reward_feature_safety_replay_or_opponent_changes",
+  "qualified_for_task4_only_after_main_validation": true,
+  "start_task4": false
+}

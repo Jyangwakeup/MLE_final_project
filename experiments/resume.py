@@ -20,10 +20,12 @@ from agent_code.team_agent.feature_system import (
     normalize_feature_id,
     validate_checkpoint_feature_contract,
 )
+from agent_code.learning_common.training_spec import resolve_safety_replay_spec
 
 
-CHECKPOINT_SCHEMA_VERSION = "training-resume-v8"
+CHECKPOINT_SCHEMA_VERSION = "training-resume-v11"
 MIGRATABLE_CHECKPOINT_SCHEMA = "training-resume-v6"
+TASK3_SAFETY_TRANSFER_PARENT_SCHEMA = "training-resume-v7"
 TASK3_TRANSFER_PARENT_SCHEMA = "training-resume-v7"
 TASK_ORDER = ("coin_navigation", "crate_navigation", "weak_opponents", "full_match")
 RETAINED_GENERATIONS = 2
@@ -82,6 +84,8 @@ class LoadedSnapshot:
             "retention_spec": metadata.get("retention_spec", {}),
             "training_budget": metadata.get("training_budget", {}),
             "performance_stopping": metadata.get("performance_stopping"),
+            "safety_replay_spec": metadata.get(
+                "safety_replay_spec", resolve_safety_replay_spec()),
             "transfer_contract": metadata.get("transfer_contract"),
         }
 
@@ -203,6 +207,27 @@ def commit_training_snapshot(
             "agent_rng_state", "action_history_state",
             "safe_exploration_decisions", "safe_exploration_fallbacks",
         }
+        if learner.get("safety_spec", {}).get("version") in {
+            "survival-mask-v3", "survival-mask-v4", "survival-mask-v5",
+        }:
+            required.update({
+                "robust_safety_interventions", "robust_to_v1_fallbacks",
+                "v1_to_physical_fallbacks", "avoidable_escape_collapses",
+                "own_bomb_escape_state", "own_bomb_cycles",
+                "safety_replay_spec",
+            })
+        if learner.get("safety_spec", {}).get("version") in {
+            "survival-mask-v4", "survival-mask-v5",
+        }:
+            required.update({
+                "opponent_robust_interventions", "opponent_to_v3_fallbacks",
+                "opponent_scenarios_evaluated",
+            })
+        if learner.get("safety_spec", {}).get("version") == "survival-mask-v5":
+            required.update({
+                "robust_guarantee_losses", "robust_search_timeouts",
+                "robust_states_evaluated",
+            })
         if algorithm in TABLE_ALGORITHMS:
             required.update(
                 {"q_table"} if algorithm == "q_learning"
@@ -294,6 +319,8 @@ def commit_training_snapshot(
                 "retention_spec": learner["retention_spec"],
                 "training_budget": learner["training_budget"],
                 "performance_stopping": performance_stopping,
+                "safety_replay_spec": learner.get(
+                    "safety_replay_spec", resolve_safety_replay_spec()),
                 "transfer_contract": learner.get("transfer_contract"),
             },
             "cumulative_completed_rounds": (
@@ -458,6 +485,11 @@ def load_migration_snapshot(run_directory: Path) -> LoadedSnapshot:
         run_directory, expected_schema=MIGRATABLE_CHECKPOINT_SCHEMA)
 
 
+def load_task3_safety_transfer_snapshot(run_directory: Path) -> LoadedSnapshot:
+    """Load a complete v7 Task 2 snapshot for the explicit v9 transfer."""
+    return _load_training_snapshot(
+        run_directory, expected_schema=TASK3_SAFETY_TRANSFER_PARENT_SCHEMA)
+
 def load_task3_transfer_snapshot(run_directory: Path) -> LoadedSnapshot:
     """Load a complete v7 Task 2 parent through the explicit transfer path."""
     return _load_training_snapshot(
@@ -503,6 +535,103 @@ def materialize_migrated_checkpoint(
         payload["checkpoint_schema"] = CHECKPOINT_SCHEMA_VERSION
         payload["training_budget"] = dict(training_budget)
         torch.save(payload, temporary)
+    temporary.replace(destination)
+
+
+def materialize_task3_safety_checkpoint(
+    snapshot: LoadedSnapshot,
+    destination: Path,
+    *,
+    safety_spec: dict[str, Any],
+    exploration_spec: dict[str, Any],
+    training_budget: dict[str, Any],
+    safety_replay_spec: dict[str, Any],
+    n_step: int | None = None,
+    reward_id: str | None = None,
+    retention_spec: dict[str, Any] | None = None,
+) -> None:
+    """Promote an intact v7 Task 2 learner into a clean v11 Task 3 stage."""
+    if snapshot.learner_path is None:
+        raise ValueError("Task 3 safety transfer requires a neural checkpoint")
+    try:
+        import torch
+    except ImportError as exception:
+        raise RuntimeError("PyTorch is required for Task 3 safety transfer") from exception
+    payload = torch.load(snapshot.learner_path, map_location="cpu", weights_only=True)
+    if reward_id is not None and reward_id != payload['reward_id']:
+        from agent_code.team_agent.rewards import resolve_reward_spec
+        old_spec = resolve_reward_spec(payload['reward_id'])
+        new_spec = resolve_reward_spec(reward_id)
+        if (payload['reward_id'] != 'r7_safe_credit_sparse'
+                or reward_id != 'r9_task3_score_aligned'
+                or new_spec != {**old_spec, 'killed_opponent': 15.0}):
+            raise ValueError('Unsupported Task 3 reward transfer')
+        task_ids = set(payload['replay'].get('task_ids', []))
+        if not task_ids.issubset({'coin_navigation', 'crate_navigation'}):
+            raise ValueError('Reward transfer cannot reuse Task 3 replay')
+        # These curriculum stages contain no opponents. Check recorded episodes
+        # as well; scalar n-step rewards cannot be relabelled after the fact.
+        episodes = snapshot.run_directory / 'episodes.jsonl'
+        for line in episodes.read_text().splitlines():
+            episode = json.loads(line)
+            if len(episode['agents']) != 1 or any(a.get('kills', 0) for a in episode['agents']):
+                raise ValueError('Parent reward compatibility lacks no-opponent evidence')
+        payload.update(reward_id=reward_id, reward_version=reward_id, reward_spec=new_spec)
+    if retention_spec is not None:
+        payload['retention_spec'] = dict(retention_spec)
+    target_n_step = int(payload.get("n_step", 4) if n_step is None else n_step)
+    # The teacher embedded in a Task 2 checkpoint is the Task 1 policy that
+    # protected the previous curriculum transition.  Task 3 must instead
+    # distil from the immediately preceding Task 2 policy.  Materialization
+    # changes ``training_task`` before the learner loads the checkpoint, so do
+    # this explicitly rather than relying on load_checkpoint's task comparison.
+    payload["teacher"] = {
+        name: tensor.clone() for name, tensor in payload["policy"].items()
+    }
+    payload.update({
+        "checkpoint_schema": CHECKPOINT_SCHEMA_VERSION,
+        "lifecycle_version": "decision-snapshot-v1",
+        "training_task": "weak_opponents",
+        "safety_spec": dict(safety_spec),
+        "exploration_spec": dict(exploration_spec),
+        "training_budget": dict(training_budget),
+        "safety_replay_spec": dict(safety_replay_spec),
+        "stage_action_steps": 0,
+        "n_step": target_n_step,
+        "n_step_state": {
+            "n_step": target_n_step,
+            "gamma": float(payload["hyperparameters"]["gamma"]),
+            "pending": [],
+        },
+        "action_history_state": {
+            "previous_action": None, "wait_streak": 0, "round": None,
+            "own_bomb_position": None, "own_bomb_pending": False,
+            "previous_position": None, "previous_coin_target": None,
+        },
+        "safety_decisions": 0,
+        "safety_interventions": 0,
+        "safety_fallbacks": 0,
+        "safe_exploration_decisions": 0,
+        "safe_exploration_fallbacks": 0,
+        "robust_safety_interventions": 0,
+        "robust_to_v1_fallbacks": 0,
+        "opponent_robust_interventions": 0,
+        "opponent_to_v3_fallbacks": 0,
+        "opponent_scenarios_evaluated": 0,
+        "robust_guarantee_losses": 0,
+        "robust_search_timeouts": 0,
+        "robust_states_evaluated": 0,
+        "v1_to_physical_fallbacks": 0,
+        "avoidable_escape_collapses": 0,
+        "own_bomb_cycles": 0,
+        "own_bomb_escape_state": {
+            "had_safe_alternative": False, "collapse_recorded": False,
+            "placement_certificate": None,
+        },
+    })
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    temporary = destination.with_name(destination.name + ".tmp")
+    torch.save(payload, temporary)
     temporary.replace(destination)
 
 
@@ -650,6 +779,59 @@ def materialize_task3_transfer_checkpoint(
     return transfer_contract
 
 
+def validate_task3_safety_transfer(
+    parent: dict[str, Any], child: dict[str, Any], *, parent_status: str,
+) -> None:
+    """Validate the narrow v7 Task 2 to v11 robust-safety experiment seam."""
+    if parent.get("checkpoint_schema") != TASK3_SAFETY_TRANSFER_PARENT_SCHEMA:
+        raise ValueError("Task 3 safety transfer requires a training-resume-v7 parent")
+    if child.get("checkpoint_schema") != CHECKPOINT_SCHEMA_VERSION:
+        raise ValueError("Task 3 safety transfer target must use training-resume-v11")
+    if parent_status not in {"completed", "early_stopped"}:
+        raise ValueError("Task 3 safety transfer requires a completed Task 2 parent")
+    if parent.get("task") != "crate_navigation" or child.get("task") != "weak_opponents":
+        raise ValueError("Task 3 safety transfer must promote Task 2 directly to Task 3")
+    if child.get("safety_spec", {}).get("version") not in {
+        "survival-mask-v1", "survival-mask-v3", "survival-mask-v4",
+        "survival-mask-v5",
+    }:
+        raise ValueError(
+            "Task 3 safety transfer requires survival-mask-v1, v3, v4, or v5")
+    for field in (
+        "algorithm", "seed", "feature_id", "feature_schema",
+        "training_device_type", "training_device_name",
+        "agent_seed", "actions", "network_spec", "hyperparameters",
+    ):
+        if parent.get(field) != child.get(field):
+            raise ValueError(f"Task 3 safety transfer {field} must match the parent")
+    if parent.get("algorithm") != "double_dqn":
+        raise ValueError("Task 3 safety transfer requires Double DQN")
+    if parent.get("feature_id") != "continuous-v2":
+        raise ValueError("Task 3 safety transfer requires 84-dimensional continuous-v2")
+    if parent.get("reward_id") != "r7_safe_credit_sparse":
+        raise ValueError("Task 3 safety transfer reward_id requires r7_safe_credit_sparse")
+    from agent_code.team_agent.rewards import resolve_reward_spec
+    child_reward = child.get('reward_id')
+    if child_reward not in {'r7_safe_credit_sparse', 'r9_task3_score_aligned'}:
+        raise ValueError('Unsupported Task 3 reward transfer')
+    if child.get('reward_spec') != resolve_reward_spec(child_reward):
+        raise ValueError('Task 3 reward specification mismatch')
+    old_retention = parent.get('retention_spec')
+    new_retention = child.get('retention_spec')
+    if new_retention != old_retention and new_retention != {
+            **old_retention, 'task_samples': {'coin_navigation': 16,
+            'crate_navigation': 32, 'weak_opponents': 16}}:
+        raise ValueError('Task 3 safety transfer retention_spec mismatch')
+    parent_n_step = int(parent.get("n_step", 1))
+    child_n_step = int(child.get("n_step", 1))
+    if child_n_step not in {parent_n_step, 5}:
+        raise ValueError(
+            "Task 3 safety transfer n_step must match the parent or use "
+            "the preregistered five-step bomb-credit horizon")
+
+
+
+
 def validate_task3_transfer(
     parent: dict[str, Any], child: dict[str, Any], *, parent_status: str,
 ) -> None:
@@ -657,7 +839,7 @@ def validate_task3_transfer(
     if parent.get("checkpoint_schema") != TASK3_TRANSFER_PARENT_SCHEMA:
         raise ValueError("Task 3 transfer requires a training-resume-v7 parent")
     if child.get("checkpoint_schema") != CHECKPOINT_SCHEMA_VERSION:
-        raise ValueError("Task 3 transfer target must use training-resume-v8")
+        raise ValueError("Task 3 transfer target must use training-resume-v11")
     if parent_status not in {"completed", "early_stopped"}:
         raise ValueError("Task 3 transfer requires a completed Task 2 parent")
     if parent.get("task") != "crate_navigation" or child.get("task") != "weak_opponents":
@@ -684,7 +866,7 @@ def validate_v6_migration(
     if parent.get("checkpoint_schema") != MIGRATABLE_CHECKPOINT_SCHEMA:
         raise ValueError("Migration requires a training-resume-v6 parent")
     if child.get("checkpoint_schema") != CHECKPOINT_SCHEMA_VERSION:
-        raise ValueError("Migration target must use training-resume-v8")
+        raise ValueError("Migration target must use training-resume-v11")
     if parent_status != "completed":
         raise ValueError("Migration requires a completed v6 parent run")
     if parent.get("task") != "coin_navigation" or child.get("task") != "coin_navigation":
@@ -717,17 +899,15 @@ def validate_resume_transition(
     for field in (
         "algorithm", "seed", "checkpoint_schema", "reward_spec",
         "training_device_type", "training_device_name", "agent_seed",
-        "source_commit", "safe_exploration", "safety_spec",
+        "source_commit", "source_hash", "safe_exploration", "safety_spec",
+        "safety_replay_spec",
     ):
         if parent.get(field) != child.get(field):
             raise ValueError(f"Resume {field} must match the parent run")
     parent_source_scope = parent.get("source_hash_scope")
     child_source_scope = child.get("source_hash_scope")
-    if parent_source_scope is not None:
-        if parent_source_scope != child_source_scope:
-            raise ValueError("Resume source_hash_scope must match the parent run")
-        if parent.get("source_hash") != child.get("source_hash"):
-            raise ValueError("Resume source_hash must match the parent run")
+    if parent_source_scope != child_source_scope:
+        raise ValueError("Resume source_hash_scope must match the parent run")
     try:
         parent_feature = normalize_feature_id(
             parent.get("feature_id"), parent.get("feature_version"))

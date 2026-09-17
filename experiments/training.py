@@ -17,25 +17,28 @@ from experiments.devices import resolve_device
 from experiments.resume import (
     CHECKPOINT_SCHEMA_VERSION,
     load_migration_snapshot,
-    load_task3_transfer_snapshot,
+    load_task3_safety_transfer_snapshot,
     load_training_snapshot,
+    validate_task3_safety_transfer,
+    load_task3_transfer_snapshot,
     validate_task3_transfer,
     validate_v6_migration,
     validate_resume_transition,
 )
 from experiments.performance_stopping import resolve_performance_stopping
 from experiments.agent_contracts import resolve_agent_contract
-from agent_code.learning_common.training_spec import resolve_retention_spec
+from agent_code.learning_common.training_spec import (
+    resolve_retention_spec, resolve_safety_replay_spec,
+)
 
 
 def allowed_n_steps(algorithm: str) -> set[int]:
     """Return replay horizons supported by a learning algorithm.
 
-    The distilled CNN uses a five-step variant in its Task 2 credit-assignment
-    ablation; the other current learners retain the established 1/4-step
-    contract.
+    The distilled CNN and Task 3 Double DQN support the registered five-step
+    credit-assignment experiments. Other learners retain the 1/4-step contract.
     """
-    return {1, 4, 5} if algorithm == "cnn_distilled_double_dqn" else {1, 4}
+    return {1, 4, 5} if algorithm in {"cnn_distilled_double_dqn", "double_dqn"} else {1, 4}
 
 
 DEFAULT_REPLAY_PROGRESS_PERCENT = 10
@@ -225,12 +228,13 @@ def run_training_mode(
     transfer_from = getattr(args, "transfer_task3_from", None)
     resume_sources = [
         value for value in (
-            args.resume_from, getattr(args, "migrate_resume_from", None), transfer_from)
+            args.resume_from, getattr(args, "migrate_resume_from", None), transfer_from,
+            getattr(args, "transfer_task3_safety_from", None))
         if value is not None
     ]
     if len(resume_sources) > 1:
         raise ValueError("resume, migration, and Task 3 transfer are mutually exclusive")
-    if resume_sources and args.init_from_checkpoint is not None:
+    if resume_sources and getattr(args, "init_from_checkpoint", None) is not None:
         raise ValueError("resume/transfer and --init-from-checkpoint are mutually exclusive")
     training = config.get("training", {})
     if not isinstance(training, dict):
@@ -288,6 +292,7 @@ def run_training_mode(
             safe_exploration if configured_safety is None else None),
     )
     effective_safe_exploration = safety_spec["mode"] in {"exploration", "all"}
+    safety_replay_spec = resolve_safety_replay_spec(training.get("safety_replay"))
     configured_id = getattr(args, "feature_id", None) or config.get("feature_id")
     configured_legacy = (
         None if getattr(args, "feature_id", None) is not None
@@ -306,7 +311,7 @@ def run_training_mode(
             f"config.training.n_step must be one of {values} for {algorithm}")
     retention_spec = resolve_retention_spec(training.get("retention"))
     adaptation_triggers = tuple(getattr(args, "adaptation_trigger", ()) or ())
-    init_checkpoint = args.init_from_checkpoint
+    init_checkpoint = getattr(args, "init_from_checkpoint", None)
     if init_checkpoint is not None:
         if algorithm not in {
             "dqn", "double_dqn", "cnn_distilled_double_dqn", "rainbow_lite",
@@ -328,7 +333,8 @@ def run_training_mode(
         replay_interval, stopping_config,
     )
     migration_from = getattr(args, "migrate_resume_from", None)
-    if args.resume_from is None and migration_from is None and transfer_from is None:
+    safety_transfer_from = getattr(args, "transfer_task3_safety_from", None)
+    if args.resume_from is None and migration_from is None and transfer_from is None and safety_transfer_from is None:
         if getattr(args, "distillation_dataset", None) is not None:
             raise ValueError("--distillation-dataset requires --transfer-task3-from")
         return run_session(
@@ -338,6 +344,7 @@ def run_training_mode(
             safety_spec=safety_spec,
             n_step=n_step,
             retention_spec=retention_spec,
+            safety_replay_spec=safety_replay_spec,
             adaptation_triggers=adaptation_triggers,
             feature_id_override=getattr(args, "feature_id", None),
             reward_id_override=getattr(args, "reward_id", None),
@@ -346,14 +353,16 @@ def run_training_mode(
         )
 
     migrating = migration_from is not None
+    safety_transferring = safety_transfer_from is not None
     transferring = transfer_from is not None
     parent_run = Path(
-        transfer_from if transferring else migration_from if migrating else args.resume_from)
+        safety_transfer_from if safety_transferring else transfer_from if transferring else migration_from if migrating else args.resume_from)
     if not parent_run.is_absolute():
         parent_run = Path.cwd() / parent_run
     parent_run = parent_run.resolve()
     snapshot = (
-        load_task3_transfer_snapshot(parent_run) if transferring
+        load_task3_safety_transfer_snapshot(parent_run) if safety_transferring
+        else load_task3_transfer_snapshot(parent_run) if transferring
         else load_migration_snapshot(parent_run) if migrating
         else load_training_snapshot(parent_run)
     )
@@ -385,6 +394,7 @@ def run_training_mode(
         "safety_spec": safety_spec,
         "n_step": n_step,
         "retention_spec": retention_spec,
+        "safety_replay_spec": safety_replay_spec,
         "training_budget": budget_config,
         "performance_stopping": performance_stopping,
         "source_commit": source_commit,
@@ -398,7 +408,11 @@ def run_training_mode(
         ),
     }
     parent_status = parent_metadata.get("status", "unknown")
-    if transferring:
+    if safety_transferring:
+        validate_task3_safety_transfer(
+            snapshot.contract, child_contract, parent_status=parent_status)
+        resume_kind = "task3_safety_transfer"
+    elif transferring:
         validate_task3_transfer(
             snapshot.contract, child_contract, parent_status=parent_status)
         resume_kind = "task3_transfer"
@@ -430,12 +444,14 @@ def run_training_mode(
         safety_spec=safety_spec,
         n_step=n_step,
         retention_spec=retention_spec,
+        safety_replay_spec=safety_replay_spec,
         adaptation_triggers=adaptation_triggers,
         feature_id_override=getattr(args, "feature_id", None),
         reward_id_override=getattr(args, "reward_id", None),
         performance_stopping=performance_stopping,
         checkpoint_snapshot_interval=checkpoint_snapshot_interval,
         migration=migrating,
+        task3_safety_transfer=safety_transferring,
         task3_transfer=transferring,
         distillation_path=distillation_path,
     )

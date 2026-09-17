@@ -82,12 +82,17 @@ def build_submission(agent: str, checkpoint: Path, output: Path) -> Path:
             PROJECT_ROOT / "agent_code" / "learning_common", vendor / "learning_common",
             ignore=shutil.ignore_patterns("__pycache__", "*.pyc"),
         )
+        shutil.copy2(
+            PROJECT_ROOT / "agent_code" / "dqn_agent" / "model.py",
+            vendor / "dqn_model.py",
+        )
         team = vendor / "team_agent"
         team.mkdir()
         for name in (
-            "__init__.py", "danger.py", "distillation_capture.py", "exploration.py",
-            "features.py", "phase.py", "rewards.py", "safety.py",
-            "temporal_safety_features.py",
+            "__init__.py", "controllable_survival.py", "danger.py",
+            "distillation_capture.py", "exploration.py", "features.py",
+            "phase.py", "rewards.py", "opponent_transitions.py",
+            "safety.py", "temporal_safety_features.py",
         ):
             shutil.copy2(PROJECT_ROOT / "agent_code" / "team_agent" / name, team / name)
         shutil.copytree(
@@ -96,6 +101,9 @@ def build_submission(agent: str, checkpoint: Path, output: Path) -> Path:
         )
         shutil.copy2(checkpoint, stage / contract.checkpoint_name)
         _rewrite_imports(stage, {
+            "from agent_code.dqn_agent.model": (
+                f"from agent_code.{agent}._vendor.dqn_model"
+            ),
             "from agent_code.learning_common": f"from agent_code.{agent}._vendor.learning_common",
             "from agent_code.team_agent": f"from agent_code.{agent}._vendor.team_agent",
         })

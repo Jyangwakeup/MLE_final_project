@@ -63,6 +63,8 @@ def features(self, state):
     return self._feature_cache_value
 
 def act(self, state):
+    from agent_code.learning_common.action_history import advance_observation
+    advance_observation(self, state)
     item=features(self,state); physical=effective_legal_mask(item.legal_mask,self.linear_config.ACTIONS,self.curriculum_allows_bomb)
     values=self.model.q_values(item.vector); raw=int(np.flatnonzero(physical)[np.argmax(values[physical])]); exploring=False
     if self.train:

@@ -1,0 +1,41 @@
+{
+  "schema_version": "task3-escape-obligation-v1",
+  "source_base": "814173b618fb38990db7a5b7ee200369c8b25289",
+  "branch": "task3-escape-obligation",
+  "agent": "double_dqn_continuous_v2_agent",
+  "feature_id": "continuous-v2",
+  "feature_dimension": 84,
+  "reward_id": "r7_safe_credit_sparse",
+  "opponents": ["peaceful_agent", "coin_collector_agent"],
+  "known_death_seeds": [12000, 12005, 12008, 12011, 12015, 12017, 12019],
+  "frozen_ab_seeds": {"start": 16000, "end": 16019},
+  "training_seeds": [11, 22, 33],
+  "checkpoints_rounds": [500, 1000, 1500],
+  "confirmation_seeds": {"start": 17000, "end": 17019},
+  "main_validation_seeds": {"start": 18000, "end": 18099},
+  "reserved_final_test_seeds": {"start": 20000, "end": 20099},
+  "configs": {
+    "known_deaths": "experiments/configs/task3_escape_known_deaths.json",
+    "frozen_v1": "experiments/configs/task3_escape_frozen_v1.json",
+    "training": "experiments/configs/task3_escape_train.json",
+    "safety_replay": "experiments/configs/task3_escape_train_safety_replay.json",
+    "confirmation": "experiments/configs/task3_escape_confirm.json",
+    "main_validation": "experiments/configs/task3_escape_main_validation.json"
+  },
+  "gates": {
+    "known_death_suicides": 0,
+    "frozen_suicide_rate": 0.05,
+    "avoidable_escape_collapses": 0,
+    "minimum_retention": 0.9,
+    "maximum_kill_decline": 0.1,
+    "maximum_first_place_decline": 0.05,
+    "minimum_bomb_survival_rate": 0.95,
+    "maximum_invalid_rate": 0.01,
+    "maximum_act_p95_seconds": 0.05,
+    "maximum_act_seconds": 0.5,
+    "task3_score_gain": 0.5,
+    "task3_kill_gain_or_first_place_gain": [0.1, 0.05]
+  },
+  "safety_replay_trigger": "frozen admission passes and trained seed fails only safety",
+  "stop_after_task3": true
+}

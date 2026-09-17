@@ -18,7 +18,8 @@ python experiments/run.py \
   --run-id formal_q_discrete_v1_r1_coin3_s11_t1_r500
 ```
 
-后续阶段必须使用 `--resume-from runs/<direct-parent-run>` 创建新 run。当前精确恢复协议是 `training-resume-v8`；v7 及更早快照默认只能冻结评估。Task 3 的84→117维变化只能使用显式迁移入口，不能伪装成精确续训。
+后续阶段必须使用 `--resume-from runs/<direct-parent-run>` 创建新 run。当前新实验精确恢复协议是`training-resume-v11`，并保存阶段/总动作数、完整Safety合同、动作历史、n-step与Task 1收敛历史；v10及更早snapshot和final checkpoint默认只能冻结评估。
+Task 3 的84→117维阶段模型仅通过 `--transfer-task3-from` 显式迁移，不属于精确恢复。
 
 ## 冻结评估
 
