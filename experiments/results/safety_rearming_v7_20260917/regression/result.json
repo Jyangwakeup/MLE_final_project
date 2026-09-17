@@ -1,0 +1,59 @@
+{
+  "status": "passed",
+  "source_commit": "b7159b97929e58a7283f2f6daaa892e3a1177ba6",
+  "manifest_sha256": "0cd33e09fb6bab9ba4b203c1a89e2f55d91308f7e5118f754786f3577bc556b8",
+  "jobs": {
+    "3": {
+      "run": "/export/data/sfan/MLE_final_project_safety/runs/safety_stress_task3_b7159b9",
+      "command": [
+        "taskset",
+        "-c",
+        "0",
+        "/export/data/sfan/miniforge3/envs/mle/bin/python",
+        "experiments/task4_worker.py",
+        "--config",
+        "experiments/configs/safety_rearming_v7.json",
+        "--mode",
+        "evaluate",
+        "--device",
+        "cpu",
+        "--task",
+        "3",
+        "--agent",
+        "double_dqn_continuous_v2_agent",
+        "--seeds",
+        "24266",
+        "--n-rounds",
+        "1",
+        "--checkpoint",
+        "/export/data/sfan/MLE_final_project_safety/agent_code/double_dqn_continuous_v2_agent/task3_validated.pt",
+        "--run-id",
+        "safety_stress_task3_b7159b9",
+        "--replay-policy",
+        "all"
+      ],
+      "summary": {
+        "episodes": 1.0,
+        "mean_score": 9.0,
+        "mean_coins": 4.0,
+        "mean_crates": 51.0,
+        "mean_kills": 1.0,
+        "first_place_rate": 1.0,
+        "suicide_rate": 0.0,
+        "bomb_survival_rate": 1.0,
+        "zero_bomb_round_rate": 0.0,
+        "invalid_action_rate": 0.0,
+        "act_p95_seconds": 0.02197265625,
+        "act_max_seconds": 0.034944772720336914,
+        "act_timeouts": 0.0,
+        "act_skipped": 0.0,
+        "avoidable_escape_collapses": 0.0,
+        "robust_guarantee_losses": 0.0,
+        "robust_search_timeouts": 0.0,
+        "mean_bombs": 40.0
+      },
+      "failures": []
+    }
+  },
+  "task4_qualified": false
+}
