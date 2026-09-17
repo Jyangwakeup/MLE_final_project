@@ -1,0 +1,19 @@
+{
+  "active_seed": 22,
+  "config_sha256": {
+    "A": "846bb0aa1822fd178a21f19c2a45ed935388fe39825e8ac5ce4dfaa77024bb0e"
+  },
+  "diagnostics": {},
+  "error": "Safety failure: /export/data/sfan/MLE_final_project_task4_orders/runs/order_equivalence_20260917_A_aa2c8ecc_diag_s22422_c0020_859ee69/task4_safety_failure.json",
+  "finished_at": "2026-09-17T17:31:37.630766+00:00",
+  "manifest_sha256": "aa2c8ecc2b984c9db34ee9914b62ac75f10f00cfce261b766df98fc3f772f0ff",
+  "opponent_hashes": {
+    "agent_code/coin_collector_agent/callbacks.py": "bb9007137dd89712c142b67ff8b26d81b075511e572ad334f94414d96eb40a9c",
+    "agent_code/peaceful_agent/callbacks.py": "db408b7c86d8d308e20b529da378c29a26deb11a34f4a2b69dd942491bc44d82",
+    "agent_code/rule_based_agent/callbacks.py": "78fae8121ffab5c849d69857aeaeabcee23e1015c923e5e701d9a2bce2c879f6"
+  },
+  "parent_sha256": "b0b9e7ae9cbefa6523ed01e1d7a6d474b90b6272f9de1706ee80f1f109cc803d",
+  "source_commit": "859ee69dc08c86acd53e3418b2d96128377932e1",
+  "status": "admission_failed",
+  "task4_qualified": false
+}
