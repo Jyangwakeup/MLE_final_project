@@ -10,6 +10,10 @@
 
 回归RED与24项定向测试GREEN记录位于experiments/results/safety_pooled_timing_20260917。当前4aa3812新世界测试完成后，必须另行从原始日志复算整体P95，不能仅凭该控制器的旧汇总宣布计时准入。
 
-425f622的60世界强对手测试共21,632次act：整体P95 51.719ms、最大243.849ms；旧失败世界23008的211次act为87.211ms/148.731ms。两者仍通过计时门槛；此前47.322ms/88.938ms分别是每局P95的平均值。独立复算脚本与JSON一并保留。
+425f622的60世界强对手测试共21,632次act：整体P95 51.733ms、最大243.849ms；旧失败世界23008的211次act为88.938ms/148.731ms。两者仍通过计时门槛；此前60世界的47.322ms是每局P95的平均值，单个旧失败世界的88.938ms保持一致。独立复算脚本与JSON一并保留。
 
 首次完整测试430项出现1项环境错误：新worktree缺少runs根目录，test_board_checkpoint_feature_contract_accepts_null_vector_shape在父目录不存在时直接mkdir失败；不是计时断言失败。建立runs后，所属27项测试模块全部通过，原失败日志保留。完整测试将再次执行以获得单次完整通过证据。
+
+复核严格沿用既有nearest-rank百分位定义（ceil(0.95*N)-1），未改为线性插值。最终权威复算文件为nearest_rank_reaudit.json；较早all_v6_reaudit.json/retention_reaudit.json使用NumPy默认线性插值，保留为审计过程记录，不用于准入。
+
+fd008de代码完整重跑430项，跳过1项，无失败；见full_passed.log。统计实现没有降低250ms/480ms门槛，没有修改Agent行为或安全搜索预算。
