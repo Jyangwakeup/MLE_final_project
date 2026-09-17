@@ -235,3 +235,7 @@ _Avoid_: Reduced safety horizon, approximate survival
 **Shared viability board**:
 The finite-horizon survival answers for every own position under one fixed terrain, hazard and opponent environment. Each candidate still queries its own position; a cached safe answer for one position is never reused as a safe answer for another.
 _Avoid_: Shared safe action, nearest-opponent proof
+
+**Certified-only bomb placement**:
+A placement policy that admits a new bomb only after its complete controllable-survival proof succeeds, including when other safe choices are absent. It does not certify the safety of fallback movement or redefine a later guarantee loss.
+_Avoid_: Safe fallback, proof-free emergency bomb

@@ -1,0 +1,86 @@
+test_existing_guarantee_loss_is_not_relabelled (tests.test_certified_placement.CertifiedPlacementTests) ... ERROR
+test_historical_no_safe_fallback_cannot_place_unproved_bomb (tests.test_certified_placement.CertifiedPlacementTests) ... ERROR
+test_legacy_contract_is_unchanged (tests.test_certified_placement.CertifiedPlacementTests) ... ok
+test_proven_bomb_still_available (tests.test_certified_placement.CertifiedPlacementTests) ... ERROR
+test_timeout_is_still_a_failure_and_not_a_placement_permit (tests.test_certified_placement.CertifiedPlacementTests) ... ERROR
+test_unproved_bomb_as_only_base_action_never_returns_empty_mask (tests.test_certified_placement.CertifiedPlacementTests) ... ERROR
+test_versioned_fallback_cannot_be_silently_changed (tests.test_certified_placement.CertifiedPlacementTests) ... ERROR
+
+======================================================================
+ERROR: test_existing_guarantee_loss_is_not_relabelled (tests.test_certified_placement.CertifiedPlacementTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/data/sfan/MLE_final_project_safety/tests/test_certified_placement.py", line 36, in test_existing_guarantee_loss_is_not_relabelled
+    d=self.decide(failure_record(-1),V6)
+  File "/export/data/sfan/MLE_final_project_safety/tests/test_certified_placement.py", line 27, in decide
+    return safety_decision(record['state'],np.asarray(d['physical_mask']),spec,allow_bomb=True,exploring=False,own_bomb_pending=d['own_bomb_pending'],own_bomb_state={'pending':d['own_bomb_pending'],'timer':d['own_bomb_timer']})
+  File "/export/data/sfan/MLE_final_project_safety/agent_code/team_agent/safety.py", line 281, in safety_decision
+    spec = resolve_safety_spec(safety_spec)
+  File "/export/data/sfan/MLE_final_project_safety/agent_code/team_agent/safety.py", line 78, in resolve_safety_spec
+    raise ValueError(
+ValueError: config.safety must contain exactly: fallback, horizon, mode, version
+
+======================================================================
+ERROR: test_historical_no_safe_fallback_cannot_place_unproved_bomb (tests.test_certified_placement.CertifiedPlacementTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/data/sfan/MLE_final_project_safety/tests/test_certified_placement.py", line 29, in test_historical_no_safe_fallback_cannot_place_unproved_bomb
+    d=self.decide(failure_record(-2),V6)
+  File "/export/data/sfan/MLE_final_project_safety/tests/test_certified_placement.py", line 27, in decide
+    return safety_decision(record['state'],np.asarray(d['physical_mask']),spec,allow_bomb=True,exploring=False,own_bomb_pending=d['own_bomb_pending'],own_bomb_state={'pending':d['own_bomb_pending'],'timer':d['own_bomb_timer']})
+  File "/export/data/sfan/MLE_final_project_safety/agent_code/team_agent/safety.py", line 281, in safety_decision
+    spec = resolve_safety_spec(safety_spec)
+  File "/export/data/sfan/MLE_final_project_safety/agent_code/team_agent/safety.py", line 78, in resolve_safety_spec
+    raise ValueError(
+ValueError: config.safety must contain exactly: fallback, horizon, mode, version
+
+======================================================================
+ERROR: test_proven_bomb_still_available (tests.test_certified_placement.CertifiedPlacementTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/data/sfan/MLE_final_project_safety/tests/test_certified_placement.py", line 48, in test_proven_bomb_still_available
+    d=safety_decision(state,np.ones(6,dtype=bool),V6,allow_bomb=True,exploring=False)
+  File "/export/data/sfan/MLE_final_project_safety/agent_code/team_agent/safety.py", line 281, in safety_decision
+    spec = resolve_safety_spec(safety_spec)
+  File "/export/data/sfan/MLE_final_project_safety/agent_code/team_agent/safety.py", line 78, in resolve_safety_spec
+    raise ValueError(
+ValueError: config.safety must contain exactly: fallback, horizon, mode, version
+
+======================================================================
+ERROR: test_timeout_is_still_a_failure_and_not_a_placement_permit (tests.test_certified_placement.CertifiedPlacementTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/data/sfan/MLE_final_project_safety/tests/test_certified_placement.py", line 53, in test_timeout_is_still_a_failure_and_not_a_placement_permit
+    d=safety_decision(state,np.ones(6,dtype=bool),V6,allow_bomb=True,exploring=False)
+  File "/export/data/sfan/MLE_final_project_safety/agent_code/team_agent/safety.py", line 281, in safety_decision
+    spec = resolve_safety_spec(safety_spec)
+  File "/export/data/sfan/MLE_final_project_safety/agent_code/team_agent/safety.py", line 78, in resolve_safety_spec
+    raise ValueError(
+ValueError: config.safety must contain exactly: fallback, horizon, mode, version
+
+======================================================================
+ERROR: test_unproved_bomb_as_only_base_action_never_returns_empty_mask (tests.test_certified_placement.CertifiedPlacementTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/data/sfan/MLE_final_project_safety/tests/test_certified_placement.py", line 44, in test_unproved_bomb_as_only_base_action_never_returns_empty_mask
+    d=safety_decision(state,physical,V6,allow_bomb=True,exploring=False)
+  File "/export/data/sfan/MLE_final_project_safety/agent_code/team_agent/safety.py", line 281, in safety_decision
+    spec = resolve_safety_spec(safety_spec)
+  File "/export/data/sfan/MLE_final_project_safety/agent_code/team_agent/safety.py", line 78, in resolve_safety_spec
+    raise ValueError(
+ValueError: config.safety must contain exactly: fallback, horizon, mode, version
+
+======================================================================
+ERROR: test_versioned_fallback_cannot_be_silently_changed (tests.test_certified_placement.CertifiedPlacementTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/data/sfan/MLE_final_project_safety/tests/test_certified_placement.py", line 56, in test_versioned_fallback_cannot_be_silently_changed
+    self.assertEqual(resolve_safety_spec(V6),V6)
+  File "/export/data/sfan/MLE_final_project_safety/agent_code/team_agent/safety.py", line 78, in resolve_safety_spec
+    raise ValueError(
+ValueError: config.safety must contain exactly: fallback, horizon, mode, version
+
+----------------------------------------------------------------------
+Ran 7 tests in 0.016s
+
+FAILED (errors=6)

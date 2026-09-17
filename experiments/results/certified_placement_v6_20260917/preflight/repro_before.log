@@ -1,0 +1,5 @@
+step 208 mask [False, False, False, False, True, True] physical_fallback True proven_scenarios (0, 0, 0, 0, 0, 0)
+Traceback (most recent call last):
+  File "/tmp/repro-uncertified-bomb.py", line 11, in <module>
+    assert not d.mask[5], 'Uncertified BOMB remains available through physical fallback'
+AssertionError: Uncertified BOMB remains available through physical fallback

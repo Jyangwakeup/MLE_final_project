@@ -1,0 +1,14 @@
+test_existing_guarantee_loss_is_not_relabelled (tests.test_certified_placement.CertifiedPlacementTests) ... ok
+test_frozen_override_preserves_parent_weights_and_actual_act_veto (tests.test_certified_placement.CertifiedPlacementTests) ... ok
+test_historical_no_safe_fallback_cannot_place_unproved_bomb (tests.test_certified_placement.CertifiedPlacementTests) ... ok
+test_legacy_contract_is_unchanged (tests.test_certified_placement.CertifiedPlacementTests) ... ok
+test_proven_bomb_still_available (tests.test_certified_placement.CertifiedPlacementTests) ... ok
+test_timeout_is_still_a_failure_and_not_a_placement_permit (tests.test_certified_placement.CertifiedPlacementTests) ... ok
+test_unproved_bomb_as_only_base_action_never_returns_empty_mask (tests.test_certified_placement.CertifiedPlacementTests) ... ok
+test_v5_training_resume_cannot_silently_adopt_v6 (tests.test_certified_placement.CertifiedPlacementTests) ... ok
+test_versioned_fallback_cannot_be_silently_changed (tests.test_certified_placement.CertifiedPlacementTests) ... ok
+
+----------------------------------------------------------------------
+Ran 9 tests in 4.982s
+
+OK

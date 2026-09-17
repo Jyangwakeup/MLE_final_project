@@ -14,6 +14,8 @@ SAFETY_VERSION = "survival-mask-v1"
 ROBUST_SAFETY_VERSION = "survival-mask-v3"
 OPPONENT_ROBUST_SAFETY_VERSION = "survival-mask-v4"
 CONTROLLABLE_SAFETY_VERSION = "survival-mask-v5"
+CERTIFIED_PLACEMENT_SAFETY_VERSION = "survival-mask-v6"
+CONTROLLABLE_SAFETY_VERSIONS = {CONTROLLABLE_SAFETY_VERSION, CERTIFIED_PLACEMENT_SAFETY_VERSION}
 SAFETY_VERSION_V2 = "survival-mask-v2"
 SAFETY_SPEC_ENV = "BOMBERMAN_SAFETY_SPEC"
 SAFETY_MODES = ("off", "exploration", "all")
@@ -66,7 +68,7 @@ def resolve_safety_spec(
             "include_opponent_bombs", "execution_orders",
             "minimum_scenario_routes", "opponent_robust_fallback",
         }
-    if version == CONTROLLABLE_SAFETY_VERSION:
+    if version in CONTROLLABLE_SAFETY_VERSIONS:
         required |= {
             "opponent_action_space", "include_opponent_bombs",
             "execution_orders", "danger_interval", "search_budget_ms",
@@ -79,20 +81,21 @@ def resolve_safety_spec(
             "config.safety must contain exactly: " + ", ".join(sorted(required)))
     if version not in {
         SAFETY_VERSION, ROBUST_SAFETY_VERSION, OPPONENT_ROBUST_SAFETY_VERSION,
-        CONTROLLABLE_SAFETY_VERSION, SAFETY_VERSION_V2,
+        CONTROLLABLE_SAFETY_VERSION, CERTIFIED_PLACEMENT_SAFETY_VERSION, SAFETY_VERSION_V2,
     }:
         raise ValueError(f"Unsupported safety version: {value['version']!r}")
     if value["mode"] not in SAFETY_MODES:
         raise ValueError(f"Unsupported safety mode: {value['mode']!r}")
     if value["horizon"] != 7:
         raise ValueError(f"{version} requires horizon=7")
-    if value["fallback"] != "physical_q":
-        raise ValueError(f"{version} requires fallback='physical_q'")
+    fallback = "non_bomb_physical_q" if version == CERTIFIED_PLACEMENT_SAFETY_VERSION else "physical_q"
+    if value["fallback"] != fallback:
+        raise ValueError(f"{version} requires fallback={fallback!r}")
     result = {
         "version": str(version),
         "mode": str(value["mode"]),
         "horizon": 7,
-        "fallback": "physical_q",
+        "fallback": fallback,
     }
     if version in {ROBUST_SAFETY_VERSION, OPPONENT_ROBUST_SAFETY_VERSION}:
         if value["required_independent_routes"] != 2:
@@ -117,7 +120,7 @@ def resolve_safety_spec(
                 raise ValueError(
                     f"survival-mask-v4 requires {field}={expected_value!r}")
         result.update(expected)
-    if version == CONTROLLABLE_SAFETY_VERSION:
+    if version in CONTROLLABLE_SAFETY_VERSIONS:
         expected = {
             "opponent_action_space": "all_physical",
             "include_opponent_bombs": True,
@@ -129,7 +132,7 @@ def resolve_safety_spec(
         for field, expected_value in expected.items():
             if value[field] != expected_value:
                 raise ValueError(
-                    f"survival-mask-v5 requires {field}={expected_value!r}")
+                    f"{version} requires {field}={expected_value!r}")
         result.update(expected)
     if version == SAFETY_VERSION_V2:
         fraction = value["escape_area_fraction"]
@@ -296,7 +299,14 @@ def safety_decision(
     base, physical_fallback = survival_mask(
         game_state, physical, allow_bomb=allow_bomb,
         horizon=int(spec["horizon"]), context=context)
-    if spec["version"] == CONTROLLABLE_SAFETY_VERSION and not physical_fallback:
+    strict_placement = spec["version"] == CERTIFIED_PLACEMENT_SAFETY_VERSION
+    if strict_placement and physical_fallback:
+        # No horizon-survivable action exists, so no placement certificate
+        # exists either. Keep learned ranking among physical non-bomb actions.
+        base = base.copy()
+        base[ACTIONS.index("BOMB")] = False
+        return SafetyDecision(base, base.copy(), True, False, (0,) * 6, (-1.0,) * 6)
+    if spec["version"] in CONTROLLABLE_SAFETY_VERSIONS and not physical_fallback:
         from agent_code.team_agent.controllable_survival import (
             controllable_survival_actions, danger_interval_steps,
         )
@@ -332,8 +342,15 @@ def safety_decision(
         else:
             safe_non_bomb = base.copy()
             safe_non_bomb[bomb_index] = False
-            if safe_non_bomb.any() and "BOMB" not in proven:
+            if (strict_placement or safe_non_bomb.any()) and "BOMB" not in proven:
                 selected[bomb_index] = False
+                if strict_placement and not selected.any():
+                    # BOMB was the only v1 candidate but lacked the stronger
+                    # proof. Return an explicit non-bomb physical fallback,
+                    # never an empty mask or an uncertified placement.
+                    selected = physical.copy()
+                    selected[bomb_index] = False
+                    physical_fallback = True
         counts = [0] * len(ACTIONS)
         passing = [0] * len(ACTIONS)
         if result is not None:
@@ -347,7 +364,7 @@ def safety_decision(
             failing_profiles[candidate_indices[0]] = result.first_failing_profile
             failing_orders[candidate_indices[0]] = result.first_failing_order
         return SafetyDecision(
-            selected, base.copy(), False, False, (0,) * 6, (-1.0,) * 6,
+            selected, base.copy(), physical_fallback, False, (0,) * 6, (-1.0,) * 6,
             opponent_fallback, tuple(counts), tuple(passing),
             tuple(failing_profiles), tuple(failing_orders), guarantee_loss,
             False if result is None else result.timed_out,

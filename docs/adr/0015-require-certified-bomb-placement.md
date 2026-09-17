@@ -1,0 +1,3 @@
+# Require a completed proof for every new bomb
+
+Accepted for a new, separately evaluated safety version under the user's continuous safety-repair goal: unlike v5, v6 removes unproved BOMB even when no v1-safe non-bomb alternative exists, while the network retains its ordering among the remaining physical actions. Keep the v5 policy, submitted ZIP, guarantee-loss definition, 400ms proof budget and all admission thresholds unchanged; this intentionally supersedes ADR0004's placement exception only for the new version. First evaluate the unchanged parent weights with an explicit v6 override, retaining all failed runs and rejecting ordinary v5-to-v6 training resume; any later replay migration or formal training needs its own contract.
