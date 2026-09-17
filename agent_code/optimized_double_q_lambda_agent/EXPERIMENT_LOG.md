@@ -76,7 +76,7 @@ checkpoint SHA-256 与最终指标。
 
 | 实验 ID | 阶段 | 状态 | 固定合同 | 验收 |
 |---|---|---|---|---|
-| T2-L01 | Task 1 正式父链，seed 11 | 待提交 | Double Q(lambda)、`continuous-v2`、`r7_safe_credit_potential`、safety-all | `9000--9019` 三次连续 mean score ≥48；随后 `10000--10019` 独立 stage gate。 |
+| T2-L01 | Task 1 正式父链，seed 11 | 已提交：Slurm `472900` | Double Q(lambda)、`continuous-v2`、`r7_safe_credit_potential`、safety-all | `9000--9019` 三次连续 mean score ≥48；随后 `10000--10019` 独立 stage gate。 |
 | T2-P01 | Task 2 pilot，seed 11 | 等待 T2-L01 | 同一合同，`classic`、BOMB enabled、150k actions / 至少500局 | Task 2 质量门槛、Task 1 保留率与 CPU 时延均通过。 |
 
 T2-L01 的冻结性能评估从第 200 局开始，每 50 个新增训练回合执行一次；只有连续三次
