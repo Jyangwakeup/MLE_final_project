@@ -1,0 +1,37 @@
+{
+  "candidate": "Task 3 seed22/c150",
+  "task4_qualified": false,
+  "runtime_source_commit": "5445dfaae85bc5889f6298ef76882077c0178184",
+  "runtime_semantics": "Task3 policy unchanged; equivalent execution-order, viability and cache optimizations",
+  "zip_sha256": "b4f96841e573eed9d083b0f21dea9eb4b9941a0722dc850ac015327afa4cb6a4",
+  "zip_bytes": 3174789,
+  "checkpoint_sha256": "b0b9e7ae9cbefa6523ed01e1d7a6d474b90b6272f9de1706ee80f1f109cc803d",
+  "framework_origin": "repository original import c4ecff8:bomberman_rl (framework files unmodified)",
+  "smoke_test": {
+    "opponents": [
+      "random_agent",
+      "random_agent",
+      "random_agent"
+    ],
+    "rounds": 3,
+    "world_seed": 910001,
+    "train": false,
+    "device": "cpu",
+    "threads": 1,
+    "timing": {
+      "count": 1200,
+      "p95_ms": 7.29546695947647,
+      "max_ms": 27.99389325082302
+    },
+    "completed": true,
+    "search_timeouts": 0,
+    "guarantee_losses": 0
+  },
+  "docker_test": "not run: Docker executable unavailable",
+  "official_machine_test": "pending user upload",
+  "packager_source_sha256": "d040fe659a579daa513a75abed59d68cf68543ae2eaaacd0c6d1048821e2a2dc",
+  "packaging_tests": {
+    "count": 3,
+    "passed": true
+  }
+}

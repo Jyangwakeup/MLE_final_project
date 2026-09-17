@@ -1,0 +1,8 @@
+test_cnn_submission_runs_without_teacher_dataset_or_repository_packages (tests.test_submission_package.SubmissionPackageTest) ... ok
+test_generated_agent_runs_without_repository_shared_packages (tests.test_submission_package.SubmissionPackageTest) ... ok
+test_task3_archive_contains_only_selected_weights_and_dependencies (tests.test_submission_package.SubmissionPackageTest) ... ok
+
+----------------------------------------------------------------------
+Ran 3 tests in 11.858s
+
+OK

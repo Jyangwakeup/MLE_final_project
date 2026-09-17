@@ -1,0 +1,33 @@
+{
+  "command": [
+    "taskset",
+    "-c",
+    "0",
+    "/export/data/sfan/miniforge3/envs/mle/bin/python",
+    "verify_submission.py",
+    "play",
+    "--agents",
+    "double_dqn_continuous_v2_agent",
+    "random_agent",
+    "random_agent",
+    "random_agent",
+    "--scenario",
+    "classic",
+    "--n-rounds",
+    "3",
+    "--seed",
+    "910001",
+    "--no-gui",
+    "--save-stats",
+    "pretest-random"
+  ],
+  "cwd": "/export/data/sfan/MLE_final_project/output/submission-pretest-20260917/official-framework",
+  "environment_overrides": {
+    "PYTHONPATH": "/export/data/sfan/MLE_final_project/output/submission-pretest-20260917/test-dependencies",
+    "OMP_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "SDL_VIDEODRIVER": "dummy"
+  },
+  "returncode": 0
+}

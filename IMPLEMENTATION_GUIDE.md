@@ -314,7 +314,7 @@ runs/<run_id>/
 
 ### 7.5 打包规则
 
-打包工具仍是代码截止前的剩余交付项。其目标接口接受指定检查点、配置及输出 zip 路径，创建唯一胜出 Agent 的独立目录，复制自有 Python 模块、推理权重、相对路径配置和 requirements。若胜出 Q-learning，包不应要求 PyTorch；若胜出 DQN，则必须声明经过验证的 CPU PyTorch 依赖。
+打包工具为 `experiments/package_agent.py`，接受 Agent 名称、指定检查点与输出 ZIP 路径，创建唯一胜出 Agent 的独立目录，内置共享运行依赖、唯一选中权重、权重 SHA 清单与实测依赖版本。若胜出 Q-learning，包不应要求 PyTorch；若胜出 DQN，则必须声明经过验证的 CPU PyTorch 依赖。
 
 生成前检查配置版本、40 维输入、六动作顺序、权重存在及加载；生成后解压到新的原版框架副本，以 `train=0` 对三个 random_agent 完成运行，再对三个 rule_based_agent 检查耗时。通过后才标记提交包就绪。
 
@@ -960,3 +960,8 @@ WAIT保持原来的驻留许可，移动仍须满足下一步可进入约束，�
 60个已保存状态、128个合成状态和错误位置复用反例须与旧标量证明完全一致；
 新旧配对测量以首轮向量化版本为对照。新协议`cached-viability-v2`保持
 原预算截止、全部门槛与阶段顺序，实验ID、配置、源码、数据区段重新登记。
+
+
+### Task 3 预测试提交包（2026-09-17）
+
+已用Task3 seed22/c150原权重和等价加速运行时制作单Agent ZIP，3项打包测试及原始导入框架中对三个random_agent的3局CPU单线程测试通过。此状态取代旧章节中“打包工具尚未实现”的描述；Docker和官方机器验证仍未完成。详情与SHA见 `docs/research/task3-pretest-submission.md`；该包不宣称Task4合格。

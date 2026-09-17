@@ -1,0 +1,14 @@
+{
+  "zip_sha256": "b4f96841e573eed9d083b0f21dea9eb4b9941a0722dc850ac015327afa4cb6a4",
+  "zip_bytes": 3174789,
+  "manifest": {
+    "agent": "double_dqn_continuous_v2_agent",
+    "algorithm": "double_dqn",
+    "checkpoint": "final.pt",
+    "checkpoint_sha256": "b0b9e7ae9cbefa6523ed01e1d7a6d474b90b6272f9de1706ee80f1f109cc803d",
+    "feature_id": "continuous-v2",
+    "reward_id": "r7_safe_credit_sparse"
+  },
+  "framework_commit": "c4ecff8",
+  "framework_tree": "bomberman_rl"
+}

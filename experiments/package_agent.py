@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
+import importlib.metadata
 import json
 from pathlib import Path
 import pickle
@@ -73,7 +75,7 @@ def build_submission(agent: str, checkpoint: Path, output: Path) -> Path:
         shutil.copytree(
             PROJECT_ROOT / "agent_code" / agent, stage,
             ignore=shutil.ignore_patterns(
-                "__pycache__", "*.pyc", "final.pkl", "final.pt", "logs"),
+                "__pycache__", "*.pyc", "*.pkl", "*.pt", "logs"),
         )
         vendor = stage / "_vendor"
         vendor.mkdir()
@@ -114,7 +116,14 @@ def build_submission(agent: str, checkpoint: Path, output: Path) -> Path:
             "agent": agent, "algorithm": contract.algorithm,
             "feature_id": contract.feature_id, "reward_id": payload["reward_id"],
             "checkpoint": contract.checkpoint_name,
+            "checkpoint_sha256": hashlib.sha256(checkpoint.read_bytes()).hexdigest(),
         }
+        # Declare the runtime versions actually used to build and verify the
+        # archive. Keep all dependencies inside the selected agent directory.
+        requirements = ["numpy==" + importlib.metadata.version("numpy")]
+        if contract.algorithm not in {"double_q_learning", "expected_sarsa_lambda", "double_q_lambda"}:
+            requirements.append("torch==" + importlib.metadata.version("torch").split("+")[0])
+        (stage / "requirements.txt").write_text("\n".join(requirements) + "\n")
         (stage / "SUBMISSION_MANIFEST.json").write_text(
             json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
         with zipfile.ZipFile(output, "w", compression=zipfile.ZIP_DEFLATED) as archive:

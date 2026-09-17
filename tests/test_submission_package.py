@@ -88,6 +88,25 @@ class SubmissionPackageTest(unittest.TestCase):
             )
             self.assertEqual(result.returncode, 0, result.stderr)
 
+    def test_task3_archive_contains_only_selected_weights_and_dependencies(self):
+        import hashlib
+        import json
+        agent = "double_dqn_continuous_v2_agent"
+        checkpoint = PROJECT_ROOT / "agent_code" / agent / "task3_validated.pt"
+        with tempfile.TemporaryDirectory() as directory:
+            archive = build_submission(agent, checkpoint, Path(directory) / "submission.zip")
+            with zipfile.ZipFile(archive) as zipped:
+                weights = [name for name in zipped.namelist()
+                           if name.endswith((".pt", ".pkl"))]
+                self.assertEqual(weights, [f"{agent}/final.pt"])
+                expected = hashlib.sha256(checkpoint.read_bytes()).hexdigest()
+                self.assertEqual(hashlib.sha256(zipped.read(weights[0])).hexdigest(), expected)
+                manifest = json.loads(zipped.read(f"{agent}/SUBMISSION_MANIFEST.json"))
+                self.assertEqual(manifest["checkpoint_sha256"], expected)
+                dependencies = zipped.read(f"{agent}/requirements.txt").decode()
+                self.assertIn("numpy==", dependencies)
+                self.assertIn("torch==", dependencies)
+
     def test_cnn_submission_runs_without_teacher_dataset_or_repository_packages(self):
         agent = "cnn_distilled_double_dqn_agent"
         checkpoint = PROJECT_ROOT / "agent_code" / agent / "final.pt"
