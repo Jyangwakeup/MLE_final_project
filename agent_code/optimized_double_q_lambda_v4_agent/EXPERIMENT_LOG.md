@@ -18,8 +18,8 @@
 
 | ID | 特征 | 奖励 | 状态 | 目的 |
 |---|---|---|---|---|
-| V4-T1-R7 | continuous-v4 | r7_safe_credit_potential | planned | 建立正式 Task 1 父链 |
-| V4-T1-R10 | continuous-v4 | r10_bounded_history_anti_loop | planned | 建立正式 Task 1 父链 |
+| V4-T1-R7 | continuous-v4 | r7_safe_credit_potential | running：Slurm `472903` | 建立正式 Task 1 父链；预计50–75分钟 |
+| V4-T1-R10 | continuous-v4 | r10_bounded_history_anti_loop | running：Slurm `472904` | 建立正式 Task 1 父链；预计50–75分钟 |
 | V4-T2-R7 | continuous-v4 | r7_safe_credit_potential | blocked on parent | 测量仅增加历史可观测性的收益 |
 | V4-T2-R10 | continuous-v4 | r10_bounded_history_anti_loop | blocked on parent | 测量有界反循环奖励的增量收益 |
 
