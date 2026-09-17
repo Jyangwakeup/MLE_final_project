@@ -742,6 +742,15 @@ Task2金币保留、Task3得分与战斗提升，seed33失败于战斗提升；�
 结果 JSON 和自动报告位于带源码提交与manifest身份的campaign运行目录。
 本段是执行合同，不是通过结果。术语及取舍见ADR0007、ADR0008。
 
+本轮已完成，结论为**主验证失败**，见
+[`task3-lifecycle-frozen-results.md`](docs/research/task3-lifecycle-frozen-results.md)。
+源码`15d4721`下仅运行A臂：seed11/22/33分别训练150/250/150局，
+选中c50/c150/c50，三个种子全部通过100世界独立确认。
+唯一候选seed22/c150主验证得分7.52（父5.68）、击杀增加0.13、
+第一名比例增加19个百分点，但世界19489出现一次逃生塌缩，违反零异常门槛。
+按原协议停止，不更换候选；该权重不能标记为Task3合格。
+完整机器证据及复现命令见`experiments/results/task3_lifecycle_20260917.json`。
+
 报告的规定结构、篇幅、署名和提交边界见 [`PROJECT_REQUIREMENTS.md`](PROJECT_REQUIREMENTS.md)。本节只记录团队的写作分工和复现材料积累方式，不把报告拆成三个互不相关的个人成果。
 
 | 成员 | 主要写作内容 |
