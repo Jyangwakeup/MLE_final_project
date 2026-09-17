@@ -1,0 +1,110 @@
+{
+  "execution_source_commit": "4aa3812206a1203bceffe111e072c9d4a8d8fef3",
+  "analysis_source_commit": "0baf79d2c8ac24af4543d40eca9499702a67c4a8",
+  "reason": "400 episodes completed; chart generation failed after execution",
+  "original_controller_status": "stopped_failure",
+  "tasks": {
+    "1": {
+      "summary": {
+        "episodes": 100.0,
+        "mean_score": 50.0,
+        "mean_coins": 50.0,
+        "mean_crates": 0.0,
+        "mean_kills": 0.0,
+        "first_place_rate": 1.0,
+        "suicide_rate": 0.0,
+        "bomb_survival_rate": 0.0,
+        "zero_bomb_round_rate": 1.0,
+        "invalid_action_rate": 0.0,
+        "act_p95_seconds": 0.008326053619384766,
+        "act_max_seconds": 0.011751174926757812,
+        "act_timeouts": 0.0,
+        "act_skipped": 0.0,
+        "avoidable_escape_collapses": 0.0,
+        "robust_guarantee_losses": 0.0,
+        "robust_search_timeouts": 0.0,
+        "mean_bombs": 0.0
+      },
+      "failures": [],
+      "raw_run": "/export/data/sfan/MLE_final_project_safety/runs/safety_stress_task1_4aa3812",
+      "analysis_output": "/export/data/sfan/MLE_final_project_safety/runs/safety_stress_4aa3812/reanalysis_0baf79d/safety_stress_task1_4aa3812/safety_stress_task1_4aa3812_summary"
+    },
+    "2": {
+      "summary": {
+        "episodes": 100.0,
+        "mean_score": 7.39,
+        "mean_coins": 7.39,
+        "mean_crates": 102.23,
+        "mean_kills": 0.0,
+        "first_place_rate": 1.0,
+        "suicide_rate": 0.0,
+        "bomb_survival_rate": 1.0,
+        "zero_bomb_round_rate": 0.0,
+        "invalid_action_rate": 0.0,
+        "act_p95_seconds": 0.0070836544036865234,
+        "act_max_seconds": 0.15078043937683105,
+        "act_timeouts": 0.0,
+        "act_skipped": 0.0,
+        "avoidable_escape_collapses": 0.0,
+        "robust_guarantee_losses": 0.0,
+        "robust_search_timeouts": 0.0,
+        "mean_bombs": 47.17
+      },
+      "failures": [],
+      "raw_run": "/export/data/sfan/MLE_final_project_safety/runs/safety_stress_task2_4aa3812",
+      "analysis_output": "/export/data/sfan/MLE_final_project_safety/runs/safety_stress_4aa3812/reanalysis_0baf79d/safety_stress_task2_4aa3812/safety_stress_task2_4aa3812_summary"
+    },
+    "3": {
+      "summary": {
+        "episodes": 100.0,
+        "mean_score": 7.4,
+        "mean_coins": 4.75,
+        "mean_crates": 60.31,
+        "mean_kills": 0.53,
+        "first_place_rate": 0.63,
+        "suicide_rate": 0.0,
+        "bomb_survival_rate": 1.0,
+        "zero_bomb_round_rate": 0.0,
+        "invalid_action_rate": 0.00052563075690829,
+        "act_p95_seconds": 0.017009258270263672,
+        "act_max_seconds": 0.08143305778503418,
+        "act_timeouts": 0.0,
+        "act_skipped": 0.0,
+        "avoidable_escape_collapses": 0.0,
+        "robust_guarantee_losses": 0.0,
+        "robust_search_timeouts": 0.0,
+        "mean_bombs": 42.19
+      },
+      "failures": [],
+      "raw_run": "/export/data/sfan/MLE_final_project_safety/runs/safety_stress_task3_4aa3812",
+      "analysis_output": "/export/data/sfan/MLE_final_project_safety/runs/safety_stress_4aa3812/reanalysis_0baf79d/safety_stress_task3_4aa3812/safety_stress_task3_4aa3812_summary"
+    },
+    "4": {
+      "summary": {
+        "episodes": 100.0,
+        "mean_score": 4.23,
+        "mean_coins": 2.88,
+        "mean_crates": 33.43,
+        "mean_kills": 0.27,
+        "first_place_rate": 0.43,
+        "suicide_rate": 0.0,
+        "bomb_survival_rate": 1.0,
+        "zero_bomb_round_rate": 0.0,
+        "invalid_action_rate": 0.002789238189319542,
+        "act_p95_seconds": 0.05559039115905762,
+        "act_max_seconds": 0.35648560523986816,
+        "act_timeouts": 0.0,
+        "act_skipped": 0.0,
+        "avoidable_escape_collapses": 0.0,
+        "robust_guarantee_losses": 0.0,
+        "robust_search_timeouts": 0.0,
+        "mean_bombs": 35.79
+      },
+      "failures": [],
+      "raw_run": "/export/data/sfan/MLE_final_project_safety/runs/safety_stress_task4_4aa3812",
+      "analysis_output": "/export/data/sfan/MLE_final_project_safety/runs/safety_stress_4aa3812/reanalysis_0baf79d/safety_stress_task4_4aa3812/safety_stress_task4_4aa3812_summary"
+    }
+  },
+  "task4_qualified": false,
+  "status": "passed"
+}
