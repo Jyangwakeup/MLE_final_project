@@ -10,6 +10,12 @@ VERSION = 'task4-transfer-v1'
 PARENT_SHA256 = 'b0b9e7ae9cbefa6523ed01e1d7a6d474b90b6272f9de1706ee80f1f109cc803d'
 
 
+SAFETY_MIGRATION = 'task4-safety-v5-v9-v1'
+COMPACT_IMPLEMENTATION = 'compact-bitset-v1'
+PARENT_SAFETY = {'version': 'survival-mask-v5', 'mode': 'all', 'horizon': 7, 'opponent_action_space': 'all_physical', 'include_opponent_bombs': True, 'execution_orders': 'all', 'danger_interval': 'own_bomb_and_lingering', 'search_budget_ms': 400, 'robust_fallback': 'survival-mask-v1', 'fallback': 'physical_q'}
+TARGET_SAFETY = {'version': 'survival-mask-v9', 'mode': 'all', 'horizon': 7, 'opponent_action_space': 'all_physical', 'include_opponent_bombs': True, 'execution_orders': 'all', 'danger_interval': 'own_bomb_capacity_deadline', 'search_budget_ms': 400, 'robust_fallback': 'survival-mask-v1', 'fallback': 'non_bomb_physical_q', 'opponent_rearming': 'possible_after_first_transition', 'proof_clock': 'recorded_placement_step', 'nonpending_movement': 'prefer_proven_actions'}
+
+
 def sha256(path):
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 
@@ -34,12 +40,24 @@ def contract_for(root, config_path, seed):
     for name, expected in manifest['opponent_hashes'].items():
         if sha256(root/name) != expected:
             raise ValueError('Task 4 opponent source changed')
-    return dict(version=VERSION, arm=arm, seed=seed,
+    contract = dict(version=VERSION, arm=arm, seed=seed,
                 parent_sha256=PARENT_SHA256,
                 parent_source_commit=manifest['parent']['source_commit'],
                 manifest_sha256=digest(manifest), config_sha256=sha256(config_path),
                 opponent_hashes=manifest['opponent_hashes'],
                 opponents=['rule_based_agent']*3)
+    migration = spec.get('safety_migration')
+    if migration is not None:
+        if migration != SAFETY_MIGRATION or config['safety'] != TARGET_SAFETY:
+            raise ValueError('Unsupported explicit safety migration')
+        from experiments.run import _source_hash
+        import subprocess
+        contract.update(version='task4-transfer-v2', safety_migration=migration,
+                        parent_safety=PARENT_SAFETY, target_safety=TARGET_SAFETY,
+                        implementation=COMPACT_IMPLEMENTATION,
+                        source_hash=_source_hash('double_dqn_continuous_v2_agent'),
+                        source_commit=subprocess.check_output(['git','rev-parse','HEAD'],cwd=root,text=True).strip())
+    return contract
 
 
 def validate_payload(payload, config):
@@ -47,13 +65,16 @@ def validate_payload(payload, config):
         FEATURE_SCHEMA, NETWORK_SPEC, HYPERPARAMETERS, ACTIONS,
     )
     from agent_code.team_agent.rewards import resolve_reward_spec
+    migration = config.get('task4_contract', {}).get('safety_migration')
+    if migration is not None and (migration != SAFETY_MIGRATION or config['safety'] != TARGET_SAFETY):
+        raise ValueError('Unsupported explicit safety migration')
     expected = dict(checkpoint_schema='training-resume-v11',
                     lifecycle_version='decision-snapshot-v1', training_task='weak_opponents',
                     algorithm='double_dqn', feature_id='continuous-v2',
                     feature_schema=FEATURE_SCHEMA, network_spec=NETWORK_SPEC,
                     hyperparameters=HYPERPARAMETERS, actions=list(ACTIONS), n_step=5,
                     reward_id='r7_safe_credit_sparse', training_device_type='cpu',
-                    training_device_name=None, safety_spec=config['safety'],
+                    training_device_name=None, safety_spec=PARENT_SAFETY if migration else config['safety'],
                     reward_spec=resolve_reward_spec('r7_safe_credit_sparse'))
     for key, value in expected.items():
         if payload.get(key) != value:
@@ -90,6 +111,7 @@ def materialize(parent, destination, *, root, config_path, seed, training_budget
     validate_payload(payload, config)
     contract['parent_agent_seed'] = payload['agent_seed']
     contract['parent_stage_action_steps'] = payload['stage_action_steps']
+    payload['safety_spec'] = config['safety']
     payload['teacher'] = {k: value.clone() for k,value in payload['policy'].items()}
     payload['training_task'] = 'full_match'
     payload['retention_spec'] = config['training']['retention']

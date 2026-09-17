@@ -251,3 +251,7 @@ _Avoid_: Rolling placement guarantee, inferred placement clock
 **Proven movement preference**:
 A decision constraint that prefers actions with a completed opponent-contingent survival proof when such actions exist, including outside own-bomb responsibility. Its explicit fallback is not a survival guarantee or an ongoing placement obligation.
 _Avoid_: Guaranteed movement, unconditional safety
+
+**Explicit safety-contract transfer**:
+A registered curriculum transition that preserves the learned state while changing the safety contract under an audited source/target mapping. It does not authorize a mismatched ordinary resume or retroactively certify historical replay.
+_Avoid_: Implicit safety upgrade, interchangeable resume

@@ -127,7 +127,11 @@ class TransferTests(unittest.TestCase):
         from experiments.run import main
         import settings
         d=Path(self.temp.name)
-        common=['--config',str(ROOT/'experiments/configs/task4_A.json'),'--mode','train',
+        config_path=ROOT/'experiments/configs/task4_A.json'
+        if isinstance(self,SafetyMigrationTests):
+            self.migrated()
+            config_path=self.compact_config_path
+        common=['--config',str(config_path),'--mode','train',
                 '--device','cpu','--task','4','--agent','double_dqn_continuous_v2_agent',
                 '--seed','22','--replay-policy','none']
         with patch.object(settings,'MAX_STEPS',3), patch('experiments.run.RUNS_ROOT',d):
@@ -144,3 +148,38 @@ class TransferTests(unittest.TestCase):
             return [(r['round_index'],r['step'],r['agent_name'],r['action'])
                     for r in map(json.loads,path.read_text().splitlines())]
         self.assertEqual(actions(d/'whole/timing.jsonl'),actions(d/'first/timing.jsonl')+actions(d/'second/timing.jsonl'))
+
+class SafetyMigrationTests(TransferTests):
+    def migrated(self, seed=22, arm='A'):
+        from experiments.task4_transfer import SAFETY_MIGRATION, TARGET_SAFETY
+        cfg=json.loads((ROOT/f'experiments/configs/task4_{arm}.json').read_text())
+        manifest=json.loads((ROOT/cfg['task4_contract']['manifest']).read_text())
+        manifest_path=Path(self.temp.name)/'manifest.json'
+        config_path=Path(self.temp.name)/f'compact_{arm}.json'
+        manifest['arm_configs'][arm]=str(config_path)
+        manifest_path.write_text(json.dumps(manifest))
+        cfg['task4_contract'].update(manifest=str(manifest_path),safety_migration=SAFETY_MIGRATION)
+        cfg['safety']=TARGET_SAFETY
+        config_path.write_text(json.dumps(cfg))
+        self.compact_config_path=config_path
+        self.config=cfg
+        path=Path(self.temp.name)/f'{seed}{arm}.pt'
+        contract=materialize(PARENT,path,root=ROOT,config_path=config_path,seed=seed,
+                             training_budget={'target_stage_action_steps':None,'min_rounds':1})
+        return path,torch.load(path,weights_only=True,map_location='cpu'),contract
+
+    def test_reject_invalid_parent_and_resume_identity(self):
+        from experiments.task4_transfer import validate_payload, TARGET_SAFETY
+        _,p,c=self.migrated()
+        self.assertEqual(p['safety_spec'],TARGET_SAFETY)
+        self.assertEqual(c['parent_safety'],self.parent['safety_spec'])
+        self.assertEqual(c['version'],'task4-transfer-v2')
+        validate_resume(c,root=ROOT,config_path=self.compact_config_path,seed=22)
+        for key in ('source_hash','source_commit','implementation','target_safety','parent_safety'):
+            bad={**c,key:'incorrect'}
+            with self.assertRaises(ValueError):validate_resume(bad,root=ROOT,config_path=self.compact_config_path,seed=22)
+        for key in ('safety_spec','lifecycle_version','action_history_state','transfer_contract'):
+            parent=dict(self.parent);parent[key]={'incorrect':True}
+            with self.assertRaises(ValueError):validate_payload(parent,self.config)
+        invalid=copy.deepcopy(self.config);invalid['safety']['search_budget_ms']=500
+        with self.assertRaises(ValueError):validate_payload(self.parent,invalid)

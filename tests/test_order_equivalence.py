@@ -120,9 +120,9 @@ class OrderEquivalenceTests(unittest.TestCase):
             actions, remaining = search_arguments(record)
             with self.subTest(step=record['state']['step']):
                 self.compare(record['state'],actions)
-                with patch.object(survival,'enumerate_opponent_transition_scenarios',old.enumerate_opponent_transition_scenarios):
-                    expected = survival.controllable_survival_actions(record['state'],actions,remaining_steps=remaining,budget_ms=60000)
+                from tests.reference_grid_survival import controllable_survival_actions as reference
+                expected = reference(record['state'],actions,remaining_steps=remaining,budget_ms=60000)
                 actual = survival.controllable_survival_actions(record['state'],actions,remaining_steps=remaining,budget_ms=60000)
                 self.assertFalse(expected.timed_out)
                 self.assertFalse(actual.timed_out)
-                self.assertEqual(expected,actual)
+                self.assertEqual(asdict(expected),asdict(actual))

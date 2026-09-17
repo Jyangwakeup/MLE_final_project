@@ -1,0 +1,227 @@
+.......................................................................................................E  0%|                                                     | 0/5 [00:00<?, ?it/s]  0%|                                                     | 0/5 [00:00<?, ?it/s]
+.....  0%|                                                     | 0/2 [00:00<?, ?it/s]100%|█████████████████████████████████████████████| 2/2 [00:00<00:00, 18.01it/s]100%|█████████████████████████████████████████████| 2/2 [00:00<00:00, 17.95it/s]
+  0%|                                                     | 0/1 [00:00<?, ?it/s]100%|█████████████████████████████████████████████| 1/1 [00:00<00:00, 20.48it/s]
+.  0%|                                                     | 0/1 [00:00<?, ?it/s]100%|█████████████████████████████████████████████| 1/1 [00:00<00:00, 20.78it/s]
+  0%|                                                     | 0/1 [00:00<?, ?it/s]100%|█████████████████████████████████████████████| 1/1 [00:00<00:00, 20.13it/s]
+....  0%|                                                     | 0/1 [00:00<?, ?it/s]100%|█████████████████████████████████████████████| 1/1 [00:00<00:00, 18.69it/s]
+  0%|                                                     | 0/1 [00:00<?, ?it/s]100%|█████████████████████████████████████████████| 1/1 [00:00<00:00, 55.30it/s]
+..  0%|                                                     | 0/1 [00:00<?, ?it/s]100%|█████████████████████████████████████████████| 1/1 [00:00<00:00, 78.67it/s]
+  0%|                                                     | 0/1 [00:00<?, ?it/s]100%|█████████████████████████████████████████████| 1/1 [00:00<00:00, 51.29it/s]
+.Evaluation:   0%|                                      | 0/2 [00:00<?, ?round/s]Evaluation: 100%|████████████████████████████| 2/2 [00:00<00:00, 1366.67round/s]
+.  0%|                                                     | 0/1 [00:00<?, ?it/s]  0%|                                                     | 0/1 [00:00<?, ?it/s]
+.  0%|                                                     | 0/1 [00:00<?, ?it/s]100%|█████████████████████████████████████████████| 1/1 [00:00<00:00, 86.13it/s]
+  0%|                                                     | 0/1 [00:00<?, ?it/s]100%|█████████████████████████████████████████████| 1/1 [00:00<00:00, 69.45it/s]
+  0%|                                                     | 0/1 [00:00<?, ?it/s]100%|█████████████████████████████████████████████| 1/1 [00:00<00:00, 87.58it/s]
+  0%|                                                     | 0/1 [00:00<?, ?it/s]100%|█████████████████████████████████████████████| 1/1 [00:00<00:00, 76.46it/s]
+.  0%|                                                     | 0/2 [00:00<?, ?it/s]100%|█████████████████████████████████████████████| 2/2 [00:00<00:00, 16.74it/s]100%|█████████████████████████████████████████████| 2/2 [00:00<00:00, 16.67it/s]
+  0%|                                                     | 0/1 [00:00<?, ?it/s]100%|█████████████████████████████████████████████| 1/1 [00:00<00:00, 21.71it/s]
+  0%|                                                     | 0/1 [00:00<?, ?it/s]100%|█████████████████████████████████████████████| 1/1 [00:00<00:00, 20.15it/s]
+....  0%|                                                     | 0/1 [00:00<?, ?it/s]100%|█████████████████████████████████████████████| 1/1 [00:00<00:00, 21.59it/s]
+  0%|                                                     | 0/1 [00:00<?, ?it/s]100%|█████████████████████████████████████████████| 1/1 [00:00<00:00, 21.51it/s]
+.  0%|                                                     | 0/1 [00:00<?, ?it/s]100%|█████████████████████████████████████████████| 1/1 [00:00<00:00, 22.40it/s]
+  0%|                                                     | 0/1 [00:00<?, ?it/s]100%|█████████████████████████████████████████████| 1/1 [00:00<00:00, 14.53it/s]
+...  0%|                                                     | 0/1 [00:00<?, ?it/s]100%|█████████████████████████████████████████████| 1/1 [00:00<00:00, 20.53it/s]
+.................................................................................................................diagnostic completed 22
+diagnostic completed 11
+diagnostic completed 33
+.diagnostic completed 22
+diagnostic completed 11
+diagnostic completed 33
+.............................................................................................................................................................................error: boom
+.............  0%|                                                     | 0/4 [00:00<?, ?it/s]  0%|                                                     | 0/4 [00:00<?, ?it/s]
+error: Own-bomb placement step is inconsistent with the active proof deadline
+F/export/data/sfan/miniforge3/envs/mle/lib/python3.10/ast.py:50: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmp5o1s3_u7/whole/episodes.jsonl' mode='a' encoding='utf-8'>
+  return compile(source, filename, mode, flags,
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/export/data/sfan/miniforge3/envs/mle/lib/python3.10/ast.py:50: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmp5o1s3_u7/whole/timing.jsonl' mode='a' encoding='utf-8'>
+  return compile(source, filename, mode, flags,
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/export/data/sfan/miniforge3/envs/mle/lib/python3.10/ast.py:50: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmp5o1s3_u7/whole/phase_events.jsonl' mode='a' encoding='utf-8'>
+  return compile(source, filename, mode, flags,
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+.....  0%|                                                     | 0/4 [00:00<?, ?it/s] 25%|███████████▎                                 | 1/4 [00:00<00:02,  1.16it/s] 50%|██████████████████████▌                      | 2/4 [00:01<00:01,  1.16it/s] 75%|█████████████████████████████████▊           | 3/4 [00:02<00:00,  1.15it/s]100%|█████████████████████████████████████████████| 4/4 [00:03<00:00,  1.15it/s]100%|█████████████████████████████████████████████| 4/4 [00:03<00:00,  1.15it/s]
+  0%|                                                     | 0/2 [00:00<?, ?it/s] 50%|██████████████████████▌                      | 1/2 [00:00<00:00,  1.16it/s]100%|█████████████████████████████████████████████| 2/2 [00:01<00:00,  1.22it/s]100%|█████████████████████████████████████████████| 2/2 [00:01<00:00,  1.21it/s]
+  0%|                                                     | 0/2 [00:00<?, ?it/s] 50%|██████████████████████▌                      | 1/2 [00:00<00:00,  1.07it/s]100%|█████████████████████████████████████████████| 2/2 [00:01<00:00,  1.10it/s]100%|█████████████████████████████████████████████| 2/2 [00:01<00:00,  1.10it/s]
+......................s........
+======================================================================
+ERROR: test_board_checkpoint_feature_contract_accepts_null_vector_shape (test_experiment_run.ExperimentRunTest)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/data/sfan/MLE_final_project_safety_compact/tests/test_experiment_run.py", line 122, in test_board_checkpoint_feature_contract_accepts_null_vector_shape
+    directory.mkdir()
+  File "/export/data/sfan/miniforge3/envs/mle/lib/python3.10/pathlib.py", line 1175, in mkdir
+    self._accessor.mkdir(self, mode)
+FileNotFoundError: [Errno 2] No such file or directory: '/export/data/sfan/MLE_final_project_safety_compact/runs/test-experiment-41a67486626a4c89a07db1a95bafd4e8-board-contract'
+
+======================================================================
+FAIL: test_twenty_historical_states_complete_proof_and_evidence (test_order_equivalence.OrderEquivalenceTests) (step=38)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/data/sfan/MLE_final_project_safety_compact/tests/test_order_equivalence.py", line 128, in test_twenty_historical_states_complete_proof_and_evidence
+    self.assertEqual(expected,actual)
+AssertionError: Contr[103 chars]ut=False, first_failing_profile=None, first_failing_order=None) != Contr[103 chars]ut=False, first_failing_profile=None, first_failing_order=None)
+
+======================================================================
+FAIL: test_twenty_historical_states_complete_proof_and_evidence (test_order_equivalence.OrderEquivalenceTests) (step=39)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/data/sfan/MLE_final_project_safety_compact/tests/test_order_equivalence.py", line 128, in test_twenty_historical_states_complete_proof_and_evidence
+    self.assertEqual(expected,actual)
+AssertionError: Contr[103 chars]ut=False, first_failing_profile=None, first_failing_order=None) != Contr[103 chars]ut=False, first_failing_profile=None, first_failing_order=None)
+
+======================================================================
+FAIL: test_twenty_historical_states_complete_proof_and_evidence (test_order_equivalence.OrderEquivalenceTests) (step=40)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/data/sfan/MLE_final_project_safety_compact/tests/test_order_equivalence.py", line 128, in test_twenty_historical_states_complete_proof_and_evidence
+    self.assertEqual(expected,actual)
+AssertionError: Contr[103 chars]ut=False, first_failing_profile=None, first_failing_order=None) != Contr[103 chars]ut=False, first_failing_profile=None, first_failing_order=None)
+
+======================================================================
+FAIL: test_twenty_historical_states_complete_proof_and_evidence (test_order_equivalence.OrderEquivalenceTests) (step=41)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/data/sfan/MLE_final_project_safety_compact/tests/test_order_equivalence.py", line 128, in test_twenty_historical_states_complete_proof_and_evidence
+    self.assertEqual(expected,actual)
+AssertionError: Contr[112 chars]ut=False, first_failing_profile=None, first_failing_order=None) != Contr[112 chars]ut=False, first_failing_profile=None, first_failing_order=None)
+
+======================================================================
+FAIL: test_twenty_historical_states_complete_proof_and_evidence (test_order_equivalence.OrderEquivalenceTests) (step=42)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/data/sfan/MLE_final_project_safety_compact/tests/test_order_equivalence.py", line 128, in test_twenty_historical_states_complete_proof_and_evidence
+    self.assertEqual(expected,actual)
+AssertionError: Contr[112 chars]ut=False, first_failing_profile=None, first_failing_order=None) != Contr[112 chars]ut=False, first_failing_profile=None, first_failing_order=None)
+
+======================================================================
+FAIL: test_twenty_historical_states_complete_proof_and_evidence (test_order_equivalence.OrderEquivalenceTests) (step=43)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/data/sfan/MLE_final_project_safety_compact/tests/test_order_equivalence.py", line 128, in test_twenty_historical_states_complete_proof_and_evidence
+    self.assertEqual(expected,actual)
+AssertionError: Contr[118 chars]ut=False, first_failing_profile=None, first_failing_order=None) != Contr[118 chars]ut=False, first_failing_profile=None, first_failing_order=None)
+
+======================================================================
+FAIL: test_twenty_historical_states_complete_proof_and_evidence (test_order_equivalence.OrderEquivalenceTests) (step=44)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/data/sfan/MLE_final_project_safety_compact/tests/test_order_equivalence.py", line 128, in test_twenty_historical_states_complete_proof_and_evidence
+    self.assertEqual(expected,actual)
+AssertionError: Contr[100 chars]ut=False, first_failing_profile=None, first_failing_order=None) != Contr[100 chars]ut=False, first_failing_profile=None, first_failing_order=None)
+
+======================================================================
+FAIL: test_twenty_historical_states_complete_proof_and_evidence (test_order_equivalence.OrderEquivalenceTests) (step=45)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/data/sfan/MLE_final_project_safety_compact/tests/test_order_equivalence.py", line 128, in test_twenty_historical_states_complete_proof_and_evidence
+    self.assertEqual(expected,actual)
+AssertionError: Contr[104 chars]ut=False, first_failing_profile=None, first_failing_order=None) != Contr[104 chars]ut=False, first_failing_profile=None, first_failing_order=None)
+
+======================================================================
+FAIL: test_twenty_historical_states_complete_proof_and_evidence (test_order_equivalence.OrderEquivalenceTests) (step=46)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/data/sfan/MLE_final_project_safety_compact/tests/test_order_equivalence.py", line 128, in test_twenty_historical_states_complete_proof_and_evidence
+    self.assertEqual(expected,actual)
+AssertionError: Contr[121 chars]ut=False, first_failing_profile=None, first_failing_order=None) != Contr[121 chars]ut=False, first_failing_profile=None, first_failing_order=None)
+
+======================================================================
+FAIL: test_twenty_historical_states_complete_proof_and_evidence (test_order_equivalence.OrderEquivalenceTests) (step=47)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/data/sfan/MLE_final_project_safety_compact/tests/test_order_equivalence.py", line 128, in test_twenty_historical_states_complete_proof_and_evidence
+    self.assertEqual(expected,actual)
+AssertionError: Contr[103 chars]ut=False, first_failing_profile=None, first_failing_order=None) != Contr[103 chars]ut=False, first_failing_profile=None, first_failing_order=None)
+
+======================================================================
+FAIL: test_twenty_historical_states_complete_proof_and_evidence (test_order_equivalence.OrderEquivalenceTests) (step=48)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/data/sfan/MLE_final_project_safety_compact/tests/test_order_equivalence.py", line 128, in test_twenty_historical_states_complete_proof_and_evidence
+    self.assertEqual(expected,actual)
+AssertionError: Contr[103 chars]ut=False, first_failing_profile=None, first_failing_order=None) != Contr[103 chars]ut=False, first_failing_profile=None, first_failing_order=None)
+
+======================================================================
+FAIL: test_twenty_historical_states_complete_proof_and_evidence (test_order_equivalence.OrderEquivalenceTests) (step=49)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/data/sfan/MLE_final_project_safety_compact/tests/test_order_equivalence.py", line 128, in test_twenty_historical_states_complete_proof_and_evidence
+    self.assertEqual(expected,actual)
+AssertionError: Contr[103 chars]ut=False, first_failing_profile=None, first_failing_order=None) != Contr[103 chars]ut=False, first_failing_profile=None, first_failing_order=None)
+
+======================================================================
+FAIL: test_twenty_historical_states_complete_proof_and_evidence (test_order_equivalence.OrderEquivalenceTests) (step=50)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/data/sfan/MLE_final_project_safety_compact/tests/test_order_equivalence.py", line 128, in test_twenty_historical_states_complete_proof_and_evidence
+    self.assertEqual(expected,actual)
+AssertionError: Contr[103 chars]ut=False, first_failing_profile=None, first_failing_order=None) != Contr[103 chars]ut=False, first_failing_profile=None, first_failing_order=None)
+
+======================================================================
+FAIL: test_twenty_historical_states_complete_proof_and_evidence (test_order_equivalence.OrderEquivalenceTests) (step=51)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/data/sfan/MLE_final_project_safety_compact/tests/test_order_equivalence.py", line 128, in test_twenty_historical_states_complete_proof_and_evidence
+    self.assertEqual(expected,actual)
+AssertionError: Contr[104 chars]ut=False, first_failing_profile=None, first_failing_order=None) != Contr[104 chars]ut=False, first_failing_profile=None, first_failing_order=None)
+
+======================================================================
+FAIL: test_twenty_historical_states_complete_proof_and_evidence (test_order_equivalence.OrderEquivalenceTests) (step=52)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/data/sfan/MLE_final_project_safety_compact/tests/test_order_equivalence.py", line 128, in test_twenty_historical_states_complete_proof_and_evidence
+    self.assertEqual(expected,actual)
+AssertionError: Contr[103 chars]ut=False, first_failing_profile=None, first_failing_order=None) != Contr[103 chars]ut=False, first_failing_profile=None, first_failing_order=None)
+
+======================================================================
+FAIL: test_twenty_historical_states_complete_proof_and_evidence (test_order_equivalence.OrderEquivalenceTests) (step=53)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/data/sfan/MLE_final_project_safety_compact/tests/test_order_equivalence.py", line 128, in test_twenty_historical_states_complete_proof_and_evidence
+    self.assertEqual(expected,actual)
+AssertionError: Contr[103 chars]ut=False, first_failing_profile=None, first_failing_order=None) != Contr[103 chars]ut=False, first_failing_profile=None, first_failing_order=None)
+
+======================================================================
+FAIL: test_twenty_historical_states_complete_proof_and_evidence (test_order_equivalence.OrderEquivalenceTests) (step=54)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/data/sfan/MLE_final_project_safety_compact/tests/test_order_equivalence.py", line 128, in test_twenty_historical_states_complete_proof_and_evidence
+    self.assertEqual(expected,actual)
+AssertionError: Contr[103 chars]ut=False, first_failing_profile=None, first_failing_order=None) != Contr[103 chars]ut=False, first_failing_profile=None, first_failing_order=None)
+
+======================================================================
+FAIL: test_twenty_historical_states_complete_proof_and_evidence (test_order_equivalence.OrderEquivalenceTests) (step=55)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/data/sfan/MLE_final_project_safety_compact/tests/test_order_equivalence.py", line 128, in test_twenty_historical_states_complete_proof_and_evidence
+    self.assertEqual(expected,actual)
+AssertionError: Contr[104 chars]ut=False, first_failing_profile=None, first_failing_order=None) != Contr[104 chars]ut=False, first_failing_profile=None, first_failing_order=None)
+
+======================================================================
+FAIL: test_twenty_historical_states_complete_proof_and_evidence (test_order_equivalence.OrderEquivalenceTests) (step=56)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/data/sfan/MLE_final_project_safety_compact/tests/test_order_equivalence.py", line 128, in test_twenty_historical_states_complete_proof_and_evidence
+    self.assertEqual(expected,actual)
+AssertionError: Contr[103 chars]ut=False, first_failing_profile=None, first_failing_order=None) != Contr[103 chars]ut=False, first_failing_profile=None, first_failing_order=None)
+
+======================================================================
+FAIL: test_twenty_historical_states_complete_proof_and_evidence (test_order_equivalence.OrderEquivalenceTests) (step=57)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/data/sfan/MLE_final_project_safety_compact/tests/test_order_equivalence.py", line 128, in test_twenty_historical_states_complete_proof_and_evidence
+    self.assertEqual(expected,actual)
+AssertionError: Contr[121 chars]ut=False, first_failing_profile=None, first_failing_order=None) != Contr[121 chars]ut=False, first_failing_profile=None, first_failing_order=None)
+
+======================================================================
+FAIL: test_actual_runner_round_boundary_resume_matches_uninterrupted (test_task4_transfer.SafetyMigrationTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/data/sfan/MLE_final_project_safety_compact/tests/test_task4_transfer.py", line 138, in test_actual_runner_round_boundary_resume_matches_uninterrupted
+    self.assertEqual(main(common+['--n-rounds','4','--output',str(d/'whole'),
+AssertionError: 2 != 0
+
+----------------------------------------------------------------------
+Ran 466 tests in 266.543s
+
+FAILED (failures=21, errors=1, skipped=1)

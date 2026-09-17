@@ -119,7 +119,7 @@ class ExperimentRunTest(unittest.TestCase):
 
     def test_board_checkpoint_feature_contract_accepts_null_vector_shape(self):
         directory = self.output("board-contract")
-        directory.mkdir()
+        directory.mkdir(parents=True)
         checkpoint = directory / "checkpoint.pkl"
         with checkpoint.open("wb") as file:
             pickle.dump({

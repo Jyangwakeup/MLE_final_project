@@ -1,0 +1,1 @@
+{"protocol":"compact-bitset-admission-v1","base_commit":"3eb3ea4","started_at":"2026-09-17T23:04:33Z","freeze_deadline":"2026-09-18T17:04:33Z","batch_deadline":"2026-09-18T22:04:33Z","deadline":"2026-09-18T23:04:33Z","formal_training_allowed":false,"stop_on_first_frozen_failure":true,"act_p95_ms":100,"act_max_ms":250,"search_budget_ms":400}

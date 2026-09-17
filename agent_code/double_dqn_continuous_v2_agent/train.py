@@ -56,6 +56,18 @@ def _transition(self, old_state, action, reward, new_state, done):
         return Transition(
             snapshot.vector.copy(), ACTIONS.index(action), reward, None, True, None,
             old_legal, self.training_task, 1, safety_class)
+    # The official post-action callback still reports the just-executed step;
+    # its physical state is the next observation, whose act increments the clock.
+    # Normalize only the new fixed-deadline contract, without mutating inputs.
+    from agent_code.team_agent.safety import FIXED_DEADLINE_SAFETY_VERSIONS
+    if self.safety_spec['version'] in FIXED_DEADLINE_SAFETY_VERSIONS:
+        if new_state.get('round') != old_state.get('round'):
+            raise ValueError('Nonterminal transition crosses a round boundary')
+        old_step, new_step = int(old_state['step']), int(new_state['step'])
+        if new_step == old_step:
+            new_state = {**new_state, 'step': old_step + 1}
+        elif new_step != old_step + 1:
+            raise ValueError('Unexpected next-observation step')
     next_history = project_history(snapshot.after, new_state)
     new = features_from_history(self, new_state, next_history)
     next_legal = effective_legal_mask(

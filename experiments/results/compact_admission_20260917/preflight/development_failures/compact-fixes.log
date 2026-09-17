@@ -1,0 +1,44 @@
+...F.F........./export/data/sfan/miniforge3/envs/mle/lib/python3.10/site-packages/matplotlib/_fontconfig_pattern.py:64: PyparsingDeprecationWarning: 'oneOf' deprecated - use 'one_of'
+  prop = Group((name + Suppress("=") + comma_separated(value)) | oneOf(_CONSTANTS))
+/export/data/sfan/miniforge3/envs/mle/lib/python3.10/site-packages/matplotlib/_fontconfig_pattern.py:85: PyparsingDeprecationWarning: 'parseString' deprecated - use 'parse_string'
+  parse = parser.parseString(pattern)
+/export/data/sfan/miniforge3/envs/mle/lib/python3.10/site-packages/matplotlib/_fontconfig_pattern.py:89: PyparsingDeprecationWarning: 'resetCache' deprecated - use 'reset_cache'
+  parser.resetCache()
+/export/data/sfan/miniforge3/envs/mle/lib/python3.10/site-packages/matplotlib/_mathtext.py:45: PyparsingDeprecationWarning: 'enablePackrat' deprecated - use 'enable_packrat'
+  ParserElement.enablePackrat()
+In /export/data/sfan/miniforge3/envs/mle/lib/python3.10/site-packages/matplotlib/mpl-data/stylelib/classic.mplstyle: 'parseString' deprecated - use 'parse_string'
+In /export/data/sfan/miniforge3/envs/mle/lib/python3.10/site-packages/matplotlib/mpl-data/stylelib/classic.mplstyle: 'resetCache' deprecated - use 'reset_cache'
+  0%|                                                     | 0/4 [00:00<?, ?it/s] 25%|███████████▎                                 | 1/4 [00:00<00:02,  1.19it/s] 50%|██████████████████████▌                      | 2/4 [00:01<00:01,  1.17it/s] 75%|█████████████████████████████████▊           | 3/4 [00:02<00:00,  1.15it/s]100%|█████████████████████████████████████████████| 4/4 [00:03<00:00,  1.16it/s]100%|█████████████████████████████████████████████| 4/4 [00:03<00:00,  1.16it/s]
+  0%|                                                     | 0/2 [00:00<?, ?it/s] 50%|██████████████████████▌                      | 1/2 [00:00<00:00,  1.23it/s]100%|█████████████████████████████████████████████| 2/2 [00:01<00:00,  1.29it/s]100%|█████████████████████████████████████████████| 2/2 [00:01<00:00,  1.28it/s]
+  0%|                                                     | 0/2 [00:00<?, ?it/s] 50%|██████████████████████▌                      | 1/2 [00:00<00:00,  1.13it/s]100%|█████████████████████████████████████████████| 2/2 [00:01<00:00,  1.08it/s]100%|█████████████████████████████████████████████| 2/2 [00:01<00:00,  1.09it/s]
+..........
+======================================================================
+FAIL: test_physical_fallback_placement_does_not_invent_safe_alternative (tests.test_compact_lifecycle.CompactLifecycleTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/data/sfan/MLE_final_project_safety_compact/tests/test_task3_lifecycle.py", line 152, in test_physical_fallback_placement_does_not_invent_safe_alternative
+    rows = self.replay_escape_fixture('no_safe_placement')
+  File "/export/data/sfan/MLE_final_project_safety_compact/tests/test_task3_lifecycle.py", line 147, in replay_escape_fixture
+    self.assertEqual(callbacks.act(self.owner, observed), case['action'])
+AssertionError: 'WAIT' != 'BOMB'
+- WAIT
++ BOMB
+
+
+======================================================================
+FAIL: test_real_safe_placement_followed_by_collapse_still_counts (tests.test_compact_lifecycle.CompactLifecycleTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/data/sfan/MLE_final_project_safety_compact/tests/test_task3_lifecycle.py", line 160, in test_real_safe_placement_followed_by_collapse_still_counts
+    rows = self.replay_escape_fixture('genuine_collapse')
+  File "/export/data/sfan/MLE_final_project_safety_compact/tests/test_task3_lifecycle.py", line 147, in replay_escape_fixture
+    self.assertEqual(callbacks.act(self.owner, observed), case['action'])
+AssertionError: 'DOWN' != 'UP'
+- DOWN
++ UP
+
+
+----------------------------------------------------------------------
+Ran 25 tests in 104.175s
+
+FAILED (failures=2)

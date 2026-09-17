@@ -1,0 +1,3 @@
+# Share the exact safety environment and solve viability with bitsets
+
+The v9 fresh-world run stopped on a 400ms search timeout; isolated retries and GC observation did not establish its cause. We retain its full proof semantics while sharing the one-step world background and timed hazards, streaming ordered scenarios, and computing reachability/viability with integer grids, rather than deleting opponents or disabling process-wide garbage collection. A new admission requires complete-reference equivalence, strict complete-act P95/max 100/250ms margins, retained abilities and three independent diagnostic training runs; the first frozen failure ends this 24-hour attempt.

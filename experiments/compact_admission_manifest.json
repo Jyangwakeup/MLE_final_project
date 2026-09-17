@@ -1,0 +1,275 @@
+{
+  "protocol": "compact-bitset-admission-v1",
+  "base_commit": "3eb3ea4",
+  "started_at": "2026-09-17T23:04:33Z",
+  "freeze_deadline": "2026-09-18T17:04:33Z",
+  "batch_deadline": "2026-09-18T22:04:33Z",
+  "deadline": "2026-09-18T23:04:33Z",
+  "formal_training_allowed": false,
+  "stop_on_first_frozen_failure": true,
+  "act_p95_ms": 100,
+  "act_max_ms": 250,
+  "search_budget_ms": 400,
+  "candidate_config": "experiments/configs/compact_admission_A.json",
+  "reference_config": "experiments/configs/task4_A.json",
+  "arm_configs": {
+    "A": "experiments/configs/compact_admission_A.json"
+  },
+  "parent": {
+    "checkpoint": "agent_code/double_dqn_continuous_v2_agent/task3_validated.pt",
+    "checkpoint_sha256": "b0b9e7ae9cbefa6523ed01e1d7a6d474b90b6272f9de1706ee80f1f109cc803d",
+    "source_commit": "7cc6f0249c0ecb09a539614965c6ee3f758b26e3",
+    "history_backup_ref": "backup/pre-md-bh-attribution",
+    "rewritten_source_commit": "73e78be1a5e959fae33ee16ed0c8b345d7fe71f9",
+    "attribution_mapping_sha256": "e67f253d9ff704c2d7f3a87d0c49b0c5b60dc8b61f7a69c84f7d931433dd541b"
+  },
+  "opponent_hashes": {
+    "agent_code/rule_based_agent/callbacks.py": "78fae8121ffab5c849d69857aeaeabcee23e1015c923e5e701d9a2bce2c879f6",
+    "agent_code/peaceful_agent/callbacks.py": "db408b7c86d8d308e20b529da378c29a26deb11a34f4a2b69dd942491bc44d82",
+    "agent_code/coin_collector_agent/callbacks.py": "bb9007137dd89712c142b67ff8b26d81b075511e572ad334f94414d96eb40a9c"
+  },
+  "training_seeds": [
+    11,
+    22,
+    33
+  ],
+  "diagnostic_training_seeds": {
+    "22": 22422,
+    "11": 22411,
+    "33": 22433
+  },
+  "engineering_seeds": [
+    24400,
+    24401,
+    24402,
+    24403,
+    24404,
+    24405,
+    24406,
+    24407,
+    24408,
+    24409,
+    24410,
+    24411,
+    24412,
+    24413,
+    24414,
+    24415,
+    24416,
+    24417,
+    24418,
+    24419,
+    24420,
+    24421,
+    24422,
+    24423,
+    24424,
+    24425,
+    24426,
+    24427,
+    24428,
+    24429,
+    24430,
+    24431,
+    24432,
+    24433,
+    24434,
+    24435,
+    24436,
+    24437,
+    24438,
+    24439,
+    24440,
+    24441,
+    24442,
+    24443,
+    24444,
+    24445,
+    24446,
+    24447,
+    24448,
+    24449,
+    24450,
+    24451,
+    24452,
+    24453,
+    24454,
+    24455,
+    24456,
+    24457,
+    24458,
+    24459,
+    24460,
+    24461,
+    24462,
+    24463,
+    24464,
+    24465,
+    24466,
+    24467,
+    24468,
+    24469,
+    24470,
+    24471,
+    24472,
+    24473,
+    24474,
+    24475,
+    24476,
+    24477,
+    24478,
+    24479,
+    24480,
+    24481,
+    24482,
+    24483,
+    24484,
+    24485,
+    24486,
+    24487,
+    24488,
+    24489,
+    24490,
+    24491,
+    24492,
+    24493,
+    24494,
+    24495,
+    24496,
+    24497,
+    24498,
+    24499
+  ],
+  "cpus": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "physical_cpus": [
+    {
+      "cpu": 0,
+      "core": 0,
+      "socket": 0
+    },
+    {
+      "cpu": 1,
+      "core": 1,
+      "socket": 0
+    },
+    {
+      "cpu": 2,
+      "core": 2,
+      "socket": 0
+    },
+    {
+      "cpu": 3,
+      "core": 3,
+      "socket": 0
+    },
+    {
+      "cpu": 4,
+      "core": 4,
+      "socket": 0
+    },
+    {
+      "cpu": 5,
+      "core": 5,
+      "socket": 0
+    }
+  ],
+  "seed_audit": {
+    "utc": "2026-09-17T23:19:31.935807+00:00",
+    "worktrees": [
+      "/export/data/sfan/MLE_final_project",
+      "/export/data/sfan/MLE_final_project_safety",
+      "/export/data/sfan/MLE_final_project_safety_compact",
+      "/export/data/sfan/MLE_final_project_safety_diagnostics",
+      "/export/data/sfan/MLE_final_project_safety_metrics",
+      "/export/data/sfan/MLE_final_project_safety_movement",
+      "/export/data/sfan/MLE_final_project_task3_814173b",
+      "/export/data/sfan/MLE_final_project_task3_n5",
+      "/export/data/sfan/MLE_final_project_task3_v5",
+      "/export/data/sfan/MLE_final_project_task4",
+      "/export/data/sfan/MLE_final_project_task4_fast",
+      "/export/data/sfan/MLE_final_project_task4_orders",
+      "/export/data/sfan/MLE_final_project_task4_report"
+    ],
+    "files_scanned": 38629,
+    "source_records_sha256": "3a98fb257777fad4fcc8ce9397ea319928984a0effba7e2baa2c7bdf20ac7cb4",
+    "used_seed_count": 4082,
+    "read_errors": [],
+    "sealed_range": [
+      20000,
+      20099
+    ]
+  },
+  "runtime_source_sha256": "5f3cde8415aecd1b1601d95ee39bcbc2ac07f8be922be7492e1533bd44ed98ca",
+  "identities": {
+    "experiments/configs/compact_admission_A.json": "301f167685b330bc8eff3e569ace03e19bb12d2f483d56bad1346a6799e3ef2f",
+    "experiments/configs/task4_A.json": "6a1c9f9d0714afdf0ae4881f2d7a08b9208cd86dbab6e1962ade8e6c1e48118d",
+    "agent_code/double_dqn_continuous_v2_agent/task3_validated.pt": "b0b9e7ae9cbefa6523ed01e1d7a6d474b90b6272f9de1706ee80f1f109cc803d",
+    "experiments/compact_admission.py": "7077a18c3b5d5b242ed5019a09a48b7220de01c32e8862c0f93fef7cd95fc962",
+    "experiments/compact_worker.py": "de230f00259564a22d687ba9b6a2a93ec5e1759e712521ebfb82c28b184f7f8d",
+    "experiments/compact_audit.py": "8e226ec28545e7782b013ecdc0201cb2613b93fa292bf582bacb716a6e32f722",
+    "experiments/task4_transfer.py": "686405574ad6ec5ca1dc2dc571aa95a6e68e7ce1b1555aef78eced7aeda1d286",
+    "agent_code/rule_based_agent/callbacks.py": "78fae8121ffab5c849d69857aeaeabcee23e1015c923e5e701d9a2bce2c879f6",
+    "agent_code/peaceful_agent/callbacks.py": "db408b7c86d8d308e20b529da378c29a26deb11a34f4a2b69dd942491bc44d82",
+    "agent_code/coin_collector_agent/callbacks.py": "bb9007137dd89712c142b67ff8b26d81b075511e572ad334f94414d96eb40a9c",
+    "experiments/results/compact_admission_20260917/preflight/work_counts.jsonl": "e23a20a27c7b52854f0bf959444cd1739e86cde6d76ef45f56c964cd4ba6f7a5",
+    "experiments/results/compact_admission_20260917/preflight/full_unittest.log": "f39358a28d95b78294527250f8a2d8ad03ffbe6d6b95d70c30b94d2ac4228c55",
+    "experiments/results/compact_admission_20260917/preflight/full_act.jsonl": "cc05cdaa009e8967da443346294a47321b72ea88049c619622f10bb3892d6078",
+    "experiments/results/compact_admission_20260917/preflight/controller.log": "a64077cb19d40925dbf28d9693acff90139962d47aa7796bf10f5249de8554f2",
+    "experiments/results/compact_admission_20260917/preflight/seed_audit.json": "93de36e64f069aeb8f61eeacd335fc932e0914120a17dab7b874f21acb12e9f6",
+    "experiments/results/compact_admission_20260917/preflight/open_junction_full_act.json": "b4a1fecac8bd013c0fd9b39d79f823153503e1297f4803dcf7e6b59b87c08106",
+    "experiments/results/compact_admission_20260917/preflight/tail.jsonl": "04f9b1e7c63967d1653a487ba246c1cd9064e7b36d4488cb86196b1513fc3c26",
+    "experiments/results/compact_admission_20260917/preflight/seed_scan.py": "3e404094fbb77b74e395a7f5e4921da14ffed17dc78c7458744e7dbd0947c724",
+    "experiments/results/compact_admission_20260917/preflight/result.json": "6bd9514d2112ccc5a299623a607290db5ffd168e278de656fb7d04cdb7dc6ba5",
+    "experiments/results/compact_admission_20260917/preflight/differential.log": "b275d0e1c86d7241ef6e81d777bfcfbea2baa5640a0d9e0b41bb9412c11f107a",
+    "experiments/results/compact_admission_20260917/preflight/corpus.json": "8f4f19e152f33deb8ff92f7e69dd57a63514dca0f903bb165befc4e927bc797d",
+    "experiments/results/compact_admission_20260917/preflight/measurements.jsonl": "64d541a3fc5e976c2db3b568949212c1a5b82afd36422dc1ca1868f86747cb9b",
+    "experiments/results/compact_admission_20260917/preflight/development_failures/compact-preflight.log": "7d50a9696973c50ae9b7d4cb2cfa8b05c14c02fccdfec6ee5f77fc77750522e3",
+    "experiments/results/compact_admission_20260917/preflight/development_failures/compact-fixes.log": "043209de81500f7e549916d4495ce51fd2e42754d15e3e9f6439d8b0b599dd7f",
+    "experiments/results/compact_admission_20260917/preflight/development_failures/compact-full.log": "1dbc59a096b3c91535ce1f3b7dc8eb6d88cf8da39b8bc28a2fdc956f1b934449"
+  },
+  "initial_attempt_only": true,
+  "regression_cases": [
+    {
+      "task": 3,
+      "seed": 24003
+    },
+    {
+      "task": 3,
+      "seed": 24266
+    },
+    {
+      "task": 4,
+      "seed": 24025
+    },
+    {
+      "task": 4,
+      "seed": 24384
+    }
+  ],
+  "preflight_result": "experiments/results/compact_admission_20260917/preflight/result.json",
+  "unittest_log": "experiments/results/compact_admission_20260917/preflight/full_unittest.log",
+  "diagnostic_rng_plan": {
+    "22": {
+      "agent_seed": 22422,
+      "environment_seed": 23422,
+      "official_opponent_seed": 25422
+    },
+    "11": {
+      "agent_seed": 22411,
+      "environment_seed": 23411,
+      "official_opponent_seed": 25411
+    },
+    "33": {
+      "agent_seed": 22433,
+      "environment_seed": 23433,
+      "official_opponent_seed": 25433
+    }
+  }
+}

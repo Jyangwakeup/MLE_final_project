@@ -1,0 +1,31 @@
+unique historical states 160
+historical 0 max new ms 18.406369723379612
+historical 20 max new ms 27.322717010974884
+historical 40 max new ms 39.41849712282419
+historical 60 max new ms 39.41849712282419
+historical 80 max new ms 39.41849712282419
+historical 100 max new ms 39.41849712282419
+historical 120 max new ms 39.41849712282419
+historical 140 max new ms 48.00010100007057
+Traceback (most recent call last):
+  File "/export/data/sfan/MLE_final_project_safety_compact/experiments/compact_preflight.py", line 91, in <module>
+    if __name__=='__main__':main()
+  File "/export/data/sfan/MLE_final_project_safety_compact/experiments/compact_preflight.py", line 82, in main
+    init_action_history(owner);start=time.perf_counter();action=callbacks.act(owner,state);elapsed=time.perf_counter()-start
+  File "/export/data/sfan/MLE_final_project_safety_compact/agent_code/double_dqn_continuous_v2_agent/callbacks.py", line 218, in act
+    features = _features_for(self, game_state)
+  File "/export/data/sfan/MLE_final_project_safety_compact/agent_code/double_dqn_continuous_v2_agent/callbacks.py", line 211, in _features_for
+    self._feature_cache_value = features_from_history(
+  File "/export/data/sfan/MLE_final_project_safety_compact/agent_code/double_dqn_continuous_v2_agent/callbacks.py", line 87, in features_from_history
+    return features_for_state(
+  File "/export/data/sfan/MLE_final_project_safety_compact/agent_code/double_dqn_continuous_v2_agent/features.py", line 19, in features_for_state
+    return extract(
+  File "/export/data/sfan/MLE_final_project_safety_compact/agent_code/team_agent/feature_system/continuous_v2.py", line 57, in extract
+    context = _context if _context is not None else build_context(game_state)
+  File "/export/data/sfan/MLE_final_project_safety_compact/agent_code/team_agent/feature_system/common.py", line 276, in build_context
+    return _build_context(game_state, include_navigation=True)
+  File "/export/data/sfan/MLE_final_project_safety_compact/agent_code/team_agent/feature_system/common.py", line 236, in _build_context
+    coin_distance = distance_to_targets(blocked, coin_targets)
+  File "/export/data/sfan/MLE_final_project_safety_compact/agent_code/team_agent/feature_system/common.py", line 144, in distance_to_targets
+    for target in sorted(set(targets)):
+TypeError: unhashable type: 'list'

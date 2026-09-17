@@ -1,0 +1,3 @@
+# Register the safety-contract migration and normalize callback observation time
+
+The registered Task3 checkpoint uses v5 while the candidate runtime uses v9; ordinary resume must not silently accept that difference. A versioned migration accepts only the registered parent hash and exact source/target contracts, preserves old replay with its historical limitations, and records target implementation/source identity. Official training callbacks retain the executed step number after updating the physical world, so v8/v9 bootstrap projection copies that new state with the next decision's step; it never changes the live history, callback input or original placement deadline.

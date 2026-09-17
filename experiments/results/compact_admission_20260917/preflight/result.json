@@ -1,0 +1,13 @@
+{
+  "status": "passed",
+  "historical_states": 160,
+  "full_act_samples": 1380,
+  "act_p95_ms": 30.05752619355917,
+  "act_max_ms": 65.98780676722527,
+  "search_max_ms": 71.47278357297182,
+  "affinity": [
+    3
+  ],
+  "search_budget_ms": 400,
+  "offline_budget_ms": 60000
+}

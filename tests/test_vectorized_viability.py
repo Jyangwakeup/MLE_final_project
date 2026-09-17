@@ -65,19 +65,20 @@ class ViabilityTests(unittest.TestCase):
     def test_one_environment_board_is_shared_across_own_positions(self):
         from unittest.mock import patch
         state=make_game_state(position=(7,7))
-        with patch.object(actual,'temporal_maps',wraps=actual.temporal_maps) as maps:
+        from agent_code.team_agent import compact_survival
+        with patch.object(compact_survival,'temporal_maps',wraps=compact_survival.temporal_maps) as maps:
             result=actual.controllable_survival_actions(state,('UP','RIGHT','DOWN','LEFT','WAIT'),remaining_steps=3,budget_ms=60000)
         self.assertEqual(result.proven_actions,('UP','RIGHT','DOWN','LEFT','WAIT'))
         self.assertEqual(maps.call_count,1)
 
     def test_cached_board_queries_each_position_without_reusing_a_boolean(self):
         from unittest.mock import patch
-        from agent_code.team_agent.opponent_transitions import OpponentTransitionScenario
-        state=make_game_state(position=(1,1),bombs=[((7,7),0)])
+        from agent_code.team_agent.compact_survival import TransitionContext
+        state=make_game_state(position=(1,1),bombs=[((7,7),1)])
         for pos in ((6,7),(8,7),(7,6),(7,8)):state['field'][pos]=-1
-        trapped={**state,'self':('me',0,True,(7,7))}
-        scenarios=(OpponentTransitionScenario(state,('WAIT',),(0,)),OpponentTransitionScenario(trapped,('BOMB',),(0,)))
-        with patch.object(actual,'enumerate_opponent_transition_scenarios',return_value=scenarios):
+        rows=((state['self'],(),(((7,7),0),),True,('WAIT',),(0,)),
+              (('me',0,True,(7,7)),(),(((7,7),0),),True,('BOMB',),(0,)))
+        with patch.object(TransitionContext,'scenarios',return_value=iter(rows)):
             result=actual.controllable_survival_actions(state,('WAIT',),remaining_steps=3,budget_ms=60000)
         self.assertEqual(result.proven_actions,())
         self.assertEqual(result.first_failing_profile,('BOMB',))
