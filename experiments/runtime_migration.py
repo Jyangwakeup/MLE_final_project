@@ -18,6 +18,7 @@ _ALLOWED_EXACT = frozenset({
     "experiments/runtime_migration.py",
     "experiments/task2_success_stopping.py",
     "experiments/run_q_lambda_v4_task2_campaign.py",
+    "experiments/select_task2_snapshots.py",
 })
 _ALLOWED_PREFIXES = (
     "experiments/configs/",
