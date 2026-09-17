@@ -1,4 +1,6 @@
 import copy
+import csv
+import hashlib
 import json
 from pathlib import Path
 from types import SimpleNamespace
@@ -218,6 +220,35 @@ class TransferAndMaskTests(unittest.TestCase):
             arm("stable", [0, 0], [1, 1]),
         ])
         self.assertEqual(ranked[0]["run_id"], "stable")
+
+    def test_published_phase_failure_evidence_is_complete_and_sealed(self):
+        result = json.loads((
+            ROOT / "experiments" / "task3_phase_results.json"
+        ).read_text(encoding="utf-8"))
+        evidence_path = ROOT / result["evidence"]["path"]
+        with evidence_path.open(encoding="utf-8", newline="") as file:
+            rows = list(csv.DictReader(file))
+        digest = hashlib.sha256(evidence_path.read_bytes()).hexdigest()
+
+        self.assertEqual(result["designation"], "task3_phase_iteration_failure")
+        self.assertFalse(result["qualified_for_task4"])
+        self.assertFalse(result["stopping_decision"]["round3_started"])
+        self.assertFalse(result["stopping_decision"]["seed33_started"])
+        self.assertEqual(len(rows), 720)
+        self.assertEqual(result["evidence"]["rows"], len(rows))
+        self.assertEqual(result["evidence"]["sha256"], digest)
+        self.assertEqual(
+            {int(row["environment_seed"]) for row in rows},
+            set(range(13000, 13020)),
+        )
+        self.assertTrue(all(
+            float(row["score"]) == float(row["coins"])
+            for row in rows if row["task"] == "coin_navigation"
+        ))
+        self.assertEqual(
+            result["best_failed_configuration"]["arm"],
+            "phase_r7_mask_v2",
+        )
 
 
 if __name__ == "__main__":

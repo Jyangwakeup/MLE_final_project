@@ -1,0 +1,1761 @@
+{
+  "best_failed_configuration": {
+    "arm": "phase_r7_mask_v2",
+    "feature_id": "continuous-phase-v1",
+    "reward_id": "r7_safe_credit_sparse",
+    "safety": "survival-mask-v2",
+    "selection_basis": "lowest worst-seed suicide rate among evaluated controls, then frozen preregistered ordering",
+    "training_runs": [
+      {
+        "checkpoint": "runs/task3_phase_r2_phase_r7_mask_v2_s11_c0500_125124f/checkpoints/final.pt",
+        "checkpoint_sha256": "b0a70f3822dc458a1220c8d70914d1d7f0739cf4dde0a89947518712b1b95f65",
+        "final_epsilon": 0.04999999999999999,
+        "latest_generation": "generation-00000500",
+        "latest_generation_hash": "037c30e8d01865e409842b2fbd0ce6126d6a2917c0122716f39634df3d2dc785",
+        "loss": 0.12956511974334717,
+        "reward_id": "r7_safe_credit_sparse",
+        "rounds": 500,
+        "run": "runs/task3_phase_r2_phase_r7_mask_v2_s11_c0500_125124f",
+        "safety": {
+          "escape_area_fraction": 0.75,
+          "fallback": "physical_q",
+          "horizon": 7,
+          "mode": "all",
+          "version": "survival-mask-v2"
+        },
+        "stage_action_steps": 175419,
+        "updates": 173420
+      },
+      {
+        "checkpoint": "runs/task3_phase_r2_phase_r7_mask_v2_s22_c0500_125124f/checkpoints/final.pt",
+        "checkpoint_sha256": "13ec2f1f53adc8dc39be992ccc78eeeb899ff475ffb0d9432b56ea1a6509994d",
+        "final_epsilon": 0.04999999999999999,
+        "latest_generation": "generation-00000500",
+        "latest_generation_hash": "c033c54ef8f600d65483d73d6acb55f50c7c19ceebeef09b80d1ccca6da597b8",
+        "loss": 0.18139921128749847,
+        "reward_id": "r7_safe_credit_sparse",
+        "rounds": 500,
+        "run": "runs/task3_phase_r2_phase_r7_mask_v2_s22_c0500_125124f",
+        "safety": {
+          "escape_area_fraction": 0.75,
+          "fallback": "physical_q",
+          "horizon": 7,
+          "mode": "all",
+          "version": "survival-mask-v2"
+        },
+        "stage_action_steps": 178345,
+        "updates": 176346
+      }
+    ]
+  },
+  "confirmation_seeds": {
+    "end": 14019,
+    "start": 14000,
+    "used": false
+  },
+  "designation": "task3_phase_iteration_failure",
+  "development_seeds": {
+    "end": 13019,
+    "start": 13000,
+    "used": true
+  },
+  "evidence": {
+    "path": "experiments/task3_phase_evaluations.csv",
+    "rows": 720,
+    "sha256": "72f2efb5b143b08433b77a23fea8bc36c034ae5bd486b12acb37abdf484b3321"
+  },
+  "main_validation_seeds": {
+    "end": 15099,
+    "start": 15000,
+    "used": false
+  },
+  "preregistration": "experiments/task3_phase_iteration.json",
+  "qualified_for_task4": false,
+  "reserved_final_test_seeds": {
+    "end": 20099,
+    "start": 20000,
+    "used": false
+  },
+  "round1": {
+    "all_arms_eliminated_at_500": true,
+    "assessments": {
+      "round1/phase_r7/s11": {
+        "checks": {
+          "act_max": true,
+          "act_p95": true,
+          "early_coin_rate_retention": true,
+          "early_crate_rate_retention": false,
+          "invalid_actions": true,
+          "late_mobility_crisis": true,
+          "no_skipped_actions": true,
+          "no_timeouts": true,
+          "task1_score_retention": true,
+          "task2_bomb_survival": true,
+          "task2_coin_retention": false,
+          "task2_crate_retention": false,
+          "task2_suicide": true,
+          "task3_bomb_survival": true,
+          "task3_coin_retention": true,
+          "task3_combat_gain": false,
+          "task3_crate_retention": true,
+          "task3_score_gain": true,
+          "task3_suicide": false
+        },
+        "deltas": {
+          "task3_first_place_rate": -0.2,
+          "task3_kills": -0.04999999999999999,
+          "task3_score": 0.75
+        },
+        "passed": false,
+        "phase": {
+          "child": {
+            "early_weighted_coins_per_100_steps": 2.2269611802378577,
+            "early_weighted_crates_per_100_steps": 29.904097857696193,
+            "geometric_edge_rate": 0.43656641646274363,
+            "late_mobility_crisis_rate": 0.019576986901113657
+          },
+          "parent": {
+            "early_weighted_coins_per_100_steps": 1.4573484674859514,
+            "early_weighted_crates_per_100_steps": 34.60606265543016,
+            "geometric_edge_rate": 0.5796552106468265,
+            "late_mobility_crisis_rate": 0.0082870440464687
+          }
+        },
+        "retention": {
+          "task1_score": 1.0,
+          "task2_coins": 0.8467741935483871,
+          "task2_crates": 0.8343949044585988,
+          "task3_coins": 1.3174603174603177,
+          "task3_crates": 1.276843467011643
+        },
+        "summaries": {
+          "child": {
+            "1": {
+              "act_max_seconds": 0.022559165954589844,
+              "act_p95_seconds": 0.02078557014465332,
+              "first_place_rate": 1.0,
+              "invalid_action_rate": 0.0,
+              "mean_coins": 50.0,
+              "mean_crates": 0.0,
+              "mean_kills": 0.0,
+              "mean_score": 50.0,
+              "skipped_actions": 0,
+              "suicide_rate": 0.0,
+              "survived_bomb_rate": 0.0,
+              "timeouts": 0,
+              "zero_bomb_round_rate": 1
+            },
+            "2": {
+              "act_max_seconds": 0.019663572311401367,
+              "act_p95_seconds": 0.014942407608032227,
+              "first_place_rate": 1.0,
+              "invalid_action_rate": 0.0,
+              "mean_coins": 5.25,
+              "mean_crates": 72.05,
+              "mean_kills": 0.0,
+              "mean_score": 5.25,
+              "skipped_actions": 0,
+              "suicide_rate": 0.0,
+              "survived_bomb_rate": 1.0,
+              "timeouts": 0,
+              "zero_bomb_round_rate": 0
+            },
+            "3": {
+              "act_max_seconds": 0.04545783996582031,
+              "act_p95_seconds": 0.04185080528259277,
+              "first_place_rate": 0.25,
+              "invalid_action_rate": 0.00041969781757134864,
+              "mean_coins": 4.15,
+              "mean_crates": 49.35,
+              "mean_kills": 0.25,
+              "mean_score": 5.4,
+              "skipped_actions": 0,
+              "suicide_rate": 0.2,
+              "survived_bomb_rate": 0.9947916666666666,
+              "timeouts": 0,
+              "zero_bomb_round_rate": 0
+            }
+          },
+          "parent": {
+            "1": {
+              "act_max_seconds": 0.01046895980834961,
+              "act_p95_seconds": 0.008449077606201172,
+              "first_place_rate": 1.0,
+              "invalid_action_rate": 0.0,
+              "mean_coins": 50.0,
+              "mean_crates": 0.0,
+              "mean_kills": 0.0,
+              "mean_score": 50.0,
+              "skipped_actions": 0,
+              "suicide_rate": 0.0,
+              "survived_bomb_rate": 0.0,
+              "timeouts": 0,
+              "zero_bomb_round_rate": 1
+            },
+            "2": {
+              "act_max_seconds": 0.006375312805175781,
+              "act_p95_seconds": 0.004926204681396484,
+              "first_place_rate": 1.0,
+              "invalid_action_rate": 0.0,
+              "mean_coins": 6.2,
+              "mean_crates": 86.35,
+              "mean_kills": 0.0,
+              "mean_score": 6.2,
+              "skipped_actions": 0,
+              "suicide_rate": 0.0,
+              "survived_bomb_rate": 1.0,
+              "timeouts": 0,
+              "zero_bomb_round_rate": 0
+            },
+            "3": {
+              "act_max_seconds": 0.19388771057128906,
+              "act_p95_seconds": 0.012421131134033203,
+              "first_place_rate": 0.45,
+              "invalid_action_rate": 0.00029235491887151,
+              "mean_coins": 3.15,
+              "mean_crates": 38.65,
+              "mean_kills": 0.3,
+              "mean_score": 4.65,
+              "skipped_actions": 0,
+              "suicide_rate": 0.2,
+              "survived_bomb_rate": 0.9955357142857143,
+              "timeouts": 0,
+              "zero_bomb_round_rate": 0
+            }
+          }
+        }
+      },
+      "round1/phase_r7/s22": {
+        "checks": {
+          "act_max": true,
+          "act_p95": true,
+          "early_coin_rate_retention": true,
+          "early_crate_rate_retention": true,
+          "invalid_actions": true,
+          "late_mobility_crisis": true,
+          "no_skipped_actions": true,
+          "no_timeouts": true,
+          "task1_score_retention": true,
+          "task2_bomb_survival": true,
+          "task2_coin_retention": true,
+          "task2_crate_retention": true,
+          "task2_suicide": true,
+          "task3_bomb_survival": true,
+          "task3_coin_retention": true,
+          "task3_combat_gain": false,
+          "task3_crate_retention": true,
+          "task3_score_gain": false,
+          "task3_suicide": false
+        },
+        "deltas": {
+          "task3_first_place_rate": 0.0,
+          "task3_kills": -0.10000000000000003,
+          "task3_score": -0.4500000000000002
+        },
+        "passed": false,
+        "phase": {
+          "child": {
+            "early_weighted_coins_per_100_steps": 2.140892946169503,
+            "early_weighted_crates_per_100_steps": 48.94664203665482,
+            "geometric_edge_rate": 0.6314941675969251,
+            "late_mobility_crisis_rate": 0.010506398972005015
+          },
+          "parent": {
+            "early_weighted_coins_per_100_steps": 2.062292506153109,
+            "early_weighted_crates_per_100_steps": 50.026059250564124,
+            "geometric_edge_rate": 0.5270979843036702,
+            "late_mobility_crisis_rate": 0.008684101881137569
+          }
+        },
+        "retention": {
+          "task1_score": 1.0,
+          "task2_coins": 1.0364963503649636,
+          "task2_crates": 1.0314666666666668,
+          "task3_coins": 1.0123456790123457,
+          "task3_crates": 1.0396246089676746
+        },
+        "summaries": {
+          "child": {
+            "1": {
+              "act_max_seconds": 0.044615983963012695,
+              "act_p95_seconds": 0.02071356773376465,
+              "first_place_rate": 1.0,
+              "invalid_action_rate": 0.0,
+              "mean_coins": 50.0,
+              "mean_crates": 0.0,
+              "mean_kills": 0.0,
+              "mean_score": 50.0,
+              "skipped_actions": 0,
+              "suicide_rate": 0.0,
+              "survived_bomb_rate": 0.0,
+              "timeouts": 0,
+              "zero_bomb_round_rate": 1
+            },
+            "2": {
+              "act_max_seconds": 0.20425629615783691,
+              "act_p95_seconds": 0.03376650810241699,
+              "first_place_rate": 1.0,
+              "invalid_action_rate": 0.0,
+              "mean_coins": 7.1,
+              "mean_crates": 96.7,
+              "mean_kills": 0.0,
+              "mean_score": 7.1,
+              "skipped_actions": 0,
+              "suicide_rate": 0.0,
+              "survived_bomb_rate": 1.0,
+              "timeouts": 0,
+              "zero_bomb_round_rate": 0
+            },
+            "3": {
+              "act_max_seconds": 0.19900035858154297,
+              "act_p95_seconds": 0.03541874885559082,
+              "first_place_rate": 0.45,
+              "invalid_action_rate": 0.0005662514156285391,
+              "mean_coins": 4.1,
+              "mean_crates": 49.85,
+              "mean_kills": 0.3,
+              "mean_score": 5.6,
+              "skipped_actions": 0,
+              "suicide_rate": 0.2,
+              "survived_bomb_rate": 0.9920948616600791,
+              "timeouts": 0,
+              "zero_bomb_round_rate": 0
+            }
+          },
+          "parent": {
+            "1": {
+              "act_max_seconds": 0.009202957153320312,
+              "act_p95_seconds": 0.007055997848510742,
+              "first_place_rate": 1.0,
+              "invalid_action_rate": 0.0,
+              "mean_coins": 50.0,
+              "mean_crates": 0.0,
+              "mean_kills": 0.0,
+              "mean_score": 50.0,
+              "skipped_actions": 0,
+              "suicide_rate": 0.0,
+              "survived_bomb_rate": 0.0,
+              "timeouts": 0,
+              "zero_bomb_round_rate": 1
+            },
+            "2": {
+              "act_max_seconds": 0.015776634216308594,
+              "act_p95_seconds": 0.012869834899902344,
+              "first_place_rate": 1.0,
+              "invalid_action_rate": 0.0,
+              "mean_coins": 6.85,
+              "mean_crates": 93.75,
+              "mean_kills": 0.0,
+              "mean_score": 6.85,
+              "skipped_actions": 0,
+              "suicide_rate": 0.0,
+              "survived_bomb_rate": 1.0,
+              "timeouts": 0,
+              "zero_bomb_round_rate": 0
+            },
+            "3": {
+              "act_max_seconds": 0.015288114547729492,
+              "act_p95_seconds": 0.008719205856323242,
+              "first_place_rate": 0.45,
+              "invalid_action_rate": 0.00014291839359725596,
+              "mean_coins": 4.05,
+              "mean_crates": 47.95,
+              "mean_kills": 0.4,
+              "mean_score": 6.05,
+              "skipped_actions": 0,
+              "suicide_rate": 0.2,
+              "survived_bomb_rate": 0.9951865222623345,
+              "timeouts": 0,
+              "zero_bomb_round_rate": 0
+            }
+          }
+        }
+      },
+      "round1/phase_r9_combat/s11": {
+        "checks": {
+          "act_max": true,
+          "act_p95": true,
+          "early_coin_rate_retention": true,
+          "early_crate_rate_retention": true,
+          "invalid_actions": true,
+          "late_mobility_crisis": true,
+          "no_skipped_actions": true,
+          "no_timeouts": true,
+          "task1_score_retention": true,
+          "task2_bomb_survival": true,
+          "task2_coin_retention": true,
+          "task2_crate_retention": true,
+          "task2_suicide": true,
+          "task3_bomb_survival": true,
+          "task3_coin_retention": true,
+          "task3_combat_gain": false,
+          "task3_crate_retention": true,
+          "task3_score_gain": true,
+          "task3_suicide": false
+        },
+        "deltas": {
+          "task3_first_place_rate": 0.0,
+          "task3_kills": 0.04999999999999999,
+          "task3_score": 0.9499999999999993
+        },
+        "passed": false,
+        "phase": {
+          "child": {
+            "early_weighted_coins_per_100_steps": 2.172268767585099,
+            "early_weighted_crates_per_100_steps": 34.01451121015562,
+            "geometric_edge_rate": 0.5563762932981797,
+            "late_mobility_crisis_rate": 0.034900316519678204
+          },
+          "parent": {
+            "early_weighted_coins_per_100_steps": 1.4573484674859514,
+            "early_weighted_crates_per_100_steps": 34.60606265543016,
+            "geometric_edge_rate": 0.5796552106468265,
+            "late_mobility_crisis_rate": 0.0082870440464687
+          }
+        },
+        "retention": {
+          "task1_score": 1.0,
+          "task2_coins": 0.9435483870967741,
+          "task2_crates": 0.9316734221192821,
+          "task3_coins": 1.2222222222222223,
+          "task3_crates": 1.0827943078913325
+        },
+        "summaries": {
+          "child": {
+            "1": {
+              "act_max_seconds": 0.023193836212158203,
+              "act_p95_seconds": 0.020833730697631836,
+              "first_place_rate": 1.0,
+              "invalid_action_rate": 0.0,
+              "mean_coins": 50.0,
+              "mean_crates": 0.0,
+              "mean_kills": 0.0,
+              "mean_score": 50.0,
+              "skipped_actions": 0,
+              "suicide_rate": 0.0,
+              "survived_bomb_rate": 0.0,
+              "timeouts": 0,
+              "zero_bomb_round_rate": 1
+            },
+            "2": {
+              "act_max_seconds": 0.041258811950683594,
+              "act_p95_seconds": 0.027065515518188477,
+              "first_place_rate": 1.0,
+              "invalid_action_rate": 0.0,
+              "mean_coins": 5.85,
+              "mean_crates": 80.45,
+              "mean_kills": 0.0,
+              "mean_score": 5.85,
+              "skipped_actions": 0,
+              "suicide_rate": 0.0,
+              "survived_bomb_rate": 1.0,
+              "timeouts": 0,
+              "zero_bomb_round_rate": 0
+            },
+            "3": {
+              "act_max_seconds": 0.09466195106506348,
+              "act_p95_seconds": 0.03201007843017578,
+              "first_place_rate": 0.45,
+              "invalid_action_rate": 0.0004045307443365696,
+              "mean_coins": 3.85,
+              "mean_crates": 41.85,
+              "mean_kills": 0.35,
+              "mean_score": 5.6,
+              "skipped_actions": 0,
+              "suicide_rate": 0.15,
+              "survived_bomb_rate": 0.9951298701298701,
+              "timeouts": 0,
+              "zero_bomb_round_rate": 0
+            }
+          },
+          "parent": {
+            "1": {
+              "act_max_seconds": 0.01046895980834961,
+              "act_p95_seconds": 0.008449077606201172,
+              "first_place_rate": 1.0,
+              "invalid_action_rate": 0.0,
+              "mean_coins": 50.0,
+              "mean_crates": 0.0,
+              "mean_kills": 0.0,
+              "mean_score": 50.0,
+              "skipped_actions": 0,
+              "suicide_rate": 0.0,
+              "survived_bomb_rate": 0.0,
+              "timeouts": 0,
+              "zero_bomb_round_rate": 1
+            },
+            "2": {
+              "act_max_seconds": 0.006375312805175781,
+              "act_p95_seconds": 0.004926204681396484,
+              "first_place_rate": 1.0,
+              "invalid_action_rate": 0.0,
+              "mean_coins": 6.2,
+              "mean_crates": 86.35,
+              "mean_kills": 0.0,
+              "mean_score": 6.2,
+              "skipped_actions": 0,
+              "suicide_rate": 0.0,
+              "survived_bomb_rate": 1.0,
+              "timeouts": 0,
+              "zero_bomb_round_rate": 0
+            },
+            "3": {
+              "act_max_seconds": 0.19388771057128906,
+              "act_p95_seconds": 0.012421131134033203,
+              "first_place_rate": 0.45,
+              "invalid_action_rate": 0.00029235491887151,
+              "mean_coins": 3.15,
+              "mean_crates": 38.65,
+              "mean_kills": 0.3,
+              "mean_score": 4.65,
+              "skipped_actions": 0,
+              "suicide_rate": 0.2,
+              "survived_bomb_rate": 0.9955357142857143,
+              "timeouts": 0,
+              "zero_bomb_round_rate": 0
+            }
+          }
+        }
+      },
+      "round1/phase_r9_combat/s22": {
+        "checks": {
+          "act_max": true,
+          "act_p95": true,
+          "early_coin_rate_retention": false,
+          "early_crate_rate_retention": false,
+          "invalid_actions": true,
+          "late_mobility_crisis": true,
+          "no_skipped_actions": true,
+          "no_timeouts": true,
+          "task1_score_retention": true,
+          "task2_bomb_survival": true,
+          "task2_coin_retention": false,
+          "task2_crate_retention": true,
+          "task2_suicide": true,
+          "task3_bomb_survival": true,
+          "task3_coin_retention": false,
+          "task3_combat_gain": false,
+          "task3_crate_retention": false,
+          "task3_score_gain": false,
+          "task3_suicide": false
+        },
+        "deltas": {
+          "task3_first_place_rate": -0.10000000000000003,
+          "task3_kills": -0.15000000000000002,
+          "task3_score": -1.3499999999999996
+        },
+        "passed": false,
+        "phase": {
+          "child": {
+            "early_weighted_coins_per_100_steps": 1.4650316651036797,
+            "early_weighted_crates_per_100_steps": 25.35719476473156,
+            "geometric_edge_rate": 0.5108543134568676,
+            "late_mobility_crisis_rate": 0.017393515560106966
+          },
+          "parent": {
+            "early_weighted_coins_per_100_steps": 2.062292506153109,
+            "early_weighted_crates_per_100_steps": 50.026059250564124,
+            "geometric_edge_rate": 0.5270979843036702,
+            "late_mobility_crisis_rate": 0.008684101881137569
+          }
+        },
+        "retention": {
+          "task1_score": 1.0,
+          "task2_coins": 0.8905109489051095,
+          "task2_crates": 0.9130666666666666,
+          "task3_coins": 0.851851851851852,
+          "task3_crates": 0.8154327424400417
+        },
+        "summaries": {
+          "child": {
+            "1": {
+              "act_max_seconds": 0.022592782974243164,
+              "act_p95_seconds": 0.020993471145629883,
+              "first_place_rate": 1.0,
+              "invalid_action_rate": 0.0,
+              "mean_coins": 50.0,
+              "mean_crates": 0.0,
+              "mean_kills": 0.0,
+              "mean_score": 50.0,
+              "skipped_actions": 0,
+              "suicide_rate": 0.0,
+              "survived_bomb_rate": 0.0,
+              "timeouts": 0,
+              "zero_bomb_round_rate": 1
+            },
+            "2": {
+              "act_max_seconds": 0.019702434539794922,
+              "act_p95_seconds": 0.017755985260009766,
+              "first_place_rate": 1.0,
+              "invalid_action_rate": 0.0,
+              "mean_coins": 6.1,
+              "mean_crates": 85.6,
+              "mean_kills": 0.0,
+              "mean_score": 6.1,
+              "skipped_actions": 0,
+              "suicide_rate": 0.0,
+              "survived_bomb_rate": 1.0,
+              "timeouts": 0,
+              "zero_bomb_round_rate": 0
+            },
+            "3": {
+              "act_max_seconds": 0.026886463165283203,
+              "act_p95_seconds": 0.0180966854095459,
+              "first_place_rate": 0.35,
+              "invalid_action_rate": 0.00041905294035479815,
+              "mean_coins": 3.45,
+              "mean_crates": 39.1,
+              "mean_kills": 0.25,
+              "mean_score": 4.7,
+              "skipped_actions": 0,
+              "suicide_rate": 0.25,
+              "survived_bomb_rate": 0.9931693989071039,
+              "timeouts": 0,
+              "zero_bomb_round_rate": 0
+            }
+          },
+          "parent": {
+            "1": {
+              "act_max_seconds": 0.009202957153320312,
+              "act_p95_seconds": 0.007055997848510742,
+              "first_place_rate": 1.0,
+              "invalid_action_rate": 0.0,
+              "mean_coins": 50.0,
+              "mean_crates": 0.0,
+              "mean_kills": 0.0,
+              "mean_score": 50.0,
+              "skipped_actions": 0,
+              "suicide_rate": 0.0,
+              "survived_bomb_rate": 0.0,
+              "timeouts": 0,
+              "zero_bomb_round_rate": 1
+            },
+            "2": {
+              "act_max_seconds": 0.015776634216308594,
+              "act_p95_seconds": 0.012869834899902344,
+              "first_place_rate": 1.0,
+              "invalid_action_rate": 0.0,
+              "mean_coins": 6.85,
+              "mean_crates": 93.75,
+              "mean_kills": 0.0,
+              "mean_score": 6.85,
+              "skipped_actions": 0,
+              "suicide_rate": 0.0,
+              "survived_bomb_rate": 1.0,
+              "timeouts": 0,
+              "zero_bomb_round_rate": 0
+            },
+            "3": {
+              "act_max_seconds": 0.015288114547729492,
+              "act_p95_seconds": 0.008719205856323242,
+              "first_place_rate": 0.45,
+              "invalid_action_rate": 0.00014291839359725596,
+              "mean_coins": 4.05,
+              "mean_crates": 47.95,
+              "mean_kills": 0.4,
+              "mean_score": 6.05,
+              "skipped_actions": 0,
+              "suicide_rate": 0.2,
+              "survived_bomb_rate": 0.9951865222623345,
+              "timeouts": 0,
+              "zero_bomb_round_rate": 0
+            }
+          }
+        }
+      },
+      "round1/phase_r9_full/s11": {
+        "checks": {
+          "act_max": true,
+          "act_p95": true,
+          "early_coin_rate_retention": true,
+          "early_crate_rate_retention": true,
+          "invalid_actions": true,
+          "late_mobility_crisis": true,
+          "no_skipped_actions": true,
+          "no_timeouts": true,
+          "task1_score_retention": true,
+          "task2_bomb_survival": true,
+          "task2_coin_retention": false,
+          "task2_crate_retention": false,
+          "task2_suicide": true,
+          "task3_bomb_survival": true,
+          "task3_coin_retention": true,
+          "task3_combat_gain": false,
+          "task3_crate_retention": true,
+          "task3_score_gain": true,
+          "task3_suicide": false
+        },
+        "deltas": {
+          "task3_first_place_rate": -0.04999999999999999,
+          "task3_kills": 0.04999999999999999,
+          "task3_score": 0.8999999999999995
+        },
+        "passed": false,
+        "phase": {
+          "child": {
+            "early_weighted_coins_per_100_steps": 2.057342671703857,
+            "early_weighted_crates_per_100_steps": 52.23866642867951,
+            "geometric_edge_rate": 0.5530285590621735,
+            "late_mobility_crisis_rate": 0.013664809834977103
+          },
+          "parent": {
+            "early_weighted_coins_per_100_steps": 1.4573484674859514,
+            "early_weighted_crates_per_100_steps": 34.60606265543016,
+            "geometric_edge_rate": 0.5796552106468265,
+            "late_mobility_crisis_rate": 0.0082870440464687
+          }
+        },
+        "retention": {
+          "task1_score": 1.0,
+          "task2_coins": 0.814516129032258,
+          "task2_crates": 0.7961783439490446,
+          "task3_coins": 1.2063492063492063,
+          "task3_crates": 1.0439844760672705
+        },
+        "summaries": {
+          "child": {
+            "1": {
+              "act_max_seconds": 0.021809101104736328,
+              "act_p95_seconds": 0.020868778228759766,
+              "first_place_rate": 1.0,
+              "invalid_action_rate": 0.0,
+              "mean_coins": 50.0,
+              "mean_crates": 0.0,
+              "mean_kills": 0.0,
+              "mean_score": 50.0,
+              "skipped_actions": 0,
+              "suicide_rate": 0.0,
+              "survived_bomb_rate": 0.0,
+              "timeouts": 0,
+              "zero_bomb_round_rate": 1
+            },
+            "2": {
+              "act_max_seconds": 0.039992570877075195,
+              "act_p95_seconds": 0.029067039489746094,
+              "first_place_rate": 1.0,
+              "invalid_action_rate": 0.0,
+              "mean_coins": 5.05,
+              "mean_crates": 68.75,
+              "mean_kills": 0.0,
+              "mean_score": 5.05,
+              "skipped_actions": 0,
+              "suicide_rate": 0.0,
+              "survived_bomb_rate": 1.0,
+              "timeouts": 0,
+              "zero_bomb_round_rate": 0
+            },
+            "3": {
+              "act_max_seconds": 0.1991579532623291,
+              "act_p95_seconds": 0.03048253059387207,
+              "first_place_rate": 0.4,
+              "invalid_action_rate": 0.0012585652356313802,
+              "mean_coins": 3.8,
+              "mean_crates": 40.35,
+              "mean_kills": 0.35,
+              "mean_score": 5.55,
+              "skipped_actions": 0,
+              "suicide_rate": 0.2,
+              "survived_bomb_rate": 0.9943262411347518,
+              "timeouts": 0,
+              "zero_bomb_round_rate": 0
+            }
+          },
+          "parent": {
+            "1": {
+              "act_max_seconds": 0.01046895980834961,
+              "act_p95_seconds": 0.008449077606201172,
+              "first_place_rate": 1.0,
+              "invalid_action_rate": 0.0,
+              "mean_coins": 50.0,
+              "mean_crates": 0.0,
+              "mean_kills": 0.0,
+              "mean_score": 50.0,
+              "skipped_actions": 0,
+              "suicide_rate": 0.0,
+              "survived_bomb_rate": 0.0,
+              "timeouts": 0,
+              "zero_bomb_round_rate": 1
+            },
+            "2": {
+              "act_max_seconds": 0.006375312805175781,
+              "act_p95_seconds": 0.004926204681396484,
+              "first_place_rate": 1.0,
+              "invalid_action_rate": 0.0,
+              "mean_coins": 6.2,
+              "mean_crates": 86.35,
+              "mean_kills": 0.0,
+              "mean_score": 6.2,
+              "skipped_actions": 0,
+              "suicide_rate": 0.0,
+              "survived_bomb_rate": 1.0,
+              "timeouts": 0,
+              "zero_bomb_round_rate": 0
+            },
+            "3": {
+              "act_max_seconds": 0.19388771057128906,
+              "act_p95_seconds": 0.012421131134033203,
+              "first_place_rate": 0.45,
+              "invalid_action_rate": 0.00029235491887151,
+              "mean_coins": 3.15,
+              "mean_crates": 38.65,
+              "mean_kills": 0.3,
+              "mean_score": 4.65,
+              "skipped_actions": 0,
+              "suicide_rate": 0.2,
+              "survived_bomb_rate": 0.9955357142857143,
+              "timeouts": 0,
+              "zero_bomb_round_rate": 0
+            }
+          }
+        }
+      },
+      "round1/phase_r9_full/s22": {
+        "checks": {
+          "act_max": true,
+          "act_p95": true,
+          "early_coin_rate_retention": false,
+          "early_crate_rate_retention": true,
+          "invalid_actions": true,
+          "late_mobility_crisis": true,
+          "no_skipped_actions": true,
+          "no_timeouts": true,
+          "task1_score_retention": true,
+          "task2_bomb_survival": true,
+          "task2_coin_retention": false,
+          "task2_crate_retention": false,
+          "task2_suicide": true,
+          "task3_bomb_survival": true,
+          "task3_coin_retention": false,
+          "task3_combat_gain": false,
+          "task3_crate_retention": false,
+          "task3_score_gain": false,
+          "task3_suicide": false
+        },
+        "deltas": {
+          "task3_first_place_rate": -0.2,
+          "task3_kills": -0.10000000000000003,
+          "task3_score": -1.75
+        },
+        "passed": false,
+        "phase": {
+          "child": {
+            "early_weighted_coins_per_100_steps": 1.4631223546722685,
+            "early_weighted_crates_per_100_steps": 55.30701197466875,
+            "geometric_edge_rate": 0.6007578609462074,
+            "late_mobility_crisis_rate": 0.006359721408433365
+          },
+          "parent": {
+            "early_weighted_coins_per_100_steps": 2.062292506153109,
+            "early_weighted_crates_per_100_steps": 50.026059250564124,
+            "geometric_edge_rate": 0.5270979843036702,
+            "late_mobility_crisis_rate": 0.008684101881137569
+          }
+        },
+        "retention": {
+          "task1_score": 1.0,
+          "task2_coins": 0.8686131386861314,
+          "task2_crates": 0.8805333333333333,
+          "task3_coins": 0.691358024691358,
+          "task3_crates": 0.7059436913451512
+        },
+        "summaries": {
+          "child": {
+            "1": {
+              "act_max_seconds": 0.04526209831237793,
+              "act_p95_seconds": 0.041579246520996094,
+              "first_place_rate": 1.0,
+              "invalid_action_rate": 0.0,
+              "mean_coins": 50.0,
+              "mean_crates": 0.0,
+              "mean_kills": 0.0,
+              "mean_score": 50.0,
+              "skipped_actions": 0,
+              "suicide_rate": 0.0,
+              "survived_bomb_rate": 0.0,
+              "timeouts": 0,
+              "zero_bomb_round_rate": 1
+            },
+            "2": {
+              "act_max_seconds": 0.04092669486999512,
+              "act_p95_seconds": 0.034592390060424805,
+              "first_place_rate": 1.0,
+              "invalid_action_rate": 0.0,
+              "mean_coins": 5.95,
+              "mean_crates": 82.55,
+              "mean_kills": 0.0,
+              "mean_score": 5.95,
+              "skipped_actions": 0,
+              "suicide_rate": 0.0,
+              "survived_bomb_rate": 1.0,
+              "timeouts": 0,
+              "zero_bomb_round_rate": 0
+            },
+            "3": {
+              "act_max_seconds": 0.050592660903930664,
+              "act_p95_seconds": 0.018463611602783203,
+              "first_place_rate": 0.25,
+              "invalid_action_rate": 0.00027326137450471376,
+              "mean_coins": 2.8,
+              "mean_crates": 33.85,
+              "mean_kills": 0.3,
+              "mean_score": 4.3,
+              "skipped_actions": 0,
+              "suicide_rate": 0.15,
+              "survived_bomb_rate": 0.9958217270194986,
+              "timeouts": 0,
+              "zero_bomb_round_rate": 0
+            }
+          },
+          "parent": {
+            "1": {
+              "act_max_seconds": 0.009202957153320312,
+              "act_p95_seconds": 0.007055997848510742,
+              "first_place_rate": 1.0,
+              "invalid_action_rate": 0.0,
+              "mean_coins": 50.0,
+              "mean_crates": 0.0,
+              "mean_kills": 0.0,
+              "mean_score": 50.0,
+              "skipped_actions": 0,
+              "suicide_rate": 0.0,
+              "survived_bomb_rate": 0.0,
+              "timeouts": 0,
+              "zero_bomb_round_rate": 1
+            },
+            "2": {
+              "act_max_seconds": 0.015776634216308594,
+              "act_p95_seconds": 0.012869834899902344,
+              "first_place_rate": 1.0,
+              "invalid_action_rate": 0.0,
+              "mean_coins": 6.85,
+              "mean_crates": 93.75,
+              "mean_kills": 0.0,
+              "mean_score": 6.85,
+              "skipped_actions": 0,
+              "suicide_rate": 0.0,
+              "survived_bomb_rate": 1.0,
+              "timeouts": 0,
+              "zero_bomb_round_rate": 0
+            },
+            "3": {
+              "act_max_seconds": 0.015288114547729492,
+              "act_p95_seconds": 0.008719205856323242,
+              "first_place_rate": 0.45,
+              "invalid_action_rate": 0.00014291839359725596,
+              "mean_coins": 4.05,
+              "mean_crates": 47.95,
+              "mean_kills": 0.4,
+              "mean_score": 6.05,
+              "skipped_actions": 0,
+              "suicide_rate": 0.2,
+              "survived_bomb_rate": 0.9951865222623345,
+              "timeouts": 0,
+              "zero_bomb_round_rate": 0
+            }
+          }
+        }
+      },
+      "round1/phase_r9_resource/s11": {
+        "checks": {
+          "act_max": true,
+          "act_p95": true,
+          "early_coin_rate_retention": true,
+          "early_crate_rate_retention": true,
+          "invalid_actions": true,
+          "late_mobility_crisis": true,
+          "no_skipped_actions": true,
+          "no_timeouts": true,
+          "task1_score_retention": true,
+          "task2_bomb_survival": true,
+          "task2_coin_retention": false,
+          "task2_crate_retention": false,
+          "task2_suicide": true,
+          "task3_bomb_survival": true,
+          "task3_coin_retention": true,
+          "task3_combat_gain": true,
+          "task3_crate_retention": false,
+          "task3_score_gain": true,
+          "task3_suicide": false
+        },
+        "deltas": {
+          "task3_first_place_rate": 0.0,
+          "task3_kills": 0.25000000000000006,
+          "task3_score": 0.9499999999999993
+        },
+        "passed": false,
+        "phase": {
+          "child": {
+            "early_weighted_coins_per_100_steps": 1.4880647519527062,
+            "early_weighted_crates_per_100_steps": 38.02499593271557,
+            "geometric_edge_rate": 0.581270893581292,
+            "late_mobility_crisis_rate": 0.014027070981751552
+          },
+          "parent": {
+            "early_weighted_coins_per_100_steps": 1.4573484674859514,
+            "early_weighted_crates_per_100_steps": 34.60606265543016,
+            "geometric_edge_rate": 0.5796552106468265,
+            "late_mobility_crisis_rate": 0.0082870440464687
+          }
+        },
+        "retention": {
+          "task1_score": 1.0,
+          "task2_coins": 0.8467741935483871,
+          "task2_crates": 0.8477127967573829,
+          "task3_coins": 0.9047619047619048,
+          "task3_crates": 0.8344113842173351
+        },
+        "summaries": {
+          "child": {
+            "1": {
+              "act_max_seconds": 0.024786949157714844,
+              "act_p95_seconds": 0.020975351333618164,
+              "first_place_rate": 1.0,
+              "invalid_action_rate": 0.0,
+              "mean_coins": 50.0,
+              "mean_crates": 0.0,
+              "mean_kills": 0.0,
+              "mean_score": 50.0,
+              "skipped_actions": 0,
+              "suicide_rate": 0.0,
+              "survived_bomb_rate": 0.0,
+              "timeouts": 0,
+              "zero_bomb_round_rate": 1
+            },
+            "2": {
+              "act_max_seconds": 0.019727706909179688,
+              "act_p95_seconds": 0.01790452003479004,
+              "first_place_rate": 1.0,
+              "invalid_action_rate": 0.0,
+              "mean_coins": 5.25,
+              "mean_crates": 73.2,
+              "mean_kills": 0.0,
+              "mean_score": 5.25,
+              "skipped_actions": 0,
+              "suicide_rate": 0.0,
+              "survived_bomb_rate": 1.0,
+              "timeouts": 0,
+              "zero_bomb_round_rate": 0
+            },
+            "3": {
+              "act_max_seconds": 0.04620170593261719,
+              "act_p95_seconds": 0.04252815246582031,
+              "first_place_rate": 0.45,
+              "invalid_action_rate": 0.0004827031375703942,
+              "mean_coins": 2.85,
+              "mean_crates": 32.25,
+              "mean_kills": 0.55,
+              "mean_score": 5.6,
+              "skipped_actions": 0,
+              "suicide_rate": 0.4,
+              "survived_bomb_rate": 0.9820627802690582,
+              "timeouts": 0,
+              "zero_bomb_round_rate": 0
+            }
+          },
+          "parent": {
+            "1": {
+              "act_max_seconds": 0.01046895980834961,
+              "act_p95_seconds": 0.008449077606201172,
+              "first_place_rate": 1.0,
+              "invalid_action_rate": 0.0,
+              "mean_coins": 50.0,
+              "mean_crates": 0.0,
+              "mean_kills": 0.0,
+              "mean_score": 50.0,
+              "skipped_actions": 0,
+              "suicide_rate": 0.0,
+              "survived_bomb_rate": 0.0,
+              "timeouts": 0,
+              "zero_bomb_round_rate": 1
+            },
+            "2": {
+              "act_max_seconds": 0.006375312805175781,
+              "act_p95_seconds": 0.004926204681396484,
+              "first_place_rate": 1.0,
+              "invalid_action_rate": 0.0,
+              "mean_coins": 6.2,
+              "mean_crates": 86.35,
+              "mean_kills": 0.0,
+              "mean_score": 6.2,
+              "skipped_actions": 0,
+              "suicide_rate": 0.0,
+              "survived_bomb_rate": 1.0,
+              "timeouts": 0,
+              "zero_bomb_round_rate": 0
+            },
+            "3": {
+              "act_max_seconds": 0.19388771057128906,
+              "act_p95_seconds": 0.012421131134033203,
+              "first_place_rate": 0.45,
+              "invalid_action_rate": 0.00029235491887151,
+              "mean_coins": 3.15,
+              "mean_crates": 38.65,
+              "mean_kills": 0.3,
+              "mean_score": 4.65,
+              "skipped_actions": 0,
+              "suicide_rate": 0.2,
+              "survived_bomb_rate": 0.9955357142857143,
+              "timeouts": 0,
+              "zero_bomb_round_rate": 0
+            }
+          }
+        }
+      },
+      "round1/phase_r9_resource/s22": {
+        "checks": {
+          "act_max": true,
+          "act_p95": true,
+          "early_coin_rate_retention": true,
+          "early_crate_rate_retention": false,
+          "invalid_actions": true,
+          "late_mobility_crisis": true,
+          "no_skipped_actions": true,
+          "no_timeouts": true,
+          "task1_score_retention": true,
+          "task2_bomb_survival": true,
+          "task2_coin_retention": false,
+          "task2_crate_retention": false,
+          "task2_suicide": true,
+          "task3_bomb_survival": true,
+          "task3_coin_retention": false,
+          "task3_combat_gain": false,
+          "task3_crate_retention": false,
+          "task3_score_gain": false,
+          "task3_suicide": false
+        },
+        "deltas": {
+          "task3_first_place_rate": -0.04999999999999999,
+          "task3_kills": -0.050000000000000044,
+          "task3_score": -1.1499999999999995
+        },
+        "passed": false,
+        "phase": {
+          "child": {
+            "early_weighted_coins_per_100_steps": 1.9069228265038505,
+            "early_weighted_crates_per_100_steps": 38.00657222134096,
+            "geometric_edge_rate": 0.4872271268057785,
+            "late_mobility_crisis_rate": 0.0006482296382400608
+          },
+          "parent": {
+            "early_weighted_coins_per_100_steps": 2.062292506153109,
+            "early_weighted_crates_per_100_steps": 50.026059250564124,
+            "geometric_edge_rate": 0.5270979843036702,
+            "late_mobility_crisis_rate": 0.008684101881137569
+          }
+        },
+        "retention": {
+          "task1_score": 1.0,
+          "task2_coins": 0.759124087591241,
+          "task2_crates": 0.7952,
+          "task3_coins": 0.7777777777777778,
+          "task3_crates": 0.7059436913451512
+        },
+        "summaries": {
+          "child": {
+            "1": {
+              "act_max_seconds": 0.022281408309936523,
+              "act_p95_seconds": 0.020842313766479492,
+              "first_place_rate": 1.0,
+              "invalid_action_rate": 0.0,
+              "mean_coins": 50.0,
+              "mean_crates": 0.0,
+              "mean_kills": 0.0,
+              "mean_score": 50.0,
+              "skipped_actions": 0,
+              "suicide_rate": 0.0,
+              "survived_bomb_rate": 0.0,
+              "timeouts": 0,
+              "zero_bomb_round_rate": 1
+            },
+            "2": {
+              "act_max_seconds": 0.04328775405883789,
+              "act_p95_seconds": 0.03779411315917969,
+              "first_place_rate": 0.95,
+              "invalid_action_rate": 0.0,
+              "mean_coins": 5.2,
+              "mean_crates": 74.55,
+              "mean_kills": 0.0,
+              "mean_score": 5.2,
+              "skipped_actions": 0,
+              "suicide_rate": 0.0,
+              "survived_bomb_rate": 1.0,
+              "timeouts": 0,
+              "zero_bomb_round_rate": 0
+            },
+            "3": {
+              "act_max_seconds": 0.026000022888183594,
+              "act_p95_seconds": 0.019984006881713867,
+              "first_place_rate": 0.4,
+              "invalid_action_rate": 0.0008076457127473415,
+              "mean_coins": 3.15,
+              "mean_crates": 33.85,
+              "mean_kills": 0.35,
+              "mean_score": 4.9,
+              "skipped_actions": 0,
+              "suicide_rate": 0.1,
+              "survived_bomb_rate": 0.9962476547842402,
+              "timeouts": 0,
+              "zero_bomb_round_rate": 0
+            }
+          },
+          "parent": {
+            "1": {
+              "act_max_seconds": 0.009202957153320312,
+              "act_p95_seconds": 0.007055997848510742,
+              "first_place_rate": 1.0,
+              "invalid_action_rate": 0.0,
+              "mean_coins": 50.0,
+              "mean_crates": 0.0,
+              "mean_kills": 0.0,
+              "mean_score": 50.0,
+              "skipped_actions": 0,
+              "suicide_rate": 0.0,
+              "survived_bomb_rate": 0.0,
+              "timeouts": 0,
+              "zero_bomb_round_rate": 1
+            },
+            "2": {
+              "act_max_seconds": 0.015776634216308594,
+              "act_p95_seconds": 0.012869834899902344,
+              "first_place_rate": 1.0,
+              "invalid_action_rate": 0.0,
+              "mean_coins": 6.85,
+              "mean_crates": 93.75,
+              "mean_kills": 0.0,
+              "mean_score": 6.85,
+              "skipped_actions": 0,
+              "suicide_rate": 0.0,
+              "survived_bomb_rate": 1.0,
+              "timeouts": 0,
+              "zero_bomb_round_rate": 0
+            },
+            "3": {
+              "act_max_seconds": 0.015288114547729492,
+              "act_p95_seconds": 0.008719205856323242,
+              "first_place_rate": 0.45,
+              "invalid_action_rate": 0.00014291839359725596,
+              "mean_coins": 4.05,
+              "mean_crates": 47.95,
+              "mean_kills": 0.4,
+              "mean_score": 6.05,
+              "skipped_actions": 0,
+              "suicide_rate": 0.2,
+              "survived_bomb_rate": 0.9951865222623345,
+              "timeouts": 0,
+              "zero_bomb_round_rate": 0
+            }
+          }
+        }
+      }
+    },
+    "ranking": [
+      "phase_r7",
+      "phase_r9_full",
+      "phase_r9_combat",
+      "phase_r9_resource"
+    ],
+    "reason": "Every arm had at least one training seed above the 10% suicide elimination threshold."
+  },
+  "round2": {
+    "assessments": {
+      "round2/phase_r7_mask_v2/s11": {
+        "checks": {
+          "act_max": true,
+          "act_p95": true,
+          "early_coin_rate_retention": true,
+          "early_crate_rate_retention": false,
+          "invalid_actions": true,
+          "late_mobility_crisis": true,
+          "no_skipped_actions": true,
+          "no_timeouts": true,
+          "task1_score_retention": true,
+          "task2_bomb_survival": true,
+          "task2_coin_retention": false,
+          "task2_crate_retention": false,
+          "task2_suicide": true,
+          "task3_bomb_survival": true,
+          "task3_coin_retention": true,
+          "task3_combat_gain": true,
+          "task3_crate_retention": true,
+          "task3_score_gain": true,
+          "task3_suicide": false
+        },
+        "deltas": {
+          "task3_first_place_rate": 0.10000000000000003,
+          "task3_kills": 0.15000000000000002,
+          "task3_score": 1.8499999999999996
+        },
+        "passed": false,
+        "phase": {
+          "child": {
+            "early_weighted_coins_per_100_steps": 1.9431566247260754,
+            "early_weighted_crates_per_100_steps": 26.273724547713197,
+            "geometric_edge_rate": 0.20132429400926172,
+            "late_mobility_crisis_rate": 0.025056505954314932
+          },
+          "parent": {
+            "early_weighted_coins_per_100_steps": 1.4573484674859514,
+            "early_weighted_crates_per_100_steps": 34.60606265543016,
+            "geometric_edge_rate": 0.5796552106468265,
+            "late_mobility_crisis_rate": 0.0082870440464687
+          }
+        },
+        "retention": {
+          "task1_score": 1.0,
+          "task2_coins": 0.6048387096774194,
+          "task2_crates": 0.5790387955993052,
+          "task3_coins": 1.3492063492063493,
+          "task3_crates": 1.1565329883570505
+        },
+        "summaries": {
+          "child": {
+            "1": {
+              "act_max_seconds": 0.021842241287231445,
+              "act_p95_seconds": 0.020839452743530273,
+              "first_place_rate": 1.0,
+              "invalid_action_rate": 0.0,
+              "mean_coins": 50.0,
+              "mean_crates": 0.0,
+              "mean_kills": 0.0,
+              "mean_score": 50.0,
+              "skipped_actions": 0,
+              "suicide_rate": 0.0,
+              "survived_bomb_rate": 0.0,
+              "timeouts": 0,
+              "zero_bomb_round_rate": 1
+            },
+            "2": {
+              "act_max_seconds": 0.021191835403442383,
+              "act_p95_seconds": 0.01714801788330078,
+              "first_place_rate": 0.95,
+              "invalid_action_rate": 0.0,
+              "mean_coins": 3.75,
+              "mean_crates": 50.0,
+              "mean_kills": 0.0,
+              "mean_score": 3.75,
+              "skipped_actions": 0,
+              "suicide_rate": 0.0,
+              "survived_bomb_rate": 1.0,
+              "timeouts": 0,
+              "zero_bomb_round_rate": 0
+            },
+            "3": {
+              "act_max_seconds": 0.03111553192138672,
+              "act_p95_seconds": 0.02202773094177246,
+              "first_place_rate": 0.55,
+              "invalid_action_rate": 0.0010619938935351122,
+              "mean_coins": 4.25,
+              "mean_crates": 44.7,
+              "mean_kills": 0.45,
+              "mean_score": 6.5,
+              "skipped_actions": 0,
+              "suicide_rate": 0.1,
+              "survived_bomb_rate": 0.9976275207591934,
+              "timeouts": 0,
+              "zero_bomb_round_rate": 0
+            }
+          },
+          "parent": {
+            "1": {
+              "act_max_seconds": 0.01046895980834961,
+              "act_p95_seconds": 0.008449077606201172,
+              "first_place_rate": 1.0,
+              "invalid_action_rate": 0.0,
+              "mean_coins": 50.0,
+              "mean_crates": 0.0,
+              "mean_kills": 0.0,
+              "mean_score": 50.0,
+              "skipped_actions": 0,
+              "suicide_rate": 0.0,
+              "survived_bomb_rate": 0.0,
+              "timeouts": 0,
+              "zero_bomb_round_rate": 1
+            },
+            "2": {
+              "act_max_seconds": 0.006375312805175781,
+              "act_p95_seconds": 0.004926204681396484,
+              "first_place_rate": 1.0,
+              "invalid_action_rate": 0.0,
+              "mean_coins": 6.2,
+              "mean_crates": 86.35,
+              "mean_kills": 0.0,
+              "mean_score": 6.2,
+              "skipped_actions": 0,
+              "suicide_rate": 0.0,
+              "survived_bomb_rate": 1.0,
+              "timeouts": 0,
+              "zero_bomb_round_rate": 0
+            },
+            "3": {
+              "act_max_seconds": 0.19388771057128906,
+              "act_p95_seconds": 0.012421131134033203,
+              "first_place_rate": 0.45,
+              "invalid_action_rate": 0.00029235491887151,
+              "mean_coins": 3.15,
+              "mean_crates": 38.65,
+              "mean_kills": 0.3,
+              "mean_score": 4.65,
+              "skipped_actions": 0,
+              "suicide_rate": 0.2,
+              "survived_bomb_rate": 0.9955357142857143,
+              "timeouts": 0,
+              "zero_bomb_round_rate": 0
+            }
+          }
+        }
+      },
+      "round2/phase_r7_mask_v2/s22": {
+        "checks": {
+          "act_max": true,
+          "act_p95": true,
+          "early_coin_rate_retention": true,
+          "early_crate_rate_retention": false,
+          "invalid_actions": true,
+          "late_mobility_crisis": true,
+          "no_skipped_actions": true,
+          "no_timeouts": true,
+          "task1_score_retention": true,
+          "task2_bomb_survival": true,
+          "task2_coin_retention": false,
+          "task2_crate_retention": false,
+          "task2_suicide": true,
+          "task3_bomb_survival": true,
+          "task3_coin_retention": true,
+          "task3_combat_gain": false,
+          "task3_crate_retention": true,
+          "task3_score_gain": false,
+          "task3_suicide": false
+        },
+        "deltas": {
+          "task3_first_place_rate": -0.2,
+          "task3_kills": -0.2,
+          "task3_score": -0.75
+        },
+        "passed": false,
+        "phase": {
+          "child": {
+            "early_weighted_coins_per_100_steps": 2.184460517911365,
+            "early_weighted_crates_per_100_steps": 41.442762788451724,
+            "geometric_edge_rate": 0.5325738009815798,
+            "late_mobility_crisis_rate": 0.0030413981989527
+          },
+          "parent": {
+            "early_weighted_coins_per_100_steps": 2.062292506153109,
+            "early_weighted_crates_per_100_steps": 50.026059250564124,
+            "geometric_edge_rate": 0.5270979843036702,
+            "late_mobility_crisis_rate": 0.008684101881137569
+          }
+        },
+        "retention": {
+          "task1_score": 1.0,
+          "task2_coins": 0.6715328467153284,
+          "task2_crates": 0.752,
+          "task3_coins": 1.0617283950617284,
+          "task3_crates": 0.9864442127215849
+        },
+        "summaries": {
+          "child": {
+            "1": {
+              "act_max_seconds": 0.024096012115478516,
+              "act_p95_seconds": 0.02063274383544922,
+              "first_place_rate": 1.0,
+              "invalid_action_rate": 0.0,
+              "mean_coins": 50.0,
+              "mean_crates": 0.0,
+              "mean_kills": 0.0,
+              "mean_score": 50.0,
+              "skipped_actions": 0,
+              "suicide_rate": 0.0,
+              "survived_bomb_rate": 0.0,
+              "timeouts": 0,
+              "zero_bomb_round_rate": 1
+            },
+            "2": {
+              "act_max_seconds": 0.0217893123626709,
+              "act_p95_seconds": 0.01836705207824707,
+              "first_place_rate": 1.0,
+              "invalid_action_rate": 0.0,
+              "mean_coins": 4.6,
+              "mean_crates": 70.5,
+              "mean_kills": 0.0,
+              "mean_score": 4.6,
+              "skipped_actions": 0,
+              "suicide_rate": 0.0,
+              "survived_bomb_rate": 1.0,
+              "timeouts": 0,
+              "zero_bomb_round_rate": 0
+            },
+            "3": {
+              "act_max_seconds": 0.029765844345092773,
+              "act_p95_seconds": 0.01954936981201172,
+              "first_place_rate": 0.25,
+              "invalid_action_rate": 0.0004131093362709997,
+              "mean_coins": 4.3,
+              "mean_crates": 47.3,
+              "mean_kills": 0.2,
+              "mean_score": 5.3,
+              "skipped_actions": 0,
+              "suicide_rate": 0.15,
+              "survived_bomb_rate": 0.9941972920696325,
+              "timeouts": 0,
+              "zero_bomb_round_rate": 0
+            }
+          },
+          "parent": {
+            "1": {
+              "act_max_seconds": 0.009202957153320312,
+              "act_p95_seconds": 0.007055997848510742,
+              "first_place_rate": 1.0,
+              "invalid_action_rate": 0.0,
+              "mean_coins": 50.0,
+              "mean_crates": 0.0,
+              "mean_kills": 0.0,
+              "mean_score": 50.0,
+              "skipped_actions": 0,
+              "suicide_rate": 0.0,
+              "survived_bomb_rate": 0.0,
+              "timeouts": 0,
+              "zero_bomb_round_rate": 1
+            },
+            "2": {
+              "act_max_seconds": 0.015776634216308594,
+              "act_p95_seconds": 0.012869834899902344,
+              "first_place_rate": 1.0,
+              "invalid_action_rate": 0.0,
+              "mean_coins": 6.85,
+              "mean_crates": 93.75,
+              "mean_kills": 0.0,
+              "mean_score": 6.85,
+              "skipped_actions": 0,
+              "suicide_rate": 0.0,
+              "survived_bomb_rate": 1.0,
+              "timeouts": 0,
+              "zero_bomb_round_rate": 0
+            },
+            "3": {
+              "act_max_seconds": 0.015288114547729492,
+              "act_p95_seconds": 0.008719205856323242,
+              "first_place_rate": 0.45,
+              "invalid_action_rate": 0.00014291839359725596,
+              "mean_coins": 4.05,
+              "mean_crates": 47.95,
+              "mean_kills": 0.4,
+              "mean_score": 6.05,
+              "skipped_actions": 0,
+              "suicide_rate": 0.2,
+              "survived_bomb_rate": 0.9951865222623345,
+              "timeouts": 0,
+              "zero_bomb_round_rate": 0
+            }
+          }
+        }
+      }
+    },
+    "intervention": "survival-mask-v2",
+    "trigger": "highest-ranked phase_r7 had suicide rate above 5%"
+  },
+  "schema_version": "task3-phase-results-v1",
+  "source": {
+    "commit": "125124f7c09f88714c4704b4d2ac06824cbf265f",
+    "hash": "ad9d33d9cf17a3363082e4c33e08023f6234ada81110733bec00c33d1c07669e"
+  },
+  "stopping_decision": {
+    "reason": "mask-v2 reduced but did not solve safety; resource retention also failed, so neither the combat-only curriculum nor the independently-successful-intervention combination trigger was met.",
+    "round3_started": false,
+    "seed33_started": false
+  },
+  "training_runs": {
+    "round1/phase_r7/s11": {
+      "checkpoint": "runs/task3_phase_r1_phase_r7_s11_c0500_125124f/checkpoints/final.pt",
+      "checkpoint_sha256": "d061f2bf400f042bf2a40fa28fbd75625bcdfb47757229863e0849ed7056cbb7",
+      "final_epsilon": 0.04999999999999999,
+      "latest_generation": "generation-00000500",
+      "latest_generation_hash": "878feede740a0bb005c94fe54d4e3860c8b0c3c5097a26c07089498e90285bf8",
+      "loss": 0.12956511974334717,
+      "reward_id": "r7_safe_credit_sparse",
+      "rounds": 500,
+      "run": "runs/task3_phase_r1_phase_r7_s11_c0500_125124f",
+      "safety": {
+        "fallback": "physical_q",
+        "horizon": 7,
+        "mode": "all",
+        "version": "survival-mask-v1"
+      },
+      "stage_action_steps": 175419,
+      "updates": 173420
+    },
+    "round1/phase_r7/s22": {
+      "checkpoint": "runs/task3_phase_r1_phase_r7_s22_c0500_125124f/checkpoints/final.pt",
+      "checkpoint_sha256": "3c2ca79836ce694085d539da044e70b1781f3a1f043cbf5290b2688c52546938",
+      "final_epsilon": 0.04999999999999999,
+      "latest_generation": "generation-00000500",
+      "latest_generation_hash": "8b2b909f238c7a4619a7f9cb04c8293ca0e90c3e2af83045c0caf3f9239d184a",
+      "loss": 0.18139921128749847,
+      "reward_id": "r7_safe_credit_sparse",
+      "rounds": 500,
+      "run": "runs/task3_phase_r1_phase_r7_s22_c0500_125124f",
+      "safety": {
+        "fallback": "physical_q",
+        "horizon": 7,
+        "mode": "all",
+        "version": "survival-mask-v1"
+      },
+      "stage_action_steps": 178345,
+      "updates": 176346
+    },
+    "round1/phase_r9_combat/s11": {
+      "checkpoint": "runs/task3_phase_r1_phase_r9_combat_s11_c0500_125124f/checkpoints/final.pt",
+      "checkpoint_sha256": "f15b95a32ad1559262d19a71400841e391603157fb0de0ab4b45ddbab5eb2f98",
+      "final_epsilon": 0.04999999999999999,
+      "latest_generation": "generation-00000500",
+      "latest_generation_hash": "bdb72dcb1c25d65e47d9b8796b71e7f7991e883fa870645e5cf4b16e000810fe",
+      "loss": 0.05299071967601776,
+      "reward_id": "r9_phase_combat",
+      "rounds": 500,
+      "run": "runs/task3_phase_r1_phase_r9_combat_s11_c0500_125124f",
+      "safety": {
+        "fallback": "physical_q",
+        "horizon": 7,
+        "mode": "all",
+        "version": "survival-mask-v1"
+      },
+      "stage_action_steps": 180484,
+      "updates": 178485
+    },
+    "round1/phase_r9_combat/s22": {
+      "checkpoint": "runs/task3_phase_r1_phase_r9_combat_s22_c0500_125124f/checkpoints/final.pt",
+      "checkpoint_sha256": "35633ed6776abb759cfae5844a66076a6694e362c30854c4e3d8e83d89c27739",
+      "final_epsilon": 0.04999999999999999,
+      "latest_generation": "generation-00000500",
+      "latest_generation_hash": "ba5a3a86b983085146e9988867b387069f647b6a4c56c595b0ae26fd12f03e77",
+      "loss": 0.13238123059272766,
+      "reward_id": "r9_phase_combat",
+      "rounds": 500,
+      "run": "runs/task3_phase_r1_phase_r9_combat_s22_c0500_125124f",
+      "safety": {
+        "fallback": "physical_q",
+        "horizon": 7,
+        "mode": "all",
+        "version": "survival-mask-v1"
+      },
+      "stage_action_steps": 178328,
+      "updates": 176329
+    },
+    "round1/phase_r9_full/s11": {
+      "checkpoint": "runs/task3_phase_r1_phase_r9_full_s11_c0500_125124f/checkpoints/final.pt",
+      "checkpoint_sha256": "6268a6089a366f9cb88f42b244837dc0336827ff425fa12a7c40db674cbf19ea",
+      "final_epsilon": 0.04999999999999999,
+      "latest_generation": "generation-00000500",
+      "latest_generation_hash": "33d6aa6730993feaf568b9645e452f585bc790004fd19e6c77631479ef7fd8ca",
+      "loss": 0.09208717942237854,
+      "reward_id": "r9_phase_full",
+      "rounds": 500,
+      "run": "runs/task3_phase_r1_phase_r9_full_s11_c0500_125124f",
+      "safety": {
+        "fallback": "physical_q",
+        "horizon": 7,
+        "mode": "all",
+        "version": "survival-mask-v1"
+      },
+      "stage_action_steps": 179632,
+      "updates": 177633
+    },
+    "round1/phase_r9_full/s22": {
+      "checkpoint": "runs/task3_phase_r1_phase_r9_full_s22_c0500_125124f/checkpoints/final.pt",
+      "checkpoint_sha256": "e60611c8489101e46653022503ca75fe2c064be02639bc3cfd791d248fd78f52",
+      "final_epsilon": 0.04999999999999999,
+      "latest_generation": "generation-00000500",
+      "latest_generation_hash": "2e5d6756a3b400c51905502eeda7eeb0175feb746e21738a74033652f21352a6",
+      "loss": 0.12224247306585312,
+      "reward_id": "r9_phase_full",
+      "rounds": 500,
+      "run": "runs/task3_phase_r1_phase_r9_full_s22_c0500_125124f",
+      "safety": {
+        "fallback": "physical_q",
+        "horizon": 7,
+        "mode": "all",
+        "version": "survival-mask-v1"
+      },
+      "stage_action_steps": 183362,
+      "updates": 181363
+    },
+    "round1/phase_r9_resource/s11": {
+      "checkpoint": "runs/task3_phase_r1_phase_r9_resource_s11_c0500_125124f/checkpoints/final.pt",
+      "checkpoint_sha256": "1299b7e76b379c532ef5ba5bfcfcbc0bb18dded564035b9a930d3c5aca502f8f",
+      "final_epsilon": 0.04999999999999999,
+      "latest_generation": "generation-00000500",
+      "latest_generation_hash": "d5b28c0b8c4564d56dd9483586063e9a307742b3b03120efaa8c989f46cf8428",
+      "loss": 0.09304302930831909,
+      "reward_id": "r9_phase_resource",
+      "rounds": 500,
+      "run": "runs/task3_phase_r1_phase_r9_resource_s11_c0500_125124f",
+      "safety": {
+        "fallback": "physical_q",
+        "horizon": 7,
+        "mode": "all",
+        "version": "survival-mask-v1"
+      },
+      "stage_action_steps": 179656,
+      "updates": 177657
+    },
+    "round1/phase_r9_resource/s22": {
+      "checkpoint": "runs/task3_phase_r1_phase_r9_resource_s22_c0500_125124f/checkpoints/final.pt",
+      "checkpoint_sha256": "6c043ee527b3afa313ca61b6ca9fad33c98a98e164276bc7039222a489e15c6d",
+      "final_epsilon": 0.04999999999999999,
+      "latest_generation": "generation-00000500",
+      "latest_generation_hash": "8d699516ca298748d6d545bc27892979f6b3f622ca8a5e7e0b2278f94d7fdf88",
+      "loss": 0.30513283610343933,
+      "reward_id": "r9_phase_resource",
+      "rounds": 500,
+      "run": "runs/task3_phase_r1_phase_r9_resource_s22_c0500_125124f",
+      "safety": {
+        "fallback": "physical_q",
+        "horizon": 7,
+        "mode": "all",
+        "version": "survival-mask-v1"
+      },
+      "stage_action_steps": 180607,
+      "updates": 178608
+    },
+    "round2/phase_r7_mask_v2/s11": {
+      "checkpoint": "runs/task3_phase_r2_phase_r7_mask_v2_s11_c0500_125124f/checkpoints/final.pt",
+      "checkpoint_sha256": "b0a70f3822dc458a1220c8d70914d1d7f0739cf4dde0a89947518712b1b95f65",
+      "final_epsilon": 0.04999999999999999,
+      "latest_generation": "generation-00000500",
+      "latest_generation_hash": "037c30e8d01865e409842b2fbd0ce6126d6a2917c0122716f39634df3d2dc785",
+      "loss": 0.12956511974334717,
+      "reward_id": "r7_safe_credit_sparse",
+      "rounds": 500,
+      "run": "runs/task3_phase_r2_phase_r7_mask_v2_s11_c0500_125124f",
+      "safety": {
+        "escape_area_fraction": 0.75,
+        "fallback": "physical_q",
+        "horizon": 7,
+        "mode": "all",
+        "version": "survival-mask-v2"
+      },
+      "stage_action_steps": 175419,
+      "updates": 173420
+    },
+    "round2/phase_r7_mask_v2/s22": {
+      "checkpoint": "runs/task3_phase_r2_phase_r7_mask_v2_s22_c0500_125124f/checkpoints/final.pt",
+      "checkpoint_sha256": "13ec2f1f53adc8dc39be992ccc78eeeb899ff475ffb0d9432b56ea1a6509994d",
+      "final_epsilon": 0.04999999999999999,
+      "latest_generation": "generation-00000500",
+      "latest_generation_hash": "c033c54ef8f600d65483d73d6acb55f50c7c19ceebeef09b80d1ccca6da597b8",
+      "loss": 0.18139921128749847,
+      "reward_id": "r7_safe_credit_sparse",
+      "rounds": 500,
+      "run": "runs/task3_phase_r2_phase_r7_mask_v2_s22_c0500_125124f",
+      "safety": {
+        "escape_area_fraction": 0.75,
+        "fallback": "physical_q",
+        "horizon": 7,
+        "mode": "all",
+        "version": "survival-mask-v2"
+      },
+      "stage_action_steps": 178345,
+      "updates": 176346
+    }
+  }
+}
