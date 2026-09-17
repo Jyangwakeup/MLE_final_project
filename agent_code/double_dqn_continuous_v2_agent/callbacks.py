@@ -54,6 +54,7 @@ AGENT_METADATA = {
 }
 
 LIFECYCLE_VERSION = 'decision-snapshot-v1'
+SAFETY_DIAGNOSTIC_VERSION = 'escape-collapse-v2'
 
 
 def _immutable_array(value):
@@ -305,6 +306,7 @@ def act(self, game_state):
         and getattr(self, "_own_bomb_cycle_had_safe_alternative", False)
         and not getattr(self, "_own_bomb_cycle_collapse_recorded", False))
     self.last_safety_diagnostic = {
+        "diagnostic_version": SAFETY_DIAGNOSTIC_VERSION,
         "raw_action": ACTIONS[raw_index], "selected_action": action,
         "intervened": intervention, "fallback": bool(fallback),
         "robust_intervened": robust_intervention,
@@ -341,7 +343,9 @@ def act(self, game_state):
     self._last_had_safe_alternative = bool(
         own_bomb["pending"] and legal.any() and not decision.physical_fallback)
     placement_safe_alternative = bool(
-        action == "BOMB" and decision.v1_mask[:ACTIONS.index("BOMB")].any())
+        enabled and not decision.physical_fallback
+        and action == "BOMB"
+        and decision.v1_mask[:ACTIONS.index("BOMB")].any())
     if collapse_now:
         self.avoidable_escape_collapses = int(getattr(
             self, "avoidable_escape_collapses", 0)) + 1
