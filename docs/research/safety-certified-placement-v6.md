@@ -44,3 +44,9 @@ v6三个任务自杀均为零，Task2/3炸弹存活率100%，全部工程异常�
 仍存在对手炸弹死亡，原始死亡轨迹和回放保留。例如24100最后一步的唯一逃生格与对手存在争抢风险，自身无未解除炸弹责任；本修复不宣告普遍不死。独立审计的failed_or_incomplete状态指原控制器退出，问题列表为空；完整门槛结论以带双源码身份的reanalysis_result.json为准。
 
 原始日志哈希、逐局数据、独立审计和恢复复现脚本位于experiments/results/certified_placement_v6_20260917/stress_100_worlds。新数据属于工程测试，不是正式确认或主验证，未训练或发布Task4合格模型；已交付ZIP和原父权重均不变。
+
+## 第二批工程覆盖预登记
+
+全量431项测试通过后，继续使用同一父权重和安全机制；扫描21874份配置/metadata，分配24200–24299。Task1–4各100局，准入和停止门槛不变，不借用正式验证世界。新增--manifest入口选择独立登记文件，旧manifest、失败记录和已恢复结果均保留；本批尚未产生结果。
+
+命令：`/export/data/sfan/miniforge3/envs/mle/bin/python experiments/safety_frozen_stress.py --manifest experiments/safety_v6_stress_round2_manifest.json`。

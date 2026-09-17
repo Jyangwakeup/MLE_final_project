@@ -2,6 +2,7 @@
 from pathlib import Path
 from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor, as_completed
+import argparse
 import hashlib
 import json
 import os
@@ -18,8 +19,11 @@ from experiments.task4_campaign import engineering_checks
 from experiments.task3_retention_prefix import summarize_evaluation
 
 
-def main():
-    manifest_path = ROOT / 'experiments/safety_v6_stress_manifest.json'
+def main(argv=None):
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--manifest', type=Path,
+                        default=ROOT / 'experiments/safety_v6_stress_manifest.json')
+    manifest_path = parser.parse_args(argv).manifest.resolve()
     manifest = json.loads(manifest_path.read_text())
     sha = lambda path: hashlib.sha256(path.read_bytes()).hexdigest()
     commit = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip()
