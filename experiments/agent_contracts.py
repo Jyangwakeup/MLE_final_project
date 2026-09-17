@@ -44,7 +44,7 @@ _NEW_AGENTS = {
     "double_dqn_phase_agent",
     "double_dqn_continuous_v4_agent",
     "rainbow_lite_agent", "expected_sarsa_lambda_agent", "double_q_lambda_agent",
-    "optimized_double_q_lambda_agent",
+    "optimized_double_q_lambda_agent", "optimized_double_q_lambda_v4_agent",
     "rainbow_lite_no_safety_agent", "expected_sarsa_lambda_no_safety_agent",
     "rainbow_lite_v5_agent",
     "expected_sarsa_lambda_v5_agent",

@@ -24,7 +24,7 @@ SUPPORTED = {
     "cnn_path_double_dqn_agent", "cnn_distilled_double_dqn_agent",
     "double_dqn_continuous_v4_agent",
     "rainbow_lite_agent", "expected_sarsa_lambda_agent", "double_q_lambda_agent",
-    "optimized_double_q_lambda_agent",
+    "optimized_double_q_lambda_agent", "optimized_double_q_lambda_v4_agent",
 }
 
 
