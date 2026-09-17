@@ -73,9 +73,11 @@ def act(self, state):
     enabled=self.safety_spec["mode"]=="all" or (self.safety_spec["mode"]=="exploration" and exploring)
     if enabled: self.safety_decisions+=1; self.safety_fallbacks+=int(fallback)
     indices=np.flatnonzero(legal).tolist()
+    best=max(float(values[i]) for i in indices); tied=[i for i in indices if float(values[i])==best]
     if exploring: selected=self.rng.choice(indices)
-    else:
-        best=max(float(values[i]) for i in indices); tied=[i for i in indices if float(values[i])==best]; selected=self.rng.choice(tied) if self.train else tied[0]
+    else: selected=self.rng.choice(tied) if self.train else tied[0]
+    marker=getattr(self.model,"set_behavior_greedy",None)
+    if marker is not None: marker(selected in tied)
     self.safety_interventions+=int(enabled and not fallback and not legal[raw]); action=self.linear_config.ACTIONS[selected]
     recorder=getattr(self.linear_config,"record_selected_action",record_selected_action)
     recorder(self,state,action); return action

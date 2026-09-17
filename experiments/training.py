@@ -248,6 +248,12 @@ def run_training_mode(
     stopping_config = early_stopping_config(training)
     performance_stopping = resolve_performance_stopping(
         training.get("performance_stopping"), task=task_name)
+    checkpoint_snapshot_interval = training.get(
+        "checkpoint_snapshot_interval_action_steps")
+    if checkpoint_snapshot_interval is not None:
+        checkpoint_snapshot_interval = _positive_int(
+            checkpoint_snapshot_interval,
+            "checkpoint_snapshot_interval_action_steps")
     target_steps = (
         getattr(args, "target_stage_action_steps", None)
         if getattr(args, "target_stage_action_steps", None) is not None
@@ -336,6 +342,7 @@ def run_training_mode(
             feature_id_override=getattr(args, "feature_id", None),
             reward_id_override=getattr(args, "reward_id", None),
             performance_stopping=performance_stopping,
+            checkpoint_snapshot_interval=checkpoint_snapshot_interval,
         )
 
     migrating = migration_from is not None
@@ -427,6 +434,7 @@ def run_training_mode(
         feature_id_override=getattr(args, "feature_id", None),
         reward_id_override=getattr(args, "reward_id", None),
         performance_stopping=performance_stopping,
+        checkpoint_snapshot_interval=checkpoint_snapshot_interval,
         migration=migrating,
         task3_transfer=transferring,
         distillation_path=distillation_path,

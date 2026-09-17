@@ -14,6 +14,7 @@ import os
 import pickle
 import platform
 import random
+import shutil
 import subprocess
 import sys
 from datetime import datetime, timezone
@@ -192,6 +193,7 @@ class ExperimentWorld(BombeRLeWorld):
         self._replay_policy = replay_policy
         self._replay_interval = replay_interval
         self._snapshot_config = snapshot_config
+        self._checkpoint_snapshot_milestones: set[int] = set()
         self._navigation_diagnostics = navigation_diagnostics
         self._navigation_previous_action: dict[str, str] = {}
         self._navigation_previous_target: dict[str, tuple[int, int] | None] = {}
@@ -524,6 +526,33 @@ class ExperimentWorld(BombeRLeWorld):
                 performance_stopping=self._snapshot_config.get("performance_stopping"),
                 performance_history=self._snapshot_config.get("performance_history", []),
             )
+            self._materialize_checkpoint_snapshot()
+
+    def _materialize_checkpoint_snapshot(self) -> None:
+        """Copy immutable action-step checkpoints for frozen candidate selection."""
+        interval = self._snapshot_config.get("checkpoint_snapshot_interval")
+        if interval is None:
+            return
+        action_steps = _last_training_integer(
+            self._output / "training.csv", "stage_action_steps")
+        if action_steps is None:
+            return
+        milestone = action_steps // interval
+        if milestone < 1 or milestone in self._checkpoint_snapshot_milestones:
+            return
+        checkpoint = Path(self._snapshot_config["checkpoint"])
+        if not checkpoint.is_file():
+            return
+        snapshots = self._output / "checkpoints" / "snapshots"
+        snapshots.mkdir(parents=True, exist_ok=True)
+        destination = snapshots / f"step_{action_steps:07d}{checkpoint.suffix}"
+        shutil.copy2(checkpoint, destination)
+        _append_json_line(snapshots / "manifest.jsonl", {
+            "action_steps": action_steps,
+            "checkpoint": destination.name,
+            "milestone": milestone,
+        })
+        self._checkpoint_snapshot_milestones.add(milestone)
 
     def end(self) -> None:
         """Close buffered experiment streams after the official world stops."""
@@ -873,6 +902,7 @@ def run_agent_session(
     show_progress: bool = True,
     progress_leave: bool = True,
     performance_stopping: dict[str, Any] | None = None,
+    checkpoint_snapshot_interval: int | None = None,
     migration: bool = False,
     task3_transfer: bool = False,
     distillation_path: Path | None = None,
@@ -887,6 +917,9 @@ def run_agent_session(
     if replay_policy not in REPLAY_POLICIES:
         raise ValueError(f"replay_policy must be one of {', '.join(REPLAY_POLICIES)}")
     replay_interval = _positive_int(replay_interval, "replay_interval")
+    if checkpoint_snapshot_interval is not None:
+        checkpoint_snapshot_interval = _positive_int(
+            checkpoint_snapshot_interval, "checkpoint_snapshot_interval_action_steps")
     specs = _custom_agents(agent, opponents, training)
     checkpoint = None if checkpoint is None else checkpoint.resolve()
     init_checkpoint = (
@@ -1251,6 +1284,7 @@ def run_agent_session(
                     "task": task_name,
                     "performance_stopping": performance_stopping,
                     "performance_history": performance_history,
+                    "checkpoint_snapshot_interval": checkpoint_snapshot_interval,
                 }
                 if training and agent not in {
                     "cnn_path_double_dqn_agent", "cnn_distilled_double_dqn_agent",

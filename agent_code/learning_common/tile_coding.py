@@ -69,6 +69,8 @@ class TraceControl:
         estimators = 2 if algorithm == "double_q_lambda" else 1
         self.weights = np.zeros((estimators, self.actions, hyperparameters["memory_size"]), dtype=np.float32)
         self.traces = np.zeros_like(self.weights); self.updates = 0; self.epsilon = 0.
+        self.watkins_trace_cut = bool(hyperparameters.get("watkins_trace_cut", False))
+        self._behavior_was_greedy = True
         self.rng = np.random.default_rng(seed)
     def q_values(self, state, estimator=None):
         if self.action_feature_indices is None:
@@ -85,6 +87,9 @@ class TraceControl:
                 for item in estimators) / scale
         return values
     def set_epsilon(self, epsilon): self.epsilon = float(epsilon)
+    def set_behavior_greedy(self, greedy):
+        """Record whether the behavior action follows the current greedy policy."""
+        self._behavior_was_greedy = bool(greedy)
     def observe(self, transition):
         state = np.asarray(transition.state)
         active = self.coder.encode(
@@ -104,6 +109,8 @@ class TraceControl:
                 selected = int(legal[np.argmax(selector[legal])])
                 target += (self.gamma ** transition.steps) * float(self.q_values(transition.next_state, 1-estimator)[selected])
         delta = target-current
+        if self.watkins_trace_cut and not self._behavior_was_greedy:
+            self.traces.fill(0.)
         self.traces *= self.gamma * self.lam
         self.traces[estimator, transition.action, active] = 1.
         progress = min(self.updates / self.alpha_decay_steps, 1.0)
@@ -129,9 +136,10 @@ class TraceControl:
         self.updates += 1
         return abs(delta)
     def checkpoint(self):
-        return {"weights":self.weights, "traces":self.traces, "tile_coder":self.coder.state_dict(), "updates":self.updates, "learner_rng_state":self.rng.bit_generator.state}
+        return {"weights":self.weights, "traces":self.traces, "tile_coder":self.coder.state_dict(), "updates":self.updates, "learner_rng_state":self.rng.bit_generator.state, "behavior_was_greedy":self._behavior_was_greedy}
     def load_checkpoint(self, checkpoint, training=False, **_):
         self.weights = np.asarray(checkpoint["weights"], dtype=np.float32).copy(); self.coder.load_state_dict(checkpoint["tile_coder"]); self.updates=int(checkpoint.get("updates",0))
+        self._behavior_was_greedy=bool(checkpoint.get("behavior_was_greedy",True))
         if training:
             self.traces=np.asarray(checkpoint["traces"], dtype=np.float32).copy(); self.rng.bit_generator.state=checkpoint["learner_rng_state"]
         else: self.traces.fill(0.)
