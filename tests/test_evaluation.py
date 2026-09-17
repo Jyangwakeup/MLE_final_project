@@ -148,6 +148,18 @@ class ExperimentAnalysisTest(unittest.TestCase):
             self.assertAlmostEqual(float(row["act_max_time"]), .45)
             self.assertEqual(int(row["act_count"]), 100)
 
+    def test_hundred_world_four_agent_chart_has_bounded_pixel_dimensions(self):
+        from experiments.analyze import _write_mean_score_chart
+        from PIL import Image
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            rows = [dict(run_id=f"world_{world}", agent_name=f"agent_{agent}",
+                         mean_score=float(world % 10 + agent))
+                    for world in range(100) for agent in range(4)]
+            chart = _write_mean_score_chart(rows, Path(temporary_directory))
+            with Image.open(chart) as image:
+                self.assertLessEqual(image.width, 3600)
+                self.assertLessEqual(image.height, 1000)
+
     def test_task1_completion_and_loop_rates_are_aggregated(self):
         with tempfile.TemporaryDirectory() as temporary_directory:
             first_agent = _agent("a", 50, coins=50)

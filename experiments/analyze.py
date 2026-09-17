@@ -979,11 +979,14 @@ def _write_summary(
 def _write_mean_score_chart(rows: list[dict[str, Any]], output_directory: Path) -> Path:
     labels = [f"{row['run_id']}\n{row['agent_name']}" for row in rows]
     scores = [row["mean_score"] for row in rows]
-    figure, axis = plt.subplots(figsize=(max(6, len(rows) * 1.3), 4.5))
+    figure, axis = plt.subplots(figsize=(min(24, max(6, len(rows) * 1.3)), 4.5))
     axis.bar(range(len(rows)), scores)
     axis.set_ylabel("Mean score per round")
     axis.set_title("Experiment mean scores")
-    axis.set_xticks(range(len(rows)), labels, rotation=35, ha="right")
+    # Keep every bar, but bound raster size and label density for large sweeps.
+    stride = max(1, math.ceil(len(rows) / 20))
+    ticks = list(range(0, len(rows), stride))
+    axis.set_xticks(ticks, [labels[index] for index in ticks], rotation=35, ha="right")
     figure.tight_layout()
     chart_path = output_directory / "mean_score.png"
     figure.savefig(chart_path, dpi=150)
