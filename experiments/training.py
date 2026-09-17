@@ -20,6 +20,8 @@ from experiments.resume import (
     load_task3_safety_transfer_snapshot,
     load_training_snapshot,
     validate_task3_safety_transfer,
+    load_task3_transfer_snapshot,
+    validate_task3_transfer,
     validate_v6_migration,
     validate_resume_transition,
 )
@@ -28,6 +30,16 @@ from experiments.agent_contracts import resolve_agent_contract
 from agent_code.learning_common.training_spec import (
     resolve_retention_spec, resolve_safety_replay_spec,
 )
+
+
+def allowed_n_steps(algorithm: str) -> set[int]:
+    """Return replay horizons supported by a learning algorithm.
+
+    The distilled CNN uses a five-step variant in its Task 2 credit-assignment
+    ablation; the other current learners retain the established 1/4-step
+    contract.
+    """
+    return {1, 4, 5} if algorithm in {"cnn_distilled_double_dqn", "double_dqn"} else {1, 4}
 
 
 DEFAULT_REPLAY_PROGRESS_PERCENT = 10
@@ -207,12 +219,24 @@ def run_training_mode(
     run_session: Callable,
     source_commit: str | None,
     source_hash: str,
+    source_hash_scope: str | None = None,
 ) -> Path:
     """Validate and execute the training-specific CLI branch."""
     if args.seeds is not None:
         raise ValueError("Training accepts one --seed, not --seeds")
     if args.checkpoint is not None:
         raise ValueError("Training writes its own checkpoint; do not pass --checkpoint")
+    transfer_from = getattr(args, "transfer_task3_from", None)
+    resume_sources = [
+        value for value in (
+            args.resume_from, getattr(args, "migrate_resume_from", None), transfer_from,
+            getattr(args, "transfer_task3_safety_from", None))
+        if value is not None
+    ]
+    if len(resume_sources) > 1:
+        raise ValueError("resume, migration, and Task 3 transfer are mutually exclusive")
+    if resume_sources and getattr(args, "init_from_checkpoint", None) is not None:
+        raise ValueError("resume/transfer and --init-from-checkpoint are mutually exclusive")
     training = config.get("training", {})
     if not isinstance(training, dict):
         raise ValueError("config.training must be an object")
@@ -229,6 +253,12 @@ def run_training_mode(
     stopping_config = early_stopping_config(training)
     performance_stopping = resolve_performance_stopping(
         training.get("performance_stopping"), task=task_name)
+    checkpoint_snapshot_interval = training.get(
+        "checkpoint_snapshot_interval_action_steps")
+    if checkpoint_snapshot_interval is not None:
+        checkpoint_snapshot_interval = _positive_int(
+            checkpoint_snapshot_interval,
+            "checkpoint_snapshot_interval_action_steps")
     target_steps = (
         getattr(args, "target_stage_action_steps", None)
         if getattr(args, "target_stage_action_steps", None) is not None
@@ -263,12 +293,7 @@ def run_training_mode(
             safe_exploration if configured_safety is None else None),
     )
     effective_safe_exploration = safety_spec["mode"] in {"exploration", "all"}
-    n_step = training.get("n_step", 1)
-    if n_step not in {1, 4, 5}:
-        raise ValueError("config.training.n_step must be 1, 4, or 5")
-    retention_spec = resolve_retention_spec(training.get("retention"))
     safety_replay_spec = resolve_safety_replay_spec(training.get("safety_replay"))
-    adaptation_triggers = tuple(getattr(args, "adaptation_trigger", ()) or ())
     configured_id = getattr(args, "feature_id", None) or config.get("feature_id")
     configured_legacy = (
         None if getattr(args, "feature_id", None) is not None
@@ -279,6 +304,27 @@ def run_training_mode(
     )
     agent_contract = resolve_agent_contract(args.agent, requested_feature_id)
     algorithm = agent_contract.algorithm
+    n_step = training.get("n_step", 1)
+    supported_n_steps = allowed_n_steps(algorithm)
+    if n_step not in supported_n_steps:
+        values = ", ".join(str(value) for value in sorted(supported_n_steps))
+        raise ValueError(
+            f"config.training.n_step must be one of {values} for {algorithm}")
+    retention_spec = resolve_retention_spec(training.get("retention"))
+    adaptation_triggers = tuple(getattr(args, "adaptation_trigger", ()) or ())
+    init_checkpoint = getattr(args, "init_from_checkpoint", None)
+    if init_checkpoint is not None:
+        if algorithm not in {
+            "dqn", "double_dqn", "cnn_distilled_double_dqn", "rainbow_lite",
+            "expected_sarsa_lambda",
+        }:
+            raise ValueError(
+                "--init-from-checkpoint only supports neural agents and "
+                "expected_sarsa_lambda")
+        init_checkpoint = Path(init_checkpoint).expanduser().resolve()
+        if not init_checkpoint.is_file():
+            raise FileNotFoundError(
+                f"Warm-start checkpoint does not exist: {init_checkpoint}")
     requested_device = args.device or training.get("device", "auto")
     device_info = resolve_device(algorithm, "train", requested_device)
     positional = (
@@ -289,9 +335,11 @@ def run_training_mode(
     )
     migration_from = getattr(args, "migrate_resume_from", None)
     safety_transfer_from = getattr(args, "transfer_task3_safety_from", None)
-    if args.resume_from is None and migration_from is None and safety_transfer_from is None:
+    if args.resume_from is None and migration_from is None and transfer_from is None and safety_transfer_from is None:
+        if getattr(args, "distillation_dataset", None) is not None:
+            raise ValueError("--distillation-dataset requires --transfer-task3-from")
         return run_session(
-            *positional, device_info=device_info,
+            *positional, init_checkpoint=init_checkpoint, device_info=device_info,
             action_budget_config=budget_config,
             safe_exploration=safe_exploration,
             safety_spec=safety_spec,
@@ -302,20 +350,23 @@ def run_training_mode(
             feature_id_override=getattr(args, "feature_id", None),
             reward_id_override=getattr(args, "reward_id", None),
             performance_stopping=performance_stopping,
+            checkpoint_snapshot_interval=checkpoint_snapshot_interval,
         )
 
     migrating = migration_from is not None
     safety_transferring = safety_transfer_from is not None
+    transferring = transfer_from is not None
     parent_run = Path(
-        safety_transfer_from if safety_transferring else (
-            migration_from if migrating else args.resume_from))
+        safety_transfer_from if safety_transferring else transfer_from if transferring else migration_from if migrating else args.resume_from)
     if not parent_run.is_absolute():
         parent_run = Path.cwd() / parent_run
     parent_run = parent_run.resolve()
     snapshot = (
         load_task3_safety_transfer_snapshot(parent_run) if safety_transferring
+        else load_task3_transfer_snapshot(parent_run) if transferring
         else load_migration_snapshot(parent_run) if migrating
-        else load_training_snapshot(parent_run))
+        else load_training_snapshot(parent_run)
+    )
     metadata_path = parent_run / "metadata.json"
     if not metadata_path.is_file():
         raise ValueError("Parent run is missing metadata.json")
@@ -349,14 +400,23 @@ def run_training_mode(
         "performance_stopping": performance_stopping,
         "source_commit": source_commit,
         "source_hash": source_hash,
+        "source_hash_scope": source_hash_scope,
         "network_spec": agent_contract.network_spec,
         "hyperparameters": agent_contract.hyperparameters,
+        "transfer_contract": (
+            snapshot.contract.get("transfer_contract")
+            if not transferring else None
+        ),
     }
     parent_status = parent_metadata.get("status", "unknown")
     if safety_transferring:
         validate_task3_safety_transfer(
             snapshot.contract, child_contract, parent_status=parent_status)
         resume_kind = "task3_safety_transfer"
+    elif transferring:
+        validate_task3_transfer(
+            snapshot.contract, child_contract, parent_status=parent_status)
+        resume_kind = "task3_transfer"
     elif migrating:
         validate_v6_migration(
             snapshot.contract, child_contract, parent_status=parent_status)
@@ -370,6 +430,10 @@ def run_training_mode(
         and snapshot.runner_state.get("early_stopping_config") != stopping_config
     ):
         raise ValueError("Same-Task resume requires the same early-stopping config")
+    distillation_path = getattr(args, "distillation_dataset", None)
+    if transferring and distillation_path is None:
+        distillation_path = (
+            parent_run.parent / f"task3_distillation_{parent_run.name}" / "teacher.npz")
     return run_session(
         *positional,
         resume_snapshot=snapshot,
@@ -386,8 +450,11 @@ def run_training_mode(
         feature_id_override=getattr(args, "feature_id", None),
         reward_id_override=getattr(args, "reward_id", None),
         performance_stopping=performance_stopping,
+        checkpoint_snapshot_interval=checkpoint_snapshot_interval,
         migration=migrating,
         task3_safety_transfer=safety_transferring,
+        task3_transfer=transferring,
+        distillation_path=distillation_path,
     )
 
 

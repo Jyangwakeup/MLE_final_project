@@ -23,6 +23,7 @@ from agent_code.team_agent.safety import (
     ROBUST_SAFETY_VERSION,
     safety_decision, survival_diagnostics,
 )
+from agent_code.team_agent.distillation_capture import maybe_capture_teacher_row
 from .features import ACTIONS, FEATURE_ID, FEATURE_SCHEMA, features_for_state
 
 
@@ -217,6 +218,7 @@ def act(self, game_state):
     physical = effective_legal_mask(
         features.legal_mask, ACTIONS, self.curriculum_allows_bomb)
     values = self.model.q_values(features.vector)
+    maybe_capture_teacher_row(self, game_state, values, physical)
     physical_indices = np.flatnonzero(physical).tolist()
     raw_best = max(float(values[index]) for index in physical_indices)
     raw_tied = [

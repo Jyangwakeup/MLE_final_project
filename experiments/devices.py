@@ -19,30 +19,29 @@ def resolve_device(algorithm: str, mode: str, requested: str) -> dict[str, Any]:
     if requested not in DEVICE_CHOICES:
         raise ValueError(f"device must be one of {', '.join(DEVICE_CHOICES)}")
     if algorithm in {
-        "q_learning", "double_q_learning", "legal_random", "official_baseline",
+        "q_learning", "double_q_learning", "expected_sarsa_lambda", "double_q_lambda", "legal_random", "official_baseline",
     }:
         if requested == "cuda":
             labels = {
                 "q_learning": "Q-learning",
                 "double_q_learning": "Double Q-learning",
+                "expected_sarsa_lambda": "Expected SARSA(lambda)",
+                "double_q_lambda": "Double Q(lambda)",
                 "legal_random": "Legal random",
                 "official_baseline": "Official baseline",
             }
             label = labels[algorithm]
             raise ValueError(f"{label} always runs on CPU; CUDA is not applicable")
         return _metadata(requested, "cpu")
-    cpu_neural = {
-        "double_dqn", "cnn_double_dqn", "hybrid_dueling_double_dqn",
+    neural_algorithms = {
+        "dqn", "double_dqn", "cnn_double_dqn", "hybrid_dueling_double_dqn",
+        "cnn_distilled_double_dqn", "rainbow_lite",
     }
-    if algorithm in cpu_neural:
-        if requested == "cuda":
-            raise ValueError(f"{algorithm} currently supports CPU only")
-        return _metadata(requested, "cpu")
-    if algorithm != "dqn":
+    if algorithm not in neural_algorithms:
         raise ValueError(f"Unsupported algorithm: {algorithm!r}")
     if mode == "evaluate":
         if requested == "cuda":
-            raise ValueError("DQN evaluation is forced to CPU for official compatibility")
+            raise ValueError("Neural-agent evaluation is forced to CPU for official compatibility")
         return _metadata(requested, "cpu")
     if mode != "train":
         raise ValueError(f"Unsupported mode: {mode!r}")

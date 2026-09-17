@@ -1,0 +1,106 @@
+{
+  "schema_version": "task3-pilot-preregistration-v1",
+  "designation": "task3_pilot_preregistration",
+  "training_source": {
+    "commit": "814173b618fb38990db7a5b7ee200369c8b25289",
+    "hash": "b3dafd35f05214bac1058d7e16407e8cb113322a10c590efb748a51eb6e9364e",
+    "execution": "detached_worktree"
+  },
+  "config": "experiments/configs/task3_pilot_r7.json",
+  "contracts": {
+    "agent": "double_dqn_continuous_v2_agent",
+    "algorithm": "double_dqn",
+    "checkpoint_schema": "training-resume-v7",
+    "feature_id": "continuous-v2",
+    "feature_dimensions": 84,
+    "reward_id": "r7_safe_credit_sparse",
+    "safety": {
+      "version": "survival-mask-v1",
+      "mode": "all",
+      "horizon": 7,
+      "fallback": "physical_q"
+    }
+  },
+  "training": {
+    "seeds": [11, 22, 33],
+    "task": 3,
+    "task_name": "weak_opponents",
+    "scenario": "classic",
+    "opponents": ["peaceful_agent", "coin_collector_agent"],
+    "segment_rounds": 500,
+    "assessment_rounds": [500, 1000, 1500],
+    "maximum_rounds": 1500,
+    "stop_on_first_pass": true,
+    "action_count_controls_stopping": false
+  },
+  "parents": [
+    {
+      "training_seed": 11,
+      "task1_run": "runs/scoreconv_ddqn_cv2_r7_s11_t1_v7_814173b",
+      "task2_run": "runs/scoreconv_ddqn_cv2_r7_s11_t2_v7_814173b"
+    },
+    {
+      "training_seed": 22,
+      "task1_run": "runs/task2winner_replica_cv2_r7_s22_t1_v7_814173b",
+      "task2_run": "runs/task2winner_replica_cv2_r7_s22_t2_v7_814173b"
+    },
+    {
+      "training_seed": 33,
+      "task1_run": "runs/task2winner_replica_cv2_r7_s33_t1_v7_814173b",
+      "task2_run": "runs/task2winner_replica_cv2_r7_s33_t2_v7_814173b"
+    }
+  ],
+  "development": {
+    "seeds": {"start": 12000, "end": 12019},
+    "rounds_per_seed": 1,
+    "parent_roles": ["parent_task1", "parent_task2", "parent_task3"],
+    "child_roles": ["child_task1", "child_task2", "child_task3"],
+    "paired_by": ["training_seed", "environment_seed"],
+    "bootstrap": {
+      "samples": 10000,
+      "rng_seed": 20260913,
+      "quantiles": [0.025, 0.975],
+      "gating": false
+    }
+  },
+  "gates": {
+    "task3_mean_score_gain": 0.5,
+    "task3_mean_kill_gain": 0.1,
+    "task3_first_place_rate_gain": 0.05,
+    "combat_gate": "kills_or_first_place",
+    "task3_coin_retention": 0.9,
+    "task3_crate_retention": 0.9,
+    "task1_score_retention": 0.9,
+    "task2_coin_retention": 0.9,
+    "task2_crate_retention": 0.9,
+    "suicide_rate": 0.05,
+    "zero_bomb_round_rate_task3": 0.1,
+    "survived_bomb_rate": 0.95,
+    "invalid_action_rate": 0.01,
+    "act_p95_seconds": 0.05,
+    "act_max_seconds": 0.5,
+    "require_no_timeouts": true,
+    "require_no_skipped_actions": true,
+    "require_all_training_seeds": true
+  },
+  "selection_order": [
+    "task3_mean_score_desc",
+    "task3_suicide_rate",
+    "task3_mean_kills_desc",
+    "task3_first_place_rate_desc",
+    "minimum_resource_and_retention_ratio_desc",
+    "act_p95_seconds",
+    "run_id"
+  ],
+  "outcome": {
+    "successful_designation": "task3_pilot_candidate",
+    "qualified_for_task4": false,
+    "main_validation": false,
+    "task4_launch": false
+  },
+  "reserved_final_test_seeds": {
+    "start": 20000,
+    "end": 20099,
+    "used": false
+  }
+}

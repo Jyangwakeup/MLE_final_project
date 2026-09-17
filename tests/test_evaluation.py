@@ -32,6 +32,8 @@ def _agent(name, score, survived=True, **metrics):
         "suicides": metrics.get("suicides", 0),
         "crates": metrics.get("crates", 0),
         "bombs": metrics.get("bombs", 0),
+        "bombs_resolved": metrics.get("bombs_resolved", 0),
+        "bombs_survived": metrics.get("bombs_survived", 0),
         "invalid": metrics.get("invalid", 0),
         "survived": survived,
         "dead": not survived,
@@ -143,11 +145,42 @@ class ExperimentAnalysisTest(unittest.TestCase):
             run = self._write_run(temporary_directory, "task1", episodes)
             row = summarize_runs([run])[0]
             self.assertEqual(row["mean_coins"], 31.0)
+            self.assertEqual(row["min_coins_per_round"], 12.0)
+            self.assertEqual(row["max_coins_per_round"], 50.0)
+            self.assertEqual(row["zero_coin_round_count"], 0)
+            self.assertEqual(row["zero_coin_round_rate"], 0.0)
             self.assertEqual(row["all_coins_rate"], 0.5)
             self.assertEqual(row["max_steps_rate"], 0.5)
             self.assertEqual(row["long_wait_loop_rate"], 0.5)
             self.assertEqual(row["long_ping_pong_loop_rate"], 0.0)
             self.assertTrue(row["exploration_disabled"])
+
+    def test_bomb_efficiency_metrics_use_aggregate_counts(self):
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            first = _agent("a", 0, crates=3, bombs=2)
+            first["zero_utility_bombs"] = 1
+            second = _agent("a", 0, crates=6, bombs=4)
+            second["zero_utility_bombs"] = 0
+            run = self._write_run(
+                temporary_directory, "bomb-efficiency", [
+                    _episode("bomb-efficiency", 1, [first]),
+                    _episode("bomb-efficiency", 2, [second]),
+                ])
+            row = summarize_runs([run])[0]
+            self.assertEqual(row["zero_utility_bombs"], 1)
+            self.assertAlmostEqual(row["zero_utility_bomb_rate"], 1 / 6)
+            self.assertAlmostEqual(row["crates_per_bomb"], 1.5)
+
+    def test_zero_bomb_efficiency_metrics_are_null(self):
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            agent = _agent("a", 0, crates=0, bombs=0)
+            agent["zero_utility_bombs"] = 0
+            run = self._write_run(
+                temporary_directory, "zero-bombs",
+                [_episode("zero-bombs", 1, [agent])])
+            row = summarize_runs([run])[0]
+            self.assertIsNone(row["zero_utility_bomb_rate"])
+            self.assertIsNone(row["crates_per_bomb"])
 
     def test_coin_navigation_efficiency_and_action_diagnostics_are_aggregated(self):
         with tempfile.TemporaryDirectory() as temporary_directory:
@@ -233,6 +266,28 @@ class ExperimentAnalysisTest(unittest.TestCase):
             self.assertEqual(float(average["median_score"]), 3.0)
             self.assertLess(float(average["mean_score_ci95_low"]), 4.0)
             self.assertGreater(float(average["mean_score_ci95_high"]), 4.0)
+
+    def test_bomb_metrics_are_aggregated_across_seed_runs(self):
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            runs = []
+            for index, (bombs, crates) in enumerate(((0, 0), (4, 6)), 1):
+                run_id = f"bomb-seed-{index}"
+                runs.append(self._write_run(
+                    temporary_directory, run_id,
+                    [_episode(run_id, 1, [_agent(
+                        "a", 0, bombs=bombs, bombs_resolved=bombs,
+                        bombs_survived=bombs, crates=crates)])],
+                ))
+            output = Path(temporary_directory) / "summary"
+            analyze_runs(runs, output)
+            with (output / "summary.csv").open(newline="", encoding="utf-8") as file:
+                average = list(csv.DictReader(file))[-1]
+            self.assertEqual(float(average["mean_bombs"]), 2.0)
+            self.assertEqual(float(average["zero_bomb_round_rate"]), 0.5)
+            self.assertEqual(float(average["bombs_resolved"]), 4.0)
+            self.assertEqual(float(average["bombs_survived"]), 4.0)
+            self.assertEqual(float(average["survived_bomb_rate"]), 1.0)
+            self.assertEqual(float(average["crates_per_survived_bomb"]), 1.5)
 
     def test_paired_evaluation_comparison_matches_environment_seeds(self):
         with tempfile.TemporaryDirectory() as temporary_directory:

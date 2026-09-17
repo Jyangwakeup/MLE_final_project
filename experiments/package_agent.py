@@ -19,12 +19,17 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 SUPPORTED = {
     "double_q_compact_agent", "double_dqn_continuous_agent",
     "double_dqn_continuous_v2_agent", "double_dqn_continuous_v3_agent",
+    "double_dqn_phase_agent",
     "cnn_double_dqn_agent", "hybrid_dueling_double_dqn_agent",
+    "cnn_path_double_dqn_agent", "cnn_distilled_double_dqn_agent",
+    "double_dqn_continuous_v4_agent",
+    "rainbow_lite_agent", "expected_sarsa_lambda_agent", "double_q_lambda_agent",
+    "optimized_double_q_lambda_agent",
 }
 
 
 def _checkpoint_payload(path: Path, algorithm: str):
-    if algorithm == "double_q_learning":
+    if algorithm in {"double_q_learning", "expected_sarsa_lambda", "double_q_lambda"}:
         with path.open("rb") as file:
             return pickle.load(file)
     return torch.load(path, map_location="cpu", weights_only=True)
@@ -84,9 +89,10 @@ def build_submission(agent: str, checkpoint: Path, output: Path) -> Path:
         team = vendor / "team_agent"
         team.mkdir()
         for name in (
-            "__init__.py", "controllable_survival.py", "danger.py", "exploration.py",
-            "features.py", "rewards.py",
-            "opponent_transitions.py", "safety.py", "temporal_safety_features.py",
+            "__init__.py", "controllable_survival.py", "danger.py",
+            "distillation_capture.py", "exploration.py", "features.py",
+            "phase.py", "rewards.py", "opponent_transitions.py",
+            "safety.py", "temporal_safety_features.py",
         ):
             shutil.copy2(PROJECT_ROOT / "agent_code" / "team_agent" / name, team / name)
         shutil.copytree(

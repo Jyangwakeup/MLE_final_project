@@ -17,8 +17,9 @@ from .action_history import (
 )
 from .neural import Transition
 from .runtime import (
-    CHECKPOINT_SCHEMA, adopt_checkpoint_reward, adopt_checkpoint_safety, effective_legal_mask,
-    load_common_configuration, save_checkpoint_atomic, validate_checkpoint,
+    CHECKPOINT_SCHEMA, INIT_CHECKPOINT_ENV, adopt_checkpoint_reward,
+    adopt_checkpoint_safety, effective_legal_mask, load_common_configuration,
+    save_checkpoint_atomic, validate_checkpoint, validate_warm_start_checkpoint,
 )
 from .temporal_reward import (
     DIAGNOSTIC_COUNT_FIELDS, accumulate_reward_diagnostics,
@@ -72,6 +73,19 @@ def setup_neural_agent(
             if same_task:
                 load_action_history_state(self, checkpoint.get("action_history_state"))
         self.logger.info("Loaded %s checkpoint from %s", algorithm, self.model_file)
+    elif self.train and os.getenv(INIT_CHECKPOINT_ENV):
+        source = Path(os.environ[INIT_CHECKPOINT_ENV]).expanduser().resolve()
+        checkpoint = torch.load(source, map_location="cpu", weights_only=True)
+        validate_warm_start_checkpoint(
+            checkpoint, algorithm=algorithm, feature_id=feature_id,
+            feature_schema=feature_schema, actions=actions,
+            network_spec=network_spec,
+        )
+        self.model.load_policy_weights(checkpoint)
+        self.logger.info(
+            "Warm-started %s policy weights from %s with fresh training state",
+            algorithm, source,
+        )
     elif self.train:
         self.logger.info("Starting a new %s model", algorithm)
     else:
@@ -185,7 +199,10 @@ def neural_end_round(self, last_game_state, last_action, events, *, actions,
             if self.pending is not None and self.pending[0] != key:
                 _submit(self, self.pending[1])
             reward_context = {}
-            if self.reward_id == "r5_conditional_loop":
+            if {
+                "conditional_loop_penalty", "avoidable_wait_penalty",
+                "history_loop_penalty_step", "history_wait_penalty_step",
+            }.intersection(self.reward_spec):
                 cached_features(self, last_game_state, extractor)
                 reward_context = temporal_reward_context(
                     self, last_action, last_game_state,

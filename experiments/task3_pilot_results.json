@@ -1,0 +1,604 @@
+{
+  "all_training_seeds_passed": false,
+  "assessments": [
+    {
+      "checks": {
+        "act_max": true,
+        "act_p95": true,
+        "invalid_actions": true,
+        "no_skipped_actions": true,
+        "no_timeouts": true,
+        "task1_score_retention": true,
+        "task2_bomb_survival": true,
+        "task2_coin_retention": true,
+        "task2_crate_retention": true,
+        "task2_suicide": true,
+        "task3_bomb_activity": true,
+        "task3_bomb_survival": true,
+        "task3_coin_retention": true,
+        "task3_combat_gain": true,
+        "task3_crate_retention": true,
+        "task3_score_gain": true,
+        "task3_suicide": true
+      },
+      "cumulative_task3_rounds": 1500,
+      "minimum_resource_and_retention_ratio": 1.0,
+      "paired": {
+        "task1_score": {
+          "bootstrap_ci95": [
+            0.0,
+            0.0
+          ],
+          "mean_difference": 0.0
+        },
+        "task2_coins": {
+          "bootstrap_ci95": [
+            -0.15,
+            1.7
+          ],
+          "mean_difference": 0.8
+        },
+        "task2_crates": {
+          "bootstrap_ci95": [
+            4.8,
+            19.1
+          ],
+          "mean_difference": 11.95
+        },
+        "task3_coins": {
+          "bootstrap_ci95": [
+            0.85,
+            2.1
+          ],
+          "mean_difference": 1.45
+        },
+        "task3_crates": {
+          "bootstrap_ci95": [
+            11.05,
+            22.5
+          ],
+          "mean_difference": 16.75
+        },
+        "task3_first_place": {
+          "bootstrap_ci95": [
+            -0.05,
+            0.35
+          ],
+          "mean_difference": 0.15
+        },
+        "task3_kills": {
+          "bootstrap_ci95": [
+            -0.35,
+            0.2
+          ],
+          "mean_difference": -0.1
+        },
+        "task3_score": {
+          "bootstrap_ci95": [
+            -0.55,
+            2.45
+          ],
+          "mean_difference": 0.95
+        }
+      },
+      "passed": true,
+      "retention_ratios": {
+        "task1_score": 1.0,
+        "task2_coins": 1.1221374045801527,
+        "task2_crates": 1.1324833702882484,
+        "task3_coins": 1.4264705882352942,
+        "task3_crates": 1.421383647798742
+      },
+      "schema_version": "task3-pilot-assessment-v1",
+      "summaries": {
+        "child_task1": {
+          "act_max_seconds": 0.00871133804321289,
+          "act_p95_seconds": 0.006687641143798828,
+          "first_place_rate": 1.0,
+          "invalid_action_rate": 0.0,
+          "mean_coins": 50.0,
+          "mean_crates": 0.0,
+          "mean_kills": 0.0,
+          "mean_score": 50.0,
+          "skipped_actions": 0,
+          "suicide_rate": 0.0,
+          "survived_bomb_rate": 0.0,
+          "timeouts": 0,
+          "zero_bomb_round_rate": 1
+        },
+        "child_task2": {
+          "act_max_seconds": 0.0068051815032958984,
+          "act_p95_seconds": 0.006156444549560547,
+          "first_place_rate": 1.0,
+          "invalid_action_rate": 0.0,
+          "mean_coins": 7.35,
+          "mean_crates": 102.15,
+          "mean_kills": 0.0,
+          "mean_score": 7.35,
+          "skipped_actions": 0,
+          "suicide_rate": 0.0,
+          "survived_bomb_rate": 1.0,
+          "timeouts": 0,
+          "zero_bomb_round_rate": 0
+        },
+        "child_task3": {
+          "act_max_seconds": 0.008747339248657227,
+          "act_p95_seconds": 0.006722688674926758,
+          "first_place_rate": 0.55,
+          "invalid_action_rate": 0.00075,
+          "mean_coins": 4.85,
+          "mean_crates": 56.5,
+          "mean_kills": 0.25,
+          "mean_score": 6.1,
+          "skipped_actions": 0,
+          "suicide_rate": 0.0,
+          "survived_bomb_rate": 1.0,
+          "timeouts": 0,
+          "zero_bomb_round_rate": 0
+        },
+        "parent_task1": {
+          "act_max_seconds": 0.009136199951171875,
+          "act_p95_seconds": 0.007211446762084961,
+          "first_place_rate": 1.0,
+          "invalid_action_rate": 0.0,
+          "mean_coins": 50.0,
+          "mean_crates": 0.0,
+          "mean_kills": 0.0,
+          "mean_score": 50.0,
+          "skipped_actions": 0,
+          "suicide_rate": 0.0,
+          "survived_bomb_rate": 0.0,
+          "timeouts": 0,
+          "zero_bomb_round_rate": 1
+        },
+        "parent_task2": {
+          "act_max_seconds": 0.00885629653930664,
+          "act_p95_seconds": 0.00535273551940918,
+          "first_place_rate": 1.0,
+          "invalid_action_rate": 0.0,
+          "mean_coins": 6.55,
+          "mean_crates": 90.2,
+          "mean_kills": 0.0,
+          "mean_score": 6.55,
+          "skipped_actions": 0,
+          "suicide_rate": 0.0,
+          "survived_bomb_rate": 1.0,
+          "timeouts": 0,
+          "zero_bomb_round_rate": 0
+        },
+        "parent_task3": {
+          "act_max_seconds": 0.01055288314819336,
+          "act_p95_seconds": 0.006844043731689453,
+          "first_place_rate": 0.4,
+          "invalid_action_rate": 0.000266844563042028,
+          "mean_coins": 3.4,
+          "mean_crates": 39.75,
+          "mean_kills": 0.35,
+          "mean_score": 5.15,
+          "skipped_actions": 0,
+          "suicide_rate": 0.15,
+          "survived_bomb_rate": 0.9969574036511156,
+          "timeouts": 0,
+          "zero_bomb_round_rate": 0
+        }
+      },
+      "training_run": {
+        "checkpoint": "/export/data/sfan/MLE_final_project/runs/task3_pilot_ddqn_cv2_r7_s11_t3_c1500_814173b/checkpoints/final.pt",
+        "checkpoint_sha256": "4d76ec1a46f36eaf43ee5aebc78d80abbe2b07bf040a3a6811f2f6078768c68f",
+        "latest_generation": "generation-00001500",
+        "latest_generation_hash": "f8bad2e8069e291ccf5a3334564fdd6bd09bb9c42fedd7e2493ab83b27185e0d",
+        "local_rounds": 500,
+        "loss": 0.6224823594093323,
+        "run": "/export/data/sfan/MLE_final_project/runs/task3_pilot_ddqn_cv2_r7_s11_t3_c1500_814173b",
+        "updates": 904489
+      },
+      "training_seed": 11
+    },
+    {
+      "checks": {
+        "act_max": true,
+        "act_p95": true,
+        "invalid_actions": true,
+        "no_skipped_actions": true,
+        "no_timeouts": true,
+        "task1_score_retention": true,
+        "task2_bomb_survival": true,
+        "task2_coin_retention": true,
+        "task2_crate_retention": true,
+        "task2_suicide": true,
+        "task3_bomb_activity": true,
+        "task3_bomb_survival": true,
+        "task3_coin_retention": true,
+        "task3_combat_gain": false,
+        "task3_crate_retention": true,
+        "task3_score_gain": false,
+        "task3_suicide": false
+      },
+      "cumulative_task3_rounds": 1500,
+      "minimum_resource_and_retention_ratio": 1.0,
+      "paired": {
+        "task1_score": {
+          "bootstrap_ci95": [
+            0.0,
+            0.0
+          ],
+          "mean_difference": 0.0
+        },
+        "task2_coins": {
+          "bootstrap_ci95": [
+            0.65,
+            2.15
+          ],
+          "mean_difference": 1.35
+        },
+        "task2_crates": {
+          "bootstrap_ci95": [
+            0.4,
+            17.75
+          ],
+          "mean_difference": 8.6
+        },
+        "task3_coins": {
+          "bootstrap_ci95": [
+            -0.65,
+            1.3
+          ],
+          "mean_difference": 0.35
+        },
+        "task3_crates": {
+          "bootstrap_ci95": [
+            -5.15,
+            11.8
+          ],
+          "mean_difference": 3.65
+        },
+        "task3_first_place": {
+          "bootstrap_ci95": [
+            -0.55,
+            0.05
+          ],
+          "mean_difference": -0.25
+        },
+        "task3_kills": {
+          "bootstrap_ci95": [
+            -0.5,
+            0.05
+          ],
+          "mean_difference": -0.25
+        },
+        "task3_score": {
+          "bootstrap_ci95": [
+            -2.9,
+            1.1
+          ],
+          "mean_difference": -0.9
+        }
+      },
+      "passed": false,
+      "retention_ratios": {
+        "task1_score": 1.0,
+        "task2_coins": 1.2368421052631577,
+        "task2_crates": 1.099078341013825,
+        "task3_coins": 1.0972222222222223,
+        "task3_crates": 1.0759625390218523
+      },
+      "schema_version": "task3-pilot-assessment-v1",
+      "summaries": {
+        "child_task1": {
+          "act_max_seconds": 0.009094476699829102,
+          "act_p95_seconds": 0.006895303726196289,
+          "first_place_rate": 1.0,
+          "invalid_action_rate": 0.0,
+          "mean_coins": 50.0,
+          "mean_crates": 0.0,
+          "mean_kills": 0.0,
+          "mean_score": 50.0,
+          "skipped_actions": 0,
+          "suicide_rate": 0.0,
+          "survived_bomb_rate": 0.0,
+          "timeouts": 0,
+          "zero_bomb_round_rate": 1
+        },
+        "child_task2": {
+          "act_max_seconds": 0.008910417556762695,
+          "act_p95_seconds": 0.005511283874511719,
+          "first_place_rate": 1.0,
+          "invalid_action_rate": 0.0,
+          "mean_coins": 7.05,
+          "mean_crates": 95.4,
+          "mean_kills": 0.0,
+          "mean_score": 7.05,
+          "skipped_actions": 0,
+          "suicide_rate": 0.0,
+          "survived_bomb_rate": 1.0,
+          "timeouts": 0,
+          "zero_bomb_round_rate": 0
+        },
+        "child_task3": {
+          "act_max_seconds": 0.009026050567626953,
+          "act_p95_seconds": 0.006814718246459961,
+          "first_place_rate": 0.3,
+          "invalid_action_rate": 0.0004888381945576015,
+          "mean_coins": 3.95,
+          "mean_crates": 51.7,
+          "mean_kills": 0.15,
+          "mean_score": 4.7,
+          "skipped_actions": 0,
+          "suicide_rate": 0.35,
+          "survived_bomb_rate": 0.989247311827957,
+          "timeouts": 0,
+          "zero_bomb_round_rate": 0
+        },
+        "parent_task1": {
+          "act_max_seconds": 0.00918269157409668,
+          "act_p95_seconds": 0.007205486297607422,
+          "first_place_rate": 1.0,
+          "invalid_action_rate": 0.0,
+          "mean_coins": 50.0,
+          "mean_crates": 0.0,
+          "mean_kills": 0.0,
+          "mean_score": 50.0,
+          "skipped_actions": 0,
+          "suicide_rate": 0.0,
+          "survived_bomb_rate": 0.0,
+          "timeouts": 0,
+          "zero_bomb_round_rate": 1
+        },
+        "parent_task2": {
+          "act_max_seconds": 0.010751962661743164,
+          "act_p95_seconds": 0.006142377853393555,
+          "first_place_rate": 1.0,
+          "invalid_action_rate": 0.0,
+          "mean_coins": 5.7,
+          "mean_crates": 86.8,
+          "mean_kills": 0.0,
+          "mean_score": 5.7,
+          "skipped_actions": 0,
+          "suicide_rate": 0.0,
+          "survived_bomb_rate": 1.0,
+          "timeouts": 0,
+          "zero_bomb_round_rate": 0
+        },
+        "parent_task3": {
+          "act_max_seconds": 0.010345697402954102,
+          "act_p95_seconds": 0.007058858871459961,
+          "first_place_rate": 0.55,
+          "invalid_action_rate": 0.0005338315761377286,
+          "mean_coins": 3.6,
+          "mean_crates": 48.05,
+          "mean_kills": 0.4,
+          "mean_score": 5.6,
+          "skipped_actions": 0,
+          "suicide_rate": 0.15,
+          "survived_bomb_rate": 0.9967141292442497,
+          "timeouts": 0,
+          "zero_bomb_round_rate": 0
+        }
+      },
+      "training_run": {
+        "checkpoint": "/export/data/sfan/MLE_final_project/runs/task3_pilot_ddqn_cv2_r7_s22_t3_c1500_814173b/checkpoints/final.pt",
+        "checkpoint_sha256": "822538947be5badb248876404357aed1dffdb3a2bf6cebc9ff88284a5685a199",
+        "latest_generation": "generation-00001500",
+        "latest_generation_hash": "e81ba5e372277995de7848059fc8f17a9a09f594e98f8a7a73f40b163221834d",
+        "local_rounds": 500,
+        "loss": 0.6552928686141968,
+        "run": "/export/data/sfan/MLE_final_project/runs/task3_pilot_ddqn_cv2_r7_s22_t3_c1500_814173b",
+        "updates": 815218
+      },
+      "training_seed": 22
+    },
+    {
+      "checks": {
+        "act_max": true,
+        "act_p95": true,
+        "invalid_actions": true,
+        "no_skipped_actions": true,
+        "no_timeouts": true,
+        "task1_score_retention": true,
+        "task2_bomb_survival": true,
+        "task2_coin_retention": true,
+        "task2_crate_retention": true,
+        "task2_suicide": true,
+        "task3_bomb_activity": true,
+        "task3_bomb_survival": true,
+        "task3_coin_retention": true,
+        "task3_combat_gain": true,
+        "task3_crate_retention": true,
+        "task3_score_gain": true,
+        "task3_suicide": true
+      },
+      "cumulative_task3_rounds": 1500,
+      "minimum_resource_and_retention_ratio": 1.0,
+      "paired": {
+        "task1_score": {
+          "bootstrap_ci95": [
+            0.0,
+            0.0
+          ],
+          "mean_difference": 0.0
+        },
+        "task2_coins": {
+          "bootstrap_ci95": [
+            1.55,
+            3.75
+          ],
+          "mean_difference": 2.65
+        },
+        "task2_crates": {
+          "bootstrap_ci95": [
+            18.3,
+            42.25
+          ],
+          "mean_difference": 30.35
+        },
+        "task3_coins": {
+          "bootstrap_ci95": [
+            0.4,
+            2.4
+          ],
+          "mean_difference": 1.4
+        },
+        "task3_crates": {
+          "bootstrap_ci95": [
+            4.95,
+            23.65
+          ],
+          "mean_difference": 14.2
+        },
+        "task3_first_place": {
+          "bootstrap_ci95": [
+            -0.15,
+            0.45
+          ],
+          "mean_difference": 0.15
+        },
+        "task3_kills": {
+          "bootstrap_ci95": [
+            -0.25,
+            0.4
+          ],
+          "mean_difference": 0.05
+        },
+        "task3_score": {
+          "bootstrap_ci95": [
+            -0.6,
+            4.05
+          ],
+          "mean_difference": 1.65
+        }
+      },
+      "passed": true,
+      "retention_ratios": {
+        "task1_score": 1.0,
+        "task2_coins": 1.5520833333333335,
+        "task2_crates": 1.4177563661390227,
+        "task3_coins": 1.417910447761194,
+        "task3_crates": 1.3717277486910993
+      },
+      "schema_version": "task3-pilot-assessment-v1",
+      "summaries": {
+        "child_task1": {
+          "act_max_seconds": 0.009053468704223633,
+          "act_p95_seconds": 0.006776571273803711,
+          "first_place_rate": 1.0,
+          "invalid_action_rate": 0.0,
+          "mean_coins": 50.0,
+          "mean_crates": 0.0,
+          "mean_kills": 0.0,
+          "mean_score": 50.0,
+          "skipped_actions": 0,
+          "suicide_rate": 0.0,
+          "survived_bomb_rate": 0.0,
+          "timeouts": 0,
+          "zero_bomb_round_rate": 1
+        },
+        "child_task2": {
+          "act_max_seconds": 0.008148193359375,
+          "act_p95_seconds": 0.005578041076660156,
+          "first_place_rate": 1.0,
+          "invalid_action_rate": 0.0,
+          "mean_coins": 7.45,
+          "mean_crates": 103.0,
+          "mean_kills": 0.0,
+          "mean_score": 7.45,
+          "skipped_actions": 0,
+          "suicide_rate": 0.0,
+          "survived_bomb_rate": 1.0,
+          "timeouts": 0,
+          "zero_bomb_round_rate": 0
+        },
+        "child_task3": {
+          "act_max_seconds": 0.009285211563110352,
+          "act_p95_seconds": 0.007262706756591797,
+          "first_place_rate": 0.5,
+          "invalid_action_rate": 0.0005175983436853002,
+          "mean_coins": 4.75,
+          "mean_crates": 52.4,
+          "mean_kills": 0.4,
+          "mean_score": 6.75,
+          "skipped_actions": 0,
+          "suicide_rate": 0.05,
+          "survived_bomb_rate": 0.9987639060568603,
+          "timeouts": 0,
+          "zero_bomb_round_rate": 0
+        },
+        "parent_task1": {
+          "act_max_seconds": 0.009390830993652344,
+          "act_p95_seconds": 0.008289813995361328,
+          "first_place_rate": 1.0,
+          "invalid_action_rate": 0.0,
+          "mean_coins": 50.0,
+          "mean_crates": 0.0,
+          "mean_kills": 0.0,
+          "mean_score": 50.0,
+          "skipped_actions": 0,
+          "suicide_rate": 0.0,
+          "survived_bomb_rate": 0.0,
+          "timeouts": 0,
+          "zero_bomb_round_rate": 1
+        },
+        "parent_task2": {
+          "act_max_seconds": 0.007900714874267578,
+          "act_p95_seconds": 0.005161762237548828,
+          "first_place_rate": 1.0,
+          "invalid_action_rate": 0.0,
+          "mean_coins": 4.8,
+          "mean_crates": 72.65,
+          "mean_kills": 0.0,
+          "mean_score": 4.8,
+          "skipped_actions": 0,
+          "suicide_rate": 0.0,
+          "survived_bomb_rate": 1.0,
+          "timeouts": 0,
+          "zero_bomb_round_rate": 0
+        },
+        "parent_task3": {
+          "act_max_seconds": 0.009708166122436523,
+          "act_p95_seconds": 0.007388591766357422,
+          "first_place_rate": 0.35,
+          "invalid_action_rate": 0.0,
+          "mean_coins": 3.35,
+          "mean_crates": 38.2,
+          "mean_kills": 0.35,
+          "mean_score": 5.1,
+          "skipped_actions": 0,
+          "suicide_rate": 0.25,
+          "survived_bomb_rate": 0.9932705248990579,
+          "timeouts": 0,
+          "zero_bomb_round_rate": 0
+        }
+      },
+      "training_run": {
+        "checkpoint": "/export/data/sfan/MLE_final_project/runs/task3_pilot_ddqn_cv2_r7_s33_t3_c1500_814173b/checkpoints/final.pt",
+        "checkpoint_sha256": "983db350c872daa0fe6cd5c15b00790093ac040391b5d8eb28aa195814f602a7",
+        "latest_generation": "generation-00001500",
+        "latest_generation_hash": "5c2691d2ee5be27c36568bd62dc24da58b2ff62320cbf188c3024efd363606c2",
+        "local_rounds": 500,
+        "loss": 0.42172807455062866,
+        "run": "/export/data/sfan/MLE_final_project/runs/task3_pilot_ddqn_cv2_r7_s33_t3_c1500_814173b",
+        "updates": 825447
+      },
+      "training_seed": 33
+    }
+  ],
+  "checkpoint_rank": [],
+  "designation": "task3_pilot_failure",
+  "main_validation_performed": false,
+  "protocol": {
+    "commit": "ab5e1d491f31411dd86772dfbb7a0693328f5778",
+    "config_sha256": "7ce602c955c0d1a27b95cc29c2d2bad214f1fa054ff24b0ec4d87bd2db4ee318",
+    "training_source": {
+      "commit": "814173b618fb38990db7a5b7ee200369c8b25289",
+      "execution": "detached_worktree",
+      "hash": "b3dafd35f05214bac1058d7e16407e8cb113322a10c590efb748a51eb6e9364e"
+    }
+  },
+  "qualified_for_task4": false,
+  "schema_version": "task3-pilot-result-v1",
+  "selected": null,
+  "training_seeds": [
+    11,
+    22,
+    33
+  ]
+}

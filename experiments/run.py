@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import ast
 import csv
 import hashlib
 import importlib.metadata
@@ -13,6 +14,7 @@ import os
 import pickle
 import platform
 import random
+import shutil
 import subprocess
 import sys
 from datetime import datetime, timezone
@@ -41,6 +43,7 @@ from experiments.resume import (
     materialize_learner_checkpoint,
     materialize_migrated_checkpoint,
     materialize_task3_safety_checkpoint,
+    materialize_task3_transfer_checkpoint,
 )
 from experiments.performance_stopping import (
     Task1PerformanceStopping, frozen_score_assessor, load_committed_history,
@@ -52,6 +55,7 @@ from experiments.training import (
 )
 from main import world_controller
 from agent_code.team_agent.feature_system import ACTIONS, normalize_feature_id
+from agent_code.team_agent.feature_system.common import build_context
 from agent_code.team_agent.rewards import REWARD_VERSION, resolve_reward_spec
 from agent_code.team_agent.safety import resolve_safety_spec
 from experiments.agent_contracts import resolve_agent_contract
@@ -148,7 +152,8 @@ def _checkpoint_feature_contract(
         return {"feature_id": None, "feature_schema": None, "runtime_adapter": None}
     feature_id = payload.get("feature_id", payload.get("feature_version"))
     schema = payload.get("feature_schema")
-    shape = tuple(schema.get("vector_shape", ())) if isinstance(schema, dict) else ()
+    raw_shape = schema.get("vector_shape") if isinstance(schema, dict) else None
+    shape = tuple(raw_shape) if raw_shape is not None else ()
     adapter = (
         "continuous-v2-legacy78"
         if feature_id == "continuous-v2" and shape == (78,) else None
@@ -172,11 +177,15 @@ class ExperimentWorld(BombeRLeWorld):
     ):
         self._episodes_path = output / "episodes.jsonl"
         self._timing_path = output / "timing.jsonl"
+        self._phase_events_path = output / "phase_events.jsonl"
         self._episodes_path.touch(exist_ok=False)
         self._timing_path.touch(exist_ok=False)
+        self._phase_events_path.touch(exist_ok=False)
         self._episodes_file = self._episodes_path.open(
             "a", encoding="utf-8", buffering=1)
         self._timing_file = self._timing_path.open(
+            "a", encoding="utf-8", buffering=1)
+        self._phase_events_file = self._phase_events_path.open(
             "a", encoding="utf-8", buffering=1)
         self._experiment_run_id = run_id
         self._environment_seed = environment_seed
@@ -185,6 +194,7 @@ class ExperimentWorld(BombeRLeWorld):
         self._replay_policy = replay_policy
         self._replay_interval = replay_interval
         self._snapshot_config = snapshot_config
+        self._checkpoint_snapshot_milestones: set[int] = set()
         self._navigation_diagnostics = navigation_diagnostics
         self._navigation_previous_action: dict[str, str] = {}
         self._navigation_previous_target: dict[str, tuple[int, int] | None] = {}
@@ -194,6 +204,7 @@ class ExperimentWorld(BombeRLeWorld):
         self._death_steps: dict[str, int] = {}
         self._death_causes: dict[str, list[dict[str, str]]] = {}
         self._bomb_owners_exploded_this_step = []
+        self._latest_phase_facts: dict[str, dict[str, Any]] = {}
         super().__init__(args, agents)
 
     def new_round(self) -> None:
@@ -202,6 +213,7 @@ class ExperimentWorld(BombeRLeWorld):
         self._navigation_previous_action = {}
         self._navigation_previous_target = {}
         self._bomb_owners_exploded_this_step = []
+        self._latest_phase_facts = {}
         super().new_round()
 
     def update_bombs(self) -> None:
@@ -277,7 +289,35 @@ class ExperimentWorld(BombeRLeWorld):
             getattr(runner, "fake_self", None), "last_safety_diagnostic", None)
         if isinstance(safety, dict):
             record["safety"] = safety
+        fake_self = getattr(runner, "fake_self", None)
+        if fake_self is not None and (
+            getattr(fake_self, "feature_id", None) == "continuous-phase-v1"
+            or self._navigation_diagnostics
+        ):
+            from agent_code.team_agent.phase import phase_facts_for_owner
+            phase = phase_facts_for_owner(fake_self, game_state)
+            x, y = game_state["self"][3]
+            phase["geometric_edge"] = bool(
+                x in {1, game_state["field"].shape[0] - 2}
+                or y in {1, game_state["field"].shape[1] - 2})
+            record["phase"] = phase
+            self._latest_phase_facts[agent.name] = phase
         self._timing_file.write(json.dumps(record, sort_keys=True) + "\n")
+
+    def send_game_events(self) -> None:
+        """Persist event/phase pairs before training callbacks consume events."""
+        for agent in self.agents:
+            phase = self._latest_phase_facts.get(agent.name)
+            if phase is None:
+                continue
+            self._phase_events_file.write(json.dumps({
+                "schema_version": "phase-events-v1",
+                "run_id": self._experiment_run_id,
+                "round_index": int(self.round), "step": int(self.step),
+                "agent_name": agent.name, "phase": phase,
+                "events": list(agent.events),
+            }, sort_keys=True) + "\n")
+        super().send_game_events()
 
     def poll_and_run_agents(self) -> None:
         states: dict[str, dict[str, Any]] = {}
@@ -339,6 +379,16 @@ class ExperimentWorld(BombeRLeWorld):
                 agent.available_think_time += agent.base_timeout
                 action = "WAIT"
 
+            if action == "BOMB" and bool(states[agent.name]["self"][2]):
+                context = build_context(states[agent.name])
+                bomb = context.bomb_reachability
+                if (
+                    bomb is not None and bomb.survives_horizon
+                    and context.crates_in_blast == 0
+                    and context.opponents_in_blast == 0
+                ):
+                    agent.note_stat("zero_utility_bombs")
+
             self._append_timing(
                 agent,
                 action,
@@ -386,6 +436,8 @@ class ExperimentWorld(BombeRLeWorld):
                     "suicides": int(statistics.get("suicides", 0)),
                     "crates": int(statistics.get("crates", 0)),
                     "bombs": int(statistics.get("bombs", 0)),
+                    "zero_utility_bombs": int(
+                        statistics.get("zero_utility_bombs", 0)),
                     "bombs_resolved": int(statistics.get("bombs_resolved", 0)),
                     "bombs_survived": int(statistics.get("bombs_survived", 0)),
                     "invalid": int(statistics.get("invalid", 0)),
@@ -395,7 +447,9 @@ class ExperimentWorld(BombeRLeWorld):
                     "death_causes": death_causes,
                     "killed_by_self": killed_by_self or bool(suicides),
                     "killed_by_opponent": killed_by_opponent,
-                    "all_coins": int(statistics.get("coins", 0)) >= 50,
+                    "all_coins": int(statistics.get("coins", 0)) >= int(
+                        s.SCENARIOS[self.args.scenario]["COIN_COUNT"]
+                    ),
                     "max_steps": int(self.step) >= int(s.MAX_STEPS),
                     "longest_wait_streak": longest_wait,
                     "longest_ping_pong_streak": longest_ping_pong,
@@ -465,6 +519,7 @@ class ExperimentWorld(BombeRLeWorld):
                 early_stopping_rewards=[*inherited, *local_rewards],
                 source_commit=self._snapshot_config["source_commit"],
                 source_hash=self._snapshot_config["source_hash"],
+                source_hash_scope=self._snapshot_config.get("source_hash_scope"),
                 cumulative_completed_rounds=(
                     self._snapshot_config["parent_cumulative"] + len(local_rewards)
                 ),
@@ -472,6 +527,33 @@ class ExperimentWorld(BombeRLeWorld):
                 performance_stopping=self._snapshot_config.get("performance_stopping"),
                 performance_history=self._snapshot_config.get("performance_history", []),
             )
+            self._materialize_checkpoint_snapshot()
+
+    def _materialize_checkpoint_snapshot(self) -> None:
+        """Copy immutable action-step checkpoints for frozen candidate selection."""
+        interval = self._snapshot_config.get("checkpoint_snapshot_interval")
+        if interval is None:
+            return
+        action_steps = _last_training_integer(
+            self._output / "training.csv", "stage_action_steps")
+        if action_steps is None:
+            return
+        milestone = action_steps // interval
+        if milestone < 1 or milestone in self._checkpoint_snapshot_milestones:
+            return
+        checkpoint = Path(self._snapshot_config["checkpoint"])
+        if not checkpoint.is_file():
+            return
+        snapshots = self._output / "checkpoints" / "snapshots"
+        snapshots.mkdir(parents=True, exist_ok=True)
+        destination = snapshots / f"step_{action_steps:07d}{checkpoint.suffix}"
+        shutil.copy2(checkpoint, destination)
+        _append_json_line(snapshots / "manifest.jsonl", {
+            "action_steps": action_steps,
+            "checkpoint": destination.name,
+            "milestone": milestone,
+        })
+        self._checkpoint_snapshot_milestones.add(milestone)
 
     def end(self) -> None:
         """Close buffered experiment streams after the official world stops."""
@@ -480,6 +562,7 @@ class ExperimentWorld(BombeRLeWorld):
         finally:
             self._episodes_file.close()
             self._timing_file.close()
+            self._phase_events_file.close()
 
     def _read_new_training_rewards(self, training_path: Path) -> None:
         """Consume only CSV rows appended since the previous round."""
@@ -514,14 +597,37 @@ def _source_commit() -> str | None:
     return result.stdout.strip() if result.returncode == 0 else None
 
 
-def _source_hash() -> str:
-    """Hash runtime Python/config sources, including uncommitted files."""
+SOURCE_HASH_SCOPE = "agent-runtime-v2"
+
+
+def _source_hash(agent: str | None = None, config_path: Path | None = None) -> str:
+    """Hash only sources that can affect the selected agent's run.
+
+    Calls without an agent retain the legacy repository-wide behavior used by
+    the explicit migration utilities.
+    """
     digest = hashlib.sha256()
-    roots = [PROJECT_ROOT / "agent_code", PROJECT_ROOT / "experiments"]
-    paths = [PROJECT_ROOT / name for name in ("agents.py", "environment.py", "items.py", "settings.py")]
-    for root in roots:
-        paths.extend(root.rglob("*.py"))
-        paths.extend(root.rglob("*.json"))
+    if agent is None:
+        roots = [PROJECT_ROOT / "experiments", PROJECT_ROOT / "agent_code"]
+        paths = [PROJECT_ROOT / name for name in ("agents.py", "environment.py", "items.py", "settings.py")]
+        for root in roots:
+            paths.extend(root.rglob("*.py"))
+            paths.extend(root.rglob("*.json"))
+    else:
+        seeds = [
+            PROJECT_ROOT / "experiments" / "run.py",
+            PROJECT_ROOT / "agents.py",
+            PROJECT_ROOT / "environment.py",
+            PROJECT_ROOT / "items.py",
+            PROJECT_ROOT / "settings.py",
+            *(PROJECT_ROOT / "agent_code" / agent).glob("*.py"),
+        ]
+        paths = list(_local_python_dependencies(seeds))
+    # Runtime source and experiment configuration are separate provenance
+    # contracts.  In particular, curriculum promotion necessarily changes the
+    # config path, while the executable agent code must remain unchanged.
+    if agent is None and config_path is not None:
+        paths.append(Path(config_path).resolve())
     for path in sorted({item for item in paths if item.is_file()}):
         if "__pycache__" in path.parts:
             continue
@@ -530,6 +636,45 @@ def _source_hash() -> str:
         digest.update(relative)
         digest.update(path.read_bytes())
     return digest.hexdigest()
+
+
+def _local_python_dependencies(seeds: Sequence[Path]) -> set[Path]:
+    """Return the static local-import closure for the supplied entry points."""
+    pending = [Path(path).resolve() for path in seeds]
+    found: set[Path] = set()
+    while pending:
+        path = pending.pop()
+        if path in found or not path.is_file() or PROJECT_ROOT not in path.parents:
+            continue
+        found.add(path)
+        try:
+            tree = ast.parse(path.read_text(encoding="utf-8"))
+        except (OSError, SyntaxError, UnicodeDecodeError):
+            continue
+        modules: set[str] = set()
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Import):
+                modules.update(alias.name for alias in node.names)
+            elif isinstance(node, ast.ImportFrom):
+                package = list(path.relative_to(PROJECT_ROOT).parts[:-1])
+                if node.level:
+                    package = package[:len(package) - node.level + 1]
+                    prefix = ".".join(package + (node.module.split(".") if node.module else []))
+                else:
+                    prefix = node.module or ""
+                if prefix:
+                    modules.add(prefix)
+                    modules.update(prefix + "." + alias.name for alias in node.names
+                                   if alias.name != "*")
+        for module in modules:
+            base = PROJECT_ROOT.joinpath(*module.split("."))
+            candidate = base.with_suffix(".py")
+            if candidate.is_file():
+                pending.append(candidate)
+            initializer = base / "__init__.py"
+            if initializer.is_file():
+                pending.append(initializer)
+    return found
 
 
 def _evaluation_seeds(experiment_seed: int) -> dict[str, int]:
@@ -675,12 +820,24 @@ def _custom_agents(agent: str, opponents: Sequence[str], training: bool):
     return [(agent, training), *((opponent, False) for opponent in opponents)]
 
 
-def _task_settings(task: int, opponents: Sequence[str] | None):
+def _task_settings(
+    task: int, opponents: Sequence[str] | None, *,
+    task3_curriculum_stage: str | None = None,
+):
     task_config = TASKS[task]
     resolved_opponents = tuple(task_config["opponents"] if opponents is None else opponents)
     if task in {1, 2} and resolved_opponents:
         raise ValueError(f"Task {task} does not use opponents")
-    if task == 3 and opponents is not None:
+    if task3_curriculum_stage is not None:
+        if task != 3:
+            raise ValueError("Task 3 opponent curriculum is only valid for Task 3")
+        stages = {
+            "stationary": ("stationary_target_agent", "stationary_target_agent"),
+            "moving": ("no_bomb_random_agent", "no_bomb_random_agent"),
+            "standard": TASKS[3]["opponents"],
+        }
+        resolved_opponents = tuple(stages[task3_curriculum_stage])
+    elif task == 3 and opponents is not None:
         raise ValueError("Task 3 opponents are fixed to peaceful_agent and coin_collector_agent")
     if task == 4 and not resolved_opponents:
         raise ValueError("Task 4 requires at least one opponent")
@@ -742,6 +899,7 @@ def run_agent_session(
     resume_snapshot: LoadedSnapshot | None = None,
     resume_kind: str | None = None,
     parent_metadata: dict[str, Any] | None = None,
+    init_checkpoint: Path | None = None,
     device_info: dict[str, Any] | None = None,
     action_budget_config: dict[str, Any] | None = None,
     safe_exploration: bool = False,
@@ -755,8 +913,11 @@ def run_agent_session(
     show_progress: bool = True,
     progress_leave: bool = True,
     performance_stopping: dict[str, Any] | None = None,
+    checkpoint_snapshot_interval: int | None = None,
     migration: bool = False,
     task3_safety_transfer: bool = False,
+    task3_transfer: bool = False,
+    distillation_path: Path | None = None,
 ) -> Path:
     """Run one isolated training or frozen-evaluation session."""
     training = mode == "train"
@@ -768,8 +929,19 @@ def run_agent_session(
     if replay_policy not in REPLAY_POLICIES:
         raise ValueError(f"replay_policy must be one of {', '.join(REPLAY_POLICIES)}")
     replay_interval = _positive_int(replay_interval, "replay_interval")
+    if checkpoint_snapshot_interval is not None:
+        checkpoint_snapshot_interval = _positive_int(
+            checkpoint_snapshot_interval, "checkpoint_snapshot_interval_action_steps")
     specs = _custom_agents(agent, opponents, training)
     checkpoint = None if checkpoint is None else checkpoint.resolve()
+    init_checkpoint = (
+        None if init_checkpoint is None else init_checkpoint.expanduser().resolve())
+    if init_checkpoint is not None and not training:
+        raise ValueError("Warm-start checkpoints are only valid in training mode")
+    if init_checkpoint is not None and resume_snapshot is not None:
+        raise ValueError("Warm-start and resume cannot be used together")
+    if init_checkpoint is not None and not init_checkpoint.is_file():
+        raise FileNotFoundError(f"Warm-start checkpoint does not exist: {init_checkpoint}")
     expanded = _read_config(config_path)
     algorithm = _algorithm_name(agent)
     training_config = expanded.get("training", {})
@@ -879,6 +1051,7 @@ def run_agent_session(
     if training:
         assert checkpoint is not None
         checkpoint.parent.mkdir(parents=True, exist_ok=True)
+    transfer_contract = None
     if resume_snapshot is not None:
         if task3_safety_transfer:
             materialize_task3_safety_checkpoint(
@@ -888,6 +1061,30 @@ def run_agent_session(
                 safety_replay_spec=safety_replay_spec,
                 n_step=n_step, reward_id=reward_version,
                 retention_spec=retention_spec)
+        elif task3_transfer:
+            if distillation_path is None:
+                raise ValueError("Task 3 transfer requires a distillation dataset")
+            transfer_contract = materialize_task3_transfer_checkpoint(
+                resume_snapshot, checkpoint,
+                child_contract={
+                    "algorithm": algorithm, "seed": seed, "task": task_name,
+                    "feature_id": contract.feature_id,
+                    "feature_schema": contract.feature_schema,
+                    "reward_id": reward_version, "reward_spec": resolved_rewards,
+                    "checkpoint_schema": CHECKPOINT_SCHEMA_VERSION,
+                    "actions": list(ACTIONS),
+                    "training_device_name": device_info["name"],
+                    "training_device_type": device_info["type"],
+                    "agent_seed": seed, "exploration_spec": exploration_spec,
+                    "safe_exploration": safe_exploration,
+                    "safety_spec": safety_spec, "n_step": n_step,
+                    "retention_spec": retention_spec,
+                    "training_budget": action_budget_config,
+                    "network_spec": contract.network_spec,
+                    "hyperparameters": contract.hyperparameters,
+                },
+                distillation_path=distillation_path,
+            )
         elif migration:
             materialize_migrated_checkpoint(
                 resume_snapshot, checkpoint, training_budget=action_budget_config)
@@ -897,8 +1094,9 @@ def run_agent_session(
     seeds = _training_seeds(seed) if training else _evaluation_seeds(seed)
     metadata = _initial_metadata(config_path, mode, output.name, seeds)
     source_commit = metadata["source_commit"]
-    source_hash = _source_hash()
+    source_hash = _source_hash(agent, config_path)
     metadata["source_hash"] = source_hash
+    metadata["source_hash_scope"] = SOURCE_HASH_SCOPE
     expanded["algorithm"] = algorithm
     expanded["feature_id"] = contract.feature_id
     expanded["feature_version"] = (
@@ -911,6 +1109,8 @@ def run_agent_session(
         "agent": agent,
         "allow_bomb": task_name != "coin_navigation",
         "checkpoint": None if checkpoint is None else str(checkpoint),
+        "init_from_checkpoint": (
+            None if init_checkpoint is None else str(init_checkpoint)),
         "n_rounds": n_rounds,
         "opponents": list(opponents),
         "replay_interval": replay_interval,
@@ -936,6 +1136,7 @@ def run_agent_session(
     metadata["safety_replay_spec"] = safety_replay_spec
     metadata["training_budget"] = action_budget_config
     metadata["performance_stopping"] = performance_stopping
+    metadata["transfer_contract"] = transfer_contract
     metadata["adaptation_triggers"] = list(adaptation_triggers)
     metadata["feature_id"] = contract.feature_id
     metadata["feature_schema"] = contract.feature_schema
@@ -966,7 +1167,18 @@ def run_agent_session(
         parent_cumulative = int(termination.get(
             "cumulative_completed_rounds", termination.get("completed_rounds", 0)
         ))
-    metadata["lineage"] = None if resume_snapshot is None else {
+    metadata["lineage"] = (
+        {
+            "kind": "warm_start",
+            "source_checkpoint": str(init_checkpoint),
+            "inherited": ["policy_weights"],
+            "reset": [
+                "target_network", "optimizer", "replay", "epsilon",
+                "agent_rng", "early_stopping", "round_state",
+            ],
+        }
+        if init_checkpoint is not None else None
+    ) if resume_snapshot is None else {
         "fallback_reason": resume_snapshot.fallback_reason,
         "fallback_lost_rounds": resume_snapshot.lost_rounds,
         "parent_generation": resume_snapshot.generation,
@@ -987,6 +1199,7 @@ def run_agent_session(
                 "reason": "own-bomb escape obligation experiment",
             } if task3_safety_transfer else None)
         ),
+        "task3_transfer": transfer_contract,
     }
     metadata["config_sha256"] = hashlib.sha256(
         json.dumps(expanded, sort_keys=True, separators=(",", ":")).encode("utf-8")
@@ -997,7 +1210,8 @@ def run_agent_session(
     previous = {
         name: os.environ.get(name)
         for name in (
-            "BOMBERMAN_CHECKPOINT", "BOMBERMAN_CONFIG", "BOMBERMAN_RUN_DIR",
+            "BOMBERMAN_CHECKPOINT", "BOMBERMAN_INIT_CHECKPOINT",
+            "BOMBERMAN_CONFIG", "BOMBERMAN_RUN_DIR",
             "BOMBERMAN_RUN_ID", "BOMBERMAN_TRAINING_TASK",
             "BOMBERMAN_ALLOW_BOMB", "BOMBERMAN_FEATURE_ID",
             "BOMBERMAN_REWARD_ID", "BOMBERMAN_REWARD_VERSION",
@@ -1007,6 +1221,7 @@ def run_agent_session(
             "BOMBERMAN_SAFETY_SPEC",
             "BOMBERMAN_RETENTION_SPEC", "BOMBERMAN_TRAINING_BUDGET",
             "BOMBERMAN_SAFETY_REPLAY_SPEC",
+            "BOMBERMAN_CAPTURE_ENVIRONMENT_SEED", "BOMBERMAN_CAPTURE_TASK_ID",
         )
     }
     try:
@@ -1015,6 +1230,10 @@ def run_agent_session(
             os.environ.pop("BOMBERMAN_CHECKPOINT", None)
         else:
             os.environ["BOMBERMAN_CHECKPOINT"] = str(checkpoint)
+        if init_checkpoint is None:
+            os.environ.pop("BOMBERMAN_INIT_CHECKPOINT", None)
+        else:
+            os.environ["BOMBERMAN_INIT_CHECKPOINT"] = str(init_checkpoint)
         os.environ["BOMBERMAN_CONFIG"] = str(config_path.resolve())
         os.environ["BOMBERMAN_RUN_DIR"] = str(output.resolve())
         os.environ["BOMBERMAN_RUN_ID"] = output.name
@@ -1038,6 +1257,13 @@ def run_agent_session(
             safety_replay_spec, sort_keys=True, separators=(",", ":"))
         os.environ["BOMBERMAN_TRAINING_BUDGET"] = json.dumps(
             action_budget_config, sort_keys=True, separators=(",", ":"))
+        if (os.getenv("BOMBERMAN_DISTILLATION_CAPTURE")
+                or os.getenv("BOMBERMAN_CNN_TEACHER_CAPTURE")):
+            os.environ["BOMBERMAN_CAPTURE_ENVIRONMENT_SEED"] = str(
+                seeds["environment_seed"])
+            os.environ["BOMBERMAN_CAPTURE_TASK_ID"] = str(
+                {"coin_navigation": 1, "crate_navigation": 2,
+                 "weak_opponents": 3, "full_match": 4}[task_name])
         # Task 1 isolates coin navigation. Keep its action space free of bombs
         # for both training and frozen evaluation so agents are compared under
         # the same curriculum constraint.
@@ -1073,6 +1299,8 @@ def run_agent_session(
             stage=f"{task_name}_{mode}",
             replay_policy=replay_policy,
             replay_interval=replay_interval,
+            # The path CNN owns an agent-local feature/checkpoint contract.
+            # It deliberately does not use shared exact-resume snapshots.
             snapshot_config=(
                 {
                     "algorithm": algorithm,
@@ -1083,11 +1311,15 @@ def run_agent_session(
                     "seed": seed,
                     "source_commit": source_commit,
                     "source_hash": source_hash,
+                    "source_hash_scope": SOURCE_HASH_SCOPE,
                     "task": task_name,
                     "performance_stopping": performance_stopping,
                     "performance_history": performance_history,
+                    "checkpoint_snapshot_interval": checkpoint_snapshot_interval,
                 }
-                if training else None
+                if training and agent not in {
+                    "cnn_path_double_dqn_agent", "cnn_distilled_double_dqn_agent",
+                } else None
             ),
             navigation_diagnostics=navigation_diagnostics,
         )
@@ -1280,6 +1512,11 @@ def _parser() -> argparse.ArgumentParser:
         help="Round-3 failure signal recorded in metadata; repeat as needed",
     )
     parser.add_argument("--opponents", nargs="*")
+    parser.add_argument(
+        "--task3-opponent-curriculum",
+        choices=("stationary", "moving", "standard"),
+        help="Preregistered Task 3 combat-only fallback stage",
+    )
     parser.add_argument("--checkpoint", type=Path)
     parser.add_argument(
         "--device", choices=("auto", "cpu", "cuda"),
@@ -1297,6 +1534,19 @@ def _parser() -> argparse.ArgumentParser:
     resume_group.add_argument(
         "--transfer-task3-safety-from", type=Path,
         help="Complete v7 Task 2 run transferred explicitly into a v11 Task 3 child",
+    )
+    resume_group.add_argument(
+        "--transfer-task3-from", type=Path,
+        help="Complete v7 Task 2 run explicitly transferred into a v11 phase agent",
+    )
+    parser.add_argument(
+        "--distillation-dataset", type=Path,
+        help="Optional Task 1/2 teacher dataset; otherwise use the parent-derived path",
+    )
+    parser.add_argument(
+        "--init-from-checkpoint", type=Path,
+        help=("Development-only neural warm start: load policy weights while "
+              "resetting optimizer, replay, epsilon, RNG, and round state"),
     )
     parser.add_argument(
         "--replay-policy", choices=("auto", *REPLAY_POLICIES), default="auto",
@@ -1321,7 +1571,11 @@ def main(argv: Sequence[str] | None = None) -> int:
         configured_seeds, configured_rounds = _configured_evaluation(
             json.loads(json.dumps(config))
         )
-        task_name, scenario, opponents = _task_settings(args.task, args.opponents)
+        if args.task3_opponent_curriculum is not None and args.mode != "train":
+            raise ValueError("Task 3 opponent curriculum is training-only")
+        task_name, scenario, opponents = _task_settings(
+            args.task, args.opponents,
+            task3_curriculum_stage=args.task3_opponent_curriculum)
         if args.mode == "train":
             if not agent_contract.trainable:
                 raise ValueError(f"Agent {args.agent!r} does not support training")
@@ -1331,15 +1585,20 @@ def main(argv: Sequence[str] | None = None) -> int:
                 checkpoint_name=_checkpoint_name,
                 run_session=run_agent_session,
                 source_commit=_source_commit(),
-                source_hash=_source_hash(),
+                source_hash=_source_hash(args.agent, args.config),
+                source_hash_scope=SOURCE_HASH_SCOPE,
             )
         else:
             if (args.resume_from is not None or args.migrate_resume_from is not None
-                    or args.transfer_task3_safety_from is not None):
+                    or args.transfer_task3_safety_from is not None
+                    or args.transfer_task3_from is not None):
                 raise ValueError("resume and migration options are only valid with --mode train")
             if args.adaptation_trigger:
                 raise ValueError(
                     "--adaptation-trigger is only valid with --mode train")
+            if args.init_from_checkpoint is not None:
+                raise ValueError(
+                    "--init-from-checkpoint is only valid with --mode train")
             run_evaluation_mode(
                 args, config, configured_seeds, configured_rounds,
                 task_name, scenario, opponents, project_root=PROJECT_ROOT,

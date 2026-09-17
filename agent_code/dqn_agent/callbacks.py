@@ -219,6 +219,8 @@ def setup(self):
 
 
 def act(self, game_state: dict) -> str:
+    from agent_code.learning_common.action_history import advance_observation
+    advance_observation(self, game_state)
     extracted = _features_for(self, game_state)
     features = extracted.vector
     legal = extracted.legal_mask.copy()

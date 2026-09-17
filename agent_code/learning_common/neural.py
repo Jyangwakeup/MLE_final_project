@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 from typing import Any
 
 import numpy as np
@@ -26,8 +27,15 @@ class DoubleDQNLearner:
     def __init__(self, policy: nn.Module, target: nn.Module, *, state_kind: str,
                  hyperparameters: dict[str, Any], seed: int):
         torch.manual_seed(seed)
-        torch.set_num_threads(1)
-        self.device = torch.device("cpu")
+        requested_device = os.getenv("BOMBERMAN_TORCH_DEVICE", "cpu")
+        self.device = torch.device(requested_device)
+        if self.device.type == "cuda" and not torch.cuda.is_available():
+            raise RuntimeError(
+                f"CUDA device {requested_device!r} was requested but is unavailable")
+        if self.device.type == "cpu":
+            torch.set_num_threads(1)
+        else:
+            torch.cuda.manual_seed_all(seed)
         self.policy = policy.to(self.device)
         self.target = target.to(self.device)
         self.target.load_state_dict(self.policy.state_dict())
@@ -113,8 +121,12 @@ class DoubleDQNLearner:
             "policy": self.policy.state_dict(), "target": self.target.state_dict(),
             "optimizer": self.optimizer.state_dict(), "replay": self.replay.state_dict(),
             "torch_rng_state": torch.get_rng_state(), "updates": self.updates,
-            "training_device_name": None,
+            "torch_cuda_rng_state_all": (
+                torch.cuda.get_rng_state_all() if self.device.type == "cuda" else None),
+            "training_device_name": (
+                torch.cuda.get_device_name(self.device) if self.device.type == "cuda" else None),
             "training_device_type": self.device.type,
+            "teacher": None,
         }
 
     def load_checkpoint(self, checkpoint: dict[str, Any], *, training: bool) -> None:
@@ -123,8 +135,20 @@ class DoubleDQNLearner:
         self.updates = int(checkpoint.get("updates", 0))
         if training:
             self.optimizer.load_state_dict(checkpoint["optimizer"])
+            for state in self.optimizer.state.values():
+                for key, value in state.items():
+                    if torch.is_tensor(value):
+                        state[key] = value.to(self.device)
             self.replay.load_state_dict(checkpoint["replay"])
             torch.set_rng_state(checkpoint["torch_rng_state"])
+            cuda_rng = checkpoint.get("torch_cuda_rng_state_all")
+            if self.device.type == "cuda" and cuda_rng is not None:
+                torch.cuda.set_rng_state_all(cuda_rng)
+
+    def load_policy_weights(self, checkpoint: dict[str, Any]) -> None:
+        """Warm-start from policy weights while retaining fresh training state."""
+        self.policy.load_state_dict(checkpoint["policy"])
+        self.target.load_state_dict(checkpoint["policy"])
 
 
 __all__ = ["DoubleDQNLearner", "Transition", "double_dqn_next_values"]

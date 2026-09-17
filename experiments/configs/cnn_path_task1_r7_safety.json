@@ -1,0 +1,32 @@
+{
+  "algorithm": "cnn_double_dqn",
+  "feature_id": null,
+  "feature_version": null,
+  "reward_id": "r7_safe_credit_sparse",
+  "reward_version": "r7_safe_credit_sparse",
+  "seed": null,
+  "checkpoint": null,
+  "safety": {
+    "version": "survival-mask-v1",
+    "mode": "all",
+    "horizon": 7,
+    "fallback": "physical_q"
+  },
+  "evaluation": {
+    "device": "cpu",
+    "navigation_diagnostics": true,
+    "seeds": [10001, 10002, 10003, 10004, 10005],
+    "n_rounds": 20
+  },
+  "training": {
+    "device": "auto",
+    "n_rounds": 500,
+    "exploration": {
+      "version": "linear-v1",
+      "start": 1.0,
+      "end": 0.05,
+      "decay_action_steps": 80000
+    },
+    "early_stopping": {"enabled": false}
+  }
+}

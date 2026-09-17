@@ -72,6 +72,8 @@ danger.shape = (HORIZON + 1, width, height)
 | `continuous-v2` | 历史感知 MLP Double DQN | vector 84 | 是 | 不兼容 |
 | `continuous-v2-legacy78` | 旧 Double DQN 冻结适配器 | vector 78 | 是 | 仅冻结加载 |
 | `continuous-v3` | Double DQN 安全特征消融 | vector 107 | 是 | v6 新谱系 |
+| `continuous-v4` | WAIT/周期历史 Double DQN | vector 126 | 是 | 与 v2/v3 不兼容 |
+| `continuous-v5` | 全局箱区与放弹目标恢复 Rainbow | vector 140 | 是 | 与 v4 不兼容 |
 | `board-v1` | CNN | board `12×W×H` | 主要为原始结构化通道 | 不兼容 |
 | `hybrid-v1` | CNN + MLP | board `12×W×H` + vector 70 | 两者组合 | 不兼容 |
 
@@ -150,6 +152,13 @@ crate_frontier_distance_delta, opponent_distance_delta
 前 70 维与 `continuous-v1` 完全一致，随后追加：上一动作的 7 类 one-hot（六动作及 none）、
 当前确定性 BFS 金币目标是否延续，以及六个候选动作是否会返回前一位置。历史值由 Agent
 回调提供；registry 的无历史直接调用使用 none/false，保持确定性和只读行为。
+
+## `continuous-phase-v1`：117 维局面阶段向量
+
+前84维严格保持 `continuous-v2`，随后保留 `continuous-v3` 的23项安全/自身炸弹事实，最后追加
+10项可观察局面事实：连续前中后期权重、箱子/对手消耗、相对最高存活对手分差、自身H=7
+机动性、最近对手接近度与机动性、后期机动性危机。Task 2迁移时新增33列权重为零，网络先保持
+父策略，再从Task 3交互和冻结教师事实学习这些新输入。
 
 ## `discrete-compact-v1`：12 个离散字段
 
