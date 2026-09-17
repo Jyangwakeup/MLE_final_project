@@ -1,0 +1,116 @@
+{
+  "partial": true,
+  "final_gate_evidence": false,
+  "recorded_at_utc": "2026-09-17T20:06:20.933146+00:00",
+  "source_worktree": "/export/data/sfan/MLE_final_project_safety",
+  "observations": {
+    "safety_retention_v6_task1_125c514": {
+      "counts": {
+        "decisions": 7624,
+        "placements": 0,
+        "pending": 0,
+        "physical_fallback": 0
+      },
+      "issues": []
+    },
+    "safety_retention_v6_task2_125c514": {
+      "counts": {
+        "decisions": 24000,
+        "placements": 2824,
+        "pending": 16866,
+        "physical_fallback": 0
+      },
+      "issues": []
+    },
+    "safety_retention_v6_task3_125c514": {
+      "counts": {
+        "decisions": 24000,
+        "placements": 2584,
+        "pending": 15350,
+        "physical_fallback": 0
+      },
+      "issues": []
+    },
+    "safety_v6_engineering_425f622": {
+      "counts": {
+        "decisions": 21632,
+        "placements": 2272,
+        "pending": 13525,
+        "physical_fallback": 26
+      },
+      "issues": []
+    },
+    "safety_stress_task1_4aa3812": {
+      "counts": {
+        "decisions": 12642,
+        "placements": 0,
+        "pending": 0,
+        "physical_fallback": 0
+      },
+      "issues": []
+    },
+    "safety_stress_task1_c8c9770": {
+      "counts": {
+        "decisions": 12365,
+        "placements": 0,
+        "pending": 0,
+        "physical_fallback": 0
+      },
+      "issues": []
+    },
+    "safety_stress_task2_4aa3812": {
+      "counts": {
+        "decisions": 40000,
+        "placements": 4717,
+        "pending": 28165,
+        "physical_fallback": 0
+      },
+      "issues": []
+    },
+    "safety_stress_task2_c8c9770": {
+      "counts": {
+        "decisions": 26208,
+        "placements": 3097,
+        "pending": 18488,
+        "physical_fallback": 0
+      },
+      "issues": []
+    },
+    "safety_stress_task3_4aa3812": {
+      "counts": {
+        "decisions": 39952,
+        "placements": 4219,
+        "pending": 25064,
+        "physical_fallback": 0
+      },
+      "issues": []
+    },
+    "safety_stress_task3_c8c9770": {
+      "counts": {
+        "decisions": 13600,
+        "placements": 1404,
+        "pending": 8349,
+        "physical_fallback": 0
+      },
+      "issues": []
+    },
+    "safety_stress_task4_4aa3812": {
+      "counts": {
+        "decisions": 34418,
+        "placements": 3579,
+        "pending": 21306,
+        "physical_fallback": 62
+      },
+      "issues": []
+    },
+    "safety_stress_task4_c8c9770": {
+      "counts": {
+        "decisions": 7740,
+        "placements": 807,
+        "pending": 4811,
+        "physical_fallback": 4
+      },
+      "issues": []
+    }
+  }
+}

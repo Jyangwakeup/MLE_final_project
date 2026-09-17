@@ -1,0 +1,21 @@
+..FF
+======================================================================
+FAIL: test_own_bomb_without_horizon_survivor_reports_loss (tests.test_pending_fallback_diagnostic.PendingFallbackDiagnosticTest)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/data/sfan/MLE_final_project_safety_diagnostics/tests/test_pending_fallback_diagnostic.py", line 30, in test_own_bomb_without_horizon_survivor_reports_loss
+    self.assertTrue(result.robust_guarantee_loss)
+AssertionError: False is not true
+
+======================================================================
+FAIL: test_visible_bomb_disappearance_during_flames_does_not_hide_loss (tests.test_pending_fallback_diagnostic.PendingFallbackDiagnosticTest)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/data/sfan/MLE_final_project_safety_diagnostics/tests/test_pending_fallback_diagnostic.py", line 41, in test_visible_bomb_disappearance_during_flames_does_not_hide_loss
+    self.assertTrue(result.robust_guarantee_loss)
+AssertionError: False is not true
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.004s
+
+FAILED (failures=2)
