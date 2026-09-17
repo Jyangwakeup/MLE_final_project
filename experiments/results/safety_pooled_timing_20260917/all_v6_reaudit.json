@@ -1,0 +1,27 @@
+{
+  "safety_retention_v6_task1_125c514": {
+    "act_count": 7624,
+    "pooled_p95": 0.008375811576843261,
+    "max": 0.012819290161132812
+  },
+  "safety_retention_v6_task2_125c514": {
+    "act_count": 24000,
+    "pooled_p95": 0.0070894241333007806,
+    "max": 0.012103557586669922
+  },
+  "safety_retention_v6_task3_125c514": {
+    "act_count": 24000,
+    "pooled_p95": 0.01617341041564941,
+    "max": 0.042359113693237305
+  },
+  "safety_v6_engineering_425f622": {
+    "act_count": 21632,
+    "pooled_p95": 0.051719164848327656,
+    "max": 0.2438490390777588
+  },
+  "safety_v6_regression_425f622": {
+    "act_count": 211,
+    "pooled_p95": 0.08721113204956055,
+    "max": 0.14873147010803223
+  }
+}
