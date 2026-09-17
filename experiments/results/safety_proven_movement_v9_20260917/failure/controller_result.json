@@ -1,0 +1,8 @@
+{
+  "status": "stopped_failure",
+  "source_commit": "008a99fc1fbfa3716d3a8447b0273824fed0295d",
+  "manifest_sha256": "86544d0fa6b632368bf8bba6c90bd3b27234818024d30cec51360fa988e1c55e",
+  "jobs": {},
+  "task4_qualified": false,
+  "error": "RuntimeError('Task 4 worker failed: 2')"
+}

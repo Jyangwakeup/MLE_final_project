@@ -1,0 +1,33 @@
+         359603 function calls in 0.632 seconds
+
+   Ordered by: cumulative time
+   List reduced from 100 to 25 due to restriction <25>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+        1    0.001    0.001    0.633    0.633 /export/data/sfan/MLE_final_project_safety_movement/agent_code/team_agent/controllable_survival.py:52(controllable_survival_actions)
+        4    0.008    0.002    0.632    0.158 /export/data/sfan/MLE_final_project_safety_movement/agent_code/team_agent/controllable_survival.py:203(action_winning)
+      576    0.430    0.001    0.587    0.001 /export/data/sfan/MLE_final_project_safety_movement/agent_code/team_agent/controllable_survival.py:78(abstract_feedback_winning)
+     4276    0.051    0.000    0.054    0.000 /export/data/sfan/MLE_final_project_safety_movement/agent_code/team_agent/danger.py:14(blast_coords)
+      288    0.000    0.000    0.039    0.000 /export/data/sfan/MLE_final_project_safety_movement/agent_code/team_agent/temporal_safety_features.py:125(temporal_maps)
+      288    0.001    0.000    0.039    0.000 /export/data/sfan/MLE_final_project_safety_movement/agent_code/team_agent/temporal_safety_features.py:115(_temporal_maps)
+        4    0.003    0.001    0.037    0.009 /export/data/sfan/MLE_final_project_safety_movement/agent_code/team_agent/opponent_transitions.py:200(enumerate_opponent_transition_scenarios)
+   234532    0.034    0.000    0.034    0.000 {method 'add' of 'set' objects}
+      288    0.002    0.000    0.021    0.000 /export/data/sfan/MLE_final_project_safety_movement/agent_code/team_agent/danger.py:50(predict_danger)
+     1224    0.005    0.000    0.016    0.000 /export/data/sfan/MLE_final_project_safety_movement/agent_code/team_agent/opponent_transitions.py:64(_state_key)
+      288    0.004    0.000    0.012    0.000 /export/data/sfan/MLE_final_project_safety_movement/agent_code/team_agent/danger.py:43(_mark_existing_explosions)
+      648    0.007    0.000    0.011    0.000 /export/data/sfan/MLE_final_project_safety_movement/agent_code/team_agent/opponent_transitions.py:81(_apply_action_phase)
+      288    0.003    0.000    0.010    0.000 /export/data/sfan/MLE_final_project_safety_movement/agent_code/team_agent/temporal_safety_features.py:85(_initial_blocked)
+      576    0.000    0.000    0.010    0.000 /export/data/sfan/MLE_final_project_safety_movement/agent_code/team_agent/opponent_transitions.py:76(canonical_state_key)
+      648    0.007    0.000    0.010    0.000 /export/data/sfan/MLE_final_project_safety_movement/agent_code/team_agent/opponent_transitions.py:119(_progress_world)
+      288    0.002    0.000    0.008    0.000 /export/data/sfan/miniforge3/envs/mle/lib/python3.10/site-packages/numpy/_core/numeric.py:591(argwhere)
+      288    0.000    0.000    0.006    0.000 /export/data/sfan/miniforge3/envs/mle/lib/python3.10/site-packages/numpy/lib/_stride_tricks_impl.py:367(broadcast_to)
+      240    0.003    0.000    0.006    0.000 /export/data/sfan/MLE_final_project_safety_movement/agent_code/team_agent/danger.py:32(_mark_bomb_danger)
+     2448    0.003    0.000    0.006    0.000 {built-in method builtins.sorted}
+      288    0.005    0.000    0.006    0.000 /export/data/sfan/miniforge3/envs/mle/lib/python3.10/site-packages/numpy/lib/_stride_tricks_impl.py:340(_broadcast_to)
+     4972    0.006    0.000    0.006    0.000 {built-in method numpy.asarray}
+      576    0.004    0.000    0.006    0.000 /export/data/sfan/MLE_final_project_safety_movement/agent_code/team_agent/opponent_transitions.py:171(_execution_orders)
+      576    0.001    0.000    0.006    0.000 /export/data/sfan/miniforge3/envs/mle/lib/python3.10/site-packages/numpy/_core/fromnumeric.py:51(_wrapfunc)
+     5184    0.006    0.000    0.006    0.000 {method 'update' of 'set' objects}
+      288    0.001    0.000    0.005    0.000 /export/data/sfan/MLE_final_project_safety_movement/agent_code/team_agent/temporal_safety_features.py:96(_mark_destroyed_crates)
+
+
