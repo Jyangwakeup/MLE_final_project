@@ -22,6 +22,7 @@ SUPPORTED = {
     "double_dqn_phase_agent",
     "cnn_double_dqn_agent", "hybrid_dueling_double_dqn_agent",
     "cnn_path_double_dqn_agent",
+    "cnn_distilled_double_dqn_agent",
 }
 
 

@@ -246,6 +246,29 @@ class SharedRewardTestCase(unittest.TestCase):
             actual, spec["step"] + spec["got_killed"]
             - _state_potential(state, spec))
 
+    def test_r7_potential_fills_visible_coin_shaping_gap(self):
+        old_state = make_state(position=(3, 3), coins=((5, 3),))
+        new_state = make_state(position=(4, 3), coins=((5, 3),))
+        sparse = reward_from_events(
+            [e.MOVED_RIGHT], "r7_safe_credit_sparse",
+            old_game_state=old_state, new_game_state=new_state)
+        potential = reward_from_events(
+            [e.MOVED_RIGHT], "r7_safe_credit_potential",
+            old_game_state=old_state, new_game_state=new_state)
+
+        self.assertAlmostEqual(sparse, -0.01)
+        self.assertGreater(potential, sparse)
+
+    def test_r7_potential_terminal_uses_zero_absorbing_state(self):
+        state = make_state(position=(3, 3), coins=((5, 3),))
+        spec = resolve_reward_spec("r7_safe_credit_potential")
+        actual = reward_from_events(
+            [e.GOT_KILLED], "r7_safe_credit_potential",
+            old_game_state=state, terminal=True)
+        self.assertAlmostEqual(
+            actual, spec["step"] + spec["got_killed"]
+            - _state_potential(state, spec))
+
     def test_r4_anti_oscillation_penalizes_only_flagged_reversal(self):
         old_state = make_state(position=(3, 3), coins=((8, 3),))
         new_state = make_state(position=(2, 3), coins=((8, 3),))
