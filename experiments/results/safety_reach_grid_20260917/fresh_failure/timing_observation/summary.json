@@ -1,0 +1,7 @@
+{
+  "source_commit": "d65cebc7095e82e21632094431d0acdf691e75f5",
+  "samples": 500,
+  "timeouts": 0,
+  "max_ms": 393.2127011939883,
+  "scope": "Repeated recorded state, CPU3, unchanged 400ms runtime safety budget; observational GC callback, not admission"
+}

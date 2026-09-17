@@ -1,0 +1,36 @@
+[
+  {
+    "name": "reference",
+    "ms": 721.1439972743392,
+    "result": {
+      "proven_actions": [
+        "RIGHT",
+        "LEFT",
+        "WAIT",
+        "BOMB"
+      ],
+      "scenarios_evaluated": 840,
+      "states_evaluated": 616094,
+      "timed_out": false,
+      "first_failing_profile": null,
+      "first_failing_order": null
+    }
+  },
+  {
+    "name": "current",
+    "ms": 280.09502962231636,
+    "result": {
+      "proven_actions": [
+        "RIGHT",
+        "LEFT",
+        "WAIT",
+        "BOMB"
+      ],
+      "scenarios_evaluated": 840,
+      "states_evaluated": 616094,
+      "timed_out": false,
+      "first_failing_profile": null,
+      "first_failing_order": null
+    }
+  }
+]
