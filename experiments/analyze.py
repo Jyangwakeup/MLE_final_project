@@ -36,6 +36,10 @@ SUMMARY_FIELDS = (
     "total_round_steps",
     "coins",
     "mean_coins",
+    "min_coins_per_round",
+    "max_coins_per_round",
+    "zero_coin_round_count",
+    "zero_coin_round_rate",
     "coins_per_100_steps",
     "steps_per_coin",
     "all_coins_count",
@@ -57,6 +61,9 @@ SUMMARY_FIELDS = (
     "crates",
     "mean_crates",
     "mean_bombs",
+    "zero_utility_bombs",
+    "zero_utility_bomb_rate",
+    "crates_per_bomb",
     "zero_bomb_round_rate",
     "bombs_resolved",
     "bombs_survived",
@@ -171,6 +178,14 @@ def _validate_episode(value: Any, path: Path, line_number: int) -> dict[str, Any
         _number(agent.get("score"), "agent.score", path, line_number)
         for metric in AGENT_METRICS:
             _number(agent.get(metric), f"agent.{metric}", path, line_number)
+        if "zero_utility_bombs" in agent:
+            zero_utility = _number(
+                agent["zero_utility_bombs"], "agent.zero_utility_bombs",
+                path, line_number)
+            if zero_utility < 0 or zero_utility > float(agent.get("bombs", 0)):
+                raise _invalid(
+                    path, line_number,
+                    "agent.zero_utility_bombs must be between zero and agent.bombs")
         survived = agent.get("survived")
         dead = agent.get("dead")
         if not isinstance(survived, bool) or not isinstance(dead, bool) or survived == dead:
@@ -378,6 +393,10 @@ def _summary_row(
     episode_count = len(samples)
     total_round_steps = sum(sample["round_steps"] for sample in samples)
     total_coins = sum(sample["coins"] for sample in samples)
+    total_bombs = sum(sample["bombs"] for sample in samples)
+    total_crates = sum(sample["crates"] for sample in samples)
+    total_zero_utility_bombs = sum(
+        sample["zero_utility_bombs"] for sample in samples)
     completion_steps = [
         sample["round_steps"] for sample in samples if sample["all_coins"]
     ]
@@ -407,6 +426,10 @@ def _summary_row(
         "total_round_steps": total_round_steps,
         "coins": total_coins,
         "mean_coins": total_coins / episode_count,
+        "min_coins_per_round": min(sample["coins"] for sample in samples),
+        "max_coins_per_round": max(sample["coins"] for sample in samples),
+        "zero_coin_round_count": sum(sample["coins"] == 0 for sample in samples),
+        "zero_coin_round_rate": mean(sample["coins"] == 0 for sample in samples),
         "coins_per_100_steps": 100.0 * total_coins / max(1.0, total_round_steps),
         "steps_per_coin": total_round_steps / total_coins if total_coins else None,
         "all_coins_count": sum(sample["all_coins"] for sample in samples),
@@ -429,9 +452,13 @@ def _summary_row(
         "suicide_rate": sum(sample["suicides"] for sample in samples) / episode_count,
         "killed_by_opponent": sum(sample["killed_by_opponent"] for sample in samples),
         "killed_by_opponent_rate": sum(sample["killed_by_opponent"] for sample in samples) / episode_count,
-        "crates": sum(sample["crates"] for sample in samples),
-        "mean_crates": sum(sample["crates"] for sample in samples) / episode_count,
-        "mean_bombs": sum(sample["bombs"] for sample in samples) / episode_count,
+        "crates": total_crates,
+        "mean_crates": total_crates / episode_count,
+        "mean_bombs": total_bombs / episode_count,
+        "zero_utility_bombs": total_zero_utility_bombs,
+        "zero_utility_bomb_rate": (
+            total_zero_utility_bombs / total_bombs if total_bombs else None),
+        "crates_per_bomb": total_crates / total_bombs if total_bombs else None,
         "zero_bomb_round_rate": mean(sample["bombs"] == 0 for sample in samples),
         "bombs_resolved": sum(sample["bombs_resolved"] for sample in samples),
         "bombs_survived": sum(sample["bombs_survived"] for sample in samples),
@@ -574,6 +601,8 @@ def summarize_runs(run_directories: Iterable[Path]) -> list[dict[str, Any]]:
                         "suicides": float(agent["suicides"]),
                         "crates": float(agent["crates"]),
                         "bombs": float(agent.get("bombs", 0)),
+                        "zero_utility_bombs": float(
+                            agent.get("zero_utility_bombs", 0)),
                         "bombs_resolved": float(agent.get("bombs_resolved", 0)),
                         "bombs_survived": float(agent.get("bombs_survived", 0)),
                         "invalid": float(agent["invalid"]),
@@ -695,6 +724,12 @@ def _average_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
         total_round_steps = sum(
             float(row["total_round_steps"]) for row in agent_rows)
         total_coins = sum(float(row["coins"]) for row in agent_rows)
+        total_bombs = sum(
+            float(row["mean_bombs"]) * float(row["episode_count"])
+            for row in agent_rows)
+        total_crates = sum(float(row["crates"]) for row in agent_rows)
+        total_zero_utility_bombs = sum(
+            float(row["zero_utility_bombs"]) for row in agent_rows)
         all_coins_count = sum(
             float(row["all_coins_count"]) for row in agent_rows)
         act_times = [row["act_mean_time"] for row in agent_rows if row["act_mean_time"] is not None]
@@ -715,6 +750,14 @@ def _average_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
                 "total_round_steps": total_round_steps,
                 "coins": total_coins,
                 "mean_coins": _weighted_mean(agent_rows, "mean_coins"),
+                "min_coins_per_round": min(
+                    float(row["min_coins_per_round"]) for row in agent_rows),
+                "max_coins_per_round": max(
+                    float(row["max_coins_per_round"]) for row in agent_rows),
+                "zero_coin_round_count": sum(
+                    float(row["zero_coin_round_count"]) for row in agent_rows),
+                "zero_coin_round_rate": _weighted_mean(
+                    agent_rows, "zero_coin_round_rate"),
                 "coins_per_100_steps": (
                     100.0 * total_coins / total_round_steps
                     if total_round_steps else None),
@@ -742,21 +785,23 @@ def _average_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
                 "suicide_rate": _weighted_mean(agent_rows, "suicide_rate"),
                 "killed_by_opponent": sum(float(row["killed_by_opponent"]) for row in agent_rows),
                 "killed_by_opponent_rate": _weighted_mean(agent_rows, "killed_by_opponent_rate"),
-                "crates": sum(float(row["crates"]) for row in agent_rows),
+                "crates": total_crates,
                 "mean_crates": _weighted_mean(agent_rows, "mean_crates"),
-                "mean_bombs": _weighted_mean(agent_rows, "mean_bombs"),
+                "mean_bombs": (
+                    total_bombs / sum(float(row["episode_count"]) for row in agent_rows)),
+                "zero_utility_bombs": total_zero_utility_bombs,
+                "zero_utility_bomb_rate": (
+                    total_zero_utility_bombs / total_bombs if total_bombs else None),
+                "crates_per_bomb": (
+                    total_crates / total_bombs if total_bombs else None),
                 "zero_bomb_round_rate": _weighted_mean(
                     agent_rows, "zero_bomb_round_rate"),
                 "bombs_resolved": sum(
                     float(row["bombs_resolved"]) for row in agent_rows),
                 "bombs_survived": sum(
                     float(row["bombs_survived"]) for row in agent_rows),
-                "survived_bomb_rate": (
-                    sum(float(row["bombs_survived"]) for row in agent_rows)
-                    / sum(float(row["bombs_resolved"]) for row in agent_rows)
-                    if sum(float(row["bombs_resolved"]) for row in agent_rows)
-                    else None
-                ),
+                "survived_bomb_rate": _weighted_mean(
+                    agent_rows, "survived_bomb_rate", "bombs_resolved"),
                 "crates_per_survived_bomb": (
                     sum(float(row["crates"]) for row in agent_rows)
                     / sum(float(row["bombs_survived"]) for row in agent_rows)

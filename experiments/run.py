@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import ast
 import csv
 import hashlib
 import importlib.metadata
@@ -52,6 +53,7 @@ from experiments.training import (
 )
 from main import world_controller
 from agent_code.team_agent.feature_system import ACTIONS, normalize_feature_id
+from agent_code.team_agent.feature_system.common import build_context
 from agent_code.team_agent.rewards import REWARD_VERSION, resolve_reward_spec
 from agent_code.team_agent.safety import resolve_safety_spec
 from experiments.agent_contracts import resolve_agent_contract
@@ -374,6 +376,16 @@ class ExperimentWorld(BombeRLeWorld):
                 agent.available_think_time += agent.base_timeout
                 action = "WAIT"
 
+            if action == "BOMB" and bool(states[agent.name]["self"][2]):
+                context = build_context(states[agent.name])
+                bomb = context.bomb_reachability
+                if (
+                    bomb is not None and bomb.survives_horizon
+                    and context.crates_in_blast == 0
+                    and context.opponents_in_blast == 0
+                ):
+                    agent.note_stat("zero_utility_bombs")
+
             self._append_timing(
                 agent,
                 action,
@@ -421,6 +433,8 @@ class ExperimentWorld(BombeRLeWorld):
                     "suicides": int(statistics.get("suicides", 0)),
                     "crates": int(statistics.get("crates", 0)),
                     "bombs": int(statistics.get("bombs", 0)),
+                    "zero_utility_bombs": int(
+                        statistics.get("zero_utility_bombs", 0)),
                     "bombs_resolved": int(statistics.get("bombs_resolved", 0)),
                     "bombs_survived": int(statistics.get("bombs_survived", 0)),
                     "invalid": int(statistics.get("invalid", 0)),
@@ -430,7 +444,9 @@ class ExperimentWorld(BombeRLeWorld):
                     "death_causes": death_causes,
                     "killed_by_self": killed_by_self or bool(suicides),
                     "killed_by_opponent": killed_by_opponent,
-                    "all_coins": int(statistics.get("coins", 0)) >= 50,
+                    "all_coins": int(statistics.get("coins", 0)) >= int(
+                        s.SCENARIOS[self.args.scenario]["COIN_COUNT"]
+                    ),
                     "max_steps": int(self.step) >= int(s.MAX_STEPS),
                     "longest_wait_streak": longest_wait,
                     "longest_ping_pong_streak": longest_ping_pong,
@@ -500,6 +516,7 @@ class ExperimentWorld(BombeRLeWorld):
                 early_stopping_rewards=[*inherited, *local_rewards],
                 source_commit=self._snapshot_config["source_commit"],
                 source_hash=self._snapshot_config["source_hash"],
+                source_hash_scope=self._snapshot_config.get("source_hash_scope"),
                 cumulative_completed_rounds=(
                     self._snapshot_config["parent_cumulative"] + len(local_rewards)
                 ),
@@ -550,14 +567,37 @@ def _source_commit() -> str | None:
     return result.stdout.strip() if result.returncode == 0 else None
 
 
-def _source_hash() -> str:
-    """Hash runtime Python/config sources, including uncommitted files."""
+SOURCE_HASH_SCOPE = "agent-runtime-v2"
+
+
+def _source_hash(agent: str | None = None, config_path: Path | None = None) -> str:
+    """Hash only sources that can affect the selected agent's run.
+
+    Calls without an agent retain the legacy repository-wide behavior used by
+    the explicit migration utilities.
+    """
     digest = hashlib.sha256()
-    roots = [PROJECT_ROOT / "agent_code", PROJECT_ROOT / "experiments"]
-    paths = [PROJECT_ROOT / name for name in ("agents.py", "environment.py", "items.py", "settings.py")]
-    for root in roots:
-        paths.extend(root.rglob("*.py"))
-        paths.extend(root.rglob("*.json"))
+    if agent is None:
+        roots = [PROJECT_ROOT / "experiments", PROJECT_ROOT / "agent_code"]
+        paths = [PROJECT_ROOT / name for name in ("agents.py", "environment.py", "items.py", "settings.py")]
+        for root in roots:
+            paths.extend(root.rglob("*.py"))
+            paths.extend(root.rglob("*.json"))
+    else:
+        seeds = [
+            PROJECT_ROOT / "experiments" / "run.py",
+            PROJECT_ROOT / "agents.py",
+            PROJECT_ROOT / "environment.py",
+            PROJECT_ROOT / "items.py",
+            PROJECT_ROOT / "settings.py",
+            *(PROJECT_ROOT / "agent_code" / agent).glob("*.py"),
+        ]
+        paths = list(_local_python_dependencies(seeds))
+    # Runtime source and experiment configuration are separate provenance
+    # contracts.  In particular, curriculum promotion necessarily changes the
+    # config path, while the executable agent code must remain unchanged.
+    if agent is None and config_path is not None:
+        paths.append(Path(config_path).resolve())
     for path in sorted({item for item in paths if item.is_file()}):
         if "__pycache__" in path.parts:
             continue
@@ -566,6 +606,36 @@ def _source_hash() -> str:
         digest.update(relative)
         digest.update(path.read_bytes())
     return digest.hexdigest()
+
+
+def _local_python_dependencies(seeds: Sequence[Path]) -> set[Path]:
+    """Return the static local-import closure for the supplied entry points."""
+    pending = [Path(path).resolve() for path in seeds]
+    found: set[Path] = set()
+    while pending:
+        path = pending.pop()
+        if path in found or not path.is_file() or PROJECT_ROOT not in path.parents:
+            continue
+        found.add(path)
+        try:
+            tree = ast.parse(path.read_text(encoding="utf-8"))
+        except (OSError, SyntaxError, UnicodeDecodeError):
+            continue
+        modules: set[str] = set()
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Import):
+                modules.update(alias.name for alias in node.names)
+            elif isinstance(node, ast.ImportFrom) and node.level == 0 and node.module:
+                modules.add(node.module)
+        for module in modules:
+            base = PROJECT_ROOT.joinpath(*module.split("."))
+            candidate = base.with_suffix(".py")
+            if candidate.is_file():
+                pending.append(candidate)
+            initializer = base / "__init__.py"
+            if initializer.is_file():
+                pending.append(initializer)
+    return found
 
 
 def _evaluation_seeds(experiment_seed: int) -> dict[str, int]:
@@ -968,8 +1038,9 @@ def run_agent_session(
     seeds = _training_seeds(seed) if training else _evaluation_seeds(seed)
     metadata = _initial_metadata(config_path, mode, output.name, seeds)
     source_commit = metadata["source_commit"]
-    source_hash = _source_hash()
+    source_hash = _source_hash(agent, config_path)
     metadata["source_hash"] = source_hash
+    metadata["source_hash_scope"] = SOURCE_HASH_SCOPE
     expanded["algorithm"] = algorithm
     expanded["feature_id"] = contract.feature_id
     expanded["feature_version"] = (
@@ -1176,6 +1247,7 @@ def run_agent_session(
                     "seed": seed,
                     "source_commit": source_commit,
                     "source_hash": source_hash,
+                    "source_hash_scope": SOURCE_HASH_SCOPE,
                     "task": task_name,
                     "performance_stopping": performance_stopping,
                     "performance_history": performance_history,
@@ -1444,7 +1516,8 @@ def main(argv: Sequence[str] | None = None) -> int:
                 checkpoint_name=_checkpoint_name,
                 run_session=run_agent_session,
                 source_commit=_source_commit(),
-                source_hash=_source_hash(),
+                source_hash=_source_hash(args.agent, args.config),
+                source_hash_scope=SOURCE_HASH_SCOPE,
             )
         else:
             if (args.resume_from is not None or args.migrate_resume_from is not None

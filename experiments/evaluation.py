@@ -8,6 +8,7 @@ from typing import Any, Callable, Sequence
 from experiments.devices import resolve_device
 from experiments.agent_contracts import resolve_agent_contract
 from experiments.progress_plugin import INLINE_PROGRESS
+import settings as s
 
 
 def run_multi_seed_evaluation(
@@ -52,13 +53,15 @@ def run_multi_seed_evaluation(
         "agent": agent,
         "checkpoint": None if checkpoint is None else str(checkpoint),
         "exploration_disabled": True,
-        "task1_metrics": {
-            "all_coins_target": 50,
+        "navigation_metrics": {
+            "all_coins_target": int(s.SCENARIOS[scenario]["COIN_COUNT"]),
             "long_loop_threshold_steps": 10,
             "max_round_steps": 400,
             "reported": [
-                "mean_coins", "all_coins_rate", "max_steps_rate",
+                "mean_coins", "min_coins_per_round", "max_coins_per_round",
+                "zero_coin_round_rate", "all_coins_rate", "max_steps_rate",
                 "long_wait_loop_rate", "long_ping_pong_loop_rate",
+                "zero_utility_bomb_rate", "crates_per_bomb",
                 "coins_per_100_steps", "steps_per_coin",
                 "mean_all_coins_completion_steps", "wait_action_rate",
                 "immediate_reverse_rate", "coin_distance_reducing_rate",
