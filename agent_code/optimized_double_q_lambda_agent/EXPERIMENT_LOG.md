@@ -18,10 +18,13 @@
 
 | Candidate | Slurm job | Status | Training steps | Best snapshot | All coins | Mean coins | Notes |
 |---|---|---|---:|---|---:|---:|---|
-| Single-table Q baseline | `472859` | pending | 100,000 | — | — | — | `discrete-q-v2 + r4_anti_oscillation` |
-| Watkins Double Q(lambda) | `472860` | pending | 100,000 | — | — | — | `continuous-v2 + r7_safe_credit_potential` |
+| Single-table Q baseline | `472859` | failed before training | 100,000 | — | — | — | Compute node lacks login venv's `/usr/local/bin/python3.10`; no transitions ran. |
+| Watkins Double Q(lambda) | `472860` | failed before training | 100,000 | — | — | — | Same environment issue; no transitions ran. |
 
 Each job saves a live checkpoint and immutable snapshots every 25k action steps, then
 runs the five-seed frozen development evaluation and writes
 `best_task1_selection.json`. Raw run directories, snapshot evaluation JSON, checkpoint
 SHA-256 and completed metrics are appended here after completion.
+
+The replacement submissions use the local, ignored `.venv-compute` environment,
+created from `/home/students/ji/.local/bin/python3.10` with the CPU dependencies.

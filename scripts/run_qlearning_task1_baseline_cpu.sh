@@ -12,7 +12,9 @@ cd /home/students/ji/mles
 export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1
 job_id="${SLURM_JOB_ID:?submit through sbatch}"
 run_id="qbaseline_t1_s11_j${job_id}"
-python_bin="/home/students/ji/mles/.venv/bin/python"
+# The login-node venv targets /usr/local/bin/python3.10, absent on compute nodes.
+# Create this local, compute-compatible venv with Python 3.10 before submitting.
+python_bin="/home/students/ji/mles/.venv-compute/bin/python"
 
 "${python_bin}" -m experiments.run \
   --config experiments/configs/q_learning_task1_baseline.json \
