@@ -1,0 +1,887 @@
+{
+  "scope": "Nonpending subset only; old pending records lack a recorded placement clock and are not guessed. One sample, exploratory safety_decision timing, not act admission.",
+  "results": [
+    {
+      "corpus": "task4_shared_parent_20260917",
+      "step": 38,
+      "ms": 57.39415064454079,
+      "timeout": false,
+      "mask": [
+        false,
+        true,
+        false,
+        false,
+        true,
+        true
+      ]
+    },
+    {
+      "corpus": "task4_shared_parent_20260917",
+      "step": 39,
+      "ms": 77.8012191876769,
+      "timeout": false,
+      "mask": [
+        false,
+        true,
+        false,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "corpus": "task4_shared_parent_20260917",
+      "step": 40,
+      "ms": 49.52659457921982,
+      "timeout": false,
+      "mask": [
+        false,
+        true,
+        false,
+        false,
+        true,
+        true
+      ]
+    },
+    {
+      "corpus": "task4_shared_parent_20260917",
+      "step": 47,
+      "ms": 105.21551501005888,
+      "timeout": false,
+      "mask": [
+        false,
+        true,
+        false,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "corpus": "task4_shared_parent_20260917",
+      "step": 48,
+      "ms": 52.55336780101061,
+      "timeout": false,
+      "mask": [
+        true,
+        true,
+        true,
+        false,
+        true,
+        true
+      ]
+    },
+    {
+      "corpus": "task4_shared_parent_20260917",
+      "step": 49,
+      "ms": 59.25554037094116,
+      "timeout": false,
+      "mask": [
+        true,
+        false,
+        true,
+        false,
+        true,
+        true
+      ]
+    },
+    {
+      "corpus": "task4_shared_parent_20260917",
+      "step": 50,
+      "ms": 62.59400490671396,
+      "timeout": false,
+      "mask": [
+        true,
+        true,
+        false,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "corpus": "task4_shared_parent_20260917",
+      "step": 51,
+      "ms": 237.2981207445264,
+      "timeout": false,
+      "mask": [
+        false,
+        true,
+        false,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "corpus": "task4_shared_parent_20260917",
+      "step": 52,
+      "ms": 104.57494761794806,
+      "timeout": false,
+      "mask": [
+        true,
+        true,
+        false,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "corpus": "task4_shared_parent_20260917",
+      "step": 53,
+      "ms": 61.63501553237438,
+      "timeout": false,
+      "mask": [
+        true,
+        true,
+        false,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "corpus": "task4_shared_parent_20260917",
+      "step": 54,
+      "ms": 42.45580732822418,
+      "timeout": false,
+      "mask": [
+        false,
+        true,
+        false,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "corpus": "task4_shared_parent_20260917",
+      "step": 55,
+      "ms": 218.21376401931047,
+      "timeout": false,
+      "mask": [
+        false,
+        true,
+        false,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "corpus": "task4_shared_parent_20260917",
+      "step": 56,
+      "ms": 61.77517678588629,
+      "timeout": false,
+      "mask": [
+        false,
+        true,
+        false,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "corpus": "order_equivalence_20260917",
+      "step": 76,
+      "ms": 87.84346841275692,
+      "timeout": false,
+      "mask": [
+        false,
+        true,
+        false,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "corpus": "order_equivalence_20260917",
+      "step": 77,
+      "ms": 141.66601840406656,
+      "timeout": false,
+      "mask": [
+        false,
+        true,
+        false,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "corpus": "order_equivalence_20260917",
+      "step": 78,
+      "ms": 40.57890735566616,
+      "timeout": false,
+      "mask": [
+        false,
+        true,
+        false,
+        false,
+        true,
+        true
+      ]
+    },
+    {
+      "corpus": "order_equivalence_20260917",
+      "step": 79,
+      "ms": 55.152466520667076,
+      "timeout": false,
+      "mask": [
+        false,
+        true,
+        false,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "corpus": "order_equivalence_20260917",
+      "step": 80,
+      "ms": 31.15167561918497,
+      "timeout": false,
+      "mask": [
+        false,
+        true,
+        false,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "corpus": "order_equivalence_20260917",
+      "step": 81,
+      "ms": 56.85387272387743,
+      "timeout": false,
+      "mask": [
+        false,
+        true,
+        false,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "corpus": "order_equivalence_20260917",
+      "step": 82,
+      "ms": 24.369213730096817,
+      "timeout": false,
+      "mask": [
+        false,
+        true,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "corpus": "order_equivalence_20260917",
+      "step": 83,
+      "ms": 57.61959310621023,
+      "timeout": false,
+      "mask": [
+        false,
+        true,
+        false,
+        false,
+        true,
+        true
+      ]
+    },
+    {
+      "corpus": "order_equivalence_20260917",
+      "step": 84,
+      "ms": 78.22160422801971,
+      "timeout": false,
+      "mask": [
+        false,
+        true,
+        false,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "corpus": "order_equivalence_20260917",
+      "step": 85,
+      "ms": 54.618099704384804,
+      "timeout": false,
+      "mask": [
+        false,
+        true,
+        false,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "corpus": "order_equivalence_20260917",
+      "step": 92,
+      "ms": 97.55443315953016,
+      "timeout": false,
+      "mask": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "corpus": "order_equivalence_20260917",
+      "step": 93,
+      "ms": 249.49288181960583,
+      "timeout": false,
+      "mask": [
+        false,
+        true,
+        false,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "corpus": "order_equivalence_20260917",
+      "step": 94,
+      "ms": 84.4798106700182,
+      "timeout": false,
+      "mask": [
+        true,
+        true,
+        true,
+        false,
+        true,
+        true
+      ]
+    },
+    {
+      "corpus": "viability_performance_20260917",
+      "step": 118,
+      "ms": 39.217403158545494,
+      "timeout": false,
+      "mask": [
+        true,
+        true,
+        false,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "corpus": "viability_performance_20260917",
+      "step": 119,
+      "ms": 154.00307159870863,
+      "timeout": false,
+      "mask": [
+        true,
+        false,
+        true,
+        false,
+        true,
+        true
+      ]
+    },
+    {
+      "corpus": "viability_performance_20260917",
+      "step": 126,
+      "ms": 26.010011322796345,
+      "timeout": false,
+      "mask": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "corpus": "viability_performance_20260917",
+      "step": 127,
+      "ms": 156.46119881421328,
+      "timeout": false,
+      "mask": [
+        false,
+        true,
+        false,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "corpus": "viability_performance_20260917",
+      "step": 128,
+      "ms": 129.4646766036749,
+      "timeout": false,
+      "mask": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "corpus": "viability_performance_20260917",
+      "step": 129,
+      "ms": 62.61456664651632,
+      "timeout": false,
+      "mask": [
+        false,
+        true,
+        false,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "corpus": "viability_performance_20260917",
+      "step": 130,
+      "ms": 136.2226689234376,
+      "timeout": false,
+      "mask": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "corpus": "baseline_failure",
+      "step": 195,
+      "ms": 7.977396249771118,
+      "timeout": false,
+      "mask": [
+        true,
+        false,
+        true,
+        false,
+        true,
+        false
+      ]
+    },
+    {
+      "corpus": "baseline_failure",
+      "step": 202,
+      "ms": 6.443220190703869,
+      "timeout": false,
+      "mask": [
+        true,
+        false,
+        true,
+        true,
+        true,
+        false
+      ]
+    },
+    {
+      "corpus": "baseline_failure",
+      "step": 203,
+      "ms": 4.219874739646912,
+      "timeout": false,
+      "mask": [
+        true,
+        false,
+        true,
+        false,
+        true,
+        false
+      ]
+    },
+    {
+      "corpus": "baseline_failure",
+      "step": 204,
+      "ms": 5.407198332250118,
+      "timeout": false,
+      "mask": [
+        true,
+        false,
+        true,
+        true,
+        true,
+        false
+      ]
+    },
+    {
+      "corpus": "baseline_failure",
+      "step": 205,
+      "ms": 14.920600689947605,
+      "timeout": false,
+      "mask": [
+        false,
+        false,
+        true,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "corpus": "baseline_failure",
+      "step": 206,
+      "ms": 6.505371071398258,
+      "timeout": false,
+      "mask": [
+        false,
+        false,
+        true,
+        false,
+        true,
+        false
+      ]
+    },
+    {
+      "corpus": "baseline_failure",
+      "step": 207,
+      "ms": 4.682489670813084,
+      "timeout": false,
+      "mask": [
+        true,
+        false,
+        false,
+        false,
+        true,
+        false
+      ]
+    },
+    {
+      "corpus": "baseline_failure",
+      "step": 208,
+      "ms": 0.5344254896044731,
+      "timeout": false,
+      "mask": [
+        false,
+        false,
+        false,
+        false,
+        true,
+        false
+      ]
+    },
+    {
+      "corpus": "round2_failure",
+      "step": 169,
+      "ms": 7.303859107196331,
+      "timeout": false,
+      "mask": [
+        true,
+        false,
+        false,
+        false,
+        true,
+        true
+      ]
+    },
+    {
+      "corpus": "round2_failure",
+      "step": 176,
+      "ms": 3.722270019352436,
+      "timeout": false,
+      "mask": [
+        true,
+        true,
+        true,
+        false,
+        true,
+        true
+      ]
+    },
+    {
+      "corpus": "round2_failure",
+      "step": 177,
+      "ms": 2.8593111783266068,
+      "timeout": false,
+      "mask": [
+        false,
+        true,
+        false,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "corpus": "round2_failure",
+      "step": 178,
+      "ms": 4.250026308000088,
+      "timeout": false,
+      "mask": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "corpus": "round2_failure",
+      "step": 179,
+      "ms": 3.7724506109952927,
+      "timeout": false,
+      "mask": [
+        true,
+        false,
+        true,
+        false,
+        true,
+        true
+      ]
+    },
+    {
+      "corpus": "round2_failure",
+      "step": 180,
+      "ms": 2.443966455757618,
+      "timeout": false,
+      "mask": [
+        true,
+        false,
+        true,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "corpus": "round2_failure",
+      "step": 181,
+      "ms": 3.1101247295737267,
+      "timeout": false,
+      "mask": [
+        false,
+        false,
+        true,
+        false,
+        true,
+        true
+      ]
+    }
+  ],
+  "skipped": [
+    [
+      "task4_shared_parent_20260917",
+      41
+    ],
+    [
+      "task4_shared_parent_20260917",
+      42
+    ],
+    [
+      "task4_shared_parent_20260917",
+      43
+    ],
+    [
+      "task4_shared_parent_20260917",
+      44
+    ],
+    [
+      "task4_shared_parent_20260917",
+      45
+    ],
+    [
+      "task4_shared_parent_20260917",
+      46
+    ],
+    [
+      "task4_shared_parent_20260917",
+      57
+    ],
+    [
+      "order_equivalence_20260917",
+      86
+    ],
+    [
+      "order_equivalence_20260917",
+      87
+    ],
+    [
+      "order_equivalence_20260917",
+      88
+    ],
+    [
+      "order_equivalence_20260917",
+      89
+    ],
+    [
+      "order_equivalence_20260917",
+      90
+    ],
+    [
+      "order_equivalence_20260917",
+      91
+    ],
+    [
+      "order_equivalence_20260917",
+      95
+    ],
+    [
+      "viability_performance_20260917",
+      112
+    ],
+    [
+      "viability_performance_20260917",
+      113
+    ],
+    [
+      "viability_performance_20260917",
+      114
+    ],
+    [
+      "viability_performance_20260917",
+      115
+    ],
+    [
+      "viability_performance_20260917",
+      116
+    ],
+    [
+      "viability_performance_20260917",
+      117
+    ],
+    [
+      "viability_performance_20260917",
+      120
+    ],
+    [
+      "viability_performance_20260917",
+      121
+    ],
+    [
+      "viability_performance_20260917",
+      122
+    ],
+    [
+      "viability_performance_20260917",
+      123
+    ],
+    [
+      "viability_performance_20260917",
+      124
+    ],
+    [
+      "viability_performance_20260917",
+      125
+    ],
+    [
+      "viability_performance_20260917",
+      131
+    ],
+    [
+      "baseline_failure",
+      190
+    ],
+    [
+      "baseline_failure",
+      191
+    ],
+    [
+      "baseline_failure",
+      192
+    ],
+    [
+      "baseline_failure",
+      193
+    ],
+    [
+      "baseline_failure",
+      194
+    ],
+    [
+      "baseline_failure",
+      196
+    ],
+    [
+      "baseline_failure",
+      197
+    ],
+    [
+      "baseline_failure",
+      198
+    ],
+    [
+      "baseline_failure",
+      199
+    ],
+    [
+      "baseline_failure",
+      200
+    ],
+    [
+      "baseline_failure",
+      201
+    ],
+    [
+      "baseline_failure",
+      209
+    ],
+    [
+      "round2_failure",
+      165
+    ],
+    [
+      "round2_failure",
+      166
+    ],
+    [
+      "round2_failure",
+      167
+    ],
+    [
+      "round2_failure",
+      168
+    ],
+    [
+      "round2_failure",
+      170
+    ],
+    [
+      "round2_failure",
+      171
+    ],
+    [
+      "round2_failure",
+      172
+    ],
+    [
+      "round2_failure",
+      173
+    ],
+    [
+      "round2_failure",
+      174
+    ],
+    [
+      "round2_failure",
+      175
+    ],
+    [
+      "round2_failure",
+      182
+    ],
+    [
+      "round2_failure",
+      183
+    ],
+    [
+      "round2_failure",
+      184
+    ]
+  ]
+}

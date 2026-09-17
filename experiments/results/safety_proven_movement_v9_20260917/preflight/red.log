@@ -1,0 +1,13 @@
+F
+======================================================================
+FAIL: test_recorded_trap_preserves_proven_alternatives (tests.test_proven_movement.ProvenMovementTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/data/sfan/MLE_final_project_safety_movement/tests/test_proven_movement.py", line 28, in test_recorded_trap_preserves_proven_alternatives
+    self.assertFalse(decision.mask[1], 'Unproved RIGHT must yield to proved movement')
+AssertionError: np.True_ is not false : Unproved RIGHT must yield to proved movement
+
+----------------------------------------------------------------------
+Ran 1 test in 0.003s
+
+FAILED (failures=1)

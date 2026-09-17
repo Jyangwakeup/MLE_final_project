@@ -1,0 +1,2562 @@
+[
+  {
+    "seed": 24011,
+    "step": 92,
+    "version": "v8",
+    "ms": 8.743814192712307,
+    "timeout": false,
+    "states": 21768,
+    "mask": [
+      true,
+      false,
+      false,
+      false,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24011,
+    "step": 92,
+    "version": "v9",
+    "ms": 6.933525204658508,
+    "timeout": false,
+    "states": 21768,
+    "mask": [
+      true,
+      false,
+      false,
+      false,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24011,
+    "step": 93,
+    "version": "v8",
+    "ms": 2.5350768119096756,
+    "timeout": false,
+    "states": 0,
+    "mask": [
+      false,
+      true,
+      true,
+      true,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24011,
+    "step": 93,
+    "version": "v9",
+    "ms": 2.4863872677087784,
+    "timeout": false,
+    "states": 0,
+    "mask": [
+      false,
+      true,
+      true,
+      true,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24011,
+    "step": 94,
+    "version": "v8",
+    "ms": 17.24158599972725,
+    "timeout": false,
+    "states": 10263,
+    "mask": [
+      true,
+      false,
+      true,
+      false,
+      true,
+      true
+    ]
+  },
+  {
+    "seed": 24011,
+    "step": 94,
+    "version": "v9",
+    "ms": 28.4808287397027,
+    "timeout": false,
+    "states": 41040,
+    "mask": [
+      true,
+      false,
+      true,
+      false,
+      true,
+      true
+    ]
+  },
+  {
+    "seed": 24011,
+    "step": 95,
+    "version": "v8",
+    "ms": 18.017823807895184,
+    "timeout": false,
+    "states": 13959,
+    "mask": [
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+    ]
+  },
+  {
+    "seed": 24011,
+    "step": 95,
+    "version": "v9",
+    "ms": 38.0044998601079,
+    "timeout": false,
+    "states": 47021,
+    "mask": [
+      false,
+      true,
+      false,
+      false,
+      true,
+      true
+    ]
+  },
+  {
+    "seed": 24011,
+    "step": 96,
+    "version": "v8",
+    "ms": 23.00865948200226,
+    "timeout": false,
+    "states": 15200,
+    "mask": [
+      false,
+      true,
+      false,
+      true,
+      true,
+      true
+    ]
+  },
+  {
+    "seed": 24011,
+    "step": 96,
+    "version": "v9",
+    "ms": 46.2091276422143,
+    "timeout": false,
+    "states": 47372,
+    "mask": [
+      false,
+      true,
+      false,
+      false,
+      true,
+      true
+    ]
+  },
+  {
+    "seed": 24011,
+    "step": 97,
+    "version": "v8",
+    "ms": 5.53395040333271,
+    "timeout": false,
+    "states": 2552,
+    "mask": [
+      false,
+      true,
+      false,
+      false,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24011,
+    "step": 97,
+    "version": "v9",
+    "ms": 26.672608219087124,
+    "timeout": false,
+    "states": 22542,
+    "mask": [
+      false,
+      true,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  {
+    "seed": 24011,
+    "step": 98,
+    "version": "v8",
+    "ms": 2.794770523905754,
+    "timeout": false,
+    "states": 851,
+    "mask": [
+      false,
+      true,
+      false,
+      false,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24011,
+    "step": 98,
+    "version": "v9",
+    "ms": 10.51891315728426,
+    "timeout": false,
+    "states": 6812,
+    "mask": [
+      false,
+      true,
+      false,
+      false,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24011,
+    "step": 99,
+    "version": "v8",
+    "ms": 2.2375239059329033,
+    "timeout": false,
+    "states": 895,
+    "mask": [
+      false,
+      false,
+      false,
+      true,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24011,
+    "step": 99,
+    "version": "v9",
+    "ms": 6.951634772121906,
+    "timeout": false,
+    "states": 5365,
+    "mask": [
+      false,
+      false,
+      false,
+      true,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24011,
+    "step": 100,
+    "version": "v8",
+    "ms": 12.488985434174538,
+    "timeout": false,
+    "states": 10517,
+    "mask": [
+      true,
+      true,
+      true,
+      false,
+      true,
+      true
+    ]
+  },
+  {
+    "seed": 24011,
+    "step": 100,
+    "version": "v9",
+    "ms": 26.38851385563612,
+    "timeout": false,
+    "states": 33131,
+    "mask": [
+      true,
+      false,
+      false,
+      false,
+      true,
+      true
+    ]
+  },
+  {
+    "seed": 24011,
+    "step": 101,
+    "version": "v8",
+    "ms": 2.548627555370331,
+    "timeout": false,
+    "states": 891,
+    "mask": [
+      true,
+      false,
+      false,
+      false,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24011,
+    "step": 101,
+    "version": "v9",
+    "ms": 9.294389747083187,
+    "timeout": false,
+    "states": 7190,
+    "mask": [
+      true,
+      false,
+      false,
+      false,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24011,
+    "step": 102,
+    "version": "v8",
+    "ms": 0.7213577628135681,
+    "timeout": false,
+    "states": 0,
+    "mask": [
+      false,
+      false,
+      false,
+      false,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24011,
+    "step": 102,
+    "version": "v9",
+    "ms": 2.1060938015580177,
+    "timeout": false,
+    "states": 919,
+    "mask": [
+      false,
+      false,
+      false,
+      false,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24011,
+    "step": 103,
+    "version": "v8",
+    "ms": 2.473137341439724,
+    "timeout": false,
+    "states": 899,
+    "mask": [
+      true,
+      false,
+      false,
+      false,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24011,
+    "step": 103,
+    "version": "v9",
+    "ms": 4.637029953300953,
+    "timeout": false,
+    "states": 2703,
+    "mask": [
+      true,
+      false,
+      false,
+      false,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24011,
+    "step": 104,
+    "version": "v8",
+    "ms": 0.7241982966661453,
+    "timeout": false,
+    "states": 0,
+    "mask": [
+      false,
+      false,
+      true,
+      false,
+      false,
+      false
+    ]
+  },
+  {
+    "seed": 24011,
+    "step": 104,
+    "version": "v9",
+    "ms": 2.1601133048534393,
+    "timeout": false,
+    "states": 897,
+    "mask": [
+      false,
+      false,
+      true,
+      false,
+      false,
+      false
+    ]
+  },
+  {
+    "seed": 24011,
+    "step": 105,
+    "version": "v8",
+    "ms": 22.617284208536148,
+    "timeout": false,
+    "states": 15938,
+    "mask": [
+      false,
+      false,
+      false,
+      false,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24011,
+    "step": 105,
+    "version": "v9",
+    "ms": 44.837163761258125,
+    "timeout": false,
+    "states": 31941,
+    "mask": [
+      false,
+      false,
+      false,
+      false,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24011,
+    "step": 106,
+    "version": "v8",
+    "ms": 2.63321865350008,
+    "timeout": false,
+    "states": 911,
+    "mask": [
+      true,
+      false,
+      false,
+      false,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24011,
+    "step": 106,
+    "version": "v9",
+    "ms": 12.33174279332161,
+    "timeout": false,
+    "states": 9019,
+    "mask": [
+      true,
+      false,
+      false,
+      false,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24011,
+    "step": 107,
+    "version": "v8",
+    "ms": 0.6498778238892555,
+    "timeout": false,
+    "states": 0,
+    "mask": [
+      false,
+      false,
+      false,
+      false,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24011,
+    "step": 107,
+    "version": "v9",
+    "ms": 2.8444407507777214,
+    "timeout": false,
+    "states": 891,
+    "mask": [
+      false,
+      false,
+      false,
+      false,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24011,
+    "step": 108,
+    "version": "v8",
+    "ms": 0.5930764600634575,
+    "timeout": false,
+    "states": 0,
+    "mask": [
+      false,
+      false,
+      false,
+      false,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24011,
+    "step": 108,
+    "version": "v9",
+    "ms": 0.5582356825470924,
+    "timeout": false,
+    "states": 0,
+    "mask": [
+      false,
+      false,
+      false,
+      false,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24011,
+    "step": 109,
+    "version": "v8",
+    "ms": 0.534694641828537,
+    "timeout": false,
+    "states": 0,
+    "mask": [
+      false,
+      false,
+      false,
+      false,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24011,
+    "step": 109,
+    "version": "v9",
+    "ms": 0.49550551921129227,
+    "timeout": false,
+    "states": 0,
+    "mask": [
+      false,
+      false,
+      false,
+      false,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24011,
+    "step": 110,
+    "version": "v8",
+    "ms": 0.4484150558710098,
+    "timeout": false,
+    "states": 0,
+    "mask": [
+      false,
+      false,
+      false,
+      false,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24011,
+    "step": 110,
+    "version": "v9",
+    "ms": 0.4375334829092026,
+    "timeout": false,
+    "states": 0,
+    "mask": [
+      false,
+      false,
+      false,
+      false,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24011,
+    "step": 111,
+    "version": "v8",
+    "ms": 0.3861039876937866,
+    "timeout": false,
+    "states": 0,
+    "mask": [
+      false,
+      false,
+      false,
+      false,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24011,
+    "step": 111,
+    "version": "v9",
+    "ms": 0.36579370498657227,
+    "timeout": false,
+    "states": 0,
+    "mask": [
+      false,
+      false,
+      false,
+      false,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24017,
+    "step": 180,
+    "version": "v8",
+    "ms": 8.048287592828274,
+    "timeout": false,
+    "states": 28422,
+    "mask": [
+      false,
+      true,
+      false,
+      true,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24017,
+    "step": 180,
+    "version": "v9",
+    "ms": 7.7916039153933525,
+    "timeout": false,
+    "states": 28422,
+    "mask": [
+      false,
+      true,
+      false,
+      true,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24017,
+    "step": 181,
+    "version": "v8",
+    "ms": 5.190606229007244,
+    "timeout": false,
+    "states": 9806,
+    "mask": [
+      false,
+      false,
+      false,
+      false,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24017,
+    "step": 181,
+    "version": "v9",
+    "ms": 5.1575955003499985,
+    "timeout": false,
+    "states": 9806,
+    "mask": [
+      false,
+      false,
+      false,
+      false,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24017,
+    "step": 182,
+    "version": "v8",
+    "ms": 3.939061425626278,
+    "timeout": false,
+    "states": 12172,
+    "mask": [
+      false,
+      true,
+      false,
+      false,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24017,
+    "step": 182,
+    "version": "v9",
+    "ms": 3.932473249733448,
+    "timeout": false,
+    "states": 12172,
+    "mask": [
+      false,
+      true,
+      false,
+      false,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24017,
+    "step": 183,
+    "version": "v8",
+    "ms": 2.307935617864132,
+    "timeout": false,
+    "states": 0,
+    "mask": [
+      false,
+      true,
+      false,
+      true,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24017,
+    "step": 183,
+    "version": "v9",
+    "ms": 2.2720741108059883,
+    "timeout": false,
+    "states": 0,
+    "mask": [
+      false,
+      true,
+      false,
+      true,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24017,
+    "step": 184,
+    "version": "v8",
+    "ms": 13.306873850524426,
+    "timeout": false,
+    "states": 11161,
+    "mask": [
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+    ]
+  },
+  {
+    "seed": 24017,
+    "step": 184,
+    "version": "v9",
+    "ms": 27.257264591753483,
+    "timeout": false,
+    "states": 67151,
+    "mask": [
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+    ]
+  },
+  {
+    "seed": 24017,
+    "step": 185,
+    "version": "v8",
+    "ms": 17.431207932531834,
+    "timeout": false,
+    "states": 71004,
+    "mask": [
+      false,
+      true,
+      true,
+      true,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24017,
+    "step": 185,
+    "version": "v9",
+    "ms": 17.772531136870384,
+    "timeout": false,
+    "states": 71004,
+    "mask": [
+      false,
+      true,
+      true,
+      true,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24017,
+    "step": 186,
+    "version": "v8",
+    "ms": 8.372711017727852,
+    "timeout": false,
+    "states": 27201,
+    "mask": [
+      false,
+      true,
+      true,
+      true,
+      false,
+      false
+    ]
+  },
+  {
+    "seed": 24017,
+    "step": 186,
+    "version": "v9",
+    "ms": 8.180517703294754,
+    "timeout": false,
+    "states": 27201,
+    "mask": [
+      false,
+      true,
+      true,
+      true,
+      false,
+      false
+    ]
+  },
+  {
+    "seed": 24017,
+    "step": 187,
+    "version": "v8",
+    "ms": 5.026353523135185,
+    "timeout": false,
+    "states": 7675,
+    "mask": [
+      false,
+      true,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  {
+    "seed": 24017,
+    "step": 187,
+    "version": "v9",
+    "ms": 4.88264299929142,
+    "timeout": false,
+    "states": 7675,
+    "mask": [
+      false,
+      true,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  {
+    "seed": 24017,
+    "step": 188,
+    "version": "v8",
+    "ms": 4.351566545665264,
+    "timeout": false,
+    "states": 11848,
+    "mask": [
+      true,
+      false,
+      true,
+      false,
+      false,
+      false
+    ]
+  },
+  {
+    "seed": 24017,
+    "step": 188,
+    "version": "v9",
+    "ms": 4.422968253493309,
+    "timeout": false,
+    "states": 11848,
+    "mask": [
+      true,
+      false,
+      true,
+      false,
+      false,
+      false
+    ]
+  },
+  {
+    "seed": 24017,
+    "step": 189,
+    "version": "v8",
+    "ms": 5.077174864709377,
+    "timeout": false,
+    "states": 17080,
+    "mask": [
+      true,
+      false,
+      false,
+      false,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24017,
+    "step": 189,
+    "version": "v9",
+    "ms": 5.111745558679104,
+    "timeout": false,
+    "states": 17080,
+    "mask": [
+      true,
+      false,
+      false,
+      false,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24017,
+    "step": 190,
+    "version": "v8",
+    "ms": 2.4707159027457237,
+    "timeout": false,
+    "states": 0,
+    "mask": [
+      true,
+      false,
+      true,
+      false,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24017,
+    "step": 190,
+    "version": "v9",
+    "ms": 2.399914897978306,
+    "timeout": false,
+    "states": 0,
+    "mask": [
+      true,
+      false,
+      true,
+      false,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24017,
+    "step": 191,
+    "version": "v8",
+    "ms": 4.54011932015419,
+    "timeout": false,
+    "states": 959,
+    "mask": [
+      true,
+      true,
+      true,
+      true,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24017,
+    "step": 191,
+    "version": "v9",
+    "ms": 15.5414380133152,
+    "timeout": false,
+    "states": 12601,
+    "mask": [
+      true,
+      true,
+      true,
+      true,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24017,
+    "step": 192,
+    "version": "v8",
+    "ms": 8.272498846054077,
+    "timeout": false,
+    "states": 4916,
+    "mask": [
+      true,
+      true,
+      true,
+      true,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24017,
+    "step": 192,
+    "version": "v9",
+    "ms": 17.285706475377083,
+    "timeout": false,
+    "states": 21683,
+    "mask": [
+      true,
+      true,
+      true,
+      true,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24017,
+    "step": 193,
+    "version": "v8",
+    "ms": 6.178335286676884,
+    "timeout": false,
+    "states": 3002,
+    "mask": [
+      false,
+      false,
+      true,
+      false,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24017,
+    "step": 193,
+    "version": "v9",
+    "ms": 44.5777103304863,
+    "timeout": false,
+    "states": 35884,
+    "mask": [
+      false,
+      false,
+      true,
+      false,
+      false,
+      false
+    ]
+  },
+  {
+    "seed": 24017,
+    "step": 194,
+    "version": "v8",
+    "ms": 2.933742478489876,
+    "timeout": false,
+    "states": 1002,
+    "mask": [
+      false,
+      false,
+      true,
+      false,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24017,
+    "step": 194,
+    "version": "v9",
+    "ms": 6.5529607236385345,
+    "timeout": false,
+    "states": 4011,
+    "mask": [
+      false,
+      false,
+      true,
+      false,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24017,
+    "step": 195,
+    "version": "v8",
+    "ms": 5.306706763803959,
+    "timeout": false,
+    "states": 4014,
+    "mask": [
+      true,
+      true,
+      true,
+      false,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24017,
+    "step": 195,
+    "version": "v9",
+    "ms": 10.935918428003788,
+    "timeout": false,
+    "states": 17031,
+    "mask": [
+      true,
+      true,
+      true,
+      false,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24017,
+    "step": 196,
+    "version": "v8",
+    "ms": 3.0435631051659584,
+    "timeout": false,
+    "states": 977,
+    "mask": [
+      false,
+      true,
+      false,
+      true,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24017,
+    "step": 196,
+    "version": "v9",
+    "ms": 5.889813415706158,
+    "timeout": false,
+    "states": 3911,
+    "mask": [
+      false,
+      true,
+      false,
+      true,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24017,
+    "step": 197,
+    "version": "v8",
+    "ms": 3.139863722026348,
+    "timeout": false,
+    "states": 974,
+    "mask": [
+      false,
+      true,
+      false,
+      false,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24017,
+    "step": 197,
+    "version": "v9",
+    "ms": 5.8884527534246445,
+    "timeout": false,
+    "states": 2922,
+    "mask": [
+      false,
+      true,
+      false,
+      false,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24017,
+    "step": 198,
+    "version": "v8",
+    "ms": 0.5383864045143127,
+    "timeout": false,
+    "states": 0,
+    "mask": [
+      false,
+      false,
+      false,
+      true,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24017,
+    "step": 198,
+    "version": "v9",
+    "ms": 0.49832556396722794,
+    "timeout": false,
+    "states": 0,
+    "mask": [
+      false,
+      false,
+      false,
+      true,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24017,
+    "step": 199,
+    "version": "v8",
+    "ms": 0.3448342904448509,
+    "timeout": false,
+    "states": 0,
+    "mask": [
+      false,
+      true,
+      false,
+      true,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24017,
+    "step": 199,
+    "version": "v9",
+    "ms": 0.3637438639998436,
+    "timeout": false,
+    "states": 0,
+    "mask": [
+      false,
+      true,
+      false,
+      true,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24022,
+    "step": 89,
+    "version": "v8",
+    "ms": 7.681053131818771,
+    "timeout": false,
+    "states": 13778,
+    "mask": [
+      true,
+      false,
+      false,
+      false,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24022,
+    "step": 89,
+    "version": "v9",
+    "ms": 7.4545107781887054,
+    "timeout": false,
+    "states": 13778,
+    "mask": [
+      true,
+      false,
+      false,
+      false,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24022,
+    "step": 90,
+    "version": "v8",
+    "ms": 6.706242449581623,
+    "timeout": false,
+    "states": 14140,
+    "mask": [
+      true,
+      false,
+      false,
+      false,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24022,
+    "step": 90,
+    "version": "v9",
+    "ms": 6.71028159558773,
+    "timeout": false,
+    "states": 14140,
+    "mask": [
+      true,
+      false,
+      false,
+      false,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24022,
+    "step": 91,
+    "version": "v8",
+    "ms": 6.1190566048026085,
+    "timeout": false,
+    "states": 7366,
+    "mask": [
+      true,
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  {
+    "seed": 24022,
+    "step": 91,
+    "version": "v9",
+    "ms": 5.882564000785351,
+    "timeout": false,
+    "states": 7366,
+    "mask": [
+      true,
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  {
+    "seed": 24022,
+    "step": 92,
+    "version": "v8",
+    "ms": 3.478766418993473,
+    "timeout": false,
+    "states": 7068,
+    "mask": [
+      false,
+      true,
+      false,
+      true,
+      false,
+      false
+    ]
+  },
+  {
+    "seed": 24022,
+    "step": 92,
+    "version": "v9",
+    "ms": 3.4075062721967697,
+    "timeout": false,
+    "states": 7068,
+    "mask": [
+      false,
+      true,
+      false,
+      true,
+      false,
+      false
+    ]
+  },
+  {
+    "seed": 24022,
+    "step": 93,
+    "version": "v8",
+    "ms": 1.6181087121367455,
+    "timeout": false,
+    "states": 1629,
+    "mask": [
+      false,
+      false,
+      false,
+      false,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24022,
+    "step": 93,
+    "version": "v9",
+    "ms": 1.5845969319343567,
+    "timeout": false,
+    "states": 1629,
+    "mask": [
+      false,
+      false,
+      false,
+      false,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24022,
+    "step": 94,
+    "version": "v8",
+    "ms": 1.4785360544919968,
+    "timeout": false,
+    "states": 0,
+    "mask": [
+      false,
+      false,
+      false,
+      true,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24022,
+    "step": 94,
+    "version": "v9",
+    "ms": 1.4673667028546333,
+    "timeout": false,
+    "states": 0,
+    "mask": [
+      false,
+      false,
+      false,
+      true,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24022,
+    "step": 95,
+    "version": "v8",
+    "ms": 14.650518074631691,
+    "timeout": false,
+    "states": 11837,
+    "mask": [
+      false,
+      true,
+      true,
+      true,
+      true,
+      true
+    ]
+  },
+  {
+    "seed": 24022,
+    "step": 95,
+    "version": "v9",
+    "ms": 29.27937638014555,
+    "timeout": false,
+    "states": 60085,
+    "mask": [
+      false,
+      true,
+      true,
+      true,
+      true,
+      true
+    ]
+  },
+  {
+    "seed": 24022,
+    "step": 96,
+    "version": "v8",
+    "ms": 11.863037943840027,
+    "timeout": false,
+    "states": 9725,
+    "mask": [
+      false,
+      true,
+      false,
+      true,
+      true,
+      true
+    ]
+  },
+  {
+    "seed": 24022,
+    "step": 96,
+    "version": "v9",
+    "ms": 22.61834405362606,
+    "timeout": false,
+    "states": 39260,
+    "mask": [
+      false,
+      true,
+      false,
+      true,
+      true,
+      true
+    ]
+  },
+  {
+    "seed": 24022,
+    "step": 97,
+    "version": "v8",
+    "ms": 11.145110242068768,
+    "timeout": false,
+    "states": 9810,
+    "mask": [
+      false,
+      true,
+      true,
+      false,
+      true,
+      true
+    ]
+  },
+  {
+    "seed": 24022,
+    "step": 97,
+    "version": "v9",
+    "ms": 22.584563121199608,
+    "timeout": false,
+    "states": 39672,
+    "mask": [
+      false,
+      true,
+      true,
+      false,
+      true,
+      true
+    ]
+  },
+  {
+    "seed": 24022,
+    "step": 98,
+    "version": "v8",
+    "ms": 7.087566889822483,
+    "timeout": false,
+    "states": 4940,
+    "mask": [
+      false,
+      true,
+      false,
+      true,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24022,
+    "step": 98,
+    "version": "v9",
+    "ms": 25.618826039135456,
+    "timeout": false,
+    "states": 54917,
+    "mask": [
+      false,
+      true,
+      false,
+      true,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24022,
+    "step": 99,
+    "version": "v8",
+    "ms": 5.728541873395443,
+    "timeout": false,
+    "states": 4183,
+    "mask": [
+      false,
+      true,
+      true,
+      true,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24022,
+    "step": 99,
+    "version": "v9",
+    "ms": 11.837368831038475,
+    "timeout": false,
+    "states": 21079,
+    "mask": [
+      false,
+      true,
+      true,
+      true,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24022,
+    "step": 100,
+    "version": "v8",
+    "ms": 2.8582708910107613,
+    "timeout": false,
+    "states": 856,
+    "mask": [
+      true,
+      false,
+      true,
+      false,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24022,
+    "step": 100,
+    "version": "v9",
+    "ms": 5.245046690106392,
+    "timeout": false,
+    "states": 3439,
+    "mask": [
+      true,
+      false,
+      true,
+      false,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24022,
+    "step": 101,
+    "version": "v8",
+    "ms": 2.5426773354411125,
+    "timeout": false,
+    "states": 873,
+    "mask": [
+      true,
+      true,
+      true,
+      true,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24022,
+    "step": 101,
+    "version": "v9",
+    "ms": 5.857192911207676,
+    "timeout": false,
+    "states": 5228,
+    "mask": [
+      true,
+      true,
+      true,
+      true,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24022,
+    "step": 102,
+    "version": "v8",
+    "ms": 2.135832794010639,
+    "timeout": false,
+    "states": 866,
+    "mask": [
+      false,
+      true,
+      false,
+      true,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24022,
+    "step": 102,
+    "version": "v9",
+    "ms": 3.815270960330963,
+    "timeout": false,
+    "states": 3467,
+    "mask": [
+      false,
+      true,
+      false,
+      true,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24022,
+    "step": 103,
+    "version": "v8",
+    "ms": 2.2444045171141624,
+    "timeout": false,
+    "states": 848,
+    "mask": [
+      false,
+      true,
+      false,
+      true,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24022,
+    "step": 103,
+    "version": "v9",
+    "ms": 4.370966926217079,
+    "timeout": false,
+    "states": 3395,
+    "mask": [
+      false,
+      true,
+      false,
+      true,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24022,
+    "step": 104,
+    "version": "v8",
+    "ms": 2.132953144609928,
+    "timeout": false,
+    "states": 841,
+    "mask": [
+      false,
+      true,
+      false,
+      false,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24022,
+    "step": 104,
+    "version": "v9",
+    "ms": 3.6412887275218964,
+    "timeout": false,
+    "states": 2521,
+    "mask": [
+      false,
+      true,
+      false,
+      false,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24022,
+    "step": 105,
+    "version": "v8",
+    "ms": 0.8335886523127556,
+    "timeout": false,
+    "states": 0,
+    "mask": [
+      false,
+      true,
+      false,
+      false,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24022,
+    "step": 105,
+    "version": "v9",
+    "ms": 2.853991463780403,
+    "timeout": false,
+    "states": 1666,
+    "mask": [
+      false,
+      true,
+      false,
+      false,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24022,
+    "step": 106,
+    "version": "v8",
+    "ms": 0.7619578391313553,
+    "timeout": false,
+    "states": 0,
+    "mask": [
+      false,
+      true,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  {
+    "seed": 24022,
+    "step": 106,
+    "version": "v9",
+    "ms": 2.1534236147999763,
+    "timeout": false,
+    "states": 819,
+    "mask": [
+      false,
+      true,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  {
+    "seed": 24022,
+    "step": 107,
+    "version": "v8",
+    "ms": 0.6668968126177788,
+    "timeout": false,
+    "states": 0,
+    "mask": [
+      false,
+      true,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  {
+    "seed": 24022,
+    "step": 107,
+    "version": "v9",
+    "ms": 2.1452028304338455,
+    "timeout": false,
+    "states": 832,
+    "mask": [
+      false,
+      true,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  {
+    "seed": 24022,
+    "step": 108,
+    "version": "v8",
+    "ms": 0.39094407111406326,
+    "timeout": false,
+    "states": 0,
+    "mask": [
+      false,
+      false,
+      false,
+      true,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24022,
+    "step": 108,
+    "version": "v9",
+    "ms": 0.3510434180498123,
+    "timeout": false,
+    "states": 0,
+    "mask": [
+      false,
+      false,
+      false,
+      true,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24025,
+    "step": 176,
+    "version": "v8",
+    "ms": 9.61978267878294,
+    "timeout": false,
+    "states": 8270,
+    "mask": [
+      false,
+      true,
+      true,
+      true,
+      true,
+      true
+    ]
+  },
+  {
+    "seed": 24025,
+    "step": 176,
+    "version": "v9",
+    "ms": 19.28245835006237,
+    "timeout": false,
+    "states": 42086,
+    "mask": [
+      false,
+      true,
+      true,
+      true,
+      true,
+      true
+    ]
+  },
+  {
+    "seed": 24025,
+    "step": 177,
+    "version": "v8",
+    "ms": 7.101136259734631,
+    "timeout": false,
+    "states": 30064,
+    "mask": [
+      false,
+      true,
+      true,
+      true,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24025,
+    "step": 177,
+    "version": "v9",
+    "ms": 7.080645300447941,
+    "timeout": false,
+    "states": 30064,
+    "mask": [
+      false,
+      true,
+      true,
+      true,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24025,
+    "step": 178,
+    "version": "v8",
+    "ms": 5.265608429908752,
+    "timeout": false,
+    "states": 12444,
+    "mask": [
+      false,
+      true,
+      false,
+      false,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24025,
+    "step": 178,
+    "version": "v9",
+    "ms": 5.080994218587875,
+    "timeout": false,
+    "states": 12444,
+    "mask": [
+      false,
+      true,
+      false,
+      false,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24025,
+    "step": 179,
+    "version": "v8",
+    "ms": 10.74976660311222,
+    "timeout": false,
+    "states": 45648,
+    "mask": [
+      false,
+      true,
+      true,
+      false,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24025,
+    "step": 179,
+    "version": "v9",
+    "ms": 10.925647802650928,
+    "timeout": false,
+    "states": 45648,
+    "mask": [
+      false,
+      true,
+      true,
+      false,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24025,
+    "step": 180,
+    "version": "v8",
+    "ms": 4.325986839830875,
+    "timeout": false,
+    "states": 7465,
+    "mask": [
+      false,
+      true,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  {
+    "seed": 24025,
+    "step": 180,
+    "version": "v9",
+    "ms": 4.260975867509842,
+    "timeout": false,
+    "states": 7465,
+    "mask": [
+      false,
+      true,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  {
+    "seed": 24025,
+    "step": 181,
+    "version": "v8",
+    "ms": 2.7924198657274246,
+    "timeout": false,
+    "states": 8268,
+    "mask": [
+      false,
+      true,
+      true,
+      false,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24025,
+    "step": 181,
+    "version": "v9",
+    "ms": 2.7231303974986076,
+    "timeout": false,
+    "states": 8268,
+    "mask": [
+      false,
+      true,
+      true,
+      false,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24025,
+    "step": 182,
+    "version": "v8",
+    "ms": 2.018052153289318,
+    "timeout": false,
+    "states": 0,
+    "mask": [
+      false,
+      true,
+      true,
+      true,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24025,
+    "step": 182,
+    "version": "v9",
+    "ms": 1.9393609836697578,
+    "timeout": false,
+    "states": 0,
+    "mask": [
+      false,
+      true,
+      true,
+      true,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24025,
+    "step": 183,
+    "version": "v8",
+    "ms": 19.74546257406473,
+    "timeout": false,
+    "states": 14945,
+    "mask": [
+      true,
+      false,
+      true,
+      false,
+      true,
+      true
+    ]
+  },
+  {
+    "seed": 24025,
+    "step": 183,
+    "version": "v9",
+    "ms": 39.17423356324434,
+    "timeout": false,
+    "states": 59891,
+    "mask": [
+      true,
+      false,
+      true,
+      false,
+      true,
+      true
+    ]
+  },
+  {
+    "seed": 24025,
+    "step": 184,
+    "version": "v8",
+    "ms": 10.094269178807735,
+    "timeout": false,
+    "states": 9255,
+    "mask": [
+      false,
+      true,
+      true,
+      true,
+      true,
+      true
+    ]
+  },
+  {
+    "seed": 24025,
+    "step": 184,
+    "version": "v9",
+    "ms": 25.51460452377796,
+    "timeout": false,
+    "states": 46839,
+    "mask": [
+      false,
+      true,
+      true,
+      true,
+      true,
+      true
+    ]
+  },
+  {
+    "seed": 24025,
+    "step": 185,
+    "version": "v8",
+    "ms": 12.375122867524624,
+    "timeout": false,
+    "states": 41279,
+    "mask": [
+      false,
+      false,
+      true,
+      true,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24025,
+    "step": 185,
+    "version": "v9",
+    "ms": 12.32021301984787,
+    "timeout": false,
+    "states": 41279,
+    "mask": [
+      false,
+      false,
+      true,
+      true,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24025,
+    "step": 186,
+    "version": "v8",
+    "ms": 6.949024274945259,
+    "timeout": false,
+    "states": 18338,
+    "mask": [
+      false,
+      false,
+      false,
+      true,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24025,
+    "step": 186,
+    "version": "v9",
+    "ms": 7.186196744441986,
+    "timeout": false,
+    "states": 18338,
+    "mask": [
+      false,
+      false,
+      false,
+      true,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24025,
+    "step": 187,
+    "version": "v8",
+    "ms": 10.50302293151617,
+    "timeout": false,
+    "states": 45678,
+    "mask": [
+      false,
+      false,
+      true,
+      true,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24025,
+    "step": 187,
+    "version": "v9",
+    "ms": 10.860427282750607,
+    "timeout": false,
+    "states": 45678,
+    "mask": [
+      false,
+      false,
+      true,
+      true,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24025,
+    "step": 188,
+    "version": "v8",
+    "ms": 7.044145837426186,
+    "timeout": false,
+    "states": 19810,
+    "mask": [
+      false,
+      false,
+      true,
+      false,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24025,
+    "step": 188,
+    "version": "v9",
+    "ms": 6.836553104221821,
+    "timeout": false,
+    "states": 19810,
+    "mask": [
+      false,
+      false,
+      true,
+      false,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24025,
+    "step": 189,
+    "version": "v8",
+    "ms": 8.139238692820072,
+    "timeout": false,
+    "states": 41330,
+    "mask": [
+      true,
+      true,
+      true,
+      true,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24025,
+    "step": 189,
+    "version": "v9",
+    "ms": 8.306399919092655,
+    "timeout": false,
+    "states": 41330,
+    "mask": [
+      true,
+      true,
+      true,
+      true,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24025,
+    "step": 190,
+    "version": "v8",
+    "ms": 3.4445375204086304,
+    "timeout": false,
+    "states": 0,
+    "mask": [
+      false,
+      true,
+      false,
+      true,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24025,
+    "step": 190,
+    "version": "v9",
+    "ms": 3.555579110980034,
+    "timeout": false,
+    "states": 0,
+    "mask": [
+      false,
+      true,
+      false,
+      true,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24025,
+    "step": 191,
+    "version": "v8",
+    "ms": 3.3614961430430412,
+    "timeout": false,
+    "states": 1036,
+    "mask": [
+      false,
+      true,
+      false,
+      false,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24025,
+    "step": 191,
+    "version": "v9",
+    "ms": 5.83044346421957,
+    "timeout": false,
+    "states": 3108,
+    "mask": [
+      false,
+      true,
+      false,
+      false,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24025,
+    "step": 192,
+    "version": "v8",
+    "ms": 0.6795674562454224,
+    "timeout": false,
+    "states": 0,
+    "mask": [
+      false,
+      false,
+      false,
+      false,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24025,
+    "step": 192,
+    "version": "v9",
+    "ms": 0.597597099840641,
+    "timeout": false,
+    "states": 0,
+    "mask": [
+      false,
+      false,
+      false,
+      false,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24025,
+    "step": 193,
+    "version": "v8",
+    "ms": 2.255263738334179,
+    "timeout": false,
+    "states": 1020,
+    "mask": [
+      false,
+      true,
+      false,
+      false,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24025,
+    "step": 193,
+    "version": "v9",
+    "ms": 3.796091303229332,
+    "timeout": false,
+    "states": 3062,
+    "mask": [
+      false,
+      true,
+      false,
+      false,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24025,
+    "step": 194,
+    "version": "v8",
+    "ms": 0.49977563321590424,
+    "timeout": false,
+    "states": 0,
+    "mask": [
+      false,
+      false,
+      false,
+      false,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24025,
+    "step": 194,
+    "version": "v9",
+    "ms": 0.42574480175971985,
+    "timeout": false,
+    "states": 0,
+    "mask": [
+      false,
+      false,
+      false,
+      false,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24025,
+    "step": 195,
+    "version": "v8",
+    "ms": 0.35261455923318863,
+    "timeout": false,
+    "states": 0,
+    "mask": [
+      false,
+      true,
+      false,
+      false,
+      true,
+      false
+    ]
+  },
+  {
+    "seed": 24025,
+    "step": 195,
+    "version": "v9",
+    "ms": 0.35787466913461685,
+    "timeout": false,
+    "states": 0,
+    "mask": [
+      false,
+      true,
+      false,
+      false,
+      true,
+      false
+    ]
+  }
+]

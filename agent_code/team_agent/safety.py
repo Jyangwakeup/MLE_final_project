@@ -17,7 +17,9 @@ CONTROLLABLE_SAFETY_VERSION = "survival-mask-v5"
 CERTIFIED_PLACEMENT_SAFETY_VERSION = "survival-mask-v6"
 REARMING_SAFETY_VERSION = "survival-mask-v7"
 FIXED_DEADLINE_SAFETY_VERSION = "survival-mask-v8"
-REARMING_SAFETY_VERSIONS = {REARMING_SAFETY_VERSION, FIXED_DEADLINE_SAFETY_VERSION}
+PROVEN_MOVEMENT_SAFETY_VERSION = "survival-mask-v9"
+FIXED_DEADLINE_SAFETY_VERSIONS = {FIXED_DEADLINE_SAFETY_VERSION, PROVEN_MOVEMENT_SAFETY_VERSION}
+REARMING_SAFETY_VERSIONS = {REARMING_SAFETY_VERSION, *FIXED_DEADLINE_SAFETY_VERSIONS}
 CERTIFIED_PLACEMENT_SAFETY_VERSIONS = {CERTIFIED_PLACEMENT_SAFETY_VERSION, *REARMING_SAFETY_VERSIONS}
 CONTROLLABLE_SAFETY_VERSIONS = {CONTROLLABLE_SAFETY_VERSION, *CERTIFIED_PLACEMENT_SAFETY_VERSIONS}
 SAFETY_VERSION_V2 = "survival-mask-v2"
@@ -80,8 +82,10 @@ def resolve_safety_spec(
         }
     if version in REARMING_SAFETY_VERSIONS:
         required.add("opponent_rearming")
-    if version == FIXED_DEADLINE_SAFETY_VERSION:
+    if version in FIXED_DEADLINE_SAFETY_VERSIONS:
         required.add("proof_clock")
+    if version == PROVEN_MOVEMENT_SAFETY_VERSION:
+        required.add("nonpending_movement")
     if version == SAFETY_VERSION_V2:
         required.add("escape_area_fraction")
     if set(value) != required:
@@ -89,7 +93,7 @@ def resolve_safety_spec(
             "config.safety must contain exactly: " + ", ".join(sorted(required)))
     if version not in {
         SAFETY_VERSION, ROBUST_SAFETY_VERSION, OPPONENT_ROBUST_SAFETY_VERSION,
-        CONTROLLABLE_SAFETY_VERSION, CERTIFIED_PLACEMENT_SAFETY_VERSION, REARMING_SAFETY_VERSION, FIXED_DEADLINE_SAFETY_VERSION, SAFETY_VERSION_V2,
+        CONTROLLABLE_SAFETY_VERSION, CERTIFIED_PLACEMENT_SAFETY_VERSION, REARMING_SAFETY_VERSION, FIXED_DEADLINE_SAFETY_VERSION, PROVEN_MOVEMENT_SAFETY_VERSION, SAFETY_VERSION_V2,
     }:
         raise ValueError(f"Unsupported safety version: {value['version']!r}")
     if value["mode"] not in SAFETY_MODES:
@@ -133,7 +137,7 @@ def resolve_safety_spec(
             "opponent_action_space": "all_physical",
             "include_opponent_bombs": True,
             "execution_orders": "all",
-            "danger_interval": ("own_bomb_capacity_deadline" if version == FIXED_DEADLINE_SAFETY_VERSION
+            "danger_interval": ("own_bomb_capacity_deadline" if version in FIXED_DEADLINE_SAFETY_VERSIONS
                                 else "own_bomb_and_horizon" if version == REARMING_SAFETY_VERSION
                                 else "own_bomb_and_lingering"),
             "search_budget_ms": 400,
@@ -141,8 +145,10 @@ def resolve_safety_spec(
         }
         if version in REARMING_SAFETY_VERSIONS:
             expected["opponent_rearming"] = "possible_after_first_transition"
-        if version == FIXED_DEADLINE_SAFETY_VERSION:
+        if version in FIXED_DEADLINE_SAFETY_VERSIONS:
             expected["proof_clock"] = "recorded_placement_step"
+        if version == PROVEN_MOVEMENT_SAFETY_VERSION:
+            expected["nonpending_movement"] = "prefer_proven_actions"
         for field, expected_value in expected.items():
             if value[field] != expected_value:
                 raise ValueError(
@@ -326,7 +332,7 @@ def safety_decision(
         return SafetyDecision(
             physical, physical.copy(), False, False, (0,) * 6, (-1.0,) * 6)
     fixed_remaining = None
-    if spec["version"] == FIXED_DEADLINE_SAFETY_VERSION:
+    if spec["version"] in FIXED_DEADLINE_SAFETY_VERSIONS:
         fixed_remaining = fixed_deadline_remaining(
             game_state, own_bomb_state or {}, pending=own_bomb_pending,
             duration=int(spec["horizon"]))
@@ -366,7 +372,9 @@ def safety_decision(
                                  if index != bomb_index]
             placing_bomb = False
         else:
-            candidate_indices = [bomb_index] if base[bomb_index] else []
+            candidate_indices = (np.flatnonzero(base).tolist()
+                                 if spec["version"] == PROVEN_MOVEMENT_SAFETY_VERSION
+                                 else [bomb_index] if base[bomb_index] else [])
             placing_bomb = True
         candidates = tuple(ACTIONS[index] for index in candidate_indices)
         remaining = danger_interval_steps(
@@ -396,6 +404,19 @@ def safety_decision(
             else:
                 opponent_fallback = True
                 guarantee_loss = True
+        elif spec["version"] == PROVEN_MOVEMENT_SAFETY_VERSION:
+            robust = np.asarray([action in proven for action in ACTIONS], dtype=bool) & base
+            if robust.any():
+                selected = robust
+            else:
+                # No commitment exists outside own responsibility. Preserve
+                # learned fallback ranking, never certify an unproved bomb.
+                opponent_fallback = True
+                selected[bomb_index] = False
+                if not selected.any():
+                    selected = physical.copy()
+                    selected[bomb_index] = False
+                    physical_fallback = True
         else:
             safe_non_bomb = base.copy()
             safe_non_bomb[bomb_index] = False

@@ -1,0 +1,3 @@
+# Prefer proved actions outside own-bomb responsibility
+
+World 24025 step 189 admitted RIGHT outside own responsibility although the same rearming-aware solver proved UP, LEFT and WAIT and rejected RIGHT; the learner later died to an opponent bomb. Experimental v9 searches all current candidates in one shared 400ms search and lets the learned policy rank proved actions when any exist, otherwise explicitly records fallback while prohibiting unproved bombs; active own-bomb proofs retain v8's fixed deadline. This is an observation-level preference, not a new claim of persistent protection outside own responsibility, and requires new whole-game, timing and retention validation while the frozen v8 study and submitted archive remain unchanged.

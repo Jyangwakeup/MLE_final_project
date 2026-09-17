@@ -247,3 +247,7 @@ _Avoid_: Permanent disarmament, inferred bomb ownership
 **Fixed placement proof deadline**:
 The endpoint of the survival obligation established when an own bomb is selected, retained through subsequent observations until placement capacity returns. A new observation consumes the remaining interval rather than extending the original obligation.
 _Avoid_: Rolling placement guarantee, inferred placement clock
+
+**Proven movement preference**:
+A decision constraint that prefers actions with a completed opponent-contingent survival proof when such actions exist, including outside own-bomb responsibility. Its explicit fallback is not a survival guarantee or an ongoing placement obligation.
+_Avoid_: Guaranteed movement, unconditional safety
