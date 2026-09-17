@@ -50,11 +50,11 @@ def schema(board_shape=None) -> FeatureSchema:
 
 def extract(
     game_state, *, previous_action=None, previous_position=None,
-    previous_coin_target=None,
+    previous_coin_target=None, _context=None,
 ) -> VectorFeatures | None:
     if game_state is None:
         return None
-    context = build_context(game_state)
+    context = _context if _context is not None else build_context(game_state)
     base = build_v1(game_state, context)
     previous = np.zeros(7, dtype=np.float32)
     previous[ACTIONS.index(previous_action) if previous_action in ACTIONS else 6] = 1.0
@@ -71,4 +71,4 @@ def extract(
         base.vector, previous, np.asarray((target_continues,), dtype=np.float32),
         np.asarray(returns, dtype=np.float32),
     )).astype(np.float32, copy=False)
-    return VectorFeatures(FEATURE_ID, vector, base.legal_mask.copy())
+    return VectorFeatures(FEATURE_ID, vector, base.legal_mask.copy(), context)

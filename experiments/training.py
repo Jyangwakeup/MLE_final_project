@@ -28,6 +28,16 @@ from experiments.agent_contracts import resolve_agent_contract
 from agent_code.learning_common.training_spec import resolve_retention_spec
 
 
+def allowed_n_steps(algorithm: str) -> set[int]:
+    """Return replay horizons supported by a learning algorithm.
+
+    The distilled CNN uses a five-step variant in its Task 2 credit-assignment
+    ablation; the other current learners retain the established 1/4-step
+    contract.
+    """
+    return {1, 4, 5} if algorithm == "cnn_distilled_double_dqn" else {1, 4}
+
+
 DEFAULT_REPLAY_PROGRESS_PERCENT = 10
 DEFAULT_EARLY_STOPPING_CONFIG = {
     "enabled": True,
@@ -205,6 +215,7 @@ def run_training_mode(
     run_session: Callable,
     source_commit: str | None,
     source_hash: str,
+    source_hash_scope: str | None = None,
 ) -> Path:
     """Validate and execute the training-specific CLI branch."""
     if args.seeds is not None:
@@ -271,11 +282,6 @@ def run_training_mode(
             safe_exploration if configured_safety is None else None),
     )
     effective_safe_exploration = safety_spec["mode"] in {"exploration", "all"}
-    n_step = training.get("n_step", 1)
-    if n_step not in {1, 4}:
-        raise ValueError("config.training.n_step must be 1 or 4")
-    retention_spec = resolve_retention_spec(training.get("retention"))
-    adaptation_triggers = tuple(getattr(args, "adaptation_trigger", ()) or ())
     configured_id = getattr(args, "feature_id", None) or config.get("feature_id")
     configured_legacy = (
         None if getattr(args, "feature_id", None) is not None
@@ -286,10 +292,23 @@ def run_training_mode(
     )
     agent_contract = resolve_agent_contract(args.agent, requested_feature_id)
     algorithm = agent_contract.algorithm
+    n_step = training.get("n_step", 1)
+    supported_n_steps = allowed_n_steps(algorithm)
+    if n_step not in supported_n_steps:
+        values = ", ".join(str(value) for value in sorted(supported_n_steps))
+        raise ValueError(
+            f"config.training.n_step must be one of {values} for {algorithm}")
+    retention_spec = resolve_retention_spec(training.get("retention"))
+    adaptation_triggers = tuple(getattr(args, "adaptation_trigger", ()) or ())
     init_checkpoint = args.init_from_checkpoint
     if init_checkpoint is not None:
-        if algorithm not in {"dqn", "double_dqn", "cnn_distilled_double_dqn"}:
-            raise ValueError("--init-from-checkpoint only supports neural agents")
+        if algorithm not in {
+            "dqn", "double_dqn", "cnn_distilled_double_dqn", "rainbow_lite",
+            "expected_sarsa_lambda",
+        }:
+            raise ValueError(
+                "--init-from-checkpoint only supports neural agents and "
+                "expected_sarsa_lambda")
         init_checkpoint = Path(init_checkpoint).expanduser().resolve()
         if not init_checkpoint.is_file():
             raise FileNotFoundError(
@@ -363,6 +382,7 @@ def run_training_mode(
         "performance_stopping": performance_stopping,
         "source_commit": source_commit,
         "source_hash": source_hash,
+        "source_hash_scope": source_hash_scope,
         "network_spec": agent_contract.network_spec,
         "hyperparameters": agent_contract.hyperparameters,
         "transfer_contract": (
