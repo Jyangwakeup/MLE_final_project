@@ -9,3 +9,11 @@ Six targeted tests cover both historical failures, countdown and invisible flame
 Reproduce targeted checks with `python -m unittest tests.test_fixed_safety_deadline` from the repository root using the mle environment and CPU thread counts set to one.
 
 The two regressions completed 800 actions and 85 placements. Independent per-step clock and fallback auditing found no issues; world 24003 P95/max were 40.740/58.764ms and world 24266 17.396/28.279ms. These reused historical worlds are regression evidence only. Next, compare v5 and v8 over the registered 60 engineering worlds for each of Tasks 1–3; stop the candidate on any safety failure, and require all existing retention and engineering gates.
+
+## Completed paired retention at 5ff8d4c
+
+All 360 games completed and all existing gates passed. Task 1 score and Task 2 coins/crates retained 100%; Task 3 score/coins/crates retained 96.53%/99.65%/99.56%. Task 3 score difference was -0.2667 (paired 95% bootstrap interval [-0.5833, 0.0000]), kills -0.0500 ([-0.1167, 0.0000]); this is a small observed combat regression within the retention gate, not evidence of an improvement.
+
+The raw audit covered 5,398 candidate placements and 32,155 pending actions without clock/fallback/safety issues. Candidate Task 1/2/3 complete-act P95 was 8.455/7.252/20.812ms, maximum 11.466/151.887/59.335ms. Task 2/3 had zero self deaths and 100% bomb survival; all Task 3 games used bombs. Evidence and 10,000-sample paired bootstrap outputs are under `experiments/results/safety_fixed_deadline_v8_20260917/retention`.
+
+Next is a frozen Task 4 engineering sweep on reused diagnostic worlds 24000–24059, against three rule-based agents. It is neither formal training nor independent qualification. Keep the original parent checkpoint and submitted archive unchanged.
