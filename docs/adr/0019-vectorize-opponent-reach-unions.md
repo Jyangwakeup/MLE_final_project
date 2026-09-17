@@ -1,0 +1,3 @@
+# Compute opponent reach unions with equivalent grid expansion
+
+The v9 timeout profile showed that named Python reach sets dominated the shared action search. Because every name uses the same time-indexed blocked cells, neighbour expansion and intersection distribute over union, so two boolean frontiers preserve both the complete opponent union and the armed subset; named initialization is retained to preserve duplicate-name diagnostic semantics. Keep the complete action/actor set, proof intervals, counters and 400ms budget unchanged, and require comparison with the preserved named-set reference before running the optimized source under a new manifest identity.

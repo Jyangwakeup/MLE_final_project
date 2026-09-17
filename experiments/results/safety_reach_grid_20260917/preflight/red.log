@@ -1,0 +1,13 @@
+F
+======================================================================
+FAIL: test_complete_timeout_state_stays_within_existing_budget (tests.test_opponent_reach_grid.OpponentReachGridTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/data/sfan/MLE_final_project_safety_movement/tests/test_opponent_reach_grid.py", line 22, in test_complete_timeout_state_stays_within_existing_budget
+    self.assertFalse(result.timed_out)
+AssertionError: True is not false
+
+----------------------------------------------------------------------
+Ran 1 test in 0.404s
+
+FAILED (failures=1)

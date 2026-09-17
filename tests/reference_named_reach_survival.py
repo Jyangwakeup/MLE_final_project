@@ -1,3 +1,4 @@
+# Independent reference preserved from d205cfd before reach-grid optimization.
 """Finite-horizon adversarial viability for an own-bomb danger interval."""
 
 from __future__ import annotations
@@ -9,11 +10,11 @@ import numpy as np
 
 import settings as s
 
-from .opponent_transitions import (
+from agent_code.team_agent.opponent_transitions import (
     ACTIONS, canonical_state_key, enumerate_opponent_transition_scenarios,
 )
-from .danger import blast_coords
-from .temporal_safety_features import temporal_maps
+from agent_code.team_agent.danger import blast_coords
+from agent_code.team_agent.temporal_safety_features import temporal_maps
 
 
 class _BudgetExpired(RuntimeError):
@@ -47,42 +48,6 @@ def danger_interval_steps(own_bomb: dict, *, placing_bomb: bool) -> int:
         # in the official configuration.
         return 1
     return 0
-
-
-def _opponent_reach_masks(blocked, others, steps, consider_opponent_rearming):
-    """Exact union of named reach sets as two non-wrapping grid frontiers.
-
-    Every name uses the same transition mask, so neighbour expansion and
-    intersection distribute over union. Keep the named initialization to
-    preserve existing handling even if a diagnostic input repeats a name.
-    """
-    reach = np.zeros_like(blocked, dtype=bool)
-    armed = np.zeros_like(blocked, dtype=bool)
-    if not others:
-        return reach, armed
-    named = {str(other[0]): tuple(other[3]) for other in others}
-    armed_names = {str(other[0]) for other in others
-                   if consider_opponent_rearming or bool(other[2])}
-    for other in others:
-        reach[0][tuple(other[3])] = True
-        if consider_opponent_rearming or bool(other[2]):
-            armed[0][tuple(other[3])] = True
-    frontier = np.zeros((2, *blocked.shape[1:]), dtype=bool)
-    for name, position in named.items():
-        frontier[0][position] = True
-        if name in armed_names:
-            frontier[1][position] = True
-    for time_step in range(1, steps + 1):
-        following = frontier.copy()
-        following[:, 1:, :] |= frontier[:, :-1, :]
-        following[:, :-1, :] |= frontier[:, 1:, :]
-        following[:, :, 1:] |= frontier[:, :, :-1]
-        following[:, :, :-1] |= frontier[:, :, 1:]
-        following &= ~blocked[time_step]
-        reach[time_step] = following[0]
-        armed[time_step] = following[1]
-        frontier = following
-    return reach, armed
 
 
 def controllable_survival_actions(
@@ -151,10 +116,43 @@ def controllable_survival_actions(
             ):
                 blocked[:, position[0], position[1]] = False
 
-        # First-transition capacity remains factual; the optional rearming
-        # envelope permits every surviving opponent to recover afterwards.
-        opponent_reach, armed_reach = _opponent_reach_masks(
-            blocked, state["others"], steps, consider_opponent_rearming)
+        opponent_reach: list[set[tuple[int, int]]] = [
+            {tuple(other[3]) for other in state["others"]}
+        ]
+        armed_reach: list[set[tuple[int, int]]] = [
+            {tuple(other[3]) for other in state["others"]
+             if consider_opponent_rearming or bool(other[2])}
+        ]
+        # Public states do not expose bomb ownership or exact capacity release.
+        # The first transition used the real capacity; after it, every surviving
+        # opponent may recover. This over-approximates future bombs, including
+        # recovery when an old flame becomes harmless, rather than treating a
+        # currently disarmed opponent as permanently unable to place bombs.
+        armed_names = {str(other[0]) for other in state["others"]
+                       if consider_opponent_rearming or bool(other[2])}
+        named_reach = {
+            str(other[0]): {tuple(other[3])} for other in state["others"]
+        }
+        for time_step in range(1, steps + 1):
+            combined = set()
+            next_named = {}
+            for name, positions in named_reach.items():
+                following = set()
+                for x, y in positions:
+                    for dx, dy in ((0, 0), (0, -1), (1, 0), (0, 1), (-1, 0)):
+                        xx, yy = x + dx, y + dy
+                        if (0 <= xx < field.shape[0]
+                                and 0 <= yy < field.shape[1]
+                                and not blocked[time_step, xx, yy]):
+                            following.add((xx, yy))
+                next_named[name] = following
+                combined.update(following)
+            named_reach = next_named
+            opponent_reach.append(combined)
+            armed_reach.append(set().union(*(
+                named_reach[name] for name in armed_names
+                if name in named_reach
+            )) if armed_names else set())
 
         # An opponent may place its one available bomb at any reachable tile.
         # Unioning those blasts is deliberately stronger than the real game:
@@ -164,7 +162,7 @@ def controllable_survival_actions(
             explosion_time = placement_time + int(s.BOMB_TIMER)
             if explosion_time > steps:
                 continue
-            for position in np.argwhere(armed_reach[placement_time - 1]):
+            for position in armed_reach[placement_time - 1]:
                 for coordinate in blast_coords(field, position, s.BOMB_POWER):
                     robust_danger[explosion_time, coordinate[0], coordinate[1]] = True
                     if explosion_time + 1 <= steps:
@@ -174,13 +172,15 @@ def controllable_survival_actions(
 
         viable = np.zeros_like(robust_danger, dtype=bool)
         free_terminal = ~blocked[steps]
-        free_terminal &= ~opponent_reach[steps]
+        for position in opponent_reach[steps]:
+            free_terminal[position] = False
         viable[steps] = free_terminal & ~robust_danger[steps]
         examined = int(np.count_nonzero(viable[steps]))
         for time_step in range(steps - 1, -1, -1):
             free_now = ~blocked[time_step]
             if time_step:
-                free_now &= ~opponent_reach[time_step]
+                for position in opponent_reach[time_step]:
+                    free_now[position] = False
             allowed_now = free_now & ~robust_danger[time_step]
             # WAIT may remain on a cell even when entry is blocked next step;
             # movement must enter an unblocked next cell. Slice shifts preserve
