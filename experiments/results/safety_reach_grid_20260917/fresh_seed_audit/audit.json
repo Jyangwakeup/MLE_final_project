@@ -1,0 +1,91 @@
+{
+  "utc": "2026-09-17T21:48:57.060428+00:00",
+  "worktrees": [
+    "/export/data/sfan/MLE_final_project",
+    "/export/data/sfan/MLE_final_project_safety",
+    "/export/data/sfan/MLE_final_project_safety_diagnostics",
+    "/export/data/sfan/MLE_final_project_safety_metrics",
+    "/export/data/sfan/MLE_final_project_safety_movement",
+    "/export/data/sfan/MLE_final_project_task3_814173b",
+    "/export/data/sfan/MLE_final_project_task3_n5",
+    "/export/data/sfan/MLE_final_project_task3_v5",
+    "/export/data/sfan/MLE_final_project_task4",
+    "/export/data/sfan/MLE_final_project_task4_fast",
+    "/export/data/sfan/MLE_final_project_task4_orders",
+    "/export/data/sfan/MLE_final_project_task4_report"
+  ],
+  "files_scanned": 37307,
+  "source_records_sha256": "da5a0ed0703369c1f071007210add334eb3bb54f2753389edf5b8673a2f9cf22",
+  "used_seed_count": 3880,
+  "candidate_ranges": [
+    [
+      24300,
+      24399
+    ],
+    [
+      24400,
+      24499
+    ],
+    [
+      24500,
+      24599
+    ],
+    [
+      24600,
+      24699
+    ],
+    [
+      24700,
+      24799
+    ],
+    [
+      24800,
+      24899
+    ],
+    [
+      24900,
+      24999
+    ],
+    [
+      25000,
+      25099
+    ],
+    [
+      25100,
+      25199
+    ],
+    [
+      25200,
+      25299
+    ],
+    [
+      25300,
+      25399
+    ],
+    [
+      25500,
+      25599
+    ],
+    [
+      25600,
+      25699
+    ],
+    [
+      25700,
+      25799
+    ],
+    [
+      25800,
+      25899
+    ],
+    [
+      25900,
+      25999
+    ]
+  ],
+  "read_errors": [],
+  "sealed_range": [
+    20000,
+    20099
+  ]
+}

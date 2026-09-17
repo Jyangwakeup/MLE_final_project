@@ -1,0 +1,67 @@
+{
+  "completed": 60,
+  "actions": 22748,
+  "placements": 2441,
+  "pending_actions": 14526,
+  "issues": [],
+  "deaths": [
+    {
+      "seed": 24013,
+      "causes": [
+        {
+          "owner": "rule_based_agent_2",
+          "type": "opponent_bomb"
+        }
+      ],
+      "step": 143,
+      "self_death": false,
+      "last_action": "WAIT",
+      "pending_before": false,
+      "physical_fallback": true
+    },
+    {
+      "seed": 24022,
+      "causes": [
+        {
+          "owner": "rule_based_agent_1",
+          "type": "opponent_bomb"
+        }
+      ],
+      "step": 108,
+      "self_death": false,
+      "last_action": "LEFT",
+      "pending_before": false,
+      "physical_fallback": true
+    },
+    {
+      "seed": 24023,
+      "causes": [
+        {
+          "owner": "rule_based_agent_0",
+          "type": "opponent_bomb"
+        }
+      ],
+      "step": 88,
+      "self_death": false,
+      "last_action": "WAIT",
+      "pending_before": false,
+      "physical_fallback": true
+    },
+    {
+      "seed": 24058,
+      "causes": [
+        {
+          "owner": "rule_based_agent_0",
+          "type": "opponent_bomb"
+        }
+      ],
+      "step": 82,
+      "self_death": false,
+      "last_action": "DOWN",
+      "pending_before": false,
+      "physical_fallback": true
+    }
+  ],
+  "p95_ms": 71.94638252258301,
+  "max_ms": 363.2681369781494
+}

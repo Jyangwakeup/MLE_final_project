@@ -1,0 +1,46 @@
+[
+  {
+    "seed": 24023,
+    "death_step": 88,
+    "last_proof": {
+      "step": 76,
+      "action": "DOWN",
+      "own_pending": true,
+      "proof_endpoint_exclusive": 77
+    },
+    "death_before_endpoint": false
+  },
+  {
+    "seed": 24022,
+    "death_step": 108,
+    "last_proof": {
+      "step": 98,
+      "action": "RIGHT",
+      "own_pending": false,
+      "proof_endpoint_exclusive": 105
+    },
+    "death_before_endpoint": false
+  },
+  {
+    "seed": 24058,
+    "death_step": 82,
+    "last_proof": {
+      "step": 74,
+      "action": "UP",
+      "own_pending": false,
+      "proof_endpoint_exclusive": 81
+    },
+    "death_before_endpoint": false
+  },
+  {
+    "seed": 24013,
+    "death_step": 143,
+    "last_proof": {
+      "step": 135,
+      "action": "DOWN",
+      "own_pending": true,
+      "proof_endpoint_exclusive": 136
+    },
+    "death_before_endpoint": false
+  }
+]

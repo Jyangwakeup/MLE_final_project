@@ -21,3 +21,11 @@ All 360 games and all existing gates passed. Task1 score and Task2 coins/crates 
 The candidate raw audit covered 5,408 placements and 32,208 pending actions without clock, placement or selected-action proof inconsistencies. Candidate complete-act P95/max for Tasks1/2/3 were 9.135/13.931ms, 7.696/17.829ms and 23.515/54.831ms. All 180 pairs had matching world/opponent seeds, parent checkpoint and model identity; the registered parent SHA was rechecked. Task2/3 had zero self deaths and 100% bomb survival, and every Task3 game used bombs.
 
 The next frozen test reuses the registered 60 engineering worlds against three rule-based opponents. It is not formal training or independent confirmation/main validation, and any new engineering failure stops that run with evidence preserved.
+
+## Completed strong-opponent sweep at 3f67cbc
+
+All 60 registered engineering worlds passed the existing gates: mean score 3.7833, coins 2.7000, crates 33.8500, kills 0.2167, first-place rate 41.67%, zero self deaths, 100% bomb survival and no zero-bomb games. Complete-act P95/max were 71.946/363.268ms. Auditing 22,748 actions, 2,441 placements and 14,526 pending actions found no clock, selected-action proof or engineering inconsistencies.
+
+Opponent deaths fell from nine in v8 to four (24013, 24022, 24023, 24058), all outside own responsibility and after the last recorded proof endpoint. This does not prove those deaths globally unavoidable. Compared with v8 on the same worlds/opponent seeds, score changed by +0.2500 (paired 95% interval [-0.3333, 0.8500]), kills by +0.0667 ([-0.0500, 0.1833]), and survival by +0.0833 ([-0.0167, 0.1833]); these are engineering observations, not Task 4 qualification.
+
+Next test Tasks1–4 on the previously unused 24300–24399 engineering range, with four distinct physical cores and the same fail-fast gates. The scan covered all 12 worktrees and 37,307 JSON files with no read errors. The range remains engineering data, not an independent confirmation/main-validation claim, and 20000–20099 stays sealed.

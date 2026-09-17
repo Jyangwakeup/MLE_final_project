@@ -1,0 +1,171 @@
+{
+  "world": 24013,
+  "death_step": 143,
+  "own_placement_step": 129,
+  "own_capacity_restored_step": 136,
+  "first_nonpending_proof_fallback": 136,
+  "first_physical_fallback": 140,
+  "interpretation": "The placement obligation ended at observed capacity release 136. The opponent death occurred at 143 after nonpending proof fallback; this trace does not show abandonment of an active own-bomb proof or prove global unavoidability.",
+  "trace": [
+    {
+      "step": 124,
+      "action": "UP",
+      "pending": true,
+      "placed_step": 121,
+      "proof_fallback": false,
+      "physical_fallback": false
+    },
+    {
+      "step": 125,
+      "action": "UP",
+      "pending": true,
+      "placed_step": 121,
+      "proof_fallback": false,
+      "physical_fallback": false
+    },
+    {
+      "step": 126,
+      "action": "DOWN",
+      "pending": true,
+      "placed_step": 121,
+      "proof_fallback": false,
+      "physical_fallback": false
+    },
+    {
+      "step": 127,
+      "action": "DOWN",
+      "pending": true,
+      "placed_step": 121,
+      "proof_fallback": false,
+      "physical_fallback": false
+    },
+    {
+      "step": 128,
+      "action": "RIGHT",
+      "pending": false,
+      "placed_step": null,
+      "proof_fallback": false,
+      "physical_fallback": false
+    },
+    {
+      "step": 129,
+      "action": "BOMB",
+      "pending": false,
+      "placed_step": null,
+      "proof_fallback": false,
+      "physical_fallback": false
+    },
+    {
+      "step": 130,
+      "action": "RIGHT",
+      "pending": true,
+      "placed_step": 129,
+      "proof_fallback": false,
+      "physical_fallback": false
+    },
+    {
+      "step": 131,
+      "action": "UP",
+      "pending": true,
+      "placed_step": 129,
+      "proof_fallback": false,
+      "physical_fallback": false
+    },
+    {
+      "step": 132,
+      "action": "DOWN",
+      "pending": true,
+      "placed_step": 129,
+      "proof_fallback": false,
+      "physical_fallback": false
+    },
+    {
+      "step": 133,
+      "action": "DOWN",
+      "pending": true,
+      "placed_step": 129,
+      "proof_fallback": false,
+      "physical_fallback": false
+    },
+    {
+      "step": 134,
+      "action": "DOWN",
+      "pending": true,
+      "placed_step": 129,
+      "proof_fallback": false,
+      "physical_fallback": false
+    },
+    {
+      "step": 135,
+      "action": "DOWN",
+      "pending": true,
+      "placed_step": 129,
+      "proof_fallback": false,
+      "physical_fallback": false
+    },
+    {
+      "step": 136,
+      "action": "DOWN",
+      "pending": false,
+      "placed_step": null,
+      "proof_fallback": true,
+      "physical_fallback": false
+    },
+    {
+      "step": 137,
+      "action": "WAIT",
+      "pending": false,
+      "placed_step": null,
+      "proof_fallback": true,
+      "physical_fallback": false
+    },
+    {
+      "step": 138,
+      "action": "WAIT",
+      "pending": false,
+      "placed_step": null,
+      "proof_fallback": true,
+      "physical_fallback": false
+    },
+    {
+      "step": 139,
+      "action": "WAIT",
+      "pending": false,
+      "placed_step": null,
+      "proof_fallback": true,
+      "physical_fallback": false
+    },
+    {
+      "step": 140,
+      "action": "WAIT",
+      "pending": false,
+      "placed_step": null,
+      "proof_fallback": false,
+      "physical_fallback": true
+    },
+    {
+      "step": 141,
+      "action": "WAIT",
+      "pending": false,
+      "placed_step": null,
+      "proof_fallback": false,
+      "physical_fallback": true
+    },
+    {
+      "step": 142,
+      "action": "WAIT",
+      "pending": false,
+      "placed_step": null,
+      "proof_fallback": false,
+      "physical_fallback": true
+    },
+    {
+      "step": 143,
+      "action": "WAIT",
+      "pending": false,
+      "placed_step": null,
+      "proof_fallback": false,
+      "physical_fallback": true
+    }
+  ]
+}
