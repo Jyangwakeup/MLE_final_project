@@ -1,0 +1,195 @@
+{
+  "task1": {
+    "completed": 100,
+    "actions": 12809,
+    "placements": 0,
+    "pending_actions": 0,
+    "issues": [],
+    "deaths": [],
+    "p95_ms": 8.646011352539062,
+    "max_ms": 11.823654174804688
+  },
+  "task2": {
+    "completed": 100,
+    "actions": 40000,
+    "placements": 4672,
+    "pending_actions": 27915,
+    "issues": [],
+    "deaths": [],
+    "p95_ms": 7.451057434082031,
+    "max_ms": 164.82973098754883
+  },
+  "task3": {
+    "completed": 100,
+    "actions": 39928,
+    "placements": 4228,
+    "pending_actions": 25115,
+    "issues": [],
+    "deaths": [],
+    "p95_ms": 23.504257202148438,
+    "max_ms": 52.26922035217285
+  },
+  "task4": {
+    "completed": 84,
+    "actions": 30755,
+    "placements": 3269,
+    "pending_actions": 19474,
+    "issues": [],
+    "deaths": [
+      {
+        "seed": 24314,
+        "death_step": 107,
+        "causes": [
+          {
+            "owner": "rule_based_agent_2",
+            "type": "opponent_bomb"
+          }
+        ],
+        "self_death": false,
+        "pending_before": false,
+        "last_proof": {
+          "step": 98,
+          "action": "UP",
+          "pending": true,
+          "endpoint_exclusive": 99
+        },
+        "death_before_endpoint": false
+      },
+      {
+        "seed": 24335,
+        "death_step": 97,
+        "causes": [
+          {
+            "owner": "rule_based_agent_2",
+            "type": "opponent_bomb"
+          }
+        ],
+        "self_death": false,
+        "pending_before": false,
+        "last_proof": {
+          "step": 74,
+          "action": "RIGHT",
+          "pending": false,
+          "endpoint_exclusive": 81
+        },
+        "death_before_endpoint": false
+      },
+      {
+        "seed": 24342,
+        "death_step": 77,
+        "causes": [
+          {
+            "owner": "rule_based_agent_1",
+            "type": "opponent_bomb"
+          }
+        ],
+        "self_death": false,
+        "pending_before": false,
+        "last_proof": {
+          "step": 68,
+          "action": "LEFT",
+          "pending": false,
+          "endpoint_exclusive": 75
+        },
+        "death_before_endpoint": false
+      },
+      {
+        "seed": 24346,
+        "death_step": 93,
+        "causes": [
+          {
+            "owner": "rule_based_agent_0",
+            "type": "opponent_bomb"
+          }
+        ],
+        "self_death": false,
+        "pending_before": false,
+        "last_proof": {
+          "step": 86,
+          "action": "LEFT",
+          "pending": true,
+          "endpoint_exclusive": 87
+        },
+        "death_before_endpoint": false
+      },
+      {
+        "seed": 24354,
+        "death_step": 46,
+        "causes": [
+          {
+            "owner": "rule_based_agent_1",
+            "type": "opponent_bomb"
+          }
+        ],
+        "self_death": false,
+        "pending_before": false,
+        "last_proof": {
+          "step": 38,
+          "action": "RIGHT",
+          "pending": false,
+          "endpoint_exclusive": 45
+        },
+        "death_before_endpoint": false
+      },
+      {
+        "seed": 24361,
+        "death_step": 82,
+        "causes": [
+          {
+            "owner": "rule_based_agent_2",
+            "type": "opponent_bomb"
+          }
+        ],
+        "self_death": false,
+        "pending_before": false,
+        "last_proof": {
+          "step": 75,
+          "action": "LEFT",
+          "pending": true,
+          "endpoint_exclusive": 76
+        },
+        "death_before_endpoint": false
+      },
+      {
+        "seed": 24373,
+        "death_step": 78,
+        "causes": [
+          {
+            "owner": "rule_based_agent_0",
+            "type": "opponent_bomb"
+          }
+        ],
+        "self_death": false,
+        "pending_before": false,
+        "last_proof": {
+          "step": 67,
+          "action": "LEFT",
+          "pending": false,
+          "endpoint_exclusive": 74
+        },
+        "death_before_endpoint": false
+      },
+      {
+        "seed": 24375,
+        "death_step": 70,
+        "causes": [
+          {
+            "owner": "rule_based_agent_1",
+            "type": "opponent_bomb"
+          }
+        ],
+        "self_death": false,
+        "pending_before": false,
+        "last_proof": {
+          "step": 61,
+          "action": "UP",
+          "pending": true,
+          "endpoint_exclusive": 62
+        },
+        "death_before_endpoint": false
+      }
+    ],
+    "p95_ms": 72.5562572479248,
+    "max_ms": 315.57273864746094
+  }
+}

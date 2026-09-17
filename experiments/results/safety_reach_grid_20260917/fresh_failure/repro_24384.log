@@ -1,0 +1,67 @@
+[
+  {
+    "ms": 276.12029667943716,
+    "timeout": false,
+    "states": 616094,
+    "mask": [
+      false,
+      true,
+      false,
+      true,
+      true,
+      true
+    ]
+  },
+  {
+    "ms": 268.82429886609316,
+    "timeout": false,
+    "states": 616094,
+    "mask": [
+      false,
+      true,
+      false,
+      true,
+      true,
+      true
+    ]
+  },
+  {
+    "ms": 284.5694962888956,
+    "timeout": false,
+    "states": 616094,
+    "mask": [
+      false,
+      true,
+      false,
+      true,
+      true,
+      true
+    ]
+  },
+  {
+    "ms": 283.4021542221308,
+    "timeout": false,
+    "states": 616094,
+    "mask": [
+      false,
+      true,
+      false,
+      true,
+      true,
+      true
+    ]
+  },
+  {
+    "ms": 295.0197011232376,
+    "timeout": false,
+    "states": 616094,
+    "mask": [
+      false,
+      true,
+      false,
+      true,
+      true,
+      true
+    ]
+  }
+]
