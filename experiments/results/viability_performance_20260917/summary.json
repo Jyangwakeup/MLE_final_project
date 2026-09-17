@@ -1,0 +1,18 @@
+{
+  "status": "stopped_engineering_failure",
+  "source_commit": "1eaee8d",
+  "completed_diagnostic_rounds": 14,
+  "failure_round": 15,
+  "failure_step": 131,
+  "completed_diagnostic_seeds": [],
+  "formal_training_started": false,
+  "task4_qualified": false,
+  "raw_run": "/export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_20260917_A_a266e013_diag_s22422_c0020_1eaee8d",
+  "artifact_sha256": {
+    "runs/task4_viability_20260917_1eaee8d/result.json": "1e02e5d3f4ebf0509a74974075f330408680f7ba73c617226e5fd9dff94ea051",
+    "runs/task4_viability_20260917_A_a266e013_diag_s22422_c0020_1eaee8d/task4_safety_failure.json": "b1de3299d18969f535c711d00a395a3af61f50ad1818657e7e7769610117e06e",
+    "runs/task4_viability_20260917_A_a266e013_diag_s22422_c0020_1eaee8d/task4_failure_states.pkl": "70ab0141b27fea844d194a85fde60ae9ad6ba1ffa37d9479260666a39929a086",
+    "runs/task4_viability_20260917_A_a266e013_diag_s22422_c0020_1eaee8d/timing.jsonl": "e64d4444c958853f93b376eb0eda8fdad26ecce971ca7d025beae300996c85a8",
+    "runs/task4_viability_20260917_A_a266e013_diag_s22422_c0020_1eaee8d/checkpoints/final.pt": "e1c99f70a2e6f9fe67947f252072475d924521c5a18f1991e954ba0a36db831b"
+  }
+}

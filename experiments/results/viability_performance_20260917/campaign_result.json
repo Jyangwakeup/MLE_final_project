@@ -1,0 +1,20 @@
+{
+  "arms": {},
+  "config_sha256": {
+    "A": "64bdc80174f9f74e9eaf044feba57844bb1a8b29854405a85859e2475b4c12f9",
+    "B": "9a076908bd8e415aec58d4562e334f66bd3c87a61fbfc9ff7a581edfb3ec9620"
+  },
+  "diagnostics": {},
+  "error": "Safety failure: /export/data/sfan/MLE_final_project_task4_fast/runs/task4_viability_20260917_A_a266e013_diag_s22422_c0020_1eaee8d/task4_safety_failure.json",
+  "finished_at": "2026-09-17T20:02:55.826840+02:00",
+  "manifest_sha256": "a266e0136621030d9c1eb010efce067fd73e3b0c20c2b6340afe75da1c1c1cd4",
+  "opponent_hashes": {
+    "agent_code/coin_collector_agent/callbacks.py": "bb9007137dd89712c142b67ff8b26d81b075511e572ad334f94414d96eb40a9c",
+    "agent_code/peaceful_agent/callbacks.py": "db408b7c86d8d308e20b529da378c29a26deb11a34f4a2b69dd942491bc44d82",
+    "agent_code/rule_based_agent/callbacks.py": "78fae8121ffab5c849d69857aeaeabcee23e1015c923e5e701d9a2bce2c879f6"
+  },
+  "parent_sha256": "b0b9e7ae9cbefa6523ed01e1d7a6d474b90b6272f9de1706ee80f1f109cc803d",
+  "source_commit": "1eaee8deec5c00655a0bb0836e1af3d66b646514",
+  "status": "stopped_engineering_failure",
+  "task4_qualified": false
+}
