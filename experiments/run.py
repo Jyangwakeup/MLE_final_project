@@ -1122,7 +1122,8 @@ def run_agent_session(
             retention_spec, sort_keys=True, separators=(",", ":"))
         os.environ["BOMBERMAN_TRAINING_BUDGET"] = json.dumps(
             action_budget_config, sort_keys=True, separators=(",", ":"))
-        if os.getenv("BOMBERMAN_DISTILLATION_CAPTURE"):
+        if (os.getenv("BOMBERMAN_DISTILLATION_CAPTURE")
+                or os.getenv("BOMBERMAN_CNN_TEACHER_CAPTURE")):
             os.environ["BOMBERMAN_CAPTURE_ENVIRONMENT_SEED"] = str(
                 seeds["environment_seed"])
             os.environ["BOMBERMAN_CAPTURE_TASK_ID"] = str(
@@ -1179,7 +1180,9 @@ def run_agent_session(
                     "performance_stopping": performance_stopping,
                     "performance_history": performance_history,
                 }
-                if training and agent != "cnn_path_double_dqn_agent" else None
+                if training and agent not in {
+                    "cnn_path_double_dqn_agent", "cnn_distilled_double_dqn_agent",
+                } else None
             ),
             navigation_diagnostics=navigation_diagnostics,
         )

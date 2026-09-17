@@ -39,6 +39,8 @@ _NEW_AGENTS = {
     "double_q_agent", "double_dqn_continuous_v2_agent",
     "double_dqn_continuous_v3_agent",
     "cnn_path_double_dqn_agent",
+    "cnn_distilled_double_dqn_agent",
+    "cnn_distillation_teacher_agent",
     "double_dqn_phase_agent",
 }
 _BASELINE_FEATURE_IDS = {

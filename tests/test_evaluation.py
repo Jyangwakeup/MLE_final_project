@@ -32,6 +32,8 @@ def _agent(name, score, survived=True, **metrics):
         "suicides": metrics.get("suicides", 0),
         "crates": metrics.get("crates", 0),
         "bombs": metrics.get("bombs", 0),
+        "bombs_resolved": metrics.get("bombs_resolved", 0),
+        "bombs_survived": metrics.get("bombs_survived", 0),
         "invalid": metrics.get("invalid", 0),
         "survived": survived,
         "dead": not survived,
@@ -233,6 +235,28 @@ class ExperimentAnalysisTest(unittest.TestCase):
             self.assertEqual(float(average["median_score"]), 3.0)
             self.assertLess(float(average["mean_score_ci95_low"]), 4.0)
             self.assertGreater(float(average["mean_score_ci95_high"]), 4.0)
+
+    def test_bomb_metrics_are_aggregated_across_seed_runs(self):
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            runs = []
+            for index, (bombs, crates) in enumerate(((0, 0), (4, 6)), 1):
+                run_id = f"bomb-seed-{index}"
+                runs.append(self._write_run(
+                    temporary_directory, run_id,
+                    [_episode(run_id, 1, [_agent(
+                        "a", 0, bombs=bombs, bombs_resolved=bombs,
+                        bombs_survived=bombs, crates=crates)])],
+                ))
+            output = Path(temporary_directory) / "summary"
+            analyze_runs(runs, output)
+            with (output / "summary.csv").open(newline="", encoding="utf-8") as file:
+                average = list(csv.DictReader(file))[-1]
+            self.assertEqual(float(average["mean_bombs"]), 2.0)
+            self.assertEqual(float(average["zero_bomb_round_rate"]), 0.5)
+            self.assertEqual(float(average["bombs_resolved"]), 4.0)
+            self.assertEqual(float(average["bombs_survived"]), 4.0)
+            self.assertEqual(float(average["survived_bomb_rate"]), 1.0)
+            self.assertEqual(float(average["crates_per_survived_bomb"]), 1.5)
 
     def test_paired_evaluation_comparison_matches_environment_seeds(self):
         with tempfile.TemporaryDirectory() as temporary_directory:
