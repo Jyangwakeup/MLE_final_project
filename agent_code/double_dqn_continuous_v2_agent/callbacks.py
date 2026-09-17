@@ -19,7 +19,7 @@ from agent_code.learning_common.runtime import (
 )
 from agent_code.team_agent.exploration import epsilon_at
 from agent_code.team_agent.safety import (
-    CERTIFIED_PLACEMENT_SAFETY_VERSION, REARMING_SAFETY_VERSION, CONTROLLABLE_SAFETY_VERSION, OPPONENT_ROBUST_SAFETY_VERSION,
+    CERTIFIED_PLACEMENT_SAFETY_VERSION, REARMING_SAFETY_VERSION, FIXED_DEADLINE_SAFETY_VERSION, CONTROLLABLE_SAFETY_VERSION, OPPONENT_ROBUST_SAFETY_VERSION,
     ROBUST_SAFETY_VERSION,
     safety_decision, survival_diagnostics,
 )
@@ -282,7 +282,7 @@ def act(self, game_state):
     robust_intervention = bool(
         self.safety_spec["version"] in {
             ROBUST_SAFETY_VERSION, OPPONENT_ROBUST_SAFETY_VERSION,
-            CONTROLLABLE_SAFETY_VERSION, CERTIFIED_PLACEMENT_SAFETY_VERSION, REARMING_SAFETY_VERSION,
+            CONTROLLABLE_SAFETY_VERSION, CERTIFIED_PLACEMENT_SAFETY_VERSION, REARMING_SAFETY_VERSION, FIXED_DEADLINE_SAFETY_VERSION,
         }
         and not decision.robust_fallback and not decision.physical_fallback
         and decision.v1_mask[raw_index] and not legal[raw_index]
@@ -291,7 +291,7 @@ def act(self, game_state):
         self, "robust_safety_interventions", 0)) + int(robust_intervention)
     opponent_intervention = bool(
         self.safety_spec["version"] in {
-            OPPONENT_ROBUST_SAFETY_VERSION, CONTROLLABLE_SAFETY_VERSION, CERTIFIED_PLACEMENT_SAFETY_VERSION, REARMING_SAFETY_VERSION,
+            OPPONENT_ROBUST_SAFETY_VERSION, CONTROLLABLE_SAFETY_VERSION, CERTIFIED_PLACEMENT_SAFETY_VERSION, REARMING_SAFETY_VERSION, FIXED_DEADLINE_SAFETY_VERSION,
         }
         and not decision.opponent_fallback
         and decision.v1_mask[raw_index] and not legal[raw_index]
@@ -323,6 +323,7 @@ def act(self, game_state):
         "own_bomb_pending": bool(own_bomb["pending"]),
         "own_bomb_visible": bool(own_bomb["visible"]),
         "own_bomb_timer": own_bomb["timer"],
+        "own_bomb_placed_step": own_bomb["placed_step"],
         "avoidable_escape_collapse": collapse_now,
         "independent_routes": list(decision.route_counts),
         "escape_slack": list(decision.escape_slack),

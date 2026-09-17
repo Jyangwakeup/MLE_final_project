@@ -16,7 +16,9 @@ OPPONENT_ROBUST_SAFETY_VERSION = "survival-mask-v4"
 CONTROLLABLE_SAFETY_VERSION = "survival-mask-v5"
 CERTIFIED_PLACEMENT_SAFETY_VERSION = "survival-mask-v6"
 REARMING_SAFETY_VERSION = "survival-mask-v7"
-CERTIFIED_PLACEMENT_SAFETY_VERSIONS = {CERTIFIED_PLACEMENT_SAFETY_VERSION, REARMING_SAFETY_VERSION}
+FIXED_DEADLINE_SAFETY_VERSION = "survival-mask-v8"
+REARMING_SAFETY_VERSIONS = {REARMING_SAFETY_VERSION, FIXED_DEADLINE_SAFETY_VERSION}
+CERTIFIED_PLACEMENT_SAFETY_VERSIONS = {CERTIFIED_PLACEMENT_SAFETY_VERSION, *REARMING_SAFETY_VERSIONS}
 CONTROLLABLE_SAFETY_VERSIONS = {CONTROLLABLE_SAFETY_VERSION, *CERTIFIED_PLACEMENT_SAFETY_VERSIONS}
 SAFETY_VERSION_V2 = "survival-mask-v2"
 SAFETY_SPEC_ENV = "BOMBERMAN_SAFETY_SPEC"
@@ -76,8 +78,10 @@ def resolve_safety_spec(
             "execution_orders", "danger_interval", "search_budget_ms",
             "robust_fallback",
         }
-    if version == REARMING_SAFETY_VERSION:
+    if version in REARMING_SAFETY_VERSIONS:
         required.add("opponent_rearming")
+    if version == FIXED_DEADLINE_SAFETY_VERSION:
+        required.add("proof_clock")
     if version == SAFETY_VERSION_V2:
         required.add("escape_area_fraction")
     if set(value) != required:
@@ -85,7 +89,7 @@ def resolve_safety_spec(
             "config.safety must contain exactly: " + ", ".join(sorted(required)))
     if version not in {
         SAFETY_VERSION, ROBUST_SAFETY_VERSION, OPPONENT_ROBUST_SAFETY_VERSION,
-        CONTROLLABLE_SAFETY_VERSION, CERTIFIED_PLACEMENT_SAFETY_VERSION, REARMING_SAFETY_VERSION, SAFETY_VERSION_V2,
+        CONTROLLABLE_SAFETY_VERSION, CERTIFIED_PLACEMENT_SAFETY_VERSION, REARMING_SAFETY_VERSION, FIXED_DEADLINE_SAFETY_VERSION, SAFETY_VERSION_V2,
     }:
         raise ValueError(f"Unsupported safety version: {value['version']!r}")
     if value["mode"] not in SAFETY_MODES:
@@ -129,13 +133,16 @@ def resolve_safety_spec(
             "opponent_action_space": "all_physical",
             "include_opponent_bombs": True,
             "execution_orders": "all",
-            "danger_interval": ("own_bomb_and_horizon" if version == REARMING_SAFETY_VERSION
+            "danger_interval": ("own_bomb_capacity_deadline" if version == FIXED_DEADLINE_SAFETY_VERSION
+                                else "own_bomb_and_horizon" if version == REARMING_SAFETY_VERSION
                                 else "own_bomb_and_lingering"),
             "search_budget_ms": 400,
             "robust_fallback": SAFETY_VERSION,
         }
-        if version == REARMING_SAFETY_VERSION:
+        if version in REARMING_SAFETY_VERSIONS:
             expected["opponent_rearming"] = "possible_after_first_transition"
+        if version == FIXED_DEADLINE_SAFETY_VERSION:
+            expected["proof_clock"] = "recorded_placement_step"
         for field, expected_value in expected.items():
             if value[field] != expected_value:
                 raise ValueError(
@@ -271,6 +278,27 @@ def mask_for_decision(
     return decision.mask, decision.physical_fallback
 
 
+def fixed_deadline_remaining(game_state: dict, own_bomb: Mapping[str, Any],
+                             *, pending: bool, duration: int) -> int:
+    """Use the recorded placement clock, never a newly rolling proof horizon."""
+    import settings as settings
+    if duration != int(settings.BOMB_TIMER) + int(settings.EXPLOSION_TIMER) + 1:
+        raise ValueError("Fixed proof duration does not cover the capacity release cycle")
+    if not pending:
+        return duration
+    placed = own_bomb.get("placed_step")
+    if isinstance(placed, bool) or not isinstance(placed, int):
+        raise ValueError("Pending fixed-deadline proof requires recorded placement step")
+    step = int(game_state["step"])
+    remaining = placed + duration - step
+    if step <= placed or remaining <= 0:
+        raise ValueError("Own-bomb placement step is inconsistent with the active proof deadline")
+    timer = own_bomb.get("timer")
+    if timer is not None and step - placed != int(settings.BOMB_TIMER) - int(timer):
+        raise ValueError("Own-bomb timer and recorded placement step disagree")
+    return remaining
+
+
 def safety_decision(
     game_state: dict,
     physical_mask: np.ndarray,
@@ -297,6 +325,11 @@ def safety_decision(
     if not enabled:
         return SafetyDecision(
             physical, physical.copy(), False, False, (0,) * 6, (-1.0,) * 6)
+    fixed_remaining = None
+    if spec["version"] == FIXED_DEADLINE_SAFETY_VERSION:
+        fixed_remaining = fixed_deadline_remaining(
+            game_state, own_bomb_state or {}, pending=own_bomb_pending,
+            duration=int(spec["horizon"]))
     if spec["version"] == SAFETY_VERSION_V2:
         selected, fallback, _ = margin_preserving_mask(
             game_state, physical, allow_bomb=allow_bomb,
@@ -338,8 +371,10 @@ def safety_decision(
         candidates = tuple(ACTIONS[index] for index in candidate_indices)
         remaining = danger_interval_steps(
             bomb_state, placing_bomb=placing_bomb)
-        rearming = spec["version"] == REARMING_SAFETY_VERSION
-        if rearming:
+        rearming = spec["version"] in REARMING_SAFETY_VERSIONS
+        if fixed_remaining is not None:
+            remaining = fixed_remaining
+        elif rearming:
             # The next observation still applies the full v1 lookahead. A
             # short own-bomb-only certificate can otherwise approve a trap
             # whose opponent bomb explodes just beyond that short interval.

@@ -1,0 +1,3 @@
+# Retain the original placement proof deadline in v8
+
+The v7 failure at world 24003 step 162 arose when repeated seven-step searches extended an already established obligation into an unproved later interval. The experimental v8 contract records the actual placement step in immutable history and proves the remainder of its original seven-transition capacity-release interval, retaining conservative opponent rearming and explicitly rejecting missing or inconsistent clocks. This supersedes v7's rolling-horizon choice for v8 only; legacy versions, stopped evidence, weights, submission artifacts and all timing/failure thresholds remain unchanged.

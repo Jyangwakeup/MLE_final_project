@@ -243,3 +243,7 @@ _Avoid_: Safe fallback, proof-free emergency bomb
 **Opponent rearming envelope**:
 The conservative set of future opponent bomb placements after the exact first action phase, allowing currently disarmed opponents to recover because public states do not expose bomb ownership or release time. It does not authorize an unavailable bomb in the current action phase.
 _Avoid_: Permanent disarmament, inferred bomb ownership
+
+**Fixed placement proof deadline**:
+The endpoint of the survival obligation established when an own bomb is selected, retained through subsequent observations until placement capacity returns. A new observation consumes the remaining interval rather than extending the original obligation.
+_Avoid_: Rolling placement guarantee, inferred placement clock
