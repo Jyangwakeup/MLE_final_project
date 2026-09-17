@@ -61,6 +61,7 @@ SUMMARY_FIELDS = (
     "bombs_resolved",
     "bombs_survived",
     "survived_bomb_rate",
+    "crates_per_survived_bomb",
     "invalid_actions",
     "invalid_action_rate",
     "survival_rate",
@@ -438,6 +439,10 @@ def _summary_row(
             sum(sample["bombs_survived"] for sample in samples)
             / sum(sample["bombs_resolved"] for sample in samples)
             if sum(sample["bombs_resolved"] for sample in samples) else None),
+        "crates_per_survived_bomb": (
+            sum(sample["crates"] for sample in samples)
+            / sum(sample["bombs_survived"] for sample in samples)
+            if sum(sample["bombs_survived"] for sample in samples) else None),
         "invalid_actions": sum(sample["invalid"] for sample in samples),
         "invalid_action_rate": (
             sum(sample["invalid"] for sample in samples)
@@ -739,6 +744,25 @@ def _average_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
                 "killed_by_opponent_rate": _weighted_mean(agent_rows, "killed_by_opponent_rate"),
                 "crates": sum(float(row["crates"]) for row in agent_rows),
                 "mean_crates": _weighted_mean(agent_rows, "mean_crates"),
+                "mean_bombs": _weighted_mean(agent_rows, "mean_bombs"),
+                "zero_bomb_round_rate": _weighted_mean(
+                    agent_rows, "zero_bomb_round_rate"),
+                "bombs_resolved": sum(
+                    float(row["bombs_resolved"]) for row in agent_rows),
+                "bombs_survived": sum(
+                    float(row["bombs_survived"]) for row in agent_rows),
+                "survived_bomb_rate": (
+                    sum(float(row["bombs_survived"]) for row in agent_rows)
+                    / sum(float(row["bombs_resolved"]) for row in agent_rows)
+                    if sum(float(row["bombs_resolved"]) for row in agent_rows)
+                    else None
+                ),
+                "crates_per_survived_bomb": (
+                    sum(float(row["crates"]) for row in agent_rows)
+                    / sum(float(row["bombs_survived"]) for row in agent_rows)
+                    if sum(float(row["bombs_survived"]) for row in agent_rows)
+                    else None
+                ),
                 "invalid_actions": sum(float(row["invalid_actions"]) for row in agent_rows),
                 "invalid_action_rate": _weighted_mean(agent_rows, "invalid_action_rate"),
                 "survival_rate": _weighted_mean(agent_rows, "survival_rate"),

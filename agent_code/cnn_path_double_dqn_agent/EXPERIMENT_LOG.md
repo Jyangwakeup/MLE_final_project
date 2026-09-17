@@ -4,7 +4,7 @@
 
 ## 1. 当前状态与验收
 
-2026-09-15 查询 Slurm：无活动任务。T1-E04、T1-E05 的训练和冻结选模均已完成。当前最佳为 **T1-E05 / r5 / 75,130 steps：17/100 局捡满，平均 41.78 枚金币**，未达到 Task 1 目标，尚未进入 Task 2。
+2026-09-15 查询 Slurm：无活动任务。T1-E04、T1-E05、T1-E06 的训练和冻结选模均已完成。当前最佳仍为 **T1-E05 / r5 / 75,130 steps：17/100 局捡满，平均 41.78 枚金币**；E06 的 4-step 未改善，已回退 1-step。尚未达到 Task 1 目标，也未进入 Task 2。
 
 - 场景：`coin-heaven`，无箱子、无对手，50 枚金币，每局最多 400 步；Task 1 禁用 BOMB。
 - 开发集：环境评估 seeds `10001–10005`，每 seed 20 局，共 100 局，关闭探索和学习。
@@ -108,7 +108,7 @@ r5 在 r3 上只增加两个窄条件：安全、最近可达金币目标未切�
 | T1-E03 | 471429 cancelled | v1+cache / r3 / off | 未有完整 summary | N/A | N/A | N/A | N/A | 因输入 bug 停止，无性能结论 |
 | T1-E04 | 471431 completed，可信 | v2 / r3 / off | 100,142 / 273 | 25,200 | 0% | 13.35 | 52% / 49% | 后期 WAIT 退化 |
 | T1-E05 | 471439 completed，可信 | v2 / r5 / off | 100,394 / 283 | 75,130 | 17% | 41.78 | 26% / 18% | 当前最佳，100k 后退化，未达标 |
-| T1-E06 | 471455 submitted | v2 / r5 / off + 4-step | 目标 100k / seed 11 | N/A | N/A | N/A | N/A | 已通过本地 smoke；等待/进行正式训练与冻结评估 |
+| T1-E06 | 471455 completed | v2 / r5 / off + 4-step | 100k / seed 11 | 100k | 0% | 27.15 | 28% / 73% | 失败；不及 E05，回退 1-step |
 
 ## 4. 各轮证据与诊断
 
@@ -177,13 +177,22 @@ r5 在 r3 上只增加两个窄条件：安全、最近可达金币目标未切�
 
 当前最佳：[policy_075130.pt](../../runs/cnn_path_v2_r5_s11_j471439/checkpoints/snapshots/policy_075130.pt)，复制为 [best_task1.pt](../../runs/cnn_path_v2_r5_s11_j471439/checkpoints/best_task1.pt)，SHA-256 `a2fa243b8ba6369ce779046c8e5570a3e3f5a80ca35f9c5acc9291c087f4b584`。保留 [final.pt](../../runs/cnn_path_v2_r5_s11_j471439/checkpoints/final.pt)，不将其当作最佳。
 
-### T1-E06 — planned：r5 + 4-step return
+### T1-E06 — completed/failed：r5 + 4-step return（可信）
 
-已实现，Slurm job **471455** 已于 2026-09-15 提交到 `students` 分区，申请一张 GPU，目标 100,000 action steps、seed 11。配置为 [cnn_path_task1_v2_r5_n4.json](../../experiments/configs/cnn_path_task1_v2_r5_n4.json)，因此原始 [r5 1-step 配置](../../experiments/configs/cnn_path_task1_v2_r5.json) 和旧 checkpoint 仍可复现/评估。仅改变 return horizon：保留 v2、r5、网络、seed 11、100k budget、epsilon 日程、safety off 和其他超参数；从随机初始化开始。实现的 transition 保存实际 horizon，使用 `sum(gamma^k r[t+k]) + gamma^steps Q(s[t+steps])`；终局不足四步的尾部 transition 不 bootstrap。
+Slurm job **471455** 于 2026-09-15 19:23:35–21:35:58 完成，总 elapsed 02:12:23；smoke/reload 36 秒、GPU train 01:12:12、冻结快照评估 00:59:35。配置为 [cnn_path_task1_v2_r5_n4.json](../../experiments/configs/cnn_path_task1_v2_r5_n4.json)，seed 11、100,000 action steps；相对 E05 只把 1-step 改为 4-step，保留 v2、r5、网络、探索日程、safety off 和其他超参数，并从随机初始化开始。
 
-本地 CPU smoke（seed 12，1 局、400 steps）完成，checkpoint 中 `n_step=4`、pending 为空，replay 同时包含终局尾部的 1/2/3 step 与正常 4 step transition；训练 summary 已记录 conditional-loop=60、avoidable-WAIT=104 及对应罚分。该 smoke 只验证数据流，不用于性能结论。
+训练实际 250 局、100,000 steps、95,001 updates；平均 reward 79.9397、最后 100 局 84.2508、final loss 0.201760。诊断记录 conditional-loop 17,641 次（-1,411.28 reward）和 avoidable-WAIT 25,958 次（-1,038.32 reward），说明 E05 中缺失的训练诊断汇总链路已恢复。
 
-每 25k 保存快照并用同一开发集冻结选模，改善词典序指标才保留；没有改善则记录失败并恢复 1-step。通过后再决定 D4、dueling 和 seeds 11/22/33 稳定性实验。reserved 集仍保持未触碰。此条目只记录下一步，不授权/表示本次已启动训练。
+| 快照 steps | SHA-256 前缀 | 捡满率 | 平均金币 | coins/100 steps | WAIT | 立即折返 | 长等待 | 长往返 |
+|---:|---|---:|---:|---:|---:|---:|---:|---:|
+| 25,200 | `92fe5dd3` | 0% | 3.53 | 0.8825 | 81.37% | 16.65% | 84% | 21% |
+| 50,000 | `73d89d92` | 0% | 4.24 | 1.0600 | 68.12% | 28.58% | 73% | 38% |
+| 75,200 | `2f656a34` | 0% | 8.72 | 2.1800 | 47.16% | 44.68% | 54% | 59% |
+| 100,000（E06 best/final） | `be42f935` | 0% | 27.15 | 6.7875 | 18.98% | 48.49% | 28% | 73% |
+
+E06 内部按词典序选中 100k，但它仍显著劣于 E05 的 75,130-step 1-step checkpoint（17% 捡满、平均 41.78）。因此本实验结论为 **4-step 未改善，正式回退 1-step**；不继续在其上叠加 PER/Rainbow。100k CPU act p95 0.01003s、max 0.01923s，无超时，性能约束通过但任务指标失败。
+
+原始：[训练 summary](../../runs/cnn_path_v2_r5_n4_s11_j471455/training_summary.json)、[全部评估](../../runs/cnn_path_v2_r5_n4_s11_j471455/snapshot_evaluations.json)、[选模依据](../../runs/cnn_path_v2_r5_n4_s11_j471455/best_task1_selection.json)。E06 best/final SHA-256 均为 `be42f935139f77fdccd752130fb5c096951c91cad8fefc706355a38641b817e9`；reserved seeds 未使用。
 
 ### 4.1 已核验的 final checkpoint 哈希
 
@@ -195,6 +204,7 @@ final 与 best 分开记录；以下文件均实际计算 SHA-256，而非根据
 | E02 | `f359dd1f618e6e7397ac145b9e37711959277d98d0958115b49b9d6f8f9e1ca8` |
 | E04 | `489b6897a5f4442ee998870c2a7d6d7f32deade7666610cc13ce52201d214f1f` |
 | E05 | `08407005e9b764612f5e2d276b31d62de84069cad56fd0a4b5839ec30ddc2871` |
+| E06 | `be42f935139f77fdccd752130fb5c096951c91cad8fefc706355a38641b817e9` |
 
 E03 有部分 final 和 policy_025000 文件，但没有完整终止 summary；不将文件名 final 解释为正式训练完成或合格模型。
 

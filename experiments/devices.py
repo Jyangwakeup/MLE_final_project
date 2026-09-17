@@ -33,6 +33,7 @@ def resolve_device(algorithm: str, mode: str, requested: str) -> dict[str, Any]:
         return _metadata(requested, "cpu")
     neural_algorithms = {
         "dqn", "double_dqn", "cnn_double_dqn", "hybrid_dueling_double_dqn",
+        "cnn_distilled_double_dqn",
     }
     if algorithm not in neural_algorithms:
         raise ValueError(f"Unsupported algorithm: {algorithm!r}")

@@ -1,0 +1,28 @@
+{
+  "algorithm": "double_dqn",
+  "feature_id": "continuous-v2",
+  "reward_id": "r7_safe_credit_sparse",
+  "safety": {
+    "version": "survival-mask-v1",
+    "mode": "all",
+    "horizon": 7,
+    "fallback": "physical_q"
+  },
+  "evaluation": {
+    "device": "cpu",
+    "navigation_diagnostics": true,
+    "seeds": [6000, 6080],
+    "n_rounds": 1
+  },
+  "training": {
+    "device": "cpu",
+    "n_rounds": 1,
+    "exploration": {
+      "version": "linear-v1",
+      "start": 1.0,
+      "end": 0.05,
+      "decay_action_steps": 80000
+    },
+    "early_stopping": {"enabled": false}
+  }
+}
