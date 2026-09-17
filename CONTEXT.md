@@ -239,3 +239,7 @@ _Avoid_: Shared safe action, nearest-opponent proof
 **Certified-only bomb placement**:
 A placement policy that admits a new bomb only after its complete controllable-survival proof succeeds, including when other safe choices are absent. It does not certify the safety of fallback movement or redefine a later guarantee loss.
 _Avoid_: Safe fallback, proof-free emergency bomb
+
+**Opponent rearming envelope**:
+The conservative set of future opponent bomb placements after the exact first action phase, allowing currently disarmed opponents to recover because public states do not expose bomb ownership or release time. It does not authorize an unavailable bomb in the current action phase.
+_Avoid_: Permanent disarmament, inferred bomb ownership

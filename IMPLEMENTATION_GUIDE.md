@@ -969,3 +969,7 @@ WAIT保持原来的驻留许可，移动仍须满足下一步可进入约束，�
 ### 持续安全修复：严格放弹证明
 
 在独立safety-certified-placement分支引入survival-mask-v6，唯一行为改动是所有未获得完整证明的新放弹均被否决；无安全动作时仍由网络在物理合法非放弹动作间排序。保留v5源码行为、原父权重及已交付ZIP，计数和门槛不降级。先复现世界23008，再按登记的工程数据执行冻结回归；失败即结束该次运行，保存新现场后另建修复轮次。v5 Replay与恢复状态不直接视为v6兼容，当前仅使用显式冻结评估覆盖，不启动正式训练。
+
+### Continuous safety repair: rearming regression
+
+The second v6 engineering sweep stopped at Task3 world24266/step184; it cannot be resumed as a passing experiment. v7 keeps all opponents and the same budgets while adding conservative future rearming and a proof horizon of at least seven transitions. First require the recorded 182/DOWN regression, complete tests and historical timing, then run the recorded world as a new frozen engineering regression; subsequent tests need a separate frozen manifest. No v5/v6 Replay or training state is silently migrated, and this work does not qualify or train Task4.

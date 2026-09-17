@@ -100,7 +100,7 @@ def main(argv=None):
         summary = summarize_evaluation(target, 'double_dqn_continuous_v2_agent', manifest['engineering_seeds'])
         episodes = [json.loads(line) for path in target.rglob('episodes.jsonl')
                     for line in path.read_text().splitlines()]
-        if len(episodes) != 100:
+        if len(episodes) != len(manifest['engineering_seeds']):
             raise RuntimeError('Incomplete evaluation')
         summary['mean_bombs'] = sum(a['bombs'] for e in episodes for a in e['agents']
                     if a['name']=='double_dqn_continuous_v2_agent') / len(episodes)

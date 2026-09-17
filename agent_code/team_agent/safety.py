@@ -15,7 +15,9 @@ ROBUST_SAFETY_VERSION = "survival-mask-v3"
 OPPONENT_ROBUST_SAFETY_VERSION = "survival-mask-v4"
 CONTROLLABLE_SAFETY_VERSION = "survival-mask-v5"
 CERTIFIED_PLACEMENT_SAFETY_VERSION = "survival-mask-v6"
-CONTROLLABLE_SAFETY_VERSIONS = {CONTROLLABLE_SAFETY_VERSION, CERTIFIED_PLACEMENT_SAFETY_VERSION}
+REARMING_SAFETY_VERSION = "survival-mask-v7"
+CERTIFIED_PLACEMENT_SAFETY_VERSIONS = {CERTIFIED_PLACEMENT_SAFETY_VERSION, REARMING_SAFETY_VERSION}
+CONTROLLABLE_SAFETY_VERSIONS = {CONTROLLABLE_SAFETY_VERSION, *CERTIFIED_PLACEMENT_SAFETY_VERSIONS}
 SAFETY_VERSION_V2 = "survival-mask-v2"
 SAFETY_SPEC_ENV = "BOMBERMAN_SAFETY_SPEC"
 SAFETY_MODES = ("off", "exploration", "all")
@@ -74,6 +76,8 @@ def resolve_safety_spec(
             "execution_orders", "danger_interval", "search_budget_ms",
             "robust_fallback",
         }
+    if version == REARMING_SAFETY_VERSION:
+        required.add("opponent_rearming")
     if version == SAFETY_VERSION_V2:
         required.add("escape_area_fraction")
     if set(value) != required:
@@ -81,14 +85,14 @@ def resolve_safety_spec(
             "config.safety must contain exactly: " + ", ".join(sorted(required)))
     if version not in {
         SAFETY_VERSION, ROBUST_SAFETY_VERSION, OPPONENT_ROBUST_SAFETY_VERSION,
-        CONTROLLABLE_SAFETY_VERSION, CERTIFIED_PLACEMENT_SAFETY_VERSION, SAFETY_VERSION_V2,
+        CONTROLLABLE_SAFETY_VERSION, CERTIFIED_PLACEMENT_SAFETY_VERSION, REARMING_SAFETY_VERSION, SAFETY_VERSION_V2,
     }:
         raise ValueError(f"Unsupported safety version: {value['version']!r}")
     if value["mode"] not in SAFETY_MODES:
         raise ValueError(f"Unsupported safety mode: {value['mode']!r}")
     if value["horizon"] != 7:
         raise ValueError(f"{version} requires horizon=7")
-    fallback = "non_bomb_physical_q" if version == CERTIFIED_PLACEMENT_SAFETY_VERSION else "physical_q"
+    fallback = "non_bomb_physical_q" if version in CERTIFIED_PLACEMENT_SAFETY_VERSIONS else "physical_q"
     if value["fallback"] != fallback:
         raise ValueError(f"{version} requires fallback={fallback!r}")
     result = {
@@ -125,10 +129,13 @@ def resolve_safety_spec(
             "opponent_action_space": "all_physical",
             "include_opponent_bombs": True,
             "execution_orders": "all",
-            "danger_interval": "own_bomb_and_lingering",
+            "danger_interval": ("own_bomb_and_horizon" if version == REARMING_SAFETY_VERSION
+                                else "own_bomb_and_lingering"),
             "search_budget_ms": 400,
             "robust_fallback": SAFETY_VERSION,
         }
+        if version == REARMING_SAFETY_VERSION:
+            expected["opponent_rearming"] = "possible_after_first_transition"
         for field, expected_value in expected.items():
             if value[field] != expected_value:
                 raise ValueError(
@@ -299,7 +306,7 @@ def safety_decision(
     base, physical_fallback = survival_mask(
         game_state, physical, allow_bomb=allow_bomb,
         horizon=int(spec["horizon"]), context=context)
-    strict_placement = spec["version"] == CERTIFIED_PLACEMENT_SAFETY_VERSION
+    strict_placement = spec["version"] in CERTIFIED_PLACEMENT_SAFETY_VERSIONS
     if strict_placement and physical_fallback:
         # No horizon-survivable action exists, so no placement certificate
         # exists either. Keep learned ranking among physical non-bomb actions.
@@ -331,9 +338,17 @@ def safety_decision(
         candidates = tuple(ACTIONS[index] for index in candidate_indices)
         remaining = danger_interval_steps(
             bomb_state, placing_bomb=placing_bomb)
+        rearming = spec["version"] == REARMING_SAFETY_VERSION
+        if rearming:
+            # The next observation still applies the full v1 lookahead. A
+            # short own-bomb-only certificate can otherwise approve a trap
+            # whose opponent bomb explodes just beyond that short interval.
+            remaining = max(remaining, int(spec["horizon"]))
         result = controllable_survival_actions(
             game_state, candidates, remaining_steps=remaining,
-            budget_ms=int(spec["search_budget_ms"])) if candidates else None
+            budget_ms=int(spec["search_budget_ms"]),
+            **({"consider_opponent_rearming": True} if rearming else {}),
+        ) if candidates else None
         proven = set(() if result is None else result.proven_actions)
         selected = base.copy()
         opponent_fallback = False

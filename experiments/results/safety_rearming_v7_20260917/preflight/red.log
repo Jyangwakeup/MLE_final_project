@@ -1,0 +1,13 @@
+.F
+======================================================================
+FAIL: test_recorded_escape_rejects_down_when_opponent_can_recover (tests.test_opponent_rearming.OpponentRearmingTest)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/data/sfan/MLE_final_project_safety/tests/test_opponent_rearming.py", line 31, in test_recorded_escape_rejects_down_when_opponent_can_recover
+    self.assertNotIn('DOWN',result.proven_actions)
+AssertionError: 'DOWN' unexpectedly found in ('UP', 'DOWN', 'WAIT')
+
+----------------------------------------------------------------------
+Ran 2 tests in 0.020s
+
+FAILED (failures=1)

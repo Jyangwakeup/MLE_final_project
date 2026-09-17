@@ -55,6 +55,7 @@ def controllable_survival_actions(
     *,
     remaining_steps: int,
     budget_ms: int,
+    consider_opponent_rearming: bool = False,
 ) -> ControllableSurvivalResult:
     """Solve ``exists own action / forall scenarios`` conservatively.
 
@@ -118,9 +119,16 @@ def controllable_survival_actions(
             {tuple(other[3]) for other in state["others"]}
         ]
         armed_reach: list[set[tuple[int, int]]] = [
-            {tuple(other[3]) for other in state["others"] if bool(other[2])}
+            {tuple(other[3]) for other in state["others"]
+             if consider_opponent_rearming or bool(other[2])}
         ]
-        armed_names = {str(other[0]) for other in state["others"] if bool(other[2])}
+        # Public states do not expose bomb ownership or exact capacity release.
+        # The first transition used the real capacity; after it, every surviving
+        # opponent may recover. This over-approximates future bombs, including
+        # recovery when an old flame becomes harmless, rather than treating a
+        # currently disarmed opponent as permanently unable to place bombs.
+        armed_names = {str(other[0]) for other in state["others"]
+                       if consider_opponent_rearming or bool(other[2])}
         named_reach = {
             str(other[0]): {tuple(other[3])} for other in state["others"]
         }
