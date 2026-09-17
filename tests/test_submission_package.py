@@ -18,6 +18,28 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 
 class SubmissionPackageTest(unittest.TestCase):
+    def _prepare_isolated_root(self, root, unpacked, agent, feature_id, reward_id):
+        isolated = root / "official"
+        isolated.mkdir()
+        (isolated / "agent_code").mkdir()
+        (isolated / "agent_code" / "__init__.py").touch()
+        for source in PROJECT_ROOT.glob("*.py"):
+            shutil.copy2(source, isolated / source.name)
+        shutil.copytree(PROJECT_ROOT / "assets", isolated / "assets")
+        shutil.copytree(
+            PROJECT_ROOT / "agent_code" / "random_agent",
+            isolated / "agent_code" / "random_agent",
+            ignore=shutil.ignore_patterns("__pycache__", "*.pyc"),
+        )
+        shutil.move(
+            str(unpacked / agent), str(isolated / "agent_code" / agent))
+        (isolated / "logs").mkdir()
+        environment = os.environ.copy()
+        environment["PYTHONPATH"] = str(isolated)
+        environment["BOMBERMAN_FEATURE_ID"] = feature_id
+        environment["BOMBERMAN_REWARD_ID"] = reward_id
+        return isolated, environment
+
     def test_generated_agent_runs_without_repository_shared_packages(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -55,27 +77,40 @@ class SubmissionPackageTest(unittest.TestCase):
                 self.assertFalse(any("/logs/" in n for n in names))
                 zipped.extractall(root / "unpacked")
 
-            isolated = root / "official"
-            isolated.mkdir()
-            (isolated / "agent_code").mkdir()
-            (isolated / "agent_code" / "__init__.py").touch()
-            for source in PROJECT_ROOT.glob("*.py"):
-                shutil.copy2(source, isolated / source.name)
-            shutil.move(
-                str(root / "unpacked" / "double_q_compact_agent"),
-                str(isolated / "agent_code" / "double_q_compact_agent"),
-            )
-            (isolated / "logs").mkdir()
-            environment = os.environ.copy()
-            environment["PYTHONPATH"] = str(isolated)
-            environment["BOMBERMAN_FEATURE_ID"] = FEATURE_ID
-            environment["BOMBERMAN_REWARD_ID"] = "r1"
+            isolated, environment = self._prepare_isolated_root(
+                root, root / "unpacked", "double_q_compact_agent", FEATURE_ID, "r1")
             result = subprocess.run(
                 [sys.executable, "main.py", "play", "--agents",
                  "double_q_compact_agent", "--scenario", "coin-heaven",
                  "--n-rounds", "1", "--no-gui"],
                 cwd=isolated, env=environment, capture_output=True, text=True,
                 timeout=30,
+            )
+            self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_cnn_submission_runs_without_teacher_dataset_or_repository_packages(self):
+        agent = "cnn_distilled_double_dqn_agent"
+        checkpoint = PROJECT_ROOT / "agent_code" / agent / "final.pt"
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            archive = build_submission(agent, checkpoint, root / "submission.zip")
+            with zipfile.ZipFile(archive) as zipped:
+                names = zipped.namelist()
+                self.assertIn(f"{agent}/final.pt", names)
+                self.assertIn(f"{agent}/requirements.txt", names)
+                self.assertFalse(any("teacher" in name.lower() for name in names))
+                self.assertFalse(any("dataset" in name.lower() for name in names))
+                zipped.extractall(root / "unpacked")
+
+            isolated, environment = self._prepare_isolated_root(
+                root, root / "unpacked", agent, "board-path-history-v2",
+                "r5_conditional_loop")
+            result = subprocess.run(
+                [sys.executable, "main.py", "play", "--agents", agent,
+                 "random_agent", "random_agent", "random_agent", "--scenario",
+                 "classic", "--n-rounds", "1", "--no-gui"],
+                cwd=isolated, env=environment, capture_output=True, text=True,
+                timeout=180,
             )
             self.assertEqual(result.returncode, 0, result.stderr)
 

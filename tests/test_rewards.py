@@ -36,6 +36,93 @@ def make_state(position=(3, 3), coins=(), bombs=()):
 
 
 class SharedRewardTestCase(unittest.TestCase):
+    def test_r13_combines_dense_survival_and_causal_credit_contracts(self):
+        spec = resolve_reward_spec("r13_no_safety_survival_credit")
+        self.assertEqual(spec["potential_survival_options_weight"], 2.0)
+        self.assertEqual(spec["causal_bomb_death_penalty"], -25.0)
+        self.assertEqual(spec["avoidable_fatal_action"], -40.0)
+
+        owner = SimpleNamespace()
+        init_temporal_reward_state(owner)
+        placed = make_state()
+        placed["self"] = ("reward_test", 0, False, (3, 3))
+        context = temporal_reward_context(
+            owner, "BOMB", make_state(), placed, [e.BOMB_DROPPED],
+            reward_id="r13_no_safety_survival_credit")
+        self.assertEqual(context["temporal_adjustment"], 0.0)
+
+    def test_r13_survival_options_are_bounded_in_state_potential(self):
+        state = make_state()
+        base = _state_potential(state, resolve_reward_spec(
+            "r10_bounded_history_anti_loop"))
+        shaped = _state_potential(state, resolve_reward_spec(
+            "r13_no_safety_survival_credit"))
+        self.assertTrue(np.isfinite(shaped))
+        self.assertGreaterEqual(shaped - base, 0.0)
+        self.assertLessEqual(shaped - base, 2.0)
+
+    def test_r14_only_rewards_resolved_bombs_with_observed_utility(self):
+        owner = SimpleNamespace()
+        init_temporal_reward_state(owner)
+        placed = make_state()
+        placed["self"] = ("reward_test", 0, False, (3, 3))
+        temporal_reward_context(
+            owner, "BOMB", make_state(), placed, [e.BOMB_DROPPED],
+            reward_id="r14_no_safety_useful_bomb_credit")
+        resolved = make_state(position=(4, 3))
+        empty = temporal_reward_context(
+            owner, "RIGHT", placed, resolved, [],
+            reward_id="r14_no_safety_useful_bomb_credit")
+        self.assertTrue(empty["bomb_resolved_alive"])
+        self.assertEqual(empty["resolved_bomb_crates"], 0)
+        self.assertEqual(empty["temporal_adjustment"], 0.0)
+
+        init_temporal_reward_state(owner)
+        temporal_reward_context(
+            owner, "BOMB", make_state(), placed, [e.BOMB_DROPPED],
+            reward_id="r14_no_safety_useful_bomb_credit")
+        active = make_state(position=(4, 3))
+        active["self"] = ("reward_test", 0, False, (4, 3))
+        temporal_reward_context(
+            owner, "RIGHT", placed, active, [e.CRATE_DESTROYED],
+            reward_id="r14_no_safety_useful_bomb_credit")
+        useful = temporal_reward_context(
+            owner, "WAIT", active, resolved, [],
+            reward_id="r14_no_safety_useful_bomb_credit")
+        self.assertEqual(useful["resolved_bomb_crates"], 1)
+        self.assertAlmostEqual(useful["temporal_adjustment"], 1.5)
+
+    def test_r15_directly_penalizes_zero_utility_bomb_credit(self):
+        spec = resolve_reward_spec("r15_no_safety_objective_credit")
+        self.assertEqual(spec["causal_bomb_zero_utility_penalty"], -2.0)
+        self.assertEqual(spec["potential_coin_weight"], 1.5)
+        self.assertEqual(spec["suppress_useful_bomb_when_coin_reachable"], 1.0)
+
+    def test_r11_delays_crate_credit_and_rewards_resolved_survival(self):
+        owner = SimpleNamespace()
+        init_temporal_reward_state(owner)
+        placed = make_state(); placed["self"] = ("reward_test", 0, False, (3, 3))
+        context = temporal_reward_context(owner, "BOMB", make_state(), placed,
+            [e.BOMB_DROPPED], reward_id="r11_causal_bomb_credit")
+        self.assertEqual(context["temporal_adjustment"], 0.0)
+        active = make_state(); active["self"] = ("reward_test", 0, False, (4, 3))
+        context = temporal_reward_context(owner, "RIGHT", placed, active,
+            [e.CRATE_DESTROYED], reward_id="r11_causal_bomb_credit")
+        self.assertEqual(context["temporal_adjustment"], 0.0)
+        resolved = make_state(position=(4, 3))
+        context = temporal_reward_context(owner, "WAIT", active, resolved, [],
+            reward_id="r11_causal_bomb_credit")
+        self.assertAlmostEqual(context["temporal_adjustment"], 3.1)
+        reward = reward_from_events([e.CRATE_DESTROYED],
+            "r11_causal_bomb_credit", temporal_adjustment=context["temporal_adjustment"])
+        self.assertAlmostEqual(reward, 3.09)
+
+    def test_r11_self_kill_dominates_same_step_positive_events(self):
+        reward = reward_from_events(
+            [e.KILLED_SELF, e.COIN_COLLECTED, e.CRATE_DESTROYED],
+            "r11_causal_bomb_credit")
+        self.assertAlmostEqual(reward, -40.01)
+
     def test_r1_is_the_canonical_objective_reward(self):
         self.assertEqual(REWARD_VERSION, "r1")
         self.assertEqual(resolve_reward_spec("r1"), {
@@ -196,6 +283,78 @@ class SharedRewardTestCase(unittest.TestCase):
                 [e.WAITED], "r5_conditional_loop",
                 conditional_loop=True, avoidable_wait=True)
 
+    def test_r9_safe_bomb_credit_and_zero_utility_penalty(self):
+        spec = resolve_reward_spec("r9_safe_credit_anti_loop")
+        empty = make_state()
+        baseline = reward_from_events(
+            [], "r9_safe_credit_anti_loop", old_game_state=empty,
+            new_game_state=empty, action="WAIT")
+        empty_bomb = reward_from_events(
+            [], "r9_safe_credit_anti_loop", old_game_state=empty,
+            new_game_state=empty, action="BOMB")
+        self.assertAlmostEqual(
+            empty_bomb - baseline, spec["useless_bomb_penalty"])
+
+        for crate_count in (1, 2, 3, 4):
+            state = make_state()
+            for coordinate in ((5, 3), (1, 3), (3, 5), (3, 1))[:crate_count]:
+                state["field"][coordinate] = 1
+            reward = reward_from_events(
+                [], "r9_safe_credit_anti_loop", old_game_state=state,
+                new_game_state=state, action="BOMB")
+            expected = min(crate_count, 3) * spec["useful_bomb_per_crate"]
+            wait = reward_from_events(
+                [], "r9_safe_credit_anti_loop", old_game_state=state,
+                new_game_state=state, action="WAIT")
+            self.assertAlmostEqual(reward - wait, expected)
+
+        opponent = make_state()
+        opponent["others"] = [("opponent", 0, True, (5, 3))]
+        threatened = reward_from_events(
+            [], "r9_safe_credit_anti_loop", old_game_state=opponent,
+            new_game_state=opponent, action="BOMB")
+        waiting = reward_from_events(
+            [], "r9_safe_credit_anti_loop", old_game_state=opponent,
+            new_game_state=opponent, action="WAIT")
+        self.assertAlmostEqual(threatened, waiting)
+
+        trapped = make_state()
+        for coordinate in ((2, 3), (4, 3), (3, 2), (3, 4)):
+            trapped["field"][coordinate] = -1
+        unsafe_bomb = reward_from_events(
+            [], "r9_safe_credit_anti_loop", old_game_state=trapped,
+            new_game_state=trapped, action="BOMB")
+        trapped_wait = reward_from_events(
+            [], "r9_safe_credit_anti_loop", old_game_state=trapped,
+            new_game_state=trapped, action="WAIT")
+        self.assertAlmostEqual(
+            unsafe_bomb - trapped_wait, spec["unsafe_bomb_penalty"])
+
+    def test_r9_task2_loop_detection_uses_crate_frontier(self):
+        owner = SimpleNamespace()
+        init_temporal_reward_state(owner)
+        first = make_state(position=(3, 3))
+        first["field"][7, 3] = 1
+        middle = make_state(position=(4, 3))
+        middle["field"][7, 3] = 1
+        returned = make_state(position=(3, 3))
+        returned["field"][7, 3] = 1
+        initial = temporal_reward_context(
+            owner, "RIGHT", first, middle, [],
+            reward_id="r9_safe_credit_anti_loop")
+        loop = temporal_reward_context(
+            owner, "LEFT", middle, returned, [],
+            reward_id="r9_safe_credit_anti_loop")
+        self.assertFalse(initial["conditional_loop"])
+        self.assertTrue(loop["conditional_loop"])
+
+        owner = SimpleNamespace()
+        init_temporal_reward_state(owner)
+        waiting = temporal_reward_context(
+            owner, "WAIT", first, first, [],
+            reward_id="r9_safe_credit_anti_loop")
+        self.assertTrue(waiting["avoidable_wait"])
+
     def test_r3_variants_preserve_the_r3_potential_contract(self):
         baseline = resolve_reward_spec("r3_potential")
         for reward_id in ("r4_anti_oscillation", "r5_conditional_loop"):
@@ -242,6 +401,29 @@ class SharedRewardTestCase(unittest.TestCase):
         actual = reward_from_events(
             [e.GOT_KILLED], "r3_potential", old_game_state=state,
             terminal=True)
+        self.assertAlmostEqual(
+            actual, spec["step"] + spec["got_killed"]
+            - _state_potential(state, spec))
+
+    def test_r7_potential_fills_visible_coin_shaping_gap(self):
+        old_state = make_state(position=(3, 3), coins=((5, 3),))
+        new_state = make_state(position=(4, 3), coins=((5, 3),))
+        sparse = reward_from_events(
+            [e.MOVED_RIGHT], "r7_safe_credit_sparse",
+            old_game_state=old_state, new_game_state=new_state)
+        potential = reward_from_events(
+            [e.MOVED_RIGHT], "r7_safe_credit_potential",
+            old_game_state=old_state, new_game_state=new_state)
+
+        self.assertAlmostEqual(sparse, -0.01)
+        self.assertGreater(potential, sparse)
+
+    def test_r7_potential_terminal_uses_zero_absorbing_state(self):
+        state = make_state(position=(3, 3), coins=((5, 3),))
+        spec = resolve_reward_spec("r7_safe_credit_potential")
+        actual = reward_from_events(
+            [e.GOT_KILLED], "r7_safe_credit_potential",
+            old_game_state=state, terminal=True)
         self.assertAlmostEqual(
             actual, spec["step"] + spec["got_killed"]
             - _state_potential(state, spec))

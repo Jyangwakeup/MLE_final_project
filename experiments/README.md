@@ -25,6 +25,9 @@ Task 1 的最终 reward 对照使用
 | `double_dqn_continuous_agent` | `double_dqn` | `continuous-v2`，84 维安全消融基线 | `final.pt` |
 | `double_dqn_continuous_v2_agent` | `double_dqn` | 新训练使用 84 维 `continuous-v2`；自动只读兼容旧 78 维 checkpoint | `final.pt` |
 | `double_dqn_continuous_v3_agent` | `double_dqn` | `continuous-v3`，显式安全余量消融 | `final.pt` |
+| `double_dqn_phase_agent` | `double_dqn` | `continuous-phase-v1`，117维Task 3/4局面阶段模型 | `final.pt` |
+| `double_dqn_continuous_v4_agent` | `double_dqn` | `continuous-v4`，连续 WAIT 与 2–8 步周期历史 | `final.pt` |
+| `rainbow_lite_v5_agent` | `rainbow_lite` | `continuous-v5`，全局箱区密度与放弹后目标恢复 | `final.pt` |
 | `cnn_double_dqn_agent` | `cnn_double_dqn` | `board-v1` | `final.pt` |
 | `hybrid_dueling_double_dqn_agent` | `hybrid_dueling_double_dqn` | `hybrid-v1` | `final.pt` |
 
@@ -464,11 +467,37 @@ python experiments/task3_plateau_stopping.py \
 ```
 
 中断后显式添加`--resume`；已有run和评估目录永不覆盖。
+Task 3 的84→117维阶段模型仅通过 `--transfer-task3-from` 显式迁移，不属于精确恢复。
 同 Task 的早停配置也必须保持一致。
 
 每回合边界发布一代完整快照，`resume/` 只保留最新两代。最新一代校验失败时自动回退
 上一代，丢失局数记录在子 run 的 `metadata.json`。`--checkpoint` 仅用于冻结评估；旧
 checkpoint 仍可评估，但不能替代 `--resume-from`。
+
+### 开发期权重初始化与严格续训
+
+开发新奖励或 Task 2–4 行为时，可用 `--init-from-checkpoint` 从已有神经网络 checkpoint
+继承**仅 policy 权重**，避免每次都重训 Task 1：
+
+```bash
+.venv/bin/python -m experiments.run \
+  --config experiments/configs/reward_r5_conditional_loop.json \
+  --mode train --device cpu --task 2 \
+  --agent double_dqn_continuous_agent --seed 11 --n-rounds 500 \
+  --init-from-checkpoint runs/ddqn_continuous_v2_r5_s11_t1_train/checkpoints/final.pt \
+  --run-id dev_ddqn_continuous_v2_r5_s11_t2_warm
+```
+
+`--init-from-checkpoint` 是开发期 warm start：允许更换 reward，但要求算法、Feature schema、
+动作顺序和网络结构兼容；policy 权重被复制到新 policy 和 target，而 optimizer、replay、
+epsilon/action steps、随机状态、早停和回合状态全部从零开始。run metadata 的 `lineage.kind`
+记录为 `warm_start`。它只支持神经网络 Agent，不能与 `--resume-from` 同时使用，也不能用于
+冻结评估。
+
+`--resume-from` 是严格续训/课程晋级：从父 run 的 resume snapshot 恢复学习器、optimizer、
+replay、探索进度和必要的运行状态，并执行完整兼容性校验。正式实验链和最终结果必须使用
+`--resume-from` 从同一配置链逐级训练；warm-start 结果只能作为开发诊断或迁移学习实验，
+不能伪装成严格连续训练结果。
 
 训练模式默认启用基于 reward 移动平均的双重条件早停；未提供配置时使用 window 200、
 patience 100、min_rounds 300、min_delta 0.1、空 target_reward，并要求 action steps 达到
@@ -647,6 +676,20 @@ Q-learning 与 DQN agent 都会据此屏蔽炸弹。Task 2–4 会自动允许�
 
 `configs/formal_training.json` 保留 CPU、`discrete-v1`、`r1` 基线；
 `configs/formal_training_coin3.json` 保留旧 v4 固定局数证据。`task2_safety_diagnostic.json` 对既有 v5 checkpoint 仅启用冻结 shield；三个 `safety_ablation_*_task1.json` 使用同步冻结分数停止：第200局起每50局在9000–9019上检查，连续三次 `mean_score≥48` 停止，累计上限1000局。10000–10019只用于独立晋级门槛。Task 2 仍使用150000动作/至少500局。`final_test.json` 的20000–20099继续封存。
+
+Task 3 首轮试验由 `task3_pilot.json` 预注册，并使用
+`configs/task3_pilot_r7.json`。它保持 Task 2 winner 的
+`continuous-v2 + r7_safe_credit_sparse + survival-mask-v1/all` 合同；每次只增加500局，
+在12000–12019上按父子同seed执行Task 1/2/3冻结评估。可用
+`python -m experiments.task3_pilot validate-preregistration` 检查配置，评估结束后用该工具的
+`assess` 和 `select` 子命令生成逐seed证据、门槛结果及开发集候选。开发集候选不是Task 3 winner，
+也不能直接进入Task 4。
+
+Task 3安全迭代由 `task3_phase_iteration.json` 预注册。四个首轮配置位于
+`configs/task3_phase_*.json`；先用 `collect_task3_distillation.py` 在训练专用
+seeds 6000–6099采集教师事实，再用 `--transfer-task3-from` 创建v8子链。
+动作数只控制epsilon。开发、三seed确认、主验证分别使用13000、14000和15000号段，
+20000–20099继续封存。
 奖励实验使用独立配置文件：
 
 ```text
@@ -668,6 +711,9 @@ Reward ID 和完整 spec 都是 checkpoint 与 resume 契约的一部分。更�
 | `r6_safe_sparse/potential` | 箱区/危险势、炸弹信用与分离死亡代价 | Task 2 成对安全比较 |
 | `r7_safe_credit_sparse/potential` | 不可逃放弹 −20 | 第三轮自杀失败分支 |
 | `r8_safe_constrained` | r7 sparse 去掉预测放弹正奖；可避免必死动作 −20；自杀压制同帧正奖 | 生存约束精确信用消融 |
+| `r9_phase_resource` | 按可观察局面平滑缩放金币/炸箱/击杀，加入前期资源势 | Task 3 阶段奖励第一级 |
+| `r9_phase_combat` | r9 resource 加中后期对手机动性战斗势 | Task 3 阶段奖励第二级 |
+| `r9_phase_full` | r9 combat 加后期自身机动性势 | Task 3 阶段奖励第三级 |
 
 完整数值、势能公式和边界语义见
 [`agent_code/team_agent/README.md`](../agent_code/team_agent/README.md#公共奖励)。不同 Reward 的

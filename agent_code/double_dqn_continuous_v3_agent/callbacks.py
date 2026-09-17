@@ -101,6 +101,8 @@ def _features_for(self, game_state):
 
 
 def act(self, game_state):
+    from agent_code.learning_common.action_history import advance_observation
+    advance_observation(self, game_state)
     features = _features_for(self, game_state)
     physical = effective_legal_mask(
         features.legal_mask, ACTIONS, self.curriculum_allows_bomb)

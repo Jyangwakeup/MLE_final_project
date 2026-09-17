@@ -68,6 +68,7 @@ class VectorFeatures:
     feature_id: str
     vector: np.ndarray
     legal_mask: np.ndarray
+    context: Any = None
 
 
 @dataclass(frozen=True)

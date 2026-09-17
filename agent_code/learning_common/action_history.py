@@ -14,10 +14,14 @@ class HistorySnapshot:
     own_bomb_pending: bool = False
     previous_position: tuple | None = None
     previous_coin_target: tuple | None = None
+    position_history: tuple = ()
+    position_history_key: tuple | None = None
 
 
 def snapshot_history(owner) -> HistorySnapshot:
-    return HistorySnapshot(**action_history_state(owner))
+    state = action_history_state(owner)
+    state["position_history"] = tuple(state["position_history"])
+    return HistorySnapshot(**state)
 
 
 def project_history(history: HistorySnapshot, game_state: dict) -> HistorySnapshot:
@@ -26,6 +30,11 @@ def project_history(history: HistorySnapshot, game_state: dict) -> HistorySnapsh
         history = HistorySnapshot(round=game_state.get('round'))
     if bool(game_state['self'][2]):
         history = replace(history, own_bomb_position=None, own_bomb_pending=False)
+    key = (game_state.get("round"), game_state.get("step"))
+    if history.position_history_key != key:
+        positions = (*history.position_history, tuple(game_state["self"][3]))
+        history = replace(history, position_history=positions[-POSITION_HISTORY_LIMIT:],
+                          position_history_key=key)
     return history
 
 
@@ -44,6 +53,9 @@ def bomb_history(history: HistorySnapshot, game_state: dict) -> dict[str, object
                 visible=timer is not None, timer=timer)
 
 
+POSITION_HISTORY_LIMIT = 33
+
+
 def init_action_history(owner) -> None:
     owner.feature_previous_action = None
     owner.feature_wait_streak = 0
@@ -52,40 +64,31 @@ def init_action_history(owner) -> None:
     owner.feature_own_bomb_pending = False
     owner.feature_previous_position = None
     owner.feature_previous_coin_target = None
+    owner.feature_position_history = []
+    owner.feature_position_history_key = None
 
 
 def action_history_for_state(owner, game_state: dict) -> tuple[str | None, int]:
-    """Return history before ``game_state`` and reset it at a round boundary."""
-    round_index = game_state.get("round")
-    if getattr(owner, "feature_history_round", None) != round_index:
-        owner.feature_previous_action = None
-        owner.feature_wait_streak = 0
-        owner.feature_history_round = round_index
-        owner.feature_own_bomb_position = None
-        owner.feature_own_bomb_pending = False
-        owner.feature_previous_position = None
-        owner.feature_previous_coin_target = None
-    if bool(game_state["self"][2]):
-        owner.feature_own_bomb_position = None
-        owner.feature_own_bomb_pending = False
-    return (
-        getattr(owner, "feature_previous_action", None),
-        int(getattr(owner, "feature_wait_streak", 0)),
-    )
+    """Read projected history without modifying live decision state."""
+    history = project_history(snapshot_history(owner), game_state)
+    return history.previous_action, history.wait_streak
 
 
 def record_selected_action(owner, game_state: dict, action: str) -> None:
     """Advance feature history immediately after an action is selected."""
-    action_history_for_state(owner, game_state)
+    advance_observation(owner, game_state)
     owner.feature_previous_action = action
     owner.feature_wait_streak = (
         int(owner.feature_wait_streak) + 1 if action == "WAIT" else 0
     )
     from agent_code.team_agent.feature_system.continuous_v2 import selected_coin_target
-    owner.feature_previous_position = tuple(game_state["self"][3])
-    owner.feature_previous_coin_target = selected_coin_target(game_state)
+    owner.feature_previous_position = tuple(int(value) for value in game_state["self"][3])
+    target = selected_coin_target(game_state)
+    owner.feature_previous_coin_target = (
+        None if target is None else tuple(int(value) for value in target))
     if action == "BOMB" and bool(game_state["self"][2]):
-        owner.feature_own_bomb_position = tuple(game_state["self"][3])
+        owner.feature_own_bomb_position = tuple(
+            int(value) for value in game_state["self"][3])
         owner.feature_own_bomb_pending = True
 
 
@@ -98,6 +101,8 @@ def action_history_state(owner) -> dict[str, object]:
         "own_bomb_pending": bool(getattr(owner, "feature_own_bomb_pending", False)),
         "previous_position": getattr(owner, "feature_previous_position", None),
         "previous_coin_target": getattr(owner, "feature_previous_coin_target", None),
+        "position_history": list(getattr(owner, "feature_position_history", ())),
+        "position_history_key": getattr(owner, "feature_position_history_key", None),
     }
 
 
@@ -117,6 +122,12 @@ def load_action_history_state(owner, state: dict | None) -> None:
     previous_target = state.get("previous_coin_target")
     owner.feature_previous_coin_target = (
         None if previous_target is None else tuple(previous_target))
+    owner.feature_position_history = [
+        tuple(position) for position in state.get("position_history", ())
+    ][-POSITION_HISTORY_LIMIT:]
+    history_key = state.get("position_history_key")
+    owner.feature_position_history_key = (
+        None if history_key is None else tuple(history_key))
 
 
 def own_bomb_history_for_state(owner, game_state: dict) -> dict[str, object]:

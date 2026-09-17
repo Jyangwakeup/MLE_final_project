@@ -1,4 +1,6 @@
 import copy
+import csv
+import hashlib
 import json
 from pathlib import Path
 import random
@@ -305,6 +307,24 @@ class ConstrainedRewardTests(unittest.TestCase):
 
 
 class SafetyPreregistrationTests(unittest.TestCase):
+    def test_new_task2_quality_gate_is_strict_and_prospective(self):
+        gate = json.loads(Path(
+            "experiments/task2_quality_gate.json").read_text(encoding="utf-8"))
+        self.assertEqual(gate["status"], "prospective")
+        self.assertEqual(gate["coins_per_round"], 9)
+        self.assertGreaterEqual(gate["gates"]["task2_mean_coins_min"], 6.0)
+        self.assertLessEqual(
+            gate["gates"]["task2_zero_coin_round_rate_max"], 0.05)
+        self.assertGreaterEqual(gate["gates"]["task2_all_coins_rate_min"], 0.1)
+        self.assertLessEqual(gate["gates"]["task2_max_steps_rate_max"], 0.9)
+        self.assertLessEqual(
+            gate["gates"]["task2_long_wait_loop_rate_max"], 0.1)
+        self.assertLessEqual(
+            gate["gates"]["task2_long_ping_pong_loop_rate_max"], 0.05)
+        self.assertEqual(
+            gate["gates"]["zero_utility_bomb_rate_max"], 0.10)
+        self.assertEqual(gate["gates"]["crates_per_bomb_min"], 1.50)
+
     def test_manifest_freezes_safety_gates_and_seed_isolation(self):
         manifest = json.loads(Path(
             "experiments/task2_safety_ablation.json").read_text(encoding="utf-8"))
@@ -340,6 +360,148 @@ class SafetyPreregistrationTests(unittest.TestCase):
                 self.assertEqual(
                     stopping["evaluation_seeds"], list(range(9000, 9020)))
                 self.assertEqual(stopping["consecutive_passes"], 3)
+
+    def test_task2_winner_requires_replication_and_one_main_validation(self):
+        winner = json.loads(Path(
+            "experiments/task2_winner.json").read_text(encoding="utf-8"))
+        self.assertEqual(winner["designation"], "task2_winner")
+        self.assertTrue(winner["qualified_for_task3"])
+        self.assertEqual(
+            [item["training_seed"] for item in winner["replications"]],
+            [11, 22, 33],
+        )
+        self.assertTrue(
+            winner["development_validation"]["all_training_seeds_passed"])
+        self.assertEqual(
+            winner["development_validation"]["selected_training_seed"], 22)
+        self.assertEqual(
+            winner["main_validation"]["evaluation_seeds"],
+            {"start": 11000, "end": 11099},
+        )
+        self.assertTrue(winner["main_validation"]["passed"])
+        self.assertEqual(
+            winner["reserved_final_test_seeds"],
+            {"start": 20000, "end": 20099, "used": False},
+        )
+        published = Path(winner["winner"]["published_checkpoint"])
+        self.assertTrue(published.is_file())
+        self.assertEqual(
+            hashlib.sha256(published.read_bytes()).hexdigest(),
+            winner["winner"]["checkpoint_sha256"],
+        )
+
+        evidence = winner["evaluation_evidence"]
+        evidence_path = Path(evidence["path"])
+        self.assertEqual(
+            hashlib.sha256(evidence_path.read_bytes()).hexdigest(),
+            evidence["sha256"],
+        )
+        with evidence_path.open(encoding="utf-8", newline="") as file:
+            rows = list(csv.DictReader(file))
+        self.assertEqual(len(rows), evidence["rows"])
+        development = [row for row in rows if row["phase"] == "development"]
+        main = [row for row in rows if row["phase"] == "main_validation"]
+        self.assertEqual(len(development), evidence["development_rows"])
+        self.assertEqual(len(main), evidence["main_validation_rows"])
+        self.assertEqual(
+            {int(row["training_seed"]) for row in development}, {11, 22, 33})
+        self.assertEqual(
+            {int(row["environment_seed"]) for row in development},
+            set(range(10000, 10020)),
+        )
+        self.assertEqual(
+            {int(row["environment_seed"]) for row in main},
+            set(range(11000, 11100)),
+        )
+        self.assertFalse(any(
+            20000 <= int(row["environment_seed"]) <= 20099 for row in rows))
+        self.assertTrue(all(
+            row["score"] == row["coins"]
+            for row in rows if row["role"].endswith("task1")
+        ))
+        self.assertTrue(all(row["status"] == "completed" for row in rows))
+        self.assertEqual(
+            {row["source_commit"] for row in rows}, {winner["source"]["commit"]})
+
+        def selected(source, *, seed=None, role=None):
+            return [
+                row for row in source
+                if (seed is None or int(row["training_seed"]) == seed)
+                and (role is None or row["role"] == role)
+            ]
+
+        def mean(source, field):
+            return sum(float(row[field]) for row in source) / len(source)
+
+        for replication in winner["replications"]:
+            seed = replication["training_seed"]
+            child_task2 = selected(
+                development, seed=seed, role="child_task2")
+            parent_task1 = selected(
+                development, seed=seed, role="parent_task1")
+            child_task1 = selected(
+                development, seed=seed, role="child_task1")
+            recorded = replication["development"]
+            self.assertAlmostEqual(mean(child_task2, "coins"), recorded["mean_coins"])
+            self.assertAlmostEqual(mean(child_task2, "crates"), recorded["mean_crates"])
+            self.assertAlmostEqual(mean(child_task2, "suicides"), recorded["suicide_rate"])
+            self.assertAlmostEqual(
+                mean(child_task1, "score") / mean(parent_task1, "score"),
+                recorded["task1_retention"],
+            )
+            self.assertAlmostEqual(
+                min(recorded["mean_coins"] / 2.0,
+                    recorded["mean_crates"] / 5.0),
+                recorded["balanced_capability"],
+            )
+
+        all_child_task2 = selected(development, role="child_task2")
+        aggregate = winner["development_validation"]["aggregate"]
+        self.assertAlmostEqual(
+            mean(all_child_task2, "coins"), aggregate["mean_coins"])
+        self.assertAlmostEqual(
+            mean(all_child_task2, "crates"), aggregate["mean_crates"])
+        development_rank = sorted(
+            winner["replications"],
+            key=lambda item: (
+                item["development"]["suicide_rate"],
+                -item["development"]["balanced_capability"],
+                -item["development"]["mean_coins"],
+                item["training_seed"],
+            ),
+        )
+        self.assertEqual(
+            [item["training_seed"] for item in development_rank],
+            winner["development_validation"]["checkpoint_rank"],
+        )
+
+        main_point = winner["main_validation"]["point"]
+        main_parent_task1 = selected(main, role="parent_task1")
+        main_child_task1 = selected(main, role="child_task1")
+        main_child_task2 = selected(main, role="child_task2")
+        self.assertAlmostEqual(
+            mean(main_parent_task1, "score"),
+            main_point["parent_task1_mean_score"],
+        )
+        self.assertAlmostEqual(
+            mean(main_child_task1, "score"),
+            main_point["child_task1_mean_score"],
+        )
+        self.assertAlmostEqual(
+            mean(main_child_task2, "coins"),
+            main_point["child_task2_mean_coins"],
+        )
+        self.assertAlmostEqual(
+            mean(main_child_task2, "crates"),
+            main_point["child_task2_mean_crates"],
+        )
+        self.assertLessEqual(
+            max(float(row["act_p95_seconds"]) for row in main), 0.05)
+        self.assertLessEqual(
+            max(float(row["act_max_seconds"]) for row in main), 0.5)
+        self.assertEqual(sum(int(row["invalid_actions"]) for row in main), 0)
+        self.assertEqual(sum(int(row["timeouts"]) for row in main), 0)
+        self.assertEqual(sum(int(row["skipped_actions"]) for row in main), 0)
 
 
 if __name__ == "__main__":

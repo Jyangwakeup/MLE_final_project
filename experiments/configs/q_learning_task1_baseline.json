@@ -1,0 +1,25 @@
+{
+  "algorithm": "q_learning",
+  "feature_id": "discrete-q-v2",
+  "reward_id": "r4_anti_oscillation",
+  "seed": 11,
+  "checkpoint": null,
+  "safety": {"version": "survival-mask-v1", "mode": "off", "horizon": 7, "fallback": "physical_q"},
+  "evaluation": {
+    "device": "cpu",
+    "seeds": [10000, 10001, 10002, 10003, 10004],
+    "n_rounds": 20,
+    "navigation_diagnostics": true
+  },
+  "training": {
+    "device": "cpu",
+    "n_rounds": 700,
+    "target_stage_action_steps": 100000,
+    "min_rounds": 1,
+    "checkpoint_snapshot_interval_action_steps": 25000,
+    "n_step": 1,
+    "exploration": {"version": "linear-v1", "start": 1.0, "end": 0.05, "decay_action_steps": 100000},
+    "retention": {"parent_fraction": 0.0, "distillation_weight": 0.0, "temperature": 1.0, "per_task_capacity": 20000, "current_warmup": 1},
+    "early_stopping": {"enabled": false}
+  }
+}

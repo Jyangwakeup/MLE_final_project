@@ -14,6 +14,7 @@ SAFETY_VERSION = "survival-mask-v1"
 ROBUST_SAFETY_VERSION = "survival-mask-v3"
 OPPONENT_ROBUST_SAFETY_VERSION = "survival-mask-v4"
 CONTROLLABLE_SAFETY_VERSION = "survival-mask-v5"
+SAFETY_VERSION_V2 = "survival-mask-v2"
 SAFETY_SPEC_ENV = "BOMBERMAN_SAFETY_SPEC"
 SAFETY_MODES = ("off", "exploration", "all")
 DEFAULT_SAFETY_SPEC = {
@@ -71,12 +72,14 @@ def resolve_safety_spec(
             "execution_orders", "danger_interval", "search_budget_ms",
             "robust_fallback",
         }
+    if version == SAFETY_VERSION_V2:
+        required.add("escape_area_fraction")
     if set(value) != required:
         raise ValueError(
             "config.safety must contain exactly: " + ", ".join(sorted(required)))
     if version not in {
         SAFETY_VERSION, ROBUST_SAFETY_VERSION, OPPONENT_ROBUST_SAFETY_VERSION,
-        CONTROLLABLE_SAFETY_VERSION,
+        CONTROLLABLE_SAFETY_VERSION, SAFETY_VERSION_V2,
     }:
         raise ValueError(f"Unsupported safety version: {value['version']!r}")
     if value["mode"] not in SAFETY_MODES:
@@ -128,6 +131,13 @@ def resolve_safety_spec(
                 raise ValueError(
                     f"survival-mask-v5 requires {field}={expected_value!r}")
         result.update(expected)
+    if version == SAFETY_VERSION_V2:
+        fraction = value["escape_area_fraction"]
+        if isinstance(fraction, bool) or not isinstance(fraction, (int, float)):
+            raise ValueError("survival-mask-v2 escape_area_fraction must be numeric")
+        if not 0.0 < float(fraction) <= 1.0:
+            raise ValueError("survival-mask-v2 escape_area_fraction must be in (0,1]")
+        result["escape_area_fraction"] = float(fraction)
     return result
 
 
@@ -149,6 +159,7 @@ def survival_mask(
     *,
     allow_bomb: bool,
     horizon: int = 7,
+    context=None,
 ) -> tuple[np.ndarray, bool]:
     """Return horizon-survivable actions, or the physical mask if none exist."""
     from agent_code.team_agent.feature_system.common import ACTIONS, build_safety_context
@@ -158,7 +169,7 @@ def survival_mask(
     physical = np.asarray(physical_mask, dtype=bool).copy()
     if not allow_bomb:
         physical[ACTIONS.index("BOMB")] = False
-    context = build_safety_context(game_state)
+    context = context if context is not None else build_safety_context(game_state)
     safe = np.zeros_like(physical)
     for index, action in enumerate(ACTIONS):
         reachability = (
@@ -172,8 +183,35 @@ def survival_mask(
     return physical, True
 
 
+def margin_preserving_mask(
+    game_state: dict,
+    physical_mask: np.ndarray,
+    *,
+    allow_bomb: bool,
+    own_bomb_pending: bool,
+    escape_area_fraction: float = 0.75,
+) -> tuple[np.ndarray, bool, bool]:
+    """Apply v1, then reject low-area actions while escaping one's own bomb.
+
+    Returns ``(mask, physical_fallback, margin_fallback)``.  The second-stage
+    fallback is deliberately the full v1 set, never a hand-picked direction.
+    """
+    first, physical_fallback = survival_mask(
+        game_state, physical_mask, allow_bomb=allow_bomb)
+    if physical_fallback or not own_bomb_pending:
+        return first, physical_fallback, False
+    diagnostics = survival_diagnostics(
+        game_state, physical_mask, allow_bomb=allow_bomb)
+    areas = np.asarray(diagnostics["escape_area"], dtype=np.float64)
+    best = float(np.max(areas[first]))
+    refined = first & (areas >= float(escape_area_fraction) * best)
+    if refined.any():
+        return refined, False, False
+    return first, False, True
+
+
 def survival_diagnostics(
-    game_state: dict, physical_mask: np.ndarray, *, allow_bomb: bool,
+    game_state: dict, physical_mask: np.ndarray, *, allow_bomb: bool, context=None,
 ) -> dict[str, list[int | bool]]:
     """Return factual per-action reachability used for experiment auditing."""
     from agent_code.team_agent.feature_system.common import ACTIONS, build_safety_context
@@ -181,7 +219,7 @@ def survival_diagnostics(
     physical = np.asarray(physical_mask, dtype=bool).copy()
     if not allow_bomb:
         physical[ACTIONS.index("BOMB")] = False
-    context = build_safety_context(game_state)
+    context = context if context is not None else build_safety_context(game_state)
     survives, safe_horizon, escape_area = [], [], []
     for index, action in enumerate(ACTIONS):
         reachability = (
@@ -208,6 +246,7 @@ def mask_for_decision(
     exploring: bool,
     own_bomb_pending: bool = False,
     own_bomb_state: Mapping[str, Any] | None = None,
+    context=None,
 ) -> tuple[np.ndarray, bool]:
     """Apply the configured constraint for one behavior decision."""
     spec = resolve_safety_spec(safety_spec)
@@ -218,7 +257,7 @@ def mask_for_decision(
     decision = safety_decision(
         game_state, physical_mask, spec, allow_bomb=allow_bomb,
         exploring=exploring, own_bomb_pending=own_bomb_pending,
-        own_bomb_state=own_bomb_state)
+        own_bomb_state=own_bomb_state, context=context)
     return decision.mask, decision.physical_fallback
 
 
@@ -231,6 +270,7 @@ def safety_decision(
     exploring: bool,
     own_bomb_pending: bool = False,
     own_bomb_state: Mapping[str, Any] | None = None,
+    context=None,
 ) -> SafetyDecision:
     """Apply v1 or the own-bomb redundant-route veto."""
     from agent_code.team_agent.feature_system.common import ACTIONS
@@ -247,9 +287,15 @@ def safety_decision(
     if not enabled:
         return SafetyDecision(
             physical, physical.copy(), False, False, (0,) * 6, (-1.0,) * 6)
+    if spec["version"] == SAFETY_VERSION_V2:
+        selected, fallback, _ = margin_preserving_mask(
+            game_state, physical, allow_bomb=allow_bomb,
+            own_bomb_pending=own_bomb_pending,
+            escape_area_fraction=float(spec["escape_area_fraction"]))
+        return SafetyDecision(selected, selected.copy(), fallback, False, (0,) * 6, (-1.0,) * 6)
     base, physical_fallback = survival_mask(
         game_state, physical, allow_bomb=allow_bomb,
-        horizon=int(spec["horizon"]))
+        horizon=int(spec["horizon"]), context=context)
     if spec["version"] == CONTROLLABLE_SAFETY_VERSION and not physical_fallback:
         from agent_code.team_agent.controllable_survival import (
             controllable_survival_actions, danger_interval_steps,
@@ -398,6 +444,16 @@ def safety_decision(
         tuple(routes), tuple(slack), opponent_fallback,
         tuple(scenario_counts), tuple(passing_counts),
         tuple(failing_profiles), tuple(failing_orders))
+    if spec["version"] == SAFETY_VERSION_V2:
+        decision, physical_fallback, _ = margin_preserving_mask(
+            game_state, physical_mask, allow_bomb=allow_bomb,
+            own_bomb_pending=own_bomb_pending,
+            escape_area_fraction=float(spec["escape_area_fraction"]),
+        )
+        return decision, physical_fallback
+    return survival_mask(
+        game_state, physical_mask, allow_bomb=allow_bomb,
+        horizon=int(spec["horizon"]), context=context)
 
 
 def avoidable_fatal_action(
@@ -406,6 +462,7 @@ def avoidable_fatal_action(
     physical_mask: np.ndarray,
     *,
     allow_bomb: bool,
+    context=None,
 ) -> bool:
     """Whether a selected doomed action had at least one survivable alternative."""
     from agent_code.team_agent.feature_system.common import ACTIONS, build_safety_context
@@ -413,7 +470,7 @@ def avoidable_fatal_action(
     physical = np.asarray(physical_mask, dtype=bool).copy()
     if not allow_bomb:
         physical[ACTIONS.index("BOMB")] = False
-    context = build_safety_context(game_state)
+    context = context if context is not None else build_safety_context(game_state)
     survivable = []
     for index, candidate in enumerate(ACTIONS):
         reachability = (

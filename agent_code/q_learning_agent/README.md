@@ -19,6 +19,7 @@ python experiments/run.py \
 ```
 
 后续阶段必须使用 `--resume-from runs/<direct-parent-run>` 创建新 run。当前新实验精确恢复协议是`training-resume-v11`，并保存阶段/总动作数、完整Safety合同、动作历史、n-step与Task 1收敛历史；v10及更早snapshot和final checkpoint默认只能冻结评估。
+Task 3 的84→117维阶段模型仅通过 `--transfer-task3-from` 显式迁移，不属于精确恢复。
 
 ## 冻结评估
 

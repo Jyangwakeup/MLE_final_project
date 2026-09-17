@@ -17,6 +17,9 @@ import numpy as np
 import settings as s
 from experiments.run import (
     TASKS,
+    _checkpoint_feature_contract,
+    _local_python_dependencies,
+    _source_hash,
     _task_settings,
     main as experiment_main,
     run_agent_evaluation,
@@ -27,11 +30,15 @@ from experiments.training import (
     early_stopping_config,
     replay_progress_interval,
 )
+from experiments.devices import resolve_device
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 RUNNER = PROJECT_ROOT / "experiments" / "run.py"
 BASE_CONFIG = PROJECT_ROOT / "experiments" / "configs" / "reward_r2_balanced.json"
+WARM_START_CONFIG = (
+    PROJECT_ROOT / "experiments" / "configs" / "reward_r5_conditional_loop.json"
+)
 BASE_EARLY_STOPPING = json.loads(BASE_CONFIG.read_text())["training"]["early_stopping"]
 RUNS_ROOT = PROJECT_ROOT / "runs"
 
@@ -50,6 +57,49 @@ class ExperimentRunTest(unittest.TestCase):
         self.outputs.append(path)
         return path
 
+    def test_source_dependencies_exclude_unrelated_agents(self):
+        dependencies = _local_python_dependencies([
+            PROJECT_ROOT / "experiments" / "run.py",
+            *(PROJECT_ROOT / "agent_code" / "rainbow_lite_agent").glob("*.py"),
+        ])
+        self.assertIn(
+            (PROJECT_ROOT / "agent_code/rainbow_lite_agent/callbacks.py").resolve(),
+            dependencies,
+        )
+        self.assertIn(
+            (PROJECT_ROOT / "agent_code/learning_common/runtime.py").resolve(),
+            dependencies,
+        )
+        self.assertNotIn(
+            (PROJECT_ROOT / "agent_code/double_q_lambda_agent/callbacks.py").resolve(),
+            dependencies,
+        )
+        self.assertNotIn(
+            (PROJECT_ROOT / "agent_code/learning_common/tile_coding.py").resolve(),
+            dependencies,
+        )
+
+    def test_source_dependencies_include_relative_feature_imports(self):
+        dependencies = _local_python_dependencies([
+            PROJECT_ROOT / "agent_code/double_dqn_continuous_v2_agent/callbacks.py",
+        ])
+        self.assertIn(
+            (PROJECT_ROOT / "agent_code/double_dqn_continuous_v2_agent/features.py").resolve(),
+            dependencies,
+        )
+        self.assertIn(
+            (PROJECT_ROOT / "agent_code/team_agent/feature_system/continuous_v2.py").resolve(),
+            dependencies,
+        )
+
+    def test_agent_source_hash_is_independent_of_task_config(self):
+        task1 = PROJECT_ROOT / "experiments/configs/expected_sarsa_lambda_task1.json"
+        task2 = PROJECT_ROOT / "experiments/configs/expected_sarsa_lambda_task2.json"
+        self.assertEqual(
+            _source_hash("expected_sarsa_lambda_agent", task1),
+            _source_hash("expected_sarsa_lambda_agent", task2),
+        )
+
     def test_four_tasks_select_expected_scenario_and_agents(self):
         self.assertEqual(set(TASKS), {1, 2, 3, 4})
         self.assertEqual(_task_settings(1, None), ("coin_navigation", "coin-heaven", ()))
@@ -66,6 +116,21 @@ class ExperimentRunTest(unittest.TestCase):
             _task_settings(4, None),
             ("full_match", "classic", ("rule_based_agent",) * 3),
         )
+
+    def test_board_checkpoint_feature_contract_accepts_null_vector_shape(self):
+        directory = self.output("board-contract")
+        directory.mkdir()
+        checkpoint = directory / "checkpoint.pkl"
+        with checkpoint.open("wb") as file:
+            pickle.dump({
+                "feature_id": "board-v1",
+                "feature_schema": {"vector_shape": None, "board_shape": [12, 17, 17]},
+            }, file)
+
+        contract = _checkpoint_feature_contract(checkpoint, "cnn_double_dqn")
+
+        self.assertEqual(contract["feature_id"], "board-v1")
+        self.assertIsNone(contract["runtime_adapter"])
 
     def test_task_constraints_reject_wrong_opponents(self):
         with self.assertRaises(ValueError):
@@ -103,6 +168,19 @@ class ExperimentRunTest(unittest.TestCase):
             ])
         self.assertEqual(result, 2)
         self.assertFalse(output.exists())
+
+    def test_cnn_training_uses_requested_cuda_device_when_available(self):
+        with patch("experiments.devices.torch.cuda.is_available", return_value=True), patch(
+            "experiments.devices.torch.cuda.get_device_name", return_value="Test GPU"
+        ):
+            device = resolve_device("cnn_double_dqn", "train", "cuda")
+        self.assertEqual(device["actual"], "cuda:0")
+        self.assertEqual(device["type"], "cuda")
+        self.assertEqual(device["name"], "Test GPU")
+
+    def test_cnn_evaluation_remains_cpu_when_cuda_is_requested(self):
+        with self.assertRaisesRegex(ValueError, "evaluation is forced to CPU"):
+            resolve_device("cnn_double_dqn", "evaluate", "cuda")
 
     def test_training_writes_checkpoint_table_summary_and_chart(self):
         output = self.output("train")
@@ -253,6 +331,40 @@ class ExperimentRunTest(unittest.TestCase):
         self.assertEqual(metadata["termination"]["cumulative_completed_rounds"], 2)
         episode = json.loads((child / "episodes.jsonl").read_text().splitlines()[0])
         self.assertEqual(episode["round_index"], 2)
+
+    def test_training_can_warm_start_policy_with_a_new_reward(self):
+        import torch
+
+        parent = self.output("warm-parent")
+        child = self.output("warm-child")
+        self.outputs.remove(child)
+        source_checkpoint = parent / "checkpoints" / "final.pt"
+        with patch.object(s, "MAX_STEPS", 3):
+            run_agent_session(
+                BASE_CONFIG, "train", 11, parent,
+                "double_dqn_continuous_agent", (), "coin-heaven", 1,
+                source_checkpoint, "coin_navigation", "none", 1,
+            )
+            result = experiment_main([
+                "--config", str(WARM_START_CONFIG), "--mode", "train",
+                "--task", "2", "--agent", "double_dqn_continuous_agent",
+                "--n-rounds", "1", "--seed", "11",
+                "--init-from-checkpoint", str(source_checkpoint),
+                "--output", str(child), "--replay-policy", "none",
+            ])
+
+        self.assertEqual(result, 0)
+        self.outputs.append(child)
+        metadata = json.loads((child / "metadata.json").read_text())
+        self.assertEqual(metadata["lineage"]["kind"], "warm_start")
+        self.assertEqual(metadata["lineage"]["inherited"], ["policy_weights"])
+        self.assertEqual(metadata["reward_id"], "r5_conditional_loop")
+        child_checkpoint = torch.load(
+            child / "checkpoints" / "final.pt", map_location="cpu",
+            weights_only=True,
+        )
+        self.assertEqual(child_checkpoint["reward_id"], "r5_conditional_loop")
+        self.assertLessEqual(child_checkpoint["action_steps"], 3)
 
     def test_same_task_resume_matches_uninterrupted_next_round(self):
         continuous = self.output("continuous")

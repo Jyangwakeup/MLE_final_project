@@ -31,6 +31,13 @@ from agent_code.cnn_double_dqn_agent import features as board_features
 from agent_code.cnn_double_dqn_agent import callbacks as cnn_callbacks
 from agent_code.cnn_double_dqn_agent import train as cnn_train
 from agent_code.cnn_double_dqn_agent.model import BoardQNetwork, build_learner as build_cnn
+from agent_code.cnn_path_double_dqn_agent.features import (
+    features_for_state as path_features, initialize_history, record_position,
+)
+from agent_code.cnn_path_double_dqn_agent.callbacks import cached_features
+from agent_code.cnn_path_double_dqn_agent.learner import PathReplay, PathTransition
+from agent_code.learning_common.n_step import NStepAccumulator
+from agent_code.cnn_path_double_dqn_agent.model import PathBoardQNetwork
 from agent_code.hybrid_dueling_double_dqn_agent import features as hybrid_features
 from agent_code.hybrid_dueling_double_dqn_agent import callbacks as hybrid_callbacks
 from agent_code.hybrid_dueling_double_dqn_agent import train as hybrid_train
@@ -67,6 +74,60 @@ class FeatureAdapterTests(unittest.TestCase):
         self.assertEqual(hybrid.vector.shape, (70,))
         np.testing.assert_array_equal(board.board, hybrid.board)
         np.testing.assert_array_equal(continuous.vector[:70], hybrid.vector)
+
+    def test_path_board_has_objective_and_history_channels(self):
+        owner = SimpleNamespace()
+        initialize_history(owner)
+        state = game_state()
+        features = path_features(owner, state)
+        self.assertEqual(features.board.shape, (17, 17, 17))
+        self.assertEqual(features.board[12, 3, 1], 0.0)
+        self.assertEqual(features.board[12, 1, 1], 2.0 / 32.0)
+        self.assertTrue(np.all(features.board[14] == 1.0))
+        record_position(owner, state)
+        after = path_features(owner, state)
+        self.assertEqual(after.board[15, 1, 1], 1.0)
+        self.assertEqual(after.board[16, 1, 1], 1.0 / 16.0)
+        state["round"] = 2
+        record_position(owner, state)
+        reset = path_features(owner, state)
+        self.assertEqual(reset.board[16, 1, 1], 1.0 / 16.0)
+
+    def test_path_observation_is_cached_before_history_advances(self):
+        owner = SimpleNamespace(_feature_cache_key=None, _feature_cache_value=None)
+        initialize_history(owner)
+        state = game_state()
+        observed = cached_features(owner, state)
+        record_position(owner, state)
+        replayed = cached_features(owner, state)
+        self.assertIs(observed, replayed)
+        self.assertEqual(replayed.board[15].sum(), 0.0)
+
+    def test_path_self_position_and_coin_order(self):
+        for coins in ([], [(3, 1)], [(3, 1), (5, 1)], [(5, 1), (3, 1)]):
+            state = game_state()
+            state["coins"] = coins
+            state["self"] = ("me", 0, True, (1, 3))
+            board = path_features(SimpleNamespace(), state).board
+            self.assertEqual(board[3].sum(), 1)
+            self.assertEqual(board[3, 1, 3], 1)
+
+    def test_path_two_states_and_new_round(self):
+        owner = SimpleNamespace()
+        first = game_state()
+        before = cached_features(owner, first)
+        record_position(owner, first)
+        second = game_state()
+        second["step"] = 2
+        second["self"] = ("me", 0, True, (3, 1))
+        after = cached_features(owner, second)
+        record_position(owner, second)
+        self.assertIs(cached_features(owner, first), before)
+        self.assertIs(cached_features(owner, second), after)
+        third = game_state()
+        third["round"] = 2
+        reset = cached_features(owner, third)
+        self.assertEqual(reset.board[15:].sum(), 0)
 
     def test_canonical_action_mapping_is_a_bijection(self):
         features = dq_callbacks.features_for_state(game_state())
@@ -237,6 +298,48 @@ class AlgorithmTests(unittest.TestCase):
         })
         self.assertEqual(torch.get_num_threads(), 1)
 
+    def test_path_cnn_and_compact_replay(self):
+        network = PathBoardQNetwork()
+        self.assertEqual(network(torch.zeros(3, 17, 17, 17)).shape, (3, 6))
+        replay = PathReplay(4, 7)
+        board = path_features(SimpleNamespace(cnn_path_history=()), game_state()).board
+        transition = ReplayTransition(
+            board, 1, 0.5, board, False,
+            np.array([True, True, False, False, True, False]),
+        )
+        replay.append(transition)
+        restored = PathReplay(4, 99)
+        restored.load_state_dict(replay.state_dict())
+        batch = restored.sample_batch(1)
+        np.testing.assert_allclose(batch["states"], board[None], atol=1.0 / 32.0)
+        self.assertEqual(batch["actions"].tolist(), [1])
+
+    def test_path_n_step_return_and_terminal_tail(self):
+        board = path_features(SimpleNamespace(cnn_path_history=()), game_state()).board
+        legal = np.array([True, True, False, False, True, False])
+        accumulator = NStepAccumulator(4, 0.95)
+        transitions = [PathTransition(board, 1, reward, board, False, legal)
+                       for reward in (1.0, 2.0, 3.0, 4.0)]
+        emitted = []
+        for transition in transitions:
+            emitted.extend(accumulator.append(transition))
+        self.assertEqual(len(emitted), 1)
+        self.assertEqual(emitted[0].steps, 4)
+        self.assertAlmostEqual(emitted[0].reward, 1 + .95 * 2 + .95**2 * 3 + .95**3 * 4)
+        self.assertFalse(emitted[0].done)
+
+        accumulator = NStepAccumulator(4, 0.95)
+        accumulator.append(PathTransition(board, 1, 1.0, board, False, legal))
+        accumulator.append(PathTransition(board, 1, 2.0, board, False, legal))
+        tail = accumulator.append(PathTransition(board, 1, 3.0, None, True, None))
+        self.assertEqual([item.steps for item in tail], [3, 2, 1])
+        self.assertTrue(all(item.done and item.next_state is None for item in tail))
+        self.assertAlmostEqual(tail[0].reward, 1 + .95 * 2 + .95**2 * 3)
+
+        replay = PathReplay(4, 7)
+        replay.append(emitted[0])
+        self.assertEqual(replay.sample_batch(1)["steps"].tolist(), [4])
+
 
 class CheckpointTests(unittest.TestCase):
     def _self(self, train):
@@ -298,6 +401,47 @@ class CheckpointTests(unittest.TestCase):
                     "agent_rng_state", "feature_schema", "network_spec", "hyperparameters",
                 ):
                     self.assertIn(field, payload)
+
+    def test_neural_warm_start_loads_only_policy_weights(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "source.pt"
+            destination = root / "destination.pt"
+            source_env = {
+                "BOMBERMAN_CHECKPOINT": str(source),
+                "BOMBERMAN_FEATURE_ID": "continuous-v2",
+                "BOMBERMAN_REWARD_ID": "r1",
+                "BOMBERMAN_TRAINING_TASK": "coin_navigation",
+            }
+            with patch.dict(os.environ, source_env, clear=True):
+                original = self._self(True)
+                continuous_callbacks.setup(original)
+                continuous_train.setup_training(original)
+                continuous_train.end_of_round(original, game_state(), "WAIT", [])
+
+            warm_env = {
+                "BOMBERMAN_CHECKPOINT": str(destination),
+                "BOMBERMAN_INIT_CHECKPOINT": str(source),
+                "BOMBERMAN_FEATURE_ID": "continuous-v2",
+                "BOMBERMAN_REWARD_ID": "r5_conditional_loop",
+                "BOMBERMAN_TRAINING_TASK": "crate_navigation",
+            }
+            with patch.dict(os.environ, warm_env, clear=True):
+                warmed = self._self(True)
+                continuous_callbacks.setup(warmed)
+
+            source_payload = torch.load(source, map_location="cpu", weights_only=True)
+            for name, value in warmed.model.policy.state_dict().items():
+                torch.testing.assert_close(value.cpu(), source_payload["policy"][name])
+                torch.testing.assert_close(
+                    warmed.model.target.state_dict()[name].cpu(),
+                    source_payload["policy"][name],
+                )
+            self.assertEqual(warmed.reward_id, "r5_conditional_loop")
+            self.assertEqual(warmed.action_steps, 0)
+            self.assertEqual(warmed.model.updates, 0)
+            self.assertEqual(len(warmed.model.replay), 0)
+            self.assertFalse(warmed.model.optimizer.state)
 
     def test_terminal_transition_replaces_pending_transition(self):
         owner = self._self(True)

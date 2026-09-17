@@ -26,12 +26,14 @@ from agent_code.learning_common.training_spec import resolve_safety_replay_spec
 CHECKPOINT_SCHEMA_VERSION = "training-resume-v11"
 MIGRATABLE_CHECKPOINT_SCHEMA = "training-resume-v6"
 TASK3_SAFETY_TRANSFER_PARENT_SCHEMA = "training-resume-v7"
+TASK3_TRANSFER_PARENT_SCHEMA = "training-resume-v7"
 TASK_ORDER = ("coin_navigation", "crate_navigation", "weak_opponents", "full_match")
 RETAINED_GENERATIONS = 2
 TABLE_ALGORITHMS = frozenset(("q_learning", "double_q_learning"))
 TORCH_ALGORITHMS = frozenset((
-    "dqn", "double_dqn", "cnn_double_dqn", "hybrid_dueling_double_dqn",
+    "dqn", "double_dqn", "cnn_double_dqn", "hybrid_dueling_double_dqn", "rainbow_lite",
 ))
+PICKLE_ALGORITHMS = frozenset(("expected_sarsa_lambda", "double_q_lambda"))
 
 
 @dataclass(frozen=True)
@@ -48,6 +50,7 @@ class LoadedSnapshot:
     runner_state: dict[str, Any]
     learner_payload: dict[str, Any] | None
     learner_path: Path | None
+    source_hash_scope: str | None = None
     lost_rounds: int = 0
     fallback_reason: str | None = None
 
@@ -72,6 +75,7 @@ class LoadedSnapshot:
             "exploration_spec": metadata["exploration_spec"],
             "source_commit": self.source_commit,
             "source_hash": self.source_hash,
+            "source_hash_scope": self.source_hash_scope,
             "network_spec": metadata.get("network_spec"),
             "hyperparameters": metadata.get("hyperparameters", {}),
             "safe_exploration": metadata.get("safe_exploration", False),
@@ -82,6 +86,7 @@ class LoadedSnapshot:
             "performance_stopping": metadata.get("performance_stopping"),
             "safety_replay_spec": metadata.get(
                 "safety_replay_spec", resolve_safety_replay_spec()),
+            "transfer_contract": metadata.get("transfer_contract"),
         }
 
 
@@ -148,6 +153,9 @@ def _read_checkpoint_metadata(checkpoint: Path, algorithm: str) -> dict[str, Any
     if algorithm in TABLE_ALGORITHMS:
         with checkpoint.open("rb") as file:
             return pickle.load(file)
+    if algorithm in PICKLE_ALGORITHMS:
+        with checkpoint.open("rb") as file:
+            return pickle.load(file)
     if algorithm in TORCH_ALGORITHMS:
         try:
             import torch
@@ -171,6 +179,7 @@ def commit_training_snapshot(
     early_stopping_rewards: list[float],
     source_commit: str | None,
     source_hash: str | None = None,
+    source_hash_scope: str | None = None,
     cumulative_completed_rounds: int | None = None,
     early_stopping_config: dict[str, Any] | None = None,
     performance_stopping: dict[str, Any] | None = None,
@@ -223,10 +232,20 @@ def commit_training_snapshot(
             required.update(
                 {"q_table"} if algorithm == "q_learning"
                 else {"q_table_a", "q_table_b"})
+        elif algorithm in PICKLE_ALGORITHMS:
+            required.update({"weights", "traces", "tile_coder", "updates", "learner_rng_state"})
         else:
             required.update({
                 "policy", "target", "optimizer", "replay", "torch_rng_state",
                 "updates", "teacher",
+            })
+        learner_feature_id = normalize_feature_id(
+            learner.get("feature_id"), learner.get("feature_version"))
+        if learner_feature_id == "continuous-phase-v1":
+            required.update({"phase_history_state", "transfer_contract"})
+            required.update({
+                "distillation_dataset", "distillation_dataset_hash",
+                "distillation_rng_state",
             })
         missing = sorted(required.difference(learner))
         if missing:
@@ -237,8 +256,7 @@ def commit_training_snapshot(
             raise ValueError("Checkpoint uses an incompatible resume schema")
         if learner["algorithm"] != algorithm or learner["training_task"] != task:
             raise ValueError("Checkpoint algorithm/task does not match the run")
-        feature_id = normalize_feature_id(
-            learner.get("feature_id"), learner.get("feature_version"))
+        feature_id = learner_feature_id
         feature_schema = learner.get(
             "feature_schema", feature_schema_contract(feature_id))
         board_contract = feature_schema.get("board_shape")
@@ -269,6 +287,9 @@ def commit_training_snapshot(
             np.savez_compressed(temporary / "q_table.npz", **arrays)
             (temporary / "learner.json").write_bytes(_json_bytes(learner))
             learner_files = ["learner.json", "q_table.npz"]
+        elif algorithm in PICKLE_ALGORITHMS:
+            _link_or_copy(checkpoint, temporary / "learner.pkl")
+            learner_files = ["learner.pkl"]
         else:
             # Agent checkpoint writers publish by atomic replace.  A hard link
             # therefore pins this immutable inode even when the working path is
@@ -300,6 +321,7 @@ def commit_training_snapshot(
                 "performance_stopping": performance_stopping,
                 "safety_replay_spec": learner.get(
                     "safety_replay_spec", resolve_safety_replay_spec()),
+                "transfer_contract": learner.get("transfer_contract"),
             },
             "cumulative_completed_rounds": (
                 int(round_index)
@@ -326,6 +348,7 @@ def commit_training_snapshot(
             "seed": int(seed),
             "source_commit": source_commit,
             "source_hash": source_hash,
+            "source_hash_scope": source_hash_scope,
             "task": task,
         }
         (temporary / "manifest.json").write_bytes(_json_bytes(manifest))
@@ -389,6 +412,8 @@ def _load_generation(
                     tuple(int(item) for item in key): value.astype(np.float32, copy=True)
                     for key, value in zip(keys, values)
                 }
+    elif algorithm in PICKLE_ALGORITHMS:
+        learner_path = directory / "learner.pkl"
     else:
         learner_path = directory / "learner.pt"
     return LoadedSnapshot(
@@ -401,6 +426,7 @@ def _load_generation(
         round_index=int(manifest["round_index"]),
         source_commit=manifest.get("source_commit"),
         source_hash=manifest.get("source_hash"),
+        source_hash_scope=manifest.get("source_hash_scope"),
         runner_state=runner,
         learner_payload=payload,
         learner_path=learner_path,
@@ -463,6 +489,11 @@ def load_task3_safety_transfer_snapshot(run_directory: Path) -> LoadedSnapshot:
     """Load a complete v7 Task 2 snapshot for the explicit v9 transfer."""
     return _load_training_snapshot(
         run_directory, expected_schema=TASK3_SAFETY_TRANSFER_PARENT_SCHEMA)
+
+def load_task3_transfer_snapshot(run_directory: Path) -> LoadedSnapshot:
+    """Load a complete v7 Task 2 parent through the explicit transfer path."""
+    return _load_training_snapshot(
+        run_directory, expected_schema=TASK3_TRANSFER_PARENT_SCHEMA)
 
 
 def materialize_learner_checkpoint(snapshot: LoadedSnapshot, destination: Path) -> None:
@@ -604,6 +635,150 @@ def materialize_task3_safety_checkpoint(
     temporary.replace(destination)
 
 
+def _expanded_network_state(state: dict[str, Any], new_input_size: int = 117):
+    """Copy an 84-input MLP into a larger input while zeroing new columns."""
+    import torch
+
+    expanded = {name: value.clone() for name, value in state.items()}
+    name = "layers.0.weight"
+    source = state[name]
+    if tuple(source.shape) != (128, 84):
+        raise ValueError("Task 3 transfer requires an 84x128 parent first layer")
+    weight = torch.zeros(
+        (source.shape[0], new_input_size), dtype=source.dtype,
+        device=source.device)
+    weight[:, :source.shape[1]].copy_(source)
+    expanded[name] = weight
+    return expanded
+
+
+def load_distillation_dataset(path: Path) -> tuple[dict[str, Any], str]:
+    """Load and hash one immutable 117-dimensional teacher dataset."""
+    path = Path(path).expanduser().resolve()
+    if not path.is_file():
+        raise FileNotFoundError(f"Task 3 distillation dataset does not exist: {path}")
+    with np.load(path, allow_pickle=False) as archive:
+        required = {"states", "legal_masks", "teacher_q", "environment_seeds", "task_ids"}
+        missing = sorted(required.difference(archive.files))
+        if missing:
+            raise ValueError("Distillation dataset is missing: " + ", ".join(missing))
+        states = archive["states"].astype(np.float32, copy=True)
+        legal = archive["legal_masks"].astype(bool, copy=True)
+        teacher_q = archive["teacher_q"].astype(np.float32, copy=True)
+        environment_seeds = archive["environment_seeds"].astype(np.int64, copy=True)
+        task_ids = archive["task_ids"].astype(np.int8, copy=True)
+    if states.ndim != 2 or states.shape[1] != 117:
+        raise ValueError("Distillation states must have shape (N,117)")
+    if legal.shape != (len(states), 6) or teacher_q.shape != legal.shape:
+        raise ValueError("Distillation masks/Q values must have shape (N,6)")
+    if environment_seeds.shape != (len(states),) or task_ids.shape != (len(states),):
+        raise ValueError("Distillation provenance arrays have an incompatible shape")
+    if set(np.unique(task_ids)) != {1, 2}:
+        raise ValueError("Distillation dataset must include Task 1 and Task 2")
+    if any(np.count_nonzero(task_ids == task) > 10_000 for task in (1, 2)):
+        raise ValueError("Distillation dataset exceeds the per-Task 10,000-row cap")
+    if not set(environment_seeds).issubset(set(range(6000, 6100))):
+        raise ValueError("Distillation data must use training-only seeds 6000-6099")
+    if not legal.any(axis=1).all() or not np.isfinite(teacher_q).all():
+        raise ValueError("Distillation dataset contains invalid masks or Q values")
+    return {
+        "states": states, "legal_masks": legal, "teacher_q": teacher_q,
+        "environment_seeds": environment_seeds, "task_ids": task_ids,
+    }, _sha256(path)
+
+
+def materialize_task3_transfer_checkpoint(
+    snapshot: LoadedSnapshot,
+    destination: Path,
+    *,
+    child_contract: dict[str, Any],
+    distillation_path: Path,
+) -> dict[str, Any]:
+    """Create a fresh v8 phase learner from one validated v7 Task 2 parent."""
+    if snapshot.learner_path is None:
+        raise ValueError("Task 3 transfer requires a neural parent")
+    try:
+        import torch
+    except ImportError as exception:
+        raise RuntimeError("PyTorch is required for Task 3 transfer") from exception
+    parent = torch.load(snapshot.learner_path, map_location="cpu", weights_only=True)
+    dataset, dataset_hash = load_distillation_dataset(distillation_path)
+    seed = int(child_contract["seed"])
+    with torch.random.fork_rng(devices=[]):
+        torch.manual_seed(seed)
+        torch_rng_state = torch.get_rng_state()
+    policy = _expanded_network_state(parent["policy"])
+    target = _expanded_network_state(parent.get("target", parent["policy"]))
+    transfer_contract = {
+        "version": "task2-to-phase-v1",
+        "parent_run": str(snapshot.run_directory),
+        "parent_generation": snapshot.generation,
+        "parent_generation_hash": snapshot.generation_hash,
+        "parent_checkpoint_sha256": _sha256(snapshot.learner_path),
+        "parent_feature_id": "continuous-v2",
+        "parent_input_columns": 84,
+        "new_zero_columns": 33,
+        "distillation_dataset": str(Path(distillation_path).resolve()),
+        "distillation_dataset_sha256": dataset_hash,
+    }
+    payload = {
+        "checkpoint_schema": CHECKPOINT_SCHEMA_VERSION,
+        "algorithm": "double_dqn",
+        "actions": list(child_contract["actions"]),
+        "feature_id": child_contract["feature_id"],
+        "feature_version": None,
+        "feature_schema": child_contract["feature_schema"],
+        "reward_id": child_contract["reward_id"],
+        "reward_version": child_contract["reward_id"],
+        "reward_spec": child_contract["reward_spec"],
+        "hyperparameters": child_contract["hyperparameters"],
+        "network_spec": child_contract["network_spec"],
+        "policy": policy, "target": target,
+        "replay": {
+            "format": "vector-replay-task-partitioned-v2", "count": 0,
+            "capacity": int(child_contract["retention_spec"]["per_task_capacity"]),
+            "current_task": child_contract["task"],
+            "rng_state": random.Random(seed).getstate(),
+        },
+        "torch_rng_state": torch_rng_state,
+        "training_device_name": child_contract["training_device_name"],
+        "training_device_type": child_contract["training_device_type"],
+        "peak_cuda_memory_bytes": 0,
+        "updates": 0, "teacher": None,
+        "retention_spec": child_contract["retention_spec"],
+        "double_dqn": True,
+        "distillation_dataset": {
+            "states": torch.as_tensor(dataset["states"]),
+            "legal_masks": torch.as_tensor(dataset["legal_masks"]),
+            "teacher_q": torch.as_tensor(dataset["teacher_q"]),
+        },
+        "distillation_dataset_hash": dataset_hash,
+        "distillation_rng_state": random.Random(seed + 104729).getstate(),
+        "total_action_steps": int(parent.get("total_action_steps", 0)),
+        "stage_action_steps": 0,
+        "action_steps": int(parent.get("total_action_steps", 0)),
+        "agent_seed": seed,
+        "agent_rng_state": random.Random(seed).getstate(),
+        "exploration_spec": child_contract["exploration_spec"],
+        "safe_exploration": child_contract["safe_exploration"],
+        "safe_exploration_decisions": 0, "safe_exploration_fallbacks": 0,
+        "safety_spec": child_contract["safety_spec"],
+        "safety_decisions": 0, "safety_interventions": 0,
+        "safety_fallbacks": 0,
+        "action_history_state": None,
+        "phase_history_state": None,
+        "n_step": child_contract["n_step"], "n_step_state": None,
+        "training_budget": child_contract["training_budget"],
+        "training_task": child_contract["task"],
+        "transfer_contract": transfer_contract,
+    }
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    temporary = destination.with_name(destination.name + ".tmp")
+    torch.save(payload, temporary)
+    temporary.replace(destination)
+    return transfer_contract
+
+
 def validate_task3_safety_transfer(
     parent: dict[str, Any], child: dict[str, Any], *, parent_status: str,
 ) -> None:
@@ -655,6 +830,35 @@ def validate_task3_safety_transfer(
             "the preregistered five-step bomb-credit horizon")
 
 
+
+
+def validate_task3_transfer(
+    parent: dict[str, Any], child: dict[str, Any], *, parent_status: str,
+) -> None:
+    """Validate the intentionally narrow v7 Task 2 to v8 phase seam."""
+    if parent.get("checkpoint_schema") != TASK3_TRANSFER_PARENT_SCHEMA:
+        raise ValueError("Task 3 transfer requires a training-resume-v7 parent")
+    if child.get("checkpoint_schema") != CHECKPOINT_SCHEMA_VERSION:
+        raise ValueError("Task 3 transfer target must use training-resume-v11")
+    if parent_status not in {"completed", "early_stopped"}:
+        raise ValueError("Task 3 transfer requires a completed Task 2 parent")
+    if parent.get("task") != "crate_navigation" or child.get("task") != "weak_opponents":
+        raise ValueError("Task 3 transfer must promote Task 2 to Task 3")
+    if parent.get("algorithm") != "double_dqn" or child.get("algorithm") != "double_dqn":
+        raise ValueError("Task 3 transfer requires Double DQN")
+    if parent.get("feature_id") != "continuous-v2":
+        raise ValueError("Task 3 transfer requires an 84-dimensional continuous-v2 parent")
+    if tuple(parent.get("feature_schema", {}).get("vector_shape", ())) != (84,):
+        raise ValueError("Task 3 transfer parent feature shape must be 84")
+    if child.get("feature_id") != "continuous-phase-v1":
+        raise ValueError("Task 3 transfer child must use continuous-phase-v1")
+    if tuple(child.get("feature_schema", {}).get("vector_shape", ())) != (117,):
+        raise ValueError("Task 3 transfer child feature shape must be 117")
+    for field in ("seed", "agent_seed", "actions"):
+        if parent.get(field) != child.get(field):
+            raise ValueError(f"Task 3 transfer {field} must match the parent")
+
+
 def validate_v6_migration(
     parent: dict[str, Any], child: dict[str, Any], *, parent_status: str,
 ) -> None:
@@ -662,7 +866,7 @@ def validate_v6_migration(
     if parent.get("checkpoint_schema") != MIGRATABLE_CHECKPOINT_SCHEMA:
         raise ValueError("Migration requires a training-resume-v6 parent")
     if child.get("checkpoint_schema") != CHECKPOINT_SCHEMA_VERSION:
-        raise ValueError("Migration target must use training-resume-v7")
+        raise ValueError("Migration target must use training-resume-v11")
     if parent_status != "completed":
         raise ValueError("Migration requires a completed v6 parent run")
     if parent.get("task") != "coin_navigation" or child.get("task") != "coin_navigation":
@@ -700,6 +904,10 @@ def validate_resume_transition(
     ):
         if parent.get(field) != child.get(field):
             raise ValueError(f"Resume {field} must match the parent run")
+    parent_source_scope = parent.get("source_hash_scope")
+    child_source_scope = child.get("source_hash_scope")
+    if parent_source_scope != child_source_scope:
+        raise ValueError("Resume source_hash_scope must match the parent run")
     try:
         parent_feature = normalize_feature_id(
             parent.get("feature_id"), parent.get("feature_version"))
@@ -736,7 +944,9 @@ def validate_resume_transition(
     except (KeyError, ValueError) as exception:
         raise ValueError("Resume task is not part of the curriculum") from exception
     if child_index == parent_index:
-        for field in ("n_step", "retention_spec", "performance_stopping"):
+        for field in (
+            "n_step", "retention_spec", "performance_stopping", "transfer_contract",
+        ):
             if parent.get(field) != child.get(field):
                 raise ValueError(f"Same-Task resume {field} must match the parent run")
         if parent.get("exploration_spec") != child.get("exploration_spec"):
@@ -757,4 +967,8 @@ def validate_resume_transition(
         raise ValueError("Resume must use the same or direct next Task")
     if parent_status not in {"completed", "early_stopped"}:
         raise ValueError("Promotion to the next Task requires a completed parent run")
+    if parent_feature == "continuous-phase-v1" and (
+        parent.get("transfer_contract") != child.get("transfer_contract")
+    ):
+        raise ValueError("Resume transfer_contract must match the parent run")
     return "next_task"

@@ -1,0 +1,37 @@
+{
+  "algorithm": "cnn_distilled_double_dqn",
+  "feature_id": null,
+  "reward_id": "r7_safe_credit_sparse",
+  "safety": {
+    "version": "survival-mask-v1",
+    "mode": "all",
+    "horizon": 7,
+    "fallback": "physical_q"
+  },
+  "cnn_distillation": {
+    "architecture": "global",
+    "dataset": "runs/cnn_distilled_t1_j471456/teacher_task1.npz",
+    "temperature": 1.0,
+    "teacher_kl_weight": 2.0
+  },
+  "evaluation": {
+    "device": "cpu",
+    "navigation_diagnostics": true,
+    "seeds": [19000],
+    "n_rounds": 1
+  },
+  "training": {
+    "device": "cpu",
+    "n_step": 4,
+    "n_rounds": 3,
+    "target_stage_action_steps": null,
+    "min_rounds": 1,
+    "exploration": {
+      "version": "linear-v1",
+      "start": 0.3,
+      "end": 0.05,
+      "decay_action_steps": 120000
+    },
+    "early_stopping": {"enabled": false}
+  }
+}

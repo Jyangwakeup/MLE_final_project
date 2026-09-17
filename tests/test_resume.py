@@ -147,6 +147,7 @@ class ResumeProtocolTestCase(unittest.TestCase):
             "retention_spec": RETENTION_SPEC,
             "training_budget": TRAINING_BUDGET,
             "source_commit": "abc123", "source_hash": "source-hash",
+            "source_hash_scope": "agent-runtime-v1",
         }
         validate_resume_transition(parent, {
             **parent, "task": "weak_opponents",
@@ -191,6 +192,13 @@ class ResumeProtocolTestCase(unittest.TestCase):
                 parent, {**parent, "source_hash": "different-source"},
                 parent_status="completed",
             )
+
+        legacy_parent = dict(parent)
+        legacy_parent.pop("source_hash_scope")
+        legacy_child = {**legacy_parent, "source_hash": "different-source"}
+        with self.assertRaisesRegex(ValueError, "source_hash"):
+            validate_resume_transition(
+                legacy_parent, legacy_child, parent_status="running")
 
     def test_resume_rejects_new_feature_schema_mismatch(self):
         parent = {

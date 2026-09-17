@@ -192,6 +192,253 @@ REWARD_SPECS = {
         "avoidable_fatal_action": -20.0,
         "suicide_dominates_positive_events": 1.0,
     },
+    "r9_phase_resource": {
+        "step": -0.01,
+        "coin_early": 3.0, "coin_middle": 1.5, "coin_late": 1.0,
+        "crate_early": 0.2, "crate_middle": 0.05, "crate_late": 0.0,
+        "kill_early": 5.0, "kill_middle": 8.0, "kill_late": 7.5,
+        "killed_self": -30.0, "got_killed": -10.0,
+        "invalid_action": -0.1, "unsafe_bomb_penalty": -20.0,
+        "potential_gamma": 0.95, "potential_danger_weight": 1.0,
+        "phase_resource_potential": 1.0,
+        "suicide_dominates_positive_events": 1.0,
+    },
+    "r9_phase_combat": {
+        "step": -0.01,
+        "coin_early": 3.0, "coin_middle": 1.5, "coin_late": 1.0,
+        "crate_early": 0.2, "crate_middle": 0.05, "crate_late": 0.0,
+        "kill_early": 5.0, "kill_middle": 8.0, "kill_late": 7.5,
+        "killed_self": -30.0, "got_killed": -10.0,
+        "invalid_action": -0.1, "unsafe_bomb_penalty": -20.0,
+        "potential_gamma": 0.95, "potential_danger_weight": 1.0,
+        "phase_resource_potential": 1.0, "phase_combat_potential": 1.0,
+        "suicide_dominates_positive_events": 1.0,
+    },
+    "r9_phase_full": {
+        "step": -0.01,
+        "coin_early": 3.0, "coin_middle": 1.5, "coin_late": 1.0,
+        "crate_early": 0.2, "crate_middle": 0.05, "crate_late": 0.0,
+        "kill_early": 5.0, "kill_middle": 8.0, "kill_late": 7.5,
+        "killed_self": -30.0, "got_killed": -10.0,
+        "invalid_action": -0.1, "unsafe_bomb_penalty": -20.0,
+        "potential_gamma": 0.95, "potential_danger_weight": 1.0,
+        "phase_resource_potential": 1.0, "phase_combat_potential": 1.0,
+        "phase_mobility_potential": 1.0,
+        "suicide_dominates_positive_events": 1.0,
+    },
+    "r9_safe_credit_anti_loop": {
+        "step": -0.01,
+        "coin_collected": 3.0,
+        "crate_destroyed": 0.2,
+        "killed_opponent": 5.0,
+        "killed_self": -20.0,
+        "got_killed": -10.0,
+        "invalid_action": -0.1,
+        "potential_gamma": 0.95,
+        "potential_coin_weight": 0.5,
+        "potential_crate_weight": 0.25,
+        "potential_danger_weight": 1.0,
+        "unsafe_bomb_penalty": -20.0,
+        "useful_bomb_per_crate": 0.2,
+        "useful_bomb_crate_cap": 3,
+        "useless_bomb_penalty": -0.2,
+        "conditional_loop_penalty": -0.08,
+        "avoidable_wait_penalty": -0.04,
+        "avoidable_fatal_action": -20.0,
+        "suicide_dominates_positive_events": 1.0,
+    },
+    "r10_bounded_history_anti_loop": {
+        "step": -0.01,
+        "coin_collected": 3.0,
+        "crate_destroyed": 0.2,
+        "killed_opponent": 5.0,
+        "killed_self": -20.0,
+        "got_killed": -10.0,
+        "invalid_action": -0.1,
+        "potential_gamma": 0.95,
+        "potential_coin_weight": 0.5,
+        "potential_crate_weight": 0.25,
+        "potential_danger_weight": 1.0,
+        "unsafe_bomb_penalty": -20.0,
+        "useful_bomb_per_crate": 0.2,
+        "useful_bomb_crate_cap": 3,
+        "avoidable_fatal_action": -20.0,
+        "suicide_dominates_positive_events": 1.0,
+        "history_loop_penalty_step": -0.04,
+        "history_loop_penalty_cap": 3,
+        "history_wait_penalty_step": -0.04,
+        "history_wait_penalty_cap": 3,
+    },
+    "r11_causal_bomb_credit": {
+        "step": -0.01,
+        "coin_collected": 3.0,
+        "crate_destroyed": 0.0,
+        "killed_opponent": 5.0,
+        "killed_self": -40.0,
+        "got_killed": -10.0,
+        "invalid_action": -0.1,
+        "potential_gamma": 0.95,
+        "potential_coin_weight": 0.5,
+        "potential_crate_weight": 0.25,
+        "potential_danger_weight": 1.0,
+        "unsafe_bomb_penalty": -20.0,
+        "useless_bomb_penalty": -0.3,
+        "avoidable_fatal_action": -20.0,
+        "suicide_dominates_positive_events": 1.0,
+        "history_loop_penalty_step": -0.04,
+        "history_loop_penalty_cap": 3,
+        "history_wait_penalty_step": -0.04,
+        "history_wait_penalty_cap": 3,
+        "causal_bomb_death_penalty": -25.0,
+        "resolved_bomb_survival_reward": 3.0,
+        "resolved_bomb_crate_reward": 0.1,
+    },
+    "r12_coin_priority_anti_loop": {
+        "step": -0.01,
+        "coin_collected": 3.0,
+        "crate_destroyed": 0.1,
+        "killed_opponent": 5.0,
+        "killed_self": -20.0,
+        "got_killed": -10.0,
+        "invalid_action": -0.1,
+        "potential_gamma": 0.95,
+        "potential_coin_weight": 1.5,
+        "potential_crate_weight": 0.25,
+        "potential_danger_weight": 1.0,
+        "unsafe_bomb_penalty": -20.0,
+        "useful_bomb_per_crate": 0.1,
+        "useful_bomb_crate_cap": 3,
+        "suppress_useful_bomb_when_coin_reachable": 1.0,
+        "avoidable_fatal_action": -20.0,
+        "suicide_dominates_positive_events": 1.0,
+        "history_loop_penalty_step": -0.2,
+        "history_loop_penalty_cap": 5,
+        "history_wait_penalty_step": -0.08,
+        "history_wait_penalty_cap": 5,
+    },
+    "r13_no_safety_survival_credit": {
+        "step": -0.01,
+        "coin_collected": 3.0,
+        "crate_destroyed": 0.2,
+        "killed_opponent": 5.0,
+        "killed_self": -40.0,
+        "got_killed": -10.0,
+        "invalid_action": -0.1,
+        "potential_gamma": 0.95,
+        "potential_coin_weight": 0.5,
+        "potential_crate_weight": 0.25,
+        "potential_danger_weight": 1.0,
+        "potential_survival_options_weight": 2.0,
+        "unsafe_bomb_penalty": -20.0,
+        "useless_bomb_penalty": -0.3,
+        "avoidable_fatal_action": -40.0,
+        "suicide_dominates_positive_events": 1.0,
+        "history_loop_penalty_step": -0.04,
+        "history_loop_penalty_cap": 3,
+        "history_wait_penalty_step": -0.04,
+        "history_wait_penalty_cap": 3,
+        "causal_bomb_death_penalty": -25.0,
+        "resolved_bomb_survival_reward": 3.0,
+        "resolved_bomb_crate_reward": 0.1,
+    },
+    "r14_no_safety_useful_bomb_credit": {
+        "step": -0.01,
+        "coin_collected": 3.0,
+        "crate_destroyed": 0.0,
+        "killed_opponent": 5.0,
+        "killed_self": -40.0,
+        "got_killed": -10.0,
+        "invalid_action": -0.1,
+        "potential_gamma": 0.95,
+        "potential_coin_weight": 0.5,
+        "potential_crate_weight": 0.25,
+        "potential_danger_weight": 1.0,
+        "potential_survival_options_weight": 2.0,
+        "unsafe_bomb_penalty": -20.0,
+        "useful_bomb_per_crate": 0.2,
+        "useful_bomb_crate_cap": 3,
+        "useless_bomb_penalty": -1.0,
+        "avoidable_fatal_action": -40.0,
+        "suicide_dominates_positive_events": 1.0,
+        "history_loop_penalty_step": -0.04,
+        "history_loop_penalty_cap": 3,
+        "history_wait_penalty_step": -0.04,
+        "history_wait_penalty_cap": 3,
+        "causal_bomb_death_penalty": -25.0,
+        "causal_bomb_success_base": 1.0,
+        "causal_bomb_success_per_crate": 1.0,
+        "resolved_bomb_survival_reward": 1.0,
+        "resolved_bomb_crate_reward": 0.5,
+        "resolved_bomb_requires_utility": 1.0,
+    },
+    "r15_no_safety_objective_credit": {
+        "step": -0.01,
+        "coin_collected": 3.0,
+        "crate_destroyed": 0.0,
+        "killed_opponent": 5.0,
+        "killed_self": -40.0,
+        "got_killed": -10.0,
+        "invalid_action": -0.1,
+        "potential_gamma": 0.95,
+        "potential_coin_weight": 1.5,
+        "potential_crate_weight": 0.25,
+        "potential_danger_weight": 1.0,
+        "potential_survival_options_weight": 2.0,
+        "unsafe_bomb_penalty": -20.0,
+        "useful_bomb_per_crate": 0.2,
+        "useful_bomb_crate_cap": 3,
+        "suppress_useful_bomb_when_coin_reachable": 1.0,
+        "useless_bomb_penalty": -2.0,
+        "avoidable_fatal_action": -40.0,
+        "suicide_dominates_positive_events": 1.0,
+        "history_loop_penalty_step": -0.2,
+        "history_loop_penalty_cap": 5,
+        "history_wait_penalty_step": -0.08,
+        "history_wait_penalty_cap": 5,
+        "causal_bomb_death_penalty": -25.0,
+        "causal_bomb_success_base": 1.0,
+        "causal_bomb_success_per_crate": 1.0,
+        "causal_bomb_zero_utility_penalty": -2.0,
+        "resolved_bomb_survival_reward": 1.0,
+        "resolved_bomb_crate_reward": 0.5,
+        "resolved_bomb_requires_utility": 1.0,
+    },
+    "r17_global_crate_bomb_discipline": {
+        "step": -0.01,
+        "coin_collected": 3.0,
+        "crate_destroyed": 0.2,
+        "killed_opponent": 5.0,
+        "killed_self": -20.0,
+        "got_killed": -10.0,
+        "invalid_action": -0.1,
+        "potential_gamma": 0.95,
+        "potential_coin_weight": 0.5,
+        "potential_crate_weight": 0.25,
+        "potential_danger_weight": 1.0,
+        "unsafe_bomb_penalty": -20.0,
+        "useful_bomb_per_crate": 0.2,
+        "useful_bomb_crate_cap": 3,
+        "useless_bomb_penalty": -1.0,
+        "causal_bomb_success_base": 0.5,
+        "causal_bomb_success_per_crate": 0.5,
+        "causal_bomb_zero_utility_penalty": -1.0,
+        "avoidable_fatal_action": -20.0,
+        "suicide_dominates_positive_events": 1.0,
+        "history_loop_penalty_step": -0.04,
+        "history_loop_penalty_cap": 3,
+        "history_wait_penalty_step": -0.04,
+        "history_wait_penalty_cap": 3,
+    },
+}
+# Final no-safety reward contract.  Older r11-r15 IDs remain registered only
+# so their checkpoints stay reproducible; new no-safety runs use this copy.
+REWARD_SPECS["r16_no_safety_locked"] = dict(
+    REWARD_SPECS["r15_no_safety_objective_credit"])
+REWARD_SPECS["r18_wait_attractor_escape"] = {
+    **REWARD_SPECS["r17_global_crate_bomb_discipline"],
+    "history_wait_penalty_step": -0.2,
+    "history_wait_penalty_cap": 5,
+    "useful_bomb_counts_as_wait_progress": 1.0,
 }
 REWARD_SPECS['r9_task3_score_aligned'] = {
     **REWARD_SPECS['r7_safe_credit_sparse'], 'killed_opponent': 15.0,
@@ -256,6 +503,37 @@ def _event_reward(events: Sequence[str], spec: dict[str, float]) -> float:
     return float(reward)
 
 
+def _phase_event_reward(
+    events: Sequence[str], spec: dict[str, float], phase: dict[str, float],
+) -> float:
+    """Score real events using the observable phase before the action."""
+    early = float(phase["early_weight"])
+    middle = float(phase["middle_weight"])
+    late = float(phase["late_weight"])
+    values = {
+        e.COIN_COLLECTED: (
+            early * spec["coin_early"] + middle * spec["coin_middle"]
+            + late * spec["coin_late"]),
+        e.CRATE_DESTROYED: (
+            early * spec["crate_early"] + middle * spec["crate_middle"]
+            + late * spec["crate_late"]),
+        e.KILLED_OPPONENT: (
+            early * spec["kill_early"] + middle * spec["kill_middle"]
+            + late * spec["kill_late"]),
+        e.INVALID_ACTION: spec["invalid_action"],
+    }
+    suicide = e.KILLED_SELF in events
+    reward = spec["step"]
+    for event, value in values.items():
+        if not (suicide and value > 0.0):
+            reward += events.count(event) * value
+    if suicide:
+        reward += spec["killed_self"]
+    elif e.GOT_KILLED in events:
+        reward += spec["got_killed"]
+    return float(reward)
+
+
 def _state_potential(game_state: dict, spec: dict[str, float]) -> float:
     """Return a bounded, state-only progress and safety potential."""
     from agent_code.team_agent.danger import HORIZON, predict_danger
@@ -289,6 +567,55 @@ def _state_potential(game_state: dict, spec: dict[str, float]) -> float:
     elif "potential_safety_weight" in spec:
         safety = 1.0 if earliest > HORIZON else max(0.0, earliest - 1) / HORIZON
         value += spec["potential_safety_weight"] * safety
+    if "potential_survival_options_weight" in spec:
+        from agent_code.team_agent.feature_system.common import ACTIONS, build_context
+
+        context = build_context(game_state)
+        survivable = 0
+        legal = 0
+        for index, action in enumerate(ACTIONS):
+            if not bool(context.legal_mask[index]):
+                continue
+            legal += 1
+            reachability = (
+                context.bomb_reachability
+                if action == "BOMB" else context.movement_reachability[action]
+            )
+            survivable += int(bool(
+                reachability is not None and reachability.survives_horizon))
+        fraction = survivable / float(legal) if legal else 0.0
+        value += spec["potential_survival_options_weight"] * fraction
+    return float(value)
+
+
+def _phase_potential(
+    game_state: dict, spec: dict[str, float], phase: dict[str, float],
+) -> float:
+    """Bounded state-only phase shaping; it never emits a preferred action."""
+    from agent_code.team_agent.phase import objective_closeness
+
+    value = _state_potential(game_state, spec)
+    early = float(phase["early_weight"])
+    middle = float(phase["middle_weight"])
+    late = float(phase["late_weight"])
+    score_margin = float(phase["score_margin"])
+    self_mobility = float(phase["self_mobility"])
+    if spec.get("phase_resource_potential", 0.0):
+        coin_closeness, crate_closeness = objective_closeness(game_state)
+        value += early * (0.5 * coin_closeness + 0.25 * crate_closeness)
+    if spec.get("phase_combat_potential", 0.0):
+        value += (
+            0.75 * (middle + 0.5 * late) * (1.0 - 0.25 * score_margin)
+            * self_mobility
+            * (0.5 * float(phase["opponent_closeness"])
+               + 0.5 * (1.0 - float(phase["opponent_mobility"])))
+        )
+    if spec.get("phase_mobility_potential", 0.0):
+        value += (
+            late * (1.0 + 0.25 * score_margin)
+            * (0.5 * float(phase["safe_action_fraction"])
+               + 0.5 * self_mobility)
+        )
     return float(value)
 
 
@@ -301,6 +628,17 @@ def _bomb_action_reward(game_state: dict, action: str | None, spec: dict[str, fl
     bomb = context.bomb_reachability
     if bomb is None or not bomb.survives_horizon:
         return float(spec["unsafe_bomb_penalty"])
+    if (
+        context.crates_in_blast == 0
+        and context.opponents_in_blast == 0
+        and "useless_bomb_penalty" in spec
+    ):
+        return float(spec["useless_bomb_penalty"])
+    if (
+        context.reachable_coin_exists
+        and bool(spec.get("suppress_useful_bomb_when_coin_reachable", 0.0))
+    ):
+        return 0.0
     if "useful_bomb_per_crate" not in spec:
         return 0.0
     useful_crates = min(
@@ -320,33 +658,62 @@ def reward_from_events(
     action: str | None = None,
     conditional_loop: bool = False,
     avoidable_wait: bool = False,
+    loop_length: int = 0,
+    loop_repeat_count: int = 0,
+    avoidable_wait_streak: int = 0,
     diagnostic: dict | None = None,
     avoidable_fatal: bool = False,
+    old_phase_facts: dict[str, float] | None = None,
+    new_phase_facts: dict[str, float] | None = None,
+    temporal_adjustment: float = 0.0,
+    bomb_resolved_alive: bool = False,
+    resolved_bomb_crates: int = 0,
 ) -> float:
     """Convert framework events and optional temporal context into a scalar."""
     spec = resolve_reward_spec(version)
     if conditional_loop and avoidable_wait:
         raise ValueError(
             "conditional loop and avoidable WAIT penalties are mutually exclusive")
-    reward = _event_reward(events, spec)
+    phase_reward = version.startswith("r9_phase_")
+    if phase_reward and old_phase_facts is None:
+        raise ValueError(f"{version} requires old_phase_facts")
+    reward = (
+        _phase_event_reward(events, spec, old_phase_facts)
+        if phase_reward else _event_reward(events, spec)
+    )
     if "potential_gamma" in spec and old_game_state is not None:
-        old_potential = _state_potential(old_game_state, spec)
+        old_potential = (
+            _phase_potential(old_game_state, spec, old_phase_facts)
+            if phase_reward else _state_potential(old_game_state, spec)
+        )
         next_potential = (
             0.0 if terminal or new_game_state is None
-            else _state_potential(new_game_state, spec)
+            else (
+                _phase_potential(new_game_state, spec, new_phase_facts)
+                if phase_reward else _state_potential(new_game_state, spec)
+            )
         )
         reward += spec["potential_gamma"] * next_potential - old_potential
     if old_game_state is not None:
         reward += _bomb_action_reward(old_game_state, action, spec)
     if avoidable_fatal and "avoidable_fatal_action" in spec:
         reward += spec["avoidable_fatal_action"]
+    reward += float(temporal_adjustment)
     if version == "r4_anti_oscillation" and repeated_oscillation:
         reward += spec["oscillation_penalty"]
     if version == "r4_anti_oscillation" and idle_streak >= 2:
         multiplier = min(idle_streak - 1, int(spec["idle_penalty_cap"]))
         reward += spec["idle_penalty_step"] * multiplier
-    if version == "r5_conditional_loop" and conditional_loop:
+    if conditional_loop and "conditional_loop_penalty" in spec:
         reward += spec["conditional_loop_penalty"]
-    if version == "r5_conditional_loop" and avoidable_wait:
+    if avoidable_wait and "avoidable_wait_penalty" in spec:
         reward += spec["avoidable_wait_penalty"]
+    if loop_repeat_count >= 2 and "history_loop_penalty_step" in spec:
+        multiplier = min(
+            loop_repeat_count - 1, int(spec["history_loop_penalty_cap"]))
+        reward += spec["history_loop_penalty_step"] * multiplier
+    if avoidable_wait_streak >= 2 and "history_wait_penalty_step" in spec:
+        multiplier = min(
+            avoidable_wait_streak - 1, int(spec["history_wait_penalty_cap"]))
+        reward += spec["history_wait_penalty_step"] * multiplier
     return float(reward)

@@ -21,6 +21,7 @@ python experiments/run.py \
 ```
 
 DQN 根据实际 Feature schema 建立 40、50 或 60 维输入层。未配置 Feature 且没有 checkpoint 时默认 `discrete-q-v2`；冻结加载时从 checkpoint 推断并严格校验。当前新实验精确恢复协议为 `training-resume-v11`；v10及更早snapshot和final checkpoint默认仅支持冻结评估。Task 1可通过同步冻结分数评估停止；Task 2安全消融使用独立的84维v2与107维v3 Double DQN。
+Task 3 的84→117维阶段模型仅通过 `--transfer-task3-from` 显式迁移，不属于精确恢复。
 
 ## 冻结评估
 
