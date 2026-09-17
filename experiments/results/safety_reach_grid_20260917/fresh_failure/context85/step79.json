@@ -1,0 +1,156 @@
+{
+  "action": "LEFT",
+  "agent_name": "double_dqn_continuous_v2_agent",
+  "available_after": 0.5,
+  "available_before": 0.5,
+  "navigation": {
+    "avoidable_wait": false,
+    "coin_count_before": 0,
+    "conditional_loop": false,
+    "distance_comparable": false,
+    "distance_reduced": false,
+    "immediate_reverse": false,
+    "movement_legal_in_observed_state": true,
+    "multiple_nearest_coins": false,
+    "nearest_coin_distance_before": null,
+    "predicted_nearest_coin_distance_after": null,
+    "previous_target_still_available": false,
+    "selected_target": null,
+    "target_switched_while_previous_available": false,
+    "wait_disposition": "not_wait",
+    "waited": false
+  },
+  "phase": {
+    "crate_depletion": 0.743801652892562,
+    "early_weight": 0.23283415149443853,
+    "geometric_edge": false,
+    "late_mobility_crisis": 0.0,
+    "late_weight": 0.0,
+    "middle_weight": 0.7671658485055615,
+    "opponent_closeness": 0.2865047968601901,
+    "opponent_depletion": 0.0,
+    "opponent_mobility": 0.7928482359281752,
+    "progress": 0.38358292425278073,
+    "safe_action_fraction": 0.8333333333333334,
+    "safe_actions": 5,
+    "safe_endpoint_ratio": 0.32413793103448274,
+    "score_margin": -0.1,
+    "self_mobility": 0.7767870349246941
+  },
+  "requested_action": "LEFT",
+  "round_index": 1,
+  "run_id": "gc_context_7efa03b_worlds_s24384",
+  "safety": {
+    "avoidable_escape_collapse": false,
+    "decision_mask": [
+      false,
+      true,
+      false,
+      true,
+      true,
+      true
+    ],
+    "diagnostic_version": "escape-collapse-v2",
+    "escape_area": [
+      0,
+      46,
+      0,
+      46,
+      47,
+      44
+    ],
+    "escape_slack": [
+      -1.0,
+      -1.0,
+      -1.0,
+      -1.0,
+      -1.0,
+      -1.0
+    ],
+    "fallback": false,
+    "independent_routes": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "intervened": false,
+    "opponent_failing_orders": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "opponent_failing_profiles": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "opponent_passing_counts": [
+      0,
+      840,
+      0,
+      840,
+      840,
+      840
+    ],
+    "opponent_robust_intervened": false,
+    "opponent_scenario_counts": [
+      0,
+      840,
+      0,
+      840,
+      840,
+      840
+    ],
+    "opponent_to_v3_fallback": false,
+    "own_bomb_pending": false,
+    "own_bomb_placed_step": null,
+    "own_bomb_timer": null,
+    "own_bomb_visible": false,
+    "physical_mask": [
+      false,
+      true,
+      false,
+      true,
+      true,
+      true
+    ],
+    "raw_action": "LEFT",
+    "robust_guarantee_loss": false,
+    "robust_intervened": false,
+    "robust_search_timed_out": false,
+    "robust_states_evaluated": 616094,
+    "robust_to_v1_fallback": false,
+    "safe_horizon": [
+      0,
+      7,
+      0,
+      7,
+      7,
+      7
+    ],
+    "selected_action": "LEFT",
+    "survives_horizon": [
+      false,
+      true,
+      false,
+      true,
+      true,
+      true
+    ],
+    "v1_to_physical_fallback": false
+  },
+  "schema_version": "timing-v1",
+  "skipped": false,
+  "step": 79,
+  "think_time": 0.2749137878417969,
+  "timed_out": false
+}
