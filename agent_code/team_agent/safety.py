@@ -83,6 +83,7 @@ def survival_mask(
     *,
     allow_bomb: bool,
     horizon: int = 7,
+    context=None,
 ) -> tuple[np.ndarray, bool]:
     """Return horizon-survivable actions, or the physical mask if none exist."""
     from agent_code.team_agent.feature_system.common import ACTIONS, build_safety_context
@@ -92,7 +93,7 @@ def survival_mask(
     physical = np.asarray(physical_mask, dtype=bool).copy()
     if not allow_bomb:
         physical[ACTIONS.index("BOMB")] = False
-    context = build_safety_context(game_state)
+    context = context if context is not None else build_safety_context(game_state)
     safe = np.zeros_like(physical)
     for index, action in enumerate(ACTIONS):
         reachability = (
@@ -134,7 +135,7 @@ def margin_preserving_mask(
 
 
 def survival_diagnostics(
-    game_state: dict, physical_mask: np.ndarray, *, allow_bomb: bool,
+    game_state: dict, physical_mask: np.ndarray, *, allow_bomb: bool, context=None,
 ) -> dict[str, list[int | bool]]:
     """Return factual per-action reachability used for experiment auditing."""
     from agent_code.team_agent.feature_system.common import ACTIONS, build_safety_context
@@ -142,7 +143,7 @@ def survival_diagnostics(
     physical = np.asarray(physical_mask, dtype=bool).copy()
     if not allow_bomb:
         physical[ACTIONS.index("BOMB")] = False
-    context = build_safety_context(game_state)
+    context = context if context is not None else build_safety_context(game_state)
     survives, safe_horizon, escape_area = [], [], []
     for index, action in enumerate(ACTIONS):
         reachability = (
@@ -168,6 +169,7 @@ def mask_for_decision(
     allow_bomb: bool,
     exploring: bool,
     own_bomb_pending: bool = False,
+    context=None,
 ) -> tuple[np.ndarray, bool]:
     """Apply the configured constraint for one behavior decision."""
     spec = resolve_safety_spec(safety_spec)
@@ -184,7 +186,7 @@ def mask_for_decision(
         return decision, physical_fallback
     return survival_mask(
         game_state, physical_mask, allow_bomb=allow_bomb,
-        horizon=int(spec["horizon"]))
+        horizon=int(spec["horizon"]), context=context)
 
 
 def avoidable_fatal_action(
@@ -193,6 +195,7 @@ def avoidable_fatal_action(
     physical_mask: np.ndarray,
     *,
     allow_bomb: bool,
+    context=None,
 ) -> bool:
     """Whether a selected doomed action had at least one survivable alternative."""
     from agent_code.team_agent.feature_system.common import ACTIONS, build_safety_context
@@ -200,7 +203,7 @@ def avoidable_fatal_action(
     physical = np.asarray(physical_mask, dtype=bool).copy()
     if not allow_bomb:
         physical[ACTIONS.index("BOMB")] = False
-    context = build_safety_context(game_state)
+    context = context if context is not None else build_safety_context(game_state)
     survivable = []
     for index, candidate in enumerate(ACTIONS):
         reachability = (

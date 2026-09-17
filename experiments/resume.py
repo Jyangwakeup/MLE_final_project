@@ -29,8 +29,9 @@ TASK_ORDER = ("coin_navigation", "crate_navigation", "weak_opponents", "full_mat
 RETAINED_GENERATIONS = 2
 TABLE_ALGORITHMS = frozenset(("q_learning", "double_q_learning"))
 TORCH_ALGORITHMS = frozenset((
-    "dqn", "double_dqn", "cnn_double_dqn", "hybrid_dueling_double_dqn",
+    "dqn", "double_dqn", "cnn_double_dqn", "hybrid_dueling_double_dqn", "rainbow_lite",
 ))
+PICKLE_ALGORITHMS = frozenset(("expected_sarsa_lambda", "double_q_lambda"))
 
 
 @dataclass(frozen=True)
@@ -47,6 +48,7 @@ class LoadedSnapshot:
     runner_state: dict[str, Any]
     learner_payload: dict[str, Any] | None
     learner_path: Path | None
+    source_hash_scope: str | None = None
     lost_rounds: int = 0
     fallback_reason: str | None = None
 
@@ -71,6 +73,7 @@ class LoadedSnapshot:
             "exploration_spec": metadata["exploration_spec"],
             "source_commit": self.source_commit,
             "source_hash": self.source_hash,
+            "source_hash_scope": self.source_hash_scope,
             "network_spec": metadata.get("network_spec"),
             "hyperparameters": metadata.get("hyperparameters", {}),
             "safe_exploration": metadata.get("safe_exploration", False),
@@ -146,6 +149,9 @@ def _read_checkpoint_metadata(checkpoint: Path, algorithm: str) -> dict[str, Any
     if algorithm in TABLE_ALGORITHMS:
         with checkpoint.open("rb") as file:
             return pickle.load(file)
+    if algorithm in PICKLE_ALGORITHMS:
+        with checkpoint.open("rb") as file:
+            return pickle.load(file)
     if algorithm in TORCH_ALGORITHMS:
         try:
             import torch
@@ -169,6 +175,7 @@ def commit_training_snapshot(
     early_stopping_rewards: list[float],
     source_commit: str | None,
     source_hash: str | None = None,
+    source_hash_scope: str | None = None,
     cumulative_completed_rounds: int | None = None,
     early_stopping_config: dict[str, Any] | None = None,
     performance_stopping: dict[str, Any] | None = None,
@@ -200,6 +207,8 @@ def commit_training_snapshot(
             required.update(
                 {"q_table"} if algorithm == "q_learning"
                 else {"q_table_a", "q_table_b"})
+        elif algorithm in PICKLE_ALGORITHMS:
+            required.update({"weights", "traces", "tile_coder", "updates", "learner_rng_state"})
         else:
             required.update({
                 "policy", "target", "optimizer", "replay", "torch_rng_state",
@@ -253,6 +262,9 @@ def commit_training_snapshot(
             np.savez_compressed(temporary / "q_table.npz", **arrays)
             (temporary / "learner.json").write_bytes(_json_bytes(learner))
             learner_files = ["learner.json", "q_table.npz"]
+        elif algorithm in PICKLE_ALGORITHMS:
+            _link_or_copy(checkpoint, temporary / "learner.pkl")
+            learner_files = ["learner.pkl"]
         else:
             # Agent checkpoint writers publish by atomic replace.  A hard link
             # therefore pins this immutable inode even when the working path is
@@ -309,6 +321,7 @@ def commit_training_snapshot(
             "seed": int(seed),
             "source_commit": source_commit,
             "source_hash": source_hash,
+            "source_hash_scope": source_hash_scope,
             "task": task,
         }
         (temporary / "manifest.json").write_bytes(_json_bytes(manifest))
@@ -372,6 +385,8 @@ def _load_generation(
                     tuple(int(item) for item in key): value.astype(np.float32, copy=True)
                     for key, value in zip(keys, values)
                 }
+    elif algorithm in PICKLE_ALGORITHMS:
+        learner_path = directory / "learner.pkl"
     else:
         learner_path = directory / "learner.pt"
     return LoadedSnapshot(
@@ -384,6 +399,7 @@ def _load_generation(
         round_index=int(manifest["round_index"]),
         source_commit=manifest.get("source_commit"),
         source_hash=manifest.get("source_hash"),
+        source_hash_scope=manifest.get("source_hash_scope"),
         runner_state=runner,
         learner_payload=payload,
         learner_path=learner_path,
@@ -701,10 +717,17 @@ def validate_resume_transition(
     for field in (
         "algorithm", "seed", "checkpoint_schema", "reward_spec",
         "training_device_type", "training_device_name", "agent_seed",
-        "source_commit", "source_hash", "safe_exploration", "safety_spec",
+        "source_commit", "safe_exploration", "safety_spec",
     ):
         if parent.get(field) != child.get(field):
             raise ValueError(f"Resume {field} must match the parent run")
+    parent_source_scope = parent.get("source_hash_scope")
+    child_source_scope = child.get("source_hash_scope")
+    if parent_source_scope is not None:
+        if parent_source_scope != child_source_scope:
+            raise ValueError("Resume source_hash_scope must match the parent run")
+        if parent.get("source_hash") != child.get("source_hash"):
+            raise ValueError("Resume source_hash must match the parent run")
     try:
         parent_feature = normalize_feature_id(
             parent.get("feature_id"), parent.get("feature_version"))
