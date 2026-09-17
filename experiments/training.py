@@ -288,7 +288,7 @@ def run_training_mode(
     algorithm = agent_contract.algorithm
     init_checkpoint = args.init_from_checkpoint
     if init_checkpoint is not None:
-        if algorithm not in {"dqn", "double_dqn"}:
+        if algorithm not in {"dqn", "double_dqn", "cnn_distilled_double_dqn"}:
             raise ValueError("--init-from-checkpoint only supports neural agents")
         init_checkpoint = Path(init_checkpoint).expanduser().resolve()
         if not init_checkpoint.is_file():
