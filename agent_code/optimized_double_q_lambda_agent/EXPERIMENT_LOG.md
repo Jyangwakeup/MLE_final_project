@@ -28,3 +28,11 @@ SHA-256 and completed metrics are appended here after completion.
 
 The replacement submissions use the local, ignored `.venv-compute` environment,
 created from `/home/students/ji/.local/bin/python3.10` with the CPU dependencies.
+
+## Environment retry record
+
+| Attempt | Jobs | Result | Cause / resolution |
+|---|---|---|---|
+| 1 | `472859`, `472860` | failed before training | Login venv links to `/usr/local/bin/python3.10`, absent on compute. |
+| 2 | `472864`, `472865` | failed before training | Compute venv lacked CPU PyTorch, required by the shared experiment import path. |
+| 3 | `472871`, `472872` | running | `.venv-compute`: Python 3.10.19, NumPy 2.2.6, Pygame 2.6.1, PyTorch 2.5.1+cpu; verified on `compute`. |
