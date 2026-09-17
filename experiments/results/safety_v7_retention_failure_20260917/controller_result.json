@@ -1,0 +1,8 @@
+{
+  "source_commit": "a5a4e29d7c2c1c85e7864f15596fc9e45ffd2d9f",
+  "manifest_sha256": "bfc0cc82b08eb756fb838552838d909b634a6d295bd0bd2a056370c7a0e5b85b",
+  "status": "stopped_failure",
+  "jobs": {},
+  "task4_qualified": false,
+  "error": "RuntimeError('v7_task3 exit 2; see log and failure state')"
+}
