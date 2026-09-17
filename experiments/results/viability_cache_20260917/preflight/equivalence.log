@@ -1,0 +1,11 @@
+test_128_random_proofs_wait_bombs_flames_and_boundaries (tests.test_vectorized_viability.ViabilityTests) ... ok
+test_cached_board_queries_each_position_without_reusing_a_boolean (tests.test_vectorized_viability.ViabilityTests) ... ok
+test_historical_timeout_regression_runtime_budget_unchanged (tests.test_vectorized_viability.ViabilityTests) ... ok
+test_one_environment_board_is_shared_across_own_positions (tests.test_vectorized_viability.ViabilityTests) ... ok
+test_sixty_historical_complete_proofs_and_evidence (tests.test_vectorized_viability.ViabilityTests) ... ok
+test_zero_budget_remains_fail_closed (tests.test_vectorized_viability.ViabilityTests) ... ok
+
+----------------------------------------------------------------------
+Ran 6 tests in 15.829s
+
+OK

@@ -1,0 +1,457 @@
+test_masked_kl_is_finite_with_one_legal_action_and_extreme_q (test_cnn_distilled_agent.DistillationLossTests) ... ok
+test_five_step_return_directly_includes_delayed_crate_reward (test_cnn_distilled_agent.DistilledAgentContractTests) ... ok
+test_five_step_return_supports_distilled_cnn_and_task3_double_dqn (test_cnn_distilled_agent.DistilledAgentContractTests) ... ok
+test_followup_rechecks_all_snapshots_with_the_current_gate (test_cnn_distilled_agent.DistilledAgentContractTests) ... ok
+test_followup_skips_only_after_all_seeds_and_main_pass_strict_gate (test_cnn_distilled_agent.DistilledAgentContractTests) ... ok
+test_four_step_return_flushes_terminal_prefixes (test_cnn_distilled_agent.DistilledAgentContractTests) ... ok
+test_frozen_checkpoint_loads_and_acts_without_teacher_dataset (test_cnn_distilled_agent.DistilledAgentContractTests) ... ok
+test_history_resets_before_first_observation_of_new_round (test_cnn_distilled_agent.DistilledAgentContractTests) ... ok
+test_safety_diagnostics_report_bomb_veto_and_raw_q_interventions (test_cnn_distilled_agent.DistilledAgentContractTests) ... ok
+test_safety_override_is_frozen_diagnostic_only (test_cnn_distilled_agent.DistilledAgentContractTests) ... ok
+test_task2_gate_does_not_regress_below_d01_crate_baseline (test_cnn_distilled_agent.DistilledAgentContractTests) ... ok
+test_task2_gate_requires_safety_retention_and_d01_crate_floor (test_cnn_distilled_agent.DistilledAgentContractTests) ... ok
+test_task2_rank_compares_capability_after_the_safety_gate (test_cnn_distilled_agent.DistilledAgentContractTests) ... ok
+test_task2_reward_and_n5_configs_are_single_variable_ablations (test_cnn_distilled_agent.DistilledAgentContractTests) ... ok
+test_task2_wait_detects_safe_useful_bomb (test_cnn_distilled_agent.DistilledAgentContractTests) ... ok
+test_task2_wait_is_penalized_only_with_safe_objective_progress (test_cnn_distilled_agent.DistilledAgentContractTests) ... ok
+test_d4_averaged_network_is_action_equivariant (test_cnn_distilled_agent.DistilledCnnSymmetryTests) ... ok
+test_rotation_moves_board_action_mask_and_teacher_q_together (test_cnn_distilled_agent.DistilledCnnSymmetryTests) ... ok
+test_coin_features_do_not_modify_game_state (test_coin_features.CoinFeaturesTestCase) ... ok
+test_direction_toward_fixed_coin_is_closer (test_coin_features.CoinFeaturesTestCase) ... ok
+test_equal_distance_coins_use_coordinate_tie_breaking (test_coin_features.CoinFeaturesTestCase) ... ok
+test_missing_or_unreachable_coins_produce_zero_fields (test_coin_features.CoinFeaturesTestCase) ... ok
+test_none_state_returns_none (test_coin_features.CoinFeaturesTestCase) ... ok
+test_vector_is_float32_one_hot_for_each_direction (test_coin_features.CoinFeaturesTestCase) ... ok
+test_wall_crate_bomb_and_other_agent_block_navigation (test_coin_features.CoinFeaturesTestCase) ... ok
+test_action_projection_preserves_local_coin_direction_slot (test_competitive_learners.CompetitiveLearnerTests) ... ok
+test_double_q_updates_only_one_estimator (test_competitive_learners.CompetitiveLearnerTests) ... ok
+test_dueling_output_and_prioritized_sampling (test_competitive_learners.CompetitiveLearnerTests) ... ok
+test_expected_sarsa_updates_and_clears_terminal_traces (test_competitive_learners.CompetitiveLearnerTests) ... ok
+test_learning_rate_decay_reduces_late_trace_updates (test_competitive_learners.CompetitiveLearnerTests) ... ok
+test_rainbow_learns_and_round_trips (test_competitive_learners.CompetitiveLearnerTests) ... ok
+test_retrospective_penalty_updates_only_credited_action (test_competitive_learners.CompetitiveLearnerTests) ... ok
+test_tile_coder_is_deterministic_and_bounded (test_competitive_learners.CompetitiveLearnerTests) ... ok
+test_tile_coder_ternary_quantizes_small_direction_signals (test_competitive_learners.CompetitiveLearnerTests) ... ok
+test_first_loop_is_observed_and_second_loop_is_penalized (test_continuous_v4.BoundedHistoryRewardTests) ... ok
+test_r12_scales_repeated_loops_more_strongly_than_r10 (test_continuous_v4.BoundedHistoryRewardTests) ... ok
+test_r12_suppresses_useful_bomb_bonus_when_coin_is_reachable (test_continuous_v4.BoundedHistoryRewardTests) ... ok
+test_second_avoidable_wait_gets_escalating_reward (test_continuous_v4.BoundedHistoryRewardTests) ... ok
+test_action_conditional_cycle_fields_only_mark_closing_move (test_continuous_v4.ContinuousV4FeatureTests) ... ok
+test_detects_two_three_and_four_position_cycles (test_continuous_v4.ContinuousV4FeatureTests) ... ok
+test_history_records_each_observed_step_once_and_round_trips (test_continuous_v4.ContinuousV4FeatureTests) ... ok
+test_r12_cycle_constraint_falls_back_when_every_action_is_vetoed (test_continuous_v4.ContinuousV4FeatureTests) ... ok
+test_r12_masks_repeated_cycle_closure_but_keeps_alternatives (test_continuous_v4.ContinuousV4FeatureTests) ... ok
+test_schema_wait_encoding_and_non_move_cycle_fields (test_continuous_v4.ContinuousV4FeatureTests) ... ok
+test_bomb_objective_persists_after_bomb_resolves (test_continuous_v5.ContinuousV5Tests) ... ok
+test_directional_density_exposes_crate_rich_half_plane (test_continuous_v5.ContinuousV5Tests) ... ok
+test_no_safety_locked_contract_is_independent_copy_of_r15 (test_continuous_v5.ContinuousV5Tests) ... ok
+test_r17_penalizes_immediate_zero_utility_bomb (test_continuous_v5.ContinuousV5Tests) ... ok
+test_r18_penalizes_wait_when_safe_useful_bomb_is_only_progress (test_continuous_v5.ContinuousV5Tests) ... ok
+test_blast_does_not_trigger_other_bombs_early (test_danger.DangerTestCase) ... ok
+test_countdown_bomb_explodes_after_timer_plus_one_steps (test_danger.DangerTestCase) ... ok
+test_crate_does_not_block_blast (test_danger.DangerTestCase) ... ok
+test_existing_explosion_map_marks_remaining_danger (test_danger.DangerTestCase) ... ok
+test_hypothetical_bomb_explodes_at_fifth_future_step (test_danger.DangerTestCase) ... ok
+test_hypothetical_bomb_requires_an_available_bomb (test_danger.DangerTestCase) ... ok
+test_multiple_bombs_keep_the_union_of_danger_periods (test_danger.DangerTestCase) ... ok
+test_prediction_does_not_modify_game_state (test_danger.DangerTestCase) ... ok
+test_stone_wall_blocks_blast (test_danger.DangerTestCase) ... ok
+test_zero_timer_bomb_explodes_at_first_future_step (test_danger.DangerTestCase) ... ok
+test_auto_training_falls_back_to_cpu_without_cuda (test_devices.DeviceResolutionTestCase) ... ok
+test_cuda_training_records_the_visible_gpu (test_devices.DeviceResolutionTestCase) ... ok
+test_evaluation_rejects_cuda_for_official_cpu_compatibility (test_devices.DeviceResolutionTestCase) ... ok
+test_q_learning_rejects_an_explicit_cuda_device (test_devices.DeviceResolutionTestCase) ... ok
+test_checkpoint_restores_replay_sampler_and_torch_rng (test_dqn_agent.DQNCheckpointTestCase) ... ok
+test_cuda_checkpoint_resumes_the_next_update_and_loads_on_cpu (test_dqn_agent.DQNCheckpointTestCase) ... ok
+test_death_is_penalized_only_once (test_dqn_agent.DQNRewardTestCase) ... ok
+test_movement_directions_have_no_supervised_action_reward (test_dqn_agent.DQNRewardTestCase) ... ok
+test_objective_outcomes_and_time_cost_are_combined (test_dqn_agent.DQNRewardTestCase) ... ok
+test_dqn_reward_is_the_shared_reward_function (test_dqn_agent.DQNSharedFeatureTestCase) ... ok
+test_shared_features_are_cached_per_round_step (test_dqn_agent.DQNSharedFeatureTestCase) ... ok
+test_vector_and_legal_mask_come_from_team_features (test_dqn_agent.DQNSharedFeatureTestCase) ... ok
+test_incompatible_checkpoint_is_rejected_during_evaluation (test_dqn_agent.DQNTrainingTaskTestCase) ... ok
+test_legacy_reward_checkpoint_is_frozen_only (test_dqn_agent.DQNTrainingTaskTestCase) ... ok
+test_new_task_keeps_progress_and_checkpoint (test_dqn_agent.DQNTrainingTaskTestCase) ... ok
+test_setup_passes_runner_seed_and_exploration_schedule_to_model (test_dqn_agent.DQNTrainingTaskTestCase) ... ok
+test_shared_flag_disables_bombs_during_training_and_evaluation (test_dqn_agent.DQNTrainingTaskTestCase) ... ok
+test_last_step_is_observed_once_as_terminal (test_dqn_agent.DQNTransitionTestCase) ... ok
+test_bomb_efficiency_metrics_use_aggregate_counts (test_evaluation.ExperimentAnalysisTest) ... ok
+test_bomb_metrics_are_aggregated_across_seed_runs (test_evaluation.ExperimentAnalysisTest) ... ok
+test_coin_navigation_efficiency_and_action_diagnostics_are_aggregated (test_evaluation.ExperimentAnalysisTest) ... ok
+test_distribution_metrics_are_written_for_multi_seed_evaluations (test_evaluation.ExperimentAnalysisTest) ... ok
+test_metrics_and_ranking_categories (test_evaluation.ExperimentAnalysisTest) ... ok
+test_missing_or_malformed_episodes_fail_clearly (test_evaluation.ExperimentAnalysisTest) ... ok
+test_multiple_runs_create_distinct_provenance_rows_and_outputs (test_evaluation.ExperimentAnalysisTest) ... ok
+test_paired_evaluation_comparison_matches_environment_seeds (test_evaluation.ExperimentAnalysisTest) ... ok
+test_task1_completion_and_loop_rates_are_aggregated (test_evaluation.ExperimentAnalysisTest) ... ok
+test_zero_bomb_efficiency_metrics_are_null (test_evaluation.ExperimentAnalysisTest) ... ok
+test_agent_source_hash_is_independent_of_task_config (test_experiment_run.ExperimentRunTest) ... ok
+test_board_checkpoint_feature_contract_accepts_null_vector_shape (test_experiment_run.ExperimentRunTest) ... ok
+test_cli_overrides_feature_reward_and_stops_at_stage_action_budget (test_experiment_run.ExperimentRunTest) ...   0%|                                                     | 0/5 [00:00<?, ?it/s]  0%|                                                     | 0/5 [00:00<?, ?it/s]
+ok
+test_cli_rejects_cuda_for_q_learning_before_creating_output (test_experiment_run.ExperimentRunTest) ... ok
+test_cli_separates_training_resume_from_evaluation_checkpoint (test_experiment_run.ExperimentRunTest) ... ok
+test_cnn_evaluation_remains_cpu_when_cuda_is_requested (test_experiment_run.ExperimentRunTest) ... ok
+test_cnn_training_uses_requested_cuda_device_when_available (test_experiment_run.ExperimentRunTest) ... ok
+test_corrupt_latest_snapshot_falls_back_and_corrects_lineage_rounds (test_experiment_run.ExperimentRunTest) ...   0%|                                                     | 0/2 [00:00<?, ?it/s]100%|█████████████████████████████████████████████| 2/2 [00:00<00:00, 22.63it/s]
+  0%|                                                     | 0/1 [00:00<?, ?it/s]100%|█████████████████████████████████████████████| 1/1 [00:00<00:00, 21.01it/s]
+ok
+test_direct_next_task_inherits_learning_but_restarts_world_rounds (test_experiment_run.ExperimentRunTest) ...   0%|                                                     | 0/1 [00:00<?, ?it/s]100%|█████████████████████████████████████████████| 1/1 [00:00<00:00, 23.26it/s]
+  0%|                                                     | 0/1 [00:00<?, ?it/s]100%|█████████████████████████████████████████████| 1/1 [00:00<00:00, 24.69it/s]
+ok
+test_early_stopping_is_enabled_by_default (test_experiment_run.ExperimentRunTest) ... ok
+test_early_stopping_waits_for_exploration_completion (test_experiment_run.ExperimentRunTest) ... ok
+test_evaluation_checks_checkpoint_before_creating_output (test_experiment_run.ExperimentRunTest) ... ok
+test_evaluation_is_frozen_and_writes_episode_results (test_experiment_run.ExperimentRunTest) ...   0%|                                                     | 0/1 [00:00<?, ?it/s]100%|█████████████████████████████████████████████| 1/1 [00:00<00:00, 23.80it/s]
+  0%|                                                     | 0/1 [00:00<?, ?it/s]100%|█████████████████████████████████████████████| 1/1 [00:00<00:00, 55.41it/s]
+ok
+test_four_tasks_select_expected_scenario_and_agents (test_experiment_run.ExperimentRunTest) ... ok
+test_legal_random_baseline_runs_through_the_frozen_cli (test_experiment_run.ExperimentRunTest) ...   0%|                                                     | 0/1 [00:00<?, ?it/s]100%|█████████████████████████████████████████████| 1/1 [00:00<00:00, 89.96it/s]
+  0%|                                                     | 0/1 [00:00<?, ?it/s]100%|█████████████████████████████████████████████| 1/1 [00:00<00:00, 47.27it/s]
+ok
+test_multi_seed_evaluation_groups_runs_under_run_id_directory (test_experiment_run.ExperimentRunTest) ... Evaluation:   0%|                                      | 0/2 [00:00<?, ?round/s]Evaluation: 100%|████████████████████████████| 2/2 [00:00<00:00, 1708.13round/s]
+ok
+test_objective_dqn_runner_writes_a_v11_60_dimensional_checkpoint (test_experiment_run.ExperimentRunTest) ...   0%|                                                     | 0/1 [00:00<?, ?it/s]  0%|                                                     | 0/1 [00:00<?, ?it/s]
+ok
+test_official_baselines_run_without_checkpoints_and_emit_metrics (test_experiment_run.ExperimentRunTest) ...   0%|                                                     | 0/1 [00:00<?, ?it/s]100%|████████████████████████████████████████████| 1/1 [00:00<00:00, 108.49it/s]
+  0%|                                                     | 0/1 [00:00<?, ?it/s]100%|█████████████████████████████████████████████| 1/1 [00:00<00:00, 85.40it/s]
+  0%|                                                     | 0/1 [00:00<?, ?it/s]100%|████████████████████████████████████████████| 1/1 [00:00<00:00, 104.25it/s]
+  0%|                                                     | 0/1 [00:00<?, ?it/s]100%|█████████████████████████████████████████████| 1/1 [00:00<00:00, 92.68it/s]
+ok
+test_same_task_resume_matches_uninterrupted_next_round (test_experiment_run.ExperimentRunTest) ...   0%|                                                     | 0/2 [00:00<?, ?it/s]100%|█████████████████████████████████████████████| 2/2 [00:00<00:00, 18.22it/s]100%|█████████████████████████████████████████████| 2/2 [00:00<00:00, 18.17it/s]
+  0%|                                                     | 0/1 [00:00<?, ?it/s]100%|█████████████████████████████████████████████| 1/1 [00:00<00:00, 20.24it/s]
+  0%|                                                     | 0/1 [00:00<?, ?it/s]100%|█████████████████████████████████████████████| 1/1 [00:00<00:00, 22.22it/s]
+ok
+test_source_dependencies_exclude_unrelated_agents (test_experiment_run.ExperimentRunTest) ... ok
+test_source_dependencies_include_relative_feature_imports (test_experiment_run.ExperimentRunTest) ... ok
+test_task_constraints_reject_wrong_opponents (test_experiment_run.ExperimentRunTest) ... ok
+test_training_can_resume_into_an_immutable_child_run (test_experiment_run.ExperimentRunTest) ...   0%|                                                     | 0/1 [00:00<?, ?it/s]100%|█████████████████████████████████████████████| 1/1 [00:00<00:00, 21.98it/s]
+  0%|                                                     | 0/1 [00:00<?, ?it/s]100%|█████████████████████████████████████████████| 1/1 [00:00<00:00, 19.22it/s]
+ok
+test_training_can_warm_start_policy_with_a_new_reward (test_experiment_run.ExperimentRunTest) ...   0%|                                                     | 0/1 [00:00<?, ?it/s]100%|█████████████████████████████████████████████| 1/1 [00:00<00:00, 18.76it/s]
+  0%|                                                     | 0/1 [00:00<?, ?it/s]100%|█████████████████████████████████████████████| 1/1 [00:00<00:00, 17.27it/s]
+ok
+test_training_early_stopping_detects_reward_plateau (test_experiment_run.ExperimentRunTest) ... ok
+test_training_replay_interval_tracks_progress_milestones (test_experiment_run.ExperimentRunTest) ... ok
+test_training_writes_checkpoint_table_summary_and_chart (test_experiment_run.ExperimentRunTest) ...   0%|                                                     | 0/1 [00:00<?, ?it/s]100%|█████████████████████████████████████████████| 1/1 [00:00<00:00, 19.06it/s]
+ok
+test_both_learning_agents_use_the_shared_schedule_function (test_exploration.ExplorationScheduleTestCase) ... ok
+test_formal_linear_schedule_has_specified_boundaries_and_midpoint (test_exploration.ExplorationScheduleTestCase) ... ok
+test_board_channels_keep_field_x_y_orientation (test_feature_system.BoardAndHybridFeatureTestCase) ... ok
+test_hybrid_is_identical_to_individual_extractors (test_feature_system.BoardAndHybridFeatureTestCase) ... ok
+test_current_tile_has_exact_t1_t2_t3_bits (test_feature_system.CompactFeatureTestCase) ... ok
+test_non_square_board_uses_shape_preserving_symmetries (test_feature_system.CompactFeatureTestCase) ... ok
+test_schema_key_and_one_hot_contract (test_feature_system.CompactFeatureTestCase) ... ok
+test_square_rotation_preserves_canonical_key (test_feature_system.CompactFeatureTestCase) ... ok
+test_vectorized_symmetry_matches_coordinate_definition (test_feature_system.CompactFeatureTestCase) ... ok
+test_dead_end_bomb_cannot_survive_but_retains_last_safe_area (test_feature_system.ContinuousFeatureTestCase) ... ok
+test_legal_mask_does_not_filter_danger (test_feature_system.ContinuousFeatureTestCase) ... ok
+test_round_progress_clips_at_endpoints (test_feature_system.ContinuousFeatureTestCase) ... ok
+test_shape_dtype_ranges_and_global_availability (test_feature_system.ContinuousFeatureTestCase) ... ok
+test_unreachable_coin_has_zero_delta_and_false_flag (test_feature_system.ContinuousFeatureTestCase) ... ok
+test_action_destination_can_be_safe_then_dangerous (test_feature_system.ExactDangerFeatureTestCase) ... ok
+test_batched_reachability_matches_scalar_search (test_feature_system.ExactDangerFeatureTestCase) ... ok
+test_bomb_action_uses_hypothetical_bomb_danger (test_feature_system.ExactDangerFeatureTestCase) ... ok
+test_current_explosion_and_multiple_bombs_are_unioned (test_feature_system.ExactDangerFeatureTestCase) ... ok
+test_timer_zero_one_two_map_to_exact_future_steps (test_feature_system.ExactDangerFeatureTestCase) ... ok
+test_checkpoint_contract_accepts_explicit_legacy_and_rejects_mismatch (test_feature_system.RegistryAndBaselineTestCase) ... ok
+test_discrete_q_v2_adds_distance_and_previous_move (test_feature_system.RegistryAndBaselineTestCase) ... ok
+test_discrete_v1_is_frozen (test_feature_system.RegistryAndBaselineTestCase) ... ok
+test_every_extractor_is_deterministic_and_non_mutating (test_feature_system.RegistryAndBaselineTestCase) ... ok
+test_registry_has_stable_semantic_ids_and_legacy_alias (test_feature_system.RegistryAndBaselineTestCase) ... ok
+test_aggregation_is_deterministic_and_does_not_modify_game_state (test_features.AggregatedFeaturesTestCase) ... ok
+test_aggregation_uses_safety_coin_opponent_group_order (test_features.AggregatedFeaturesTestCase) ... ok
+test_formal_interface_has_fixed_shapes_types_and_one_hot_segments (test_features.AggregatedFeaturesTestCase) ... ok
+test_none_state_returns_none (test_features.AggregatedFeaturesTestCase) ... ok
+test_public_feature_contract_constants_match_extracted_features (test_features.AggregatedFeaturesTestCase) ... ok
+test_bomb_and_crate_categories_cover_all_values (test_features.SafetyFeaturesTestCase) ... ok
+test_current_danger_categories_cover_now_later_and_absent (test_features.SafetyFeaturesTestCase) ... ok
+test_feature_extraction_does_not_modify_game_state (test_features.SafetyFeaturesTestCase) ... ok
+test_legal_mask_uses_physics_not_predicted_danger (test_features.SafetyFeaturesTestCase) ... ok
+test_movement_categories_cover_illegal_unsafe_and_escapable (test_features.SafetyFeaturesTestCase) ... ok
+test_none_state_returns_none (test_features.SafetyFeaturesTestCase) ... ok
+test_vector_is_one_hot_float32_for_every_safety_field (test_features.SafetyFeaturesTestCase) ... ok
+test_coin3_stage_gate_has_frozen_contract_and_diagnostics (test_formal_training.FormalConfigurationTestCase) ... ok
+test_coin3_training_is_an_explicit_frozen_feature_variant (test_formal_training.FormalConfigurationTestCase) ... ok
+test_evaluation_configs_use_registered_world_seeds_and_rounds (test_formal_training.FormalConfigurationTestCase) ... ok
+test_existing_formal_configs_preserve_r1 (test_formal_training.FormalConfigurationTestCase) ... ok
+test_formal_training_budget_and_exploration_are_pre_registered (test_formal_training.FormalConfigurationTestCase) ... ok
+test_seeded_agent_samples_only_the_shared_legal_task1_actions (test_formal_training.LegalRandomAgentTestCase) ... ok
+test_flags_immediate_reversal_and_only_live_target_switches (test_navigation_diagnostics.NavigationDiagnosticTestCase) ... ok
+test_reports_progress_without_mutating_the_state (test_navigation_diagnostics.NavigationDiagnosticTestCase) ... ok
+test_reports_true_conditional_loop_and_wait_disposition (test_navigation_diagnostics.NavigationDiagnosticTestCase) ... ok
+test_target_switch_denominator_requires_a_still_available_target (test_navigation_diagnostics.NavigationDiagnosticTestCase) ... ok
+test_cnn_and_hybrid_batch_shapes (test_new_agents.AlgorithmTests) ... ok
+test_continuous_frozen_act_advances_and_resets_history (test_new_agents.AlgorithmTests) ... ok
+test_double_dqn_selects_with_policy_and_evaluates_with_target (test_new_agents.AlgorithmTests) ... ok
+test_double_q_cross_evaluation_and_terminal (test_new_agents.AlgorithmTests) ... ok
+test_epsilon_schedule_endpoints (test_new_agents.AlgorithmTests) ... ok
+test_neural_action_uses_runner_exploration_spec (test_new_agents.AlgorithmTests) ... ok
+test_path_cnn_and_compact_replay (test_new_agents.AlgorithmTests) ... ok
+test_path_n_step_return_and_terminal_tail (test_new_agents.AlgorithmTests) ... ok
+test_double_q_checkpoint_round_trip_and_rejection (test_new_agents.CheckpointTests) ... ok
+test_double_q_resume_snapshot_round_trip (test_new_agents.CheckpointTests) ... ok
+test_neural_checkpoints_round_trip (test_new_agents.CheckpointTests) ... ok
+test_neural_warm_start_loads_only_policy_weights (test_new_agents.CheckpointTests) ... ok
+test_terminal_transition_replaces_pending_transition (test_new_agents.CheckpointTests) ... ok
+test_board_codec_is_exact (test_new_agents.FeatureAdapterTests) ... ok
+test_canonical_action_mapping_is_a_bijection (test_new_agents.FeatureAdapterTests) ... ok
+test_columnar_replay_checkpoint_round_trip_is_exact (test_new_agents.FeatureAdapterTests) ... ok
+test_curriculum_mask_is_separate_from_physical_mask (test_new_agents.FeatureAdapterTests) ... ok
+test_new_feature_adapters (test_new_agents.FeatureAdapterTests) ... ok
+test_path_board_has_objective_and_history_channels (test_new_agents.FeatureAdapterTests) ... ok
+test_path_observation_is_cached_before_history_advances (test_new_agents.FeatureAdapterTests) ... ok
+test_path_self_position_and_coin_order (test_new_agents.FeatureAdapterTests) ... ok
+test_path_two_states_and_new_round (test_new_agents.FeatureAdapterTests) ... ok
+test_wait_can_be_the_only_physical_action (test_new_agents.FeatureAdapterTests) ... ok
+test_blast_coverage_checks_all_opponents (test_opponent_features.OpponentFeaturesTestCase) ... ok
+test_blast_coverage_does_not_depend_on_bomb_availability (test_opponent_features.OpponentFeaturesTestCase) ... ok
+test_direction_uses_dominant_axis_and_fixed_tie_breaking (test_opponent_features.OpponentFeaturesTestCase) ... ok
+test_distance_categories_cover_boundaries (test_opponent_features.OpponentFeaturesTestCase) ... ok
+test_nearest_opponent_order_is_distance_coordinate_then_name (test_opponent_features.OpponentFeaturesTestCase) ... ok
+test_no_opponents_produce_zero_fields (test_opponent_features.OpponentFeaturesTestCase) ... ok
+test_none_state_returns_none (test_opponent_features.OpponentFeaturesTestCase) ... ok
+test_opponent_features_do_not_modify_game_state (test_opponent_features.OpponentFeaturesTestCase) ... ok
+test_stone_blocks_blast_but_crate_does_not (test_opponent_features.OpponentFeaturesTestCase) ... ok
+test_vector_is_float32_one_hot_for_each_opponent_field (test_opponent_features.OpponentFeaturesTestCase) ... ok
+test_progressed_transition_explodes_timer_zero_and_clears_crate (test_opponent_robust_safety.ControllableSafetyPreregistrationTests) ... ok
+test_v5_seed_sets_contracts_and_latency_gates_are_fixed (test_opponent_robust_safety.ControllableSafetyPreregistrationTests) ... ok
+test_post_bomb_empty_set_falls_back_to_v1_and_records_loss (test_opponent_robust_safety.ControllableSurvivalTests) ... ok
+test_pre_bomb_failure_never_falls_back_to_allow_bomb (test_opponent_robust_safety.ControllableSurvivalTests) ... ok
+test_v5_contract_and_exact_danger_interval (test_opponent_robust_safety.ControllableSurvivalTests) ... ok
+test_zero_budget_is_fail_closed (test_opponent_robust_safety.ControllableSurvivalTests) ... ok
+test_post_bomb_uses_v4_then_falls_back_to_v3 (test_opponent_robust_safety.OpponentRobustMaskTests) ... ok
+test_pre_bomb_vetoes_when_one_opponent_scenario_fails (test_opponent_robust_safety.OpponentRobustMaskTests) ... ok
+test_seed_sets_and_configs_are_fixed_and_disjoint (test_opponent_robust_safety.OpponentRobustPreregistrationTests) ... ok
+test_contract_is_complete_and_fixed (test_opponent_robust_safety.OpponentTransitionTests) ... ok
+test_enumeration_includes_moves_wait_bombs_and_deduplicates (test_opponent_robust_safety.OpponentTransitionTests) ... ok
+test_execution_order_changes_competing_move_result (test_opponent_robust_safety.OpponentTransitionTests) ... ok
+test_single_failing_scenario_fails_the_action (test_opponent_robust_safety.OpponentTransitionTests) ... ok
+test_contract_uses_the_isolated_agent_and_watkins_cut (test_optimized_double_q_lambda_agent.OptimizedDoubleQLambdaTests) ... ok
+test_non_greedy_behavior_cuts_old_traces_before_current_update (test_optimized_double_q_lambda_agent.OptimizedDoubleQLambdaTests) ... ok
+test_task1_config_has_action_budget_and_snapshot_interval (test_optimized_double_q_lambda_agent.OptimizedDoubleQLambdaTests) ... ok
+test_failure_stops_remaining_seeds_and_terminal_cannot_restart (test_order_admission.AdmissionTests) ... ok
+test_final_audit_cannot_cross_deadline_and_claim_success (test_order_admission.AdmissionTests) ... diagnostic completed 22
+diagnostic completed 11
+diagnostic completed 33
+ok
+test_only_three_diagnostic_runs_and_four_hour_deadline (test_order_admission.AdmissionTests) ... diagnostic completed 22
+diagnostic completed 11
+diagnostic completed 33
+ok
+test_success_label_does_not_admit_incomplete_benchmark (test_order_admission.AdmissionTests) ... ok
+test_unexplained_self_death_is_audited_at_round_end (test_order_admission.AdmissionTests) ... ok
+test_256_fixed_synthetic_states_zero_to_three_opponents (test_order_equivalence.OrderEquivalenceTests) ... ok
+test_action_phase_conflicts_chains_cycles_and_bomb_list (test_order_equivalence.OrderEquivalenceTests) ... ok
+test_bombs_capacity_crates_flames_deaths_and_illegal_own_moves (test_order_equivalence.OrderEquivalenceTests) ... ok
+test_twenty_historical_states_complete_proof_and_evidence (test_order_equivalence.OrderEquivalenceTests) ... ok
+test_committed_assessment_after_snapshot_is_recovered_once (test_performance_stopping.Task1PerformanceStoppingTestCase) ... ok
+test_contract_is_task1_only_and_uses_reserved_monitor_seeds (test_performance_stopping.Task1PerformanceStoppingTestCase) ... ok
+test_failed_assessment_resets_consecutive_count (test_performance_stopping.Task1PerformanceStoppingTestCase) ... ok
+test_fresh_run_checks_200_250_300_and_stops_after_three_passes (test_performance_stopping.Task1PerformanceStoppingTestCase) ... ok
+test_maximum_round_is_not_converged_without_three_passes (test_performance_stopping.Task1PerformanceStoppingTestCase) ... ok
+test_migration_assesses_parent_then_waits_fifty_new_rounds (test_performance_stopping.Task1PerformanceStoppingTestCase) ... ok
+test_four_step_accumulator_emits_discounted_returns_and_flushes (test_pre_task3_iteration.CreditAndRetentionTests) ... ok
+test_task2_teacher_is_frozen_and_distillation_update_is_finite (test_pre_task3_iteration.CreditAndRetentionTests) ... ok
+test_task_partitioned_replay_samples_half_parent_half_current (test_pre_task3_iteration.CreditAndRetentionTests) ... ok
+test_action_history_advances_in_frozen_act_and_resets_by_round (test_pre_task3_iteration.ObjectiveFeatureTests) ... ok
+test_continuous_v2_uses_remote_history_contract (test_pre_task3_iteration.ObjectiveFeatureTests) ... ok
+test_hierarchical_objective_falls_back_to_crate_frontier (test_pre_task3_iteration.ObjectiveFeatureTests) ... ok
+test_objective_schema_is_60_dimensional_and_factual (test_pre_task3_iteration.ObjectiveFeatureTests) ... ok
+test_standard_dqn_builds_a_60_input_network_for_objective_features (test_pre_task3_iteration.ObjectiveFeatureTests) ... ok
+test_action_budget_waits_for_round_minimum_and_action_target (test_pre_task3_iteration.PreregistrationAndContractTests) ... ok
+test_all_preregistered_configs_have_fixed_stage_contracts (test_pre_task3_iteration.PreregistrationAndContractTests) ... ok
+test_fallback_agent_contracts_are_fixed_to_preregistered_features (test_pre_task3_iteration.PreregistrationAndContractTests) ... ok
+test_iteration_manifest_separates_dev_validation_and_final_seeds (test_pre_task3_iteration.PreregistrationAndContractTests) ... ok
+test_round3_adaptation_triggers_are_repeatable_and_validated (test_pre_task3_iteration.PreregistrationAndContractTests) ... ok
+test_v7_allows_stage_contract_changes_only_on_task_promotion (test_pre_task3_iteration.PreregistrationAndContractTests) ... ok
+test_bomb_credit_distinguishes_safe_useful_and_unescapable_bombs (test_pre_task3_iteration.RewardAndExplorationTests) ... ok
+test_coin_potential_rewards_shortest_path_progress (test_pre_task3_iteration.RewardAndExplorationTests) ... ok
+test_preregistered_reward_constants_and_death_deduplication (test_pre_task3_iteration.RewardAndExplorationTests) ... ok
+test_safe_exploration_filters_only_the_stochastic_candidate_mask (test_pre_task3_iteration.RewardAndExplorationTests) ... ok
+test_safe_exploration_records_physical_fallback (test_pre_task3_iteration.RewardAndExplorationTests) ... ok
+test_create_always_uses_inline_fixed_width_policy (test_progress_plugin.InlineProgressPluginTests) ... ok
+test_policy_is_immutable (test_progress_plugin.InlineProgressPluginTests) ... ok
+test_bombs_are_allowed_by_default (test_q_learning_agent.QLearningAgentConfigurationTestCase) ... ok
+test_explicit_evaluation_checkpoint_must_exist (test_q_learning_agent.QLearningAgentConfigurationTestCase) ... ok
+test_explicit_reward_mismatch_is_rejected (test_q_learning_agent.QLearningAgentConfigurationTestCase) ... ok
+test_idle_streak_ignores_first_wait_and_counts_repetition (test_q_learning_agent.QLearningAgentConfigurationTestCase) ... ok
+test_last_step_is_updated_once_as_terminal (test_q_learning_agent.QLearningAgentConfigurationTestCase) ... ok
+test_legacy_reward_checkpoint_is_frozen_only (test_q_learning_agent.QLearningAgentConfigurationTestCase) ... ok
+test_new_task_keeps_progress_and_q_table (test_q_learning_agent.QLearningAgentConfigurationTestCase) ... ok
+test_only_repeated_nonprogressing_reversal_is_flagged (test_q_learning_agent.QLearningAgentConfigurationTestCase) ... ok
+test_reward_contract_is_inferred_from_checkpoint (test_q_learning_agent.QLearningAgentConfigurationTestCase) ... ok
+test_setup_uses_runner_agent_seed_and_exploration_schedule (test_q_learning_agent.QLearningAgentConfigurationTestCase) ... ok
+test_shared_features_are_cached_per_round_step (test_q_learning_agent.QLearningAgentConfigurationTestCase) ... ok
+test_terminal_setting_disables_bomb_actions (test_q_learning_agent.QLearningAgentConfigurationTestCase) ... ok
+test_r9_task2_configs_are_paired_with_existing_candidates (test_recommended_training_configs.RecommendedTrainingConfigTests) ... ok
+test_rainbow_r13_no_safety_contract (test_recommended_training_configs.RecommendedTrainingConfigTests) ... ok
+test_rainbow_r14_quick_evaluation_and_no_safety_contract (test_recommended_training_configs.RecommendedTrainingConfigTests) ... ok
+test_rainbow_r15_quick_evaluation_and_no_safety_contract (test_recommended_training_configs.RecommendedTrainingConfigTests) ... ok
+test_rainbow_runtime_matches_continuous_v4_contract (test_recommended_training_configs.RecommendedTrainingConfigTests) ... ok
+test_recommended_feature_and_reward_pairs (test_recommended_training_configs.RecommendedTrainingConfigTests) ... ok
+test_task1_uses_frozen_score_stopping (test_recommended_training_configs.RecommendedTrainingConfigTests) ... ok
+test_task2_preserves_learning_budget (test_recommended_training_configs.RecommendedTrainingConfigTests) ... ok
+test_dqn_snapshot_materializes_a_weights_only_safe_checkpoint (test_resume.ResumeProtocolTestCase) ... ok
+test_explicit_v6_migration_rewrites_only_the_child_checkpoint (test_resume.ResumeProtocolTestCase) ... ok
+test_legacy_checkpoint_directory_is_not_a_resume_source (test_resume.ResumeProtocolTestCase) ... ok
+test_q_snapshot_round_trip_uses_npz_and_falls_back_one_generation (test_resume.ResumeProtocolTestCase) ... ok
+test_resume_rejects_new_feature_schema_mismatch (test_resume.ResumeProtocolTestCase) ... ok
+test_resume_transition_allows_same_or_direct_next_task_only (test_resume.ResumeProtocolTestCase) ... ok
+test_coin3_and_shaped_rewards_value_collected_coin_at_three (test_rewards.SharedRewardTestCase) ... ok
+test_conditional_loop_requires_all_four_conditions (test_rewards.SharedRewardTestCase) ... ok
+test_conditional_reward_adds_only_explicit_flags (test_rewards.SharedRewardTestCase) ... ok
+test_conditional_wait_only_penalizes_safe_avoidable_wait (test_rewards.SharedRewardTestCase) ... ok
+test_death_is_penalized_only_once (test_rewards.SharedRewardTestCase) ... ok
+test_experiment_configs_cover_active_training_rewards (test_rewards.SharedRewardTestCase) ... ok
+test_optimized_r3_potential_matches_full_context_definition (test_rewards.SharedRewardTestCase) ... ok
+test_r11_delays_crate_credit_and_rewards_resolved_survival (test_rewards.SharedRewardTestCase) ... ok
+test_r11_self_kill_dominates_same_step_positive_events (test_rewards.SharedRewardTestCase) ... ok
+test_r13_combines_dense_survival_and_causal_credit_contracts (test_rewards.SharedRewardTestCase) ... ok
+test_r13_survival_options_are_bounded_in_state_potential (test_rewards.SharedRewardTestCase) ... ok
+test_r14_only_rewards_resolved_bombs_with_observed_utility (test_rewards.SharedRewardTestCase) ... ok
+test_r15_directly_penalizes_zero_utility_bomb_credit (test_rewards.SharedRewardTestCase) ... ok
+test_r1_combines_repeated_objective_events (test_rewards.SharedRewardTestCase) ... ok
+test_r1_is_the_canonical_objective_reward (test_rewards.SharedRewardTestCase) ... ok
+test_r2_balanced_maps_new_events_and_separates_deaths (test_rewards.SharedRewardTestCase) ... ok
+test_r3_potential_rewards_progress_without_action_rules (test_rewards.SharedRewardTestCase) ... ok
+test_r3_terminal_uses_zero_absorbing_state_potential (test_rewards.SharedRewardTestCase) ... ok
+test_r3_variants_preserve_the_r3_potential_contract (test_rewards.SharedRewardTestCase) ... ok
+test_r4_anti_oscillation_idle_penalty_starts_on_second_wait_and_caps (test_rewards.SharedRewardTestCase) ... ok
+test_r4_anti_oscillation_penalizes_only_flagged_reversal (test_rewards.SharedRewardTestCase) ... ok
+test_r7_potential_fills_visible_coin_shaping_gap (test_rewards.SharedRewardTestCase) ... ok
+test_r7_potential_terminal_uses_zero_absorbing_state (test_rewards.SharedRewardTestCase) ... ok
+test_r9_safe_bomb_credit_and_zero_utility_penalty (test_rewards.SharedRewardTestCase) ... ok
+test_r9_task2_loop_detection_uses_crate_frontier (test_rewards.SharedRewardTestCase) ... ok
+test_survival_has_no_terminal_bonus (test_rewards.SharedRewardTestCase) ... ok
+test_task1_paired_configs_only_change_reward_contract (test_rewards.SharedRewardTestCase) ... ok
+test_unmapped_events_only_receive_step_cost (test_rewards.SharedRewardTestCase) ... ok
+test_cnn_submission_runs_without_teacher_dataset_or_repository_packages (test_submission_package.SubmissionPackageTest) ... ok
+test_generated_agent_runs_without_repository_shared_packages (test_submission_package.SubmissionPackageTest) ... ok
+test_r8_penalizes_only_avoidable_fatal_actions (test_survival_constraints.ConstrainedRewardTests) ... ok
+test_self_kill_suppresses_same_frame_positive_events (test_survival_constraints.ConstrainedRewardTests) ... ok
+test_task1_r8_matches_r7_and_removes_useful_bomb_credit (test_survival_constraints.ConstrainedRewardTests) ... ok
+test_action_conditional_fields_are_equivariant_under_symmetry (test_survival_constraints.ContinuousV3Tests) ... ok
+test_own_bomb_history_resets_and_round_trips (test_survival_constraints.ContinuousV3Tests) ... ok
+test_shape_ranges_and_own_bomb_facts (test_survival_constraints.ContinuousV3Tests) ... ok
+test_all_ablation_configs_use_complete_all_mode_contract (test_survival_constraints.SafetyPreregistrationTests) ... ok
+test_manifest_freezes_safety_gates_and_seed_isolation (test_survival_constraints.SafetyPreregistrationTests) ... ok
+test_new_task2_quality_gate_is_strict_and_prospective (test_survival_constraints.SafetyPreregistrationTests) ... ok
+test_task2_winner_requires_replication_and_one_main_validation (test_survival_constraints.SafetyPreregistrationTests) ... ok
+test_frozen_greedy_vetoes_raw_q_argmax_and_records_intervention (test_survival_constraints.SurvivalMaskTests) ... ok
+test_modes_and_legacy_mapping_are_explicit (test_survival_constraints.SurvivalMaskTests) ... ok
+test_no_safe_action_falls_back_to_physical_q_argmax (test_survival_constraints.SurvivalMaskTests) ... ok
+test_replay_and_n_step_target_keep_actual_survival_mask (test_survival_constraints.SurvivalMaskTests) ... ok
+test_v3_contract_is_exact_and_versioned (test_survival_constraints.SurvivalMaskTests) ... ok
+test_v3_post_bomb_uses_robust_set_then_v1_fallback (test_survival_constraints.SurvivalMaskTests) ... ok
+test_v3_vetoes_only_nonrobust_bomb_when_safe_alternative_exists (test_survival_constraints.SurvivalMaskTests) ... ok
+test_v5_checkpoint_is_frozen_only_and_v7_binds_safety (test_survival_constraints.SurvivalMaskTests) ... ok
+test_bounded_development_order_and_combination_requires_independent_benefit (test_task3_campaign.CampaignTests) ... ok
+test_confirmation_failure_never_calls_main_or_another_arm (test_task3_campaign.CampaignTests) ... ok
+test_cutoffs_apply_before_new_work (test_task3_campaign.CampaignTests) ... ok
+test_fixed_replay_quotas_do_not_fallback (test_task3_campaign.CampaignTests) ... ok
+test_resume_rejects_manifest_and_source_changes (test_task3_campaign.CampaignTests) ... ok
+test_reward_transfer_only_changes_kill_and_rejects_task3_replay (test_task3_campaign.CampaignTests) ... ok
+test_changed_resume_identity_rejected (test_task3_counter_validation.CounterValidationTests) ... ok
+test_confirmation_failure_never_starts_main (test_task3_counter_validation.CounterValidationTests) ... ok
+test_fixed_main_candidate_failure_is_terminal (test_task3_counter_validation.CounterValidationTests) ... ok
+test_reject_reused_or_overlapping_worlds (test_task3_counter_validation.CounterValidationTests) ... ok
+test_agent_accepts_preregistered_five_step_environment_contract (test_task3_escape_obligation.Task3EscapeContractTests) ... ok
+test_five_steps_assign_self_death_to_the_bomb_action (test_task3_escape_obligation.Task3EscapeContractTests) ... ok
+test_materialization_preserves_learner_and_resets_stage (test_task3_escape_obligation.Task3EscapeContractTests) ... ok
+test_preregistration_keeps_seed_sets_disjoint (test_task3_escape_obligation.Task3EscapeContractTests) ... ok
+test_route_count_uses_vertex_capacity_and_caps_at_two (test_task3_escape_obligation.Task3EscapeContractTests) ... ok
+test_safety_replay_uses_48_8_8_and_round_trips_labels (test_task3_escape_obligation.Task3EscapeContractTests) ... ok
+test_transfer_is_narrow_and_explicit (test_task3_escape_obligation.Task3EscapeContractTests) ... ok
+test_bomb_responsibility_survives_actual_training_callback (test_task3_lifecycle.LifecycleTests) ... ok
+test_move_and_wait_history_match_next_decision (test_task3_lifecycle.LifecycleTests) ... ok
+test_physical_fallback_placement_does_not_invent_safe_alternative (test_task3_lifecycle.LifecycleTests) ... ok
+test_queries_and_next_projection_do_not_mutate_live_state (test_task3_lifecycle.LifecycleTests) ... ok
+test_real_safe_placement_followed_by_collapse_still_counts (test_task3_lifecycle.LifecycleTests) ... ok
+test_responsibility_includes_lingering_flame_then_clears (test_task3_lifecycle.LifecycleTests) ... ok
+test_terminal_replaces_pending_and_clears_caches (test_task3_lifecycle.LifecycleTests) ... ok
+test_feature_is_117d_and_zero_initial_denominators_are_defined (test_task3_phase_iteration.PhaseFeatureTests) ... ok
+test_phase_suffix_is_invariant_under_board_symmetry (test_task3_phase_iteration.PhaseFeatureTests) ... ok
+test_round_tracker_resets_and_round_trips (test_task3_phase_iteration.PhaseFeatureTests) ... ok
+test_triangular_weights_are_continuous_and_sum_to_one (test_task3_phase_iteration.PhaseFeatureTests) ... ok
+test_phase_events_use_old_state_mixture (test_task3_phase_iteration.PhaseRewardTests) ... ok
+test_suicide_dominates_all_positive_events (test_task3_phase_iteration.PhaseRewardTests) ... ok
+test_84_to_117_transfer_preserves_policy_and_target_q (test_task3_phase_iteration.TransferAndMaskTests) ... ok
+test_arm_ranking_is_worst_seed_first (test_task3_phase_iteration.TransferAndMaskTests) ... ok
+test_mask_v2_keeps_actions_with_75_percent_of_best_area (test_task3_phase_iteration.TransferAndMaskTests) ... ok
+test_phase_gates_do_not_gate_geometric_edge_occupancy (test_task3_phase_iteration.TransferAndMaskTests) ... ok
+test_preregistration_seals_seeds_and_v8 (test_task3_phase_iteration.TransferAndMaskTests) ... ok
+test_published_phase_failure_evidence_is_complete_and_sealed (test_task3_phase_iteration.TransferAndMaskTests) ... ok
+test_transfer_is_narrow_and_v7_is_not_ordinary_v8_resume (test_task3_phase_iteration.TransferAndMaskTests) ... ok
+test_candidate_requires_all_three_seeds_and_ranks_score_first (test_task3_pilot.Task3PilotTests) ... ok
+test_one_assessment_passes_all_resource_combat_and_safety_gates (test_task3_pilot.Task3PilotTests) ... ok
+test_parent_and_child_must_use_the_same_environment_seeds (test_task3_pilot.Task3PilotTests) ... ok
+test_preregistration_keeps_the_winner_contract_and_no_action_stop (test_task3_pilot.Task3PilotTests) ... ok
+test_published_pilot_failure_evidence_is_complete_and_sealed (test_task3_pilot.Task3PilotTests) ... ok
+test_score_gain_does_not_hide_crate_regression (test_task3_pilot.Task3PilotTests) ... ok
+test_score_gain_does_not_hide_missing_combat_gain (test_task3_pilot.Task3PilotTests) ... ok
+test_cli_exit_codes_distinguish_outcomes (test_task3_plateau_stopping.PlateauInterfaceTests) ... ok
+test_direct_script_help_works (test_task3_plateau_stopping.PlateauInterfaceTests) ... ok
+test_manifest_uses_separated_seed_sets_and_fifty_round_boundaries (test_task3_plateau_stopping.PlateauInterfaceTests) ... ok
+test_segment_validation_rejects_broken_lineage_rounds (test_task3_plateau_stopping.PlateauInterfaceTests) ... ok
+test_segment_validation_uses_cumulative_generation_numbers (test_task3_plateau_stopping.PlateauInterfaceTests) ... ok
+test_history_replay_is_resumable_and_rejects_duplicate_rounds (test_task3_plateau_stopping.PlateauTrackerTests) ... ok
+test_meaningful_improvement_resets_patience (test_task3_plateau_stopping.PlateauTrackerTests) ... ok
+test_qualified_plateau_rolls_back_to_best_checkpoint (test_task3_plateau_stopping.PlateauTrackerTests) ... ok
+test_round_cap_returns_best_qualified_checkpoint_without_claiming_plateau (test_task3_plateau_stopping.PlateauTrackerTests) ... ok
+test_round_cap_without_qualified_checkpoint_fails (test_task3_plateau_stopping.PlateauTrackerTests) ... ok
+test_tie_band_can_update_best_without_resetting_patience (test_task3_plateau_stopping.PlateauTrackerTests) ... ok
+test_unqualified_gate_progress_resets_failure_patience (test_task3_plateau_stopping.PlateauTrackerTests) ... ok
+test_cli_exit_codes_distinguish_gate_and_infrastructure_failures (test_task3_retention_prefix.Task3RetentionPrefixTests) ... error: boom
+ok
+test_combat_boundary_tolerates_binary_float_representation (test_task3_retention_prefix.Task3RetentionPrefixTests) ... ok
+test_documented_script_invocation_imports_repository_modules (test_task3_retention_prefix.Task3RetentionPrefixTests) ... ok
+test_gate_passes_exact_boundaries_and_uses_combat_or (test_task3_retention_prefix.Task3RetentionPrefixTests) ... ok
+test_incomplete_evaluation_is_rejected (test_task3_retention_prefix.Task3RetentionPrefixTests) ... ok
+test_prefix_verification_checks_episode_training_and_replay (test_task3_retention_prefix.Task3RetentionPrefixTests) ... ok
+test_retention_failure_is_reported_without_rounding (test_task3_retention_prefix.Task3RetentionPrefixTests) ... ok
+test_all_gates_and_exact_thresholds (test_task4_campaign.CampaignTests) ... ok
+test_b_requires_every_failed_replica_to_have_only_gain_failure (test_task4_campaign.CampaignTests) ... ok
+test_confirmation_failure_and_main_failure_are_terminal (test_task4_campaign.CampaignTests) ... ok
+test_deadlines_and_changed_cache_or_checkpoint_are_rejected (test_task4_campaign.CampaignTests) ... ok
+test_registered_worlds_are_separate_and_fresh (test_task4_campaign.CampaignTests) ... ok
+test_safety_failure_is_separate_from_strategy_performance (test_task4_campaign.CampaignTests) ... ok
+test_actual_runner_round_boundary_resume_matches_uninterrupted (test_task4_transfer.TransferTests) ...   0%|                                                     | 0/4 [00:00<?, ?it/s] 25%|███████████▎                                 | 1/4 [00:00<00:02,  1.21it/s] 50%|██████████████████████▌                      | 2/4 [00:01<00:01,  1.24it/s] 75%|█████████████████████████████████▊           | 3/4 [00:02<00:00,  1.19it/s]100%|█████████████████████████████████████████████| 4/4 [00:03<00:00,  1.18it/s]100%|█████████████████████████████████████████████| 4/4 [00:03<00:00,  1.19it/s]
+  0%|                                                     | 0/2 [00:00<?, ?it/s] 50%|██████████████████████▌                      | 1/2 [00:00<00:00,  1.18it/s]100%|█████████████████████████████████████████████| 2/2 [00:01<00:00,  1.21it/s]100%|█████████████████████████████████████████████| 2/2 [00:01<00:00,  1.20it/s]
+  0%|                                                     | 0/2 [00:00<?, ?it/s] 50%|██████████████████████▌                      | 1/2 [00:00<00:00,  1.08it/s]100%|█████████████████████████████████████████████| 2/2 [00:01<00:00,  1.11it/s]100%|█████████████████████████████████████████████| 2/2 [00:01<00:00,  1.10it/s]
+ok
+test_learning_after_warmup_restores_sampling_weights_and_rng (test_task4_transfer.TransferTests) ... ok
+test_reject_invalid_parent_and_resume_identity (test_task4_transfer.TransferTests) ... ok
+test_same_seed_is_exact_and_distinct_seeds_reset_all_rngs (test_task4_transfer.TransferTests) ... ok
+test_transfer_preserves_learning_state_and_replaces_teacher (test_task4_transfer.TransferTests) ... ok
+test_warmup_and_a_b_sampling_counts (test_task4_transfer.TransferTests) ... ok
+test_agent_can_enter_destroyed_crate_tile_after_explosion_clears (test_temporal_safety_features.TemporalSafetyFeaturesTestCase) ... ok
+test_agent_can_wait_on_its_current_bomb_tile (test_temporal_safety_features.TemporalSafetyFeaturesTestCase) ... ok
+test_agent_cannot_reenter_a_bomb_tile_after_leaving (test_temporal_safety_features.TemporalSafetyFeaturesTestCase) ... ok
+test_analysis_does_not_modify_game_state (test_temporal_safety_features.TemporalSafetyFeaturesTestCase) ... ok
+test_bomb_tile_blocks_entry_until_the_step_after_explosion (test_temporal_safety_features.TemporalSafetyFeaturesTestCase) ... ok
+test_crate_becomes_enterable_after_its_explosion_step (test_temporal_safety_features.TemporalSafetyFeaturesTestCase) ... ok
+test_hypothetical_bomb_can_be_a_dead_end (test_temporal_safety_features.TemporalSafetyFeaturesTestCase) ... ok
+test_hypothetical_bomb_reports_escape_and_crates_hit (test_temporal_safety_features.TemporalSafetyFeaturesTestCase) ... ok
+test_legal_move_can_be_unsafe_on_the_next_step (test_temporal_safety_features.TemporalSafetyFeaturesTestCase) ... ok
+test_move_features_have_fixed_objective_fields (test_temporal_safety_features.TemporalSafetyFeaturesTestCase) ... ok
+test_multiple_bombs_keep_a_temporal_escape_path (test_temporal_safety_features.TemporalSafetyFeaturesTestCase) ... ok
+test_none_state_returns_none (test_temporal_safety_features.TemporalSafetyFeaturesTestCase) ... ok
+test_other_agents_are_fixed_obstacles (test_temporal_safety_features.TemporalSafetyFeaturesTestCase) ... ok
+test_existing_single_run_analysis_remains_available (test_training_analysis.TrainingAnalysisTestCase) ... ok
+test_multi_run_report_aligns_rounds_and_aggregates_by_seed (test_training_analysis.TrainingAnalysisTestCase) ... ok
+test_rejects_incompatible_or_invalid_inputs_before_reports_are_written (test_training_analysis.TrainingAnalysisTestCase) ... ok
+test_task1_notebook_has_a_valid_portable_structure (test_training_analysis.TrainingAnalysisTestCase) ... skipped 'nbformat is installed with JupyterLab'
+test_128_random_proofs_wait_bombs_flames_and_boundaries (test_vectorized_viability.ViabilityTests) ... ok
+test_cached_board_queries_each_position_without_reusing_a_boolean (test_vectorized_viability.ViabilityTests) ... ok
+test_historical_timeout_regression_runtime_budget_unchanged (test_vectorized_viability.ViabilityTests) ... ok
+test_one_environment_board_is_shared_across_own_positions (test_vectorized_viability.ViabilityTests) ... ok
+test_sixty_historical_complete_proofs_and_evidence (test_vectorized_viability.ViabilityTests) ... ok
+test_zero_budget_remains_fail_closed (test_vectorized_viability.ViabilityTests) ... ok
+test_changed_evidence_is_rejected_before_opening_worlds (test_viability_prerequisites.PrerequisiteTests) ... ok
+test_success_label_with_missing_states_is_rejected (test_viability_prerequisites.PrerequisiteTests) ... ok
+
+----------------------------------------------------------------------
+Ran 419 tests in 168.330s
+
+OK (skipped=1)

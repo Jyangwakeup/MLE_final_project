@@ -14,6 +14,8 @@ def validate(root,manifest):
             or b['repetitions']!=10 or b['warmups']!=1 or len(b['cpu'])!=1):
         raise ValueError('Incomplete viability benchmark')
     expected=[('task4_shared_parent_20260917',i) for i in range(38,58)]+[('order_equivalence_20260917',i) for i in range(76,96)]
+    if manifest.get('protocol_variant')=='cached-viability-v2':
+        expected += [('viability_performance_20260917',i) for i in range(112,132)]
     if [(s['corpus'],s['step']) for s in b['states']]!=expected:raise ValueError('Incomplete failure corpus')
     for state in b['states']:
         if set(state['warmup'])!={'old','new'} or state['warmup']['new']['search_result']['timed_out']:raise ValueError('Failed warmup')

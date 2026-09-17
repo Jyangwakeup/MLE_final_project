@@ -1,0 +1,13 @@
+F
+======================================================================
+FAIL: test_one_environment_board_is_shared_across_own_positions (tests.test_vectorized_viability.ViabilityTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/export/data/sfan/MLE_final_project_task4_fast/tests/test_vectorized_viability.py", line 71, in test_one_environment_board_is_shared_across_own_positions
+    self.assertEqual(maps.call_count,1)
+AssertionError: 5 != 1
+
+----------------------------------------------------------------------
+Ran 1 test in 0.004s
+
+FAILED (failures=1)

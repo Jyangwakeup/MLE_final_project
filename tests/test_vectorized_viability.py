@@ -11,7 +11,7 @@ from tests.test_order_equivalence import search_arguments, native
 from tests.test_danger import make_game_state
 
 ROOT=Path(__file__).resolve().parents[1]
-CORPORA=('task4_shared_parent_20260917','order_equivalence_20260917')
+CORPORA=('task4_shared_parent_20260917','order_equivalence_20260917','viability_performance_20260917')
 
 def records():
     out=[]
@@ -32,7 +32,7 @@ class ViabilityTests(unittest.TestCase):
         self.assertFalse(expected.timed_out);self.assertFalse(result.timed_out)
         self.assertEqual(asdict(expected),asdict(result));self.assertEqual(before,native(state))
 
-    def test_forty_historical_complete_proofs_and_evidence(self):
+    def test_sixty_historical_complete_proofs_and_evidence(self):
         for r in records():
             with self.subTest(corpus=r['corpus'],step=r['state']['step']):
                 actions,remaining=search_arguments(r);self.compare(r['state'],actions,remaining)
@@ -56,8 +56,29 @@ class ViabilityTests(unittest.TestCase):
         for repeat in range(10):
             result=actual.controllable_survival_actions(r['state'],actions,remaining_steps=remaining,budget_ms=400)
             self.assertFalse(result.timed_out,(repeat,result))
-            self.assertEqual(result.proven_actions,('RIGHT','DOWN','WAIT'))
+            self.assertEqual(result.proven_actions,actions)
 
     def test_zero_budget_remains_fail_closed(self):
         state=make_game_state()
         self.assertTrue(actual.controllable_survival_actions(state,('BOMB',),remaining_steps=6,budget_ms=0).timed_out)
+
+    def test_one_environment_board_is_shared_across_own_positions(self):
+        from unittest.mock import patch
+        state=make_game_state(position=(7,7))
+        with patch.object(actual,'temporal_maps',wraps=actual.temporal_maps) as maps:
+            result=actual.controllable_survival_actions(state,('UP','RIGHT','DOWN','LEFT','WAIT'),remaining_steps=3,budget_ms=60000)
+        self.assertEqual(result.proven_actions,('UP','RIGHT','DOWN','LEFT','WAIT'))
+        self.assertEqual(maps.call_count,1)
+
+    def test_cached_board_queries_each_position_without_reusing_a_boolean(self):
+        from unittest.mock import patch
+        from agent_code.team_agent.opponent_transitions import OpponentTransitionScenario
+        state=make_game_state(position=(1,1),bombs=[((7,7),0)])
+        for pos in ((6,7),(8,7),(7,6),(7,8)):state['field'][pos]=-1
+        trapped={**state,'self':('me',0,True,(7,7))}
+        scenarios=(OpponentTransitionScenario(state,('WAIT',),(0,)),OpponentTransitionScenario(trapped,('BOMB',),(0,)))
+        with patch.object(actual,'enumerate_opponent_transition_scenarios',return_value=scenarios):
+            result=actual.controllable_survival_actions(state,('WAIT',),remaining_steps=3,budget_ms=60000)
+        self.assertEqual(result.proven_actions,())
+        self.assertEqual(result.first_failing_profile,('BOMB',))
+        self.assertEqual(result.scenarios_evaluated,2)

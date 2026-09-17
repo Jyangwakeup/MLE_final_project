@@ -230,3 +230,8 @@ _Avoid_: Nearest-opponent approximation, predicted execution order
 **Equivalent viability propagation**:
 A computation of the same finite-horizon controllable survival set using whole-board Boolean operations, retaining the distinction between staying on a blocked cell and entering one. It does not change the modeled opponents or accepted proofs.
 _Avoid_: Reduced safety horizon, approximate survival
+
+
+**Shared viability board**:
+The finite-horizon survival answers for every own position under one fixed terrain, hazard and opponent environment. Each candidate still queries its own position; a cached safe answer for one position is never reused as a safe answer for another.
+_Avoid_: Shared safe action, nearest-opponent proof

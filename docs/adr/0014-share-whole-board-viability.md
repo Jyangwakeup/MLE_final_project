@@ -1,0 +1,3 @@
+# Cache whole-board proofs across own candidate positions
+
+Accepted. The third preserved timeout has 700 scenario queries but only 140 distinct terrain/hazard/opponent environments: with hypothetical bombs disabled in this recurrence, the computed viability board is independent of the own starting tile and capacity. Cache that board only within one decision and query each actual own position, retaining all environment dependencies, proof counters and witnesses; verify against the original scalar reference, preserve the previous failed campaign, and use a new campaign identity without changing gates or extending the original deadline.

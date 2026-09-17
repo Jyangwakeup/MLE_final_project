@@ -1,0 +1,27 @@
+ControllableSurvivalResult(proven_actions=('UP', 'RIGHT', 'DOWN', 'LEFT', 'WAIT'), scenarios_evaluated=700, states_evaluated=460405, timed_out=False, first_failing_profile=None, first_failing_order=None)
+         112940 function calls in 0.138 seconds
+
+   Ordered by: cumulative time
+   List reduced from 104 to 18 due to restriction <18>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+        1    0.001    0.001    0.139    0.139 /export/data/sfan/MLE_final_project_task4_fast/agent_code/team_agent/controllable_survival.py:52(controllable_survival_actions)
+        5    0.002    0.000    0.139    0.028 /export/data/sfan/MLE_final_project_task4_fast/agent_code/team_agent/controllable_survival.py:195(action_winning)
+      700    0.056    0.000    0.091    0.000 /export/data/sfan/MLE_final_project_task4_fast/agent_code/team_agent/controllable_survival.py:77(abstract_feedback_winning)
+        5    0.003    0.001    0.045    0.009 /export/data/sfan/MLE_final_project_task4_fast/agent_code/team_agent/opponent_transitions.py:200(enumerate_opponent_transition_scenarios)
+      140    0.000    0.000    0.017    0.000 /export/data/sfan/MLE_final_project_task4_fast/agent_code/team_agent/temporal_safety_features.py:125(temporal_maps)
+      140    0.000    0.000    0.017    0.000 /export/data/sfan/MLE_final_project_task4_fast/agent_code/team_agent/temporal_safety_features.py:115(_temporal_maps)
+     1530    0.004    0.000    0.015    0.000 /export/data/sfan/MLE_final_project_task4_fast/agent_code/team_agent/opponent_transitions.py:64(_state_key)
+      830    0.008    0.000    0.013    0.000 /export/data/sfan/MLE_final_project_task4_fast/agent_code/team_agent/opponent_transitions.py:81(_apply_action_phase)
+      830    0.008    0.000    0.011    0.000 /export/data/sfan/MLE_final_project_task4_fast/agent_code/team_agent/opponent_transitions.py:119(_progress_world)
+      140    0.000    0.000    0.009    0.000 /export/data/sfan/MLE_final_project_task4_fast/agent_code/team_agent/danger.py:50(predict_danger)
+      700    0.000    0.000    0.007    0.000 /export/data/sfan/MLE_final_project_task4_fast/agent_code/team_agent/opponent_transitions.py:76(canonical_state_key)
+      720    0.005    0.000    0.007    0.000 /export/data/sfan/MLE_final_project_task4_fast/agent_code/team_agent/opponent_transitions.py:171(_execution_orders)
+     3060    0.003    0.000    0.006    0.000 {built-in method builtins.sorted}
+      446    0.005    0.000    0.006    0.000 /export/data/sfan/MLE_final_project_task4_fast/agent_code/team_agent/danger.py:14(blast_coords)
+      223    0.002    0.000    0.005    0.000 /export/data/sfan/MLE_final_project_task4_fast/agent_code/team_agent/danger.py:32(_mark_bomb_danger)
+     5835    0.005    0.000    0.005    0.000 {built-in method numpy.asarray}
+    40338    0.004    0.000    0.004    0.000 {method 'add' of 'set' objects}
+      140    0.001    0.000    0.004    0.000 /export/data/sfan/MLE_final_project_task4_fast/agent_code/team_agent/temporal_safety_features.py:96(_mark_destroyed_crates)
+
+

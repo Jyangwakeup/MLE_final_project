@@ -1,4 +1,4 @@
-"""Paired scalar/vectorized full-search timings on both immutable failure corpora."""
+"""Paired uncached/cached full-search timings on three immutable failure corpora."""
 from __future__ import annotations
 import argparse
 from dataclasses import asdict
@@ -9,7 +9,7 @@ if __package__ in (None,''):sys.path.insert(0,str(Path(__file__).resolve().paren
 from experiments.benchmark_opponent_orders import sha, write
 from experiments.run import _source_hash
 from tests.test_vectorized_viability import records, search_arguments, CORPORA
-from tests import reference_controllable_survival as old
+from tests import reference_vectorized_survival as old
 from agent_code.team_agent import controllable_survival as new
 ROOT=Path(__file__).resolve().parents[1]
 
@@ -20,12 +20,12 @@ def measure(record,module):
 
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--output',type=Path,default=Path('runs/viability_admission/benchmark.json'))
+    parser.add_argument('--output',type=Path,default=Path('runs/viability_cache/benchmark.json'))
     parser.add_argument('--deadline',default='2026-09-17T21:17:31Z');args=parser.parse_args()
     deadline=datetime.fromisoformat(args.deadline.replace('Z','+00:00')).timestamp()
     if len(os.sched_getaffinity(0))!=1:raise ValueError('Pin to a single physical CPU')
-    paths=[Path(__file__).resolve(),ROOT/'tests/test_vectorized_viability.py',ROOT/'tests/test_order_equivalence.py',ROOT/'tests/reference_controllable_survival.py',ROOT/'experiments/benchmark_opponent_orders.py']
-    result=dict(status='running',protocol='vectorized-viability-v1',search_budget_ms=400,repetitions=10,warmups=1,
+    paths=[Path(__file__).resolve(),ROOT/'tests/test_vectorized_viability.py',ROOT/'tests/test_order_equivalence.py',ROOT/'tests/reference_vectorized_survival.py',ROOT/'experiments/benchmark_opponent_orders.py']
+    result=dict(status='running',protocol='cached-viability-v2',search_budget_ms=400,repetitions=10,warmups=1,
         cpu=list(os.sched_getaffinity(0)),runtime_source_hash=_source_hash('double_dqn_continuous_v2_agent'),
         source_hashes={str(p.relative_to(ROOT)):sha(p) for p in paths},
         corpus_hashes={name:sha(ROOT/'experiments/results'/name/'failure_states.json') for name in CORPORA},states=[])

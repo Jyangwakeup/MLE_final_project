@@ -1,3 +1,4 @@
+# Frozen vectorized pre-environment-cache reference from 1eaee8d.
 """Finite-horizon adversarial viability for an own-bomb danger interval."""
 
 from __future__ import annotations
@@ -9,11 +10,11 @@ import numpy as np
 
 import settings as s
 
-from .opponent_transitions import (
+from agent_code.team_agent.opponent_transitions import (
     ACTIONS, canonical_state_key, enumerate_opponent_transition_scenarios,
 )
-from .danger import blast_coords
-from .temporal_safety_features import temporal_maps
+from agent_code.team_agent.danger import blast_coords
+from agent_code.team_agent.temporal_safety_features import temporal_maps
 
 
 class _BudgetExpired(RuntimeError):
@@ -72,7 +73,7 @@ def controllable_survival_actions(
         if monotonic() >= deadline:
             raise _BudgetExpired
 
-    abstract_memo: dict[tuple, tuple[np.ndarray, int]] = {}
+    abstract_memo: dict[tuple, tuple[bool, int]] = {}
 
     def abstract_feedback_winning(state: dict, steps: int) -> bool:
         """Sound, conservative viability kernel for the remaining interval.
@@ -89,17 +90,11 @@ def controllable_survival_actions(
         check_budget()
         if steps <= 0:
             return True
-        # With hypothetical_bomb=False, the whole-board recurrence depends on
-        # terrain, timed hazards and opponents, but not the own starting tile
-        # or bomb capacity. Normalize self only in the memo key; evaluate the
-        # original state and query the resulting board at the actual position.
-        own_position = tuple(state["self"][3])
-        environment = {**state, "self": ("", 0, False, (0, 0))}
-        key = (steps, canonical_state_key(environment))
+        key = (steps, canonical_state_key(state))
         cached = abstract_memo.get(key)
         if cached is not None:
             states_evaluated += cached[1]
-            return bool(cached[0][own_position])
+            return cached[0]
 
         field = np.asarray(state["field"])
         danger, blocked = temporal_maps(
@@ -187,10 +182,11 @@ def controllable_survival_actions(
             viable[time_step] = allowed_now & reachable
             examined += int(np.count_nonzero(allowed_now))
             check_budget()
-        board = viable[0].copy()
-        abstract_memo[key] = (board, examined)
+        position = tuple(state["self"][3])
+        result = bool(viable[0, position[0], position[1]])
+        abstract_memo[key] = (result, examined)
         states_evaluated += examined
-        return bool(board[own_position])
+        return result
 
     def action_winning(state: dict, action: str, steps: int) -> bool:
         nonlocal scenarios_evaluated
