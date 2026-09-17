@@ -1,0 +1,77 @@
+[
+  {
+    "step": 195,
+    "candidate_actions": [
+      "UP",
+      "RIGHT",
+      "DOWN",
+      "WAIT"
+    ],
+    "actual_action": "RIGHT",
+    "result": {
+      "proven_actions": [],
+      "scenarios_evaluated": 13,
+      "states_evaluated": 13017,
+      "timed_out": false,
+      "first_failing_profile": [
+        "UP",
+        "WAIT",
+        "WAIT"
+      ],
+      "first_failing_order": [
+        0,
+        1,
+        2
+      ]
+    }
+  },
+  {
+    "step": 196,
+    "candidate_actions": [
+      "RIGHT",
+      "LEFT",
+      "WAIT"
+    ],
+    "actual_action": "WAIT",
+    "result": {
+      "proven_actions": [],
+      "scenarios_evaluated": 3,
+      "states_evaluated": 2934,
+      "timed_out": false,
+      "first_failing_profile": [
+        "RIGHT",
+        "WAIT",
+        "WAIT"
+      ],
+      "first_failing_order": [
+        0,
+        1,
+        2
+      ]
+    }
+  },
+  {
+    "step": 197,
+    "candidate_actions": [
+      "RIGHT",
+      "WAIT"
+    ],
+    "actual_action": "RIGHT",
+    "result": {
+      "proven_actions": [],
+      "scenarios_evaluated": 2,
+      "states_evaluated": 1948,
+      "timed_out": false,
+      "first_failing_profile": [
+        "RIGHT",
+        "WAIT",
+        "WAIT"
+      ],
+      "first_failing_order": [
+        0,
+        1,
+        2
+      ]
+    }
+  }
+]

@@ -1,0 +1,8 @@
+{
+  "world": 24017,
+  "death_step": 199,
+  "own_bomb_pending": false,
+  "cause": "Opponent occupied requested escape destination at step 197; position remained (12,13), then the bomb at (10,13) exploded.",
+  "probe_file": "death_24017_probe.json",
+  "interpretation": "No robustly proven action at inspected steps 195\u2013197 under the rearming envelope; this does not prove global unavoidability. Original engineering gates and stopped-run rules unchanged."
+}

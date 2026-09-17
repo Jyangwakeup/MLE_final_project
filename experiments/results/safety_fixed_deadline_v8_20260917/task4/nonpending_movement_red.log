@@ -1,0 +1,5 @@
+v8_mask [True, True, True, True, True, False] actual_action RIGHT proven_actions ('UP', 'LEFT', 'WAIT')
+Traceback (most recent call last):
+  File "/tmp/repro_v8_nonpending_movement_gap.py", line 16, in <module>
+    assert not actual.mask[1], 'RIGHT remains admitted despite available robustly proven alternatives'
+AssertionError: RIGHT remains admitted despite available robustly proven alternatives
