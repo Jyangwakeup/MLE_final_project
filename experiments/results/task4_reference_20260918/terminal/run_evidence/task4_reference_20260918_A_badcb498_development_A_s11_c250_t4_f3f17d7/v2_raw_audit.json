@@ -1,0 +1,106 @@
+{
+  "actions": 21869,
+  "deaths": [
+    {
+      "causes": [
+        {
+          "owner": "rule_based_agent_2",
+          "type": "opponent_bomb"
+        }
+      ],
+      "death_step": 124,
+      "round_index": 1,
+      "seed": 25017,
+      "self_death": false
+    },
+    {
+      "causes": [
+        {
+          "owner": "rule_based_agent_0",
+          "type": "opponent_bomb"
+        }
+      ],
+      "death_step": 53,
+      "round_index": 1,
+      "seed": 25018,
+      "self_death": false
+    },
+    {
+      "causes": [
+        {
+          "owner": "rule_based_agent_2",
+          "type": "opponent_bomb"
+        }
+      ],
+      "death_step": 129,
+      "round_index": 1,
+      "seed": 25025,
+      "self_death": false
+    },
+    {
+      "causes": [
+        {
+          "owner": "rule_based_agent_1",
+          "type": "opponent_bomb"
+        }
+      ],
+      "death_step": 80,
+      "round_index": 1,
+      "seed": 25030,
+      "self_death": false
+    },
+    {
+      "causes": [
+        {
+          "owner": "rule_based_agent_1",
+          "type": "opponent_bomb"
+        }
+      ],
+      "death_step": 96,
+      "round_index": 1,
+      "seed": 25036,
+      "self_death": false
+    },
+    {
+      "causes": [
+        {
+          "owner": "rule_based_agent_1",
+          "type": "opponent_bomb"
+        }
+      ],
+      "death_step": 242,
+      "round_index": 1,
+      "seed": 25050,
+      "self_death": false
+    },
+    {
+      "causes": [
+        {
+          "owner": "rule_based_agent_0",
+          "type": "opponent_bomb"
+        }
+      ],
+      "death_step": 136,
+      "round_index": 1,
+      "seed": 25059,
+      "self_death": false
+    }
+  ],
+  "failures": [],
+  "run": "/export/data/sfan/MLE_final_project_task4_reference/runs/task4_reference_20260918_A_badcb498_development_A_s11_c250_t4_f3f17d7",
+  "summary": {
+    "act_max_seconds": 0.062255859375,
+    "act_p95_seconds": 0.01945562362670898,
+    "act_skipped": 0,
+    "act_timeouts": 0,
+    "avoidable_escape_collapses": 0,
+    "bomb_survival_rate": 1.0,
+    "episodes": 60,
+    "invalid_action_rate": 0.0033380584388860947,
+    "mean_bombs": 37.56666666666667,
+    "robust_guarantee_losses": 0,
+    "robust_search_timeouts": 0,
+    "suicide_rate": 0.0,
+    "zero_bomb_round_rate": 0.0
+  }
+}

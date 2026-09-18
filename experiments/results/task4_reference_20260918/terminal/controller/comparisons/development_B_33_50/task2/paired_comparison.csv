@@ -1,0 +1,7 @@
+metric,paired_count,candidate_mean,reference_mean,mean_difference,median_difference,candidate_wins,ties,candidate_losses,bootstrap_ci95_low,bootstrap_ci95_high
+score,60,7.233333333333333,7.55,-0.31666666666666665,0.0,19,13,28,-0.8,0.15
+coins,60,7.233333333333333,7.55,-0.31666666666666665,0.0,19,13,28,-0.7833333333333333,0.15
+crates,60,101.2,100.95,0.25,1.5,31,2,27,-5.016666666666667,5.7
+suicides,60,0.0,0.0,0.0,0.0,0,60,0,0.0,0.0
+survived,60,1.0,1.0,0.0,0.0,0,60,0,0.0,0.0
+survival_steps,60,400.0,400.0,0.0,0.0,0,60,0,0.0,0.0

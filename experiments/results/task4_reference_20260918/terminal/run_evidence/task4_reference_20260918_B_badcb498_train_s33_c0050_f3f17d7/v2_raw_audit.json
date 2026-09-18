@@ -1,0 +1,82 @@
+{
+  "actions": 18003,
+  "deaths": [
+    {
+      "causes": [
+        {
+          "owner": "rule_based_agent_0",
+          "type": "opponent_bomb"
+        }
+      ],
+      "death_step": 89,
+      "round_index": 13,
+      "seed": 1033,
+      "self_death": false
+    },
+    {
+      "causes": [
+        {
+          "owner": "rule_based_agent_0",
+          "type": "opponent_bomb"
+        }
+      ],
+      "death_step": 56,
+      "round_index": 22,
+      "seed": 1033,
+      "self_death": false
+    },
+    {
+      "causes": [
+        {
+          "owner": "rule_based_agent_0",
+          "type": "opponent_bomb"
+        }
+      ],
+      "death_step": 90,
+      "round_index": 31,
+      "seed": 1033,
+      "self_death": false
+    },
+    {
+      "causes": [
+        {
+          "owner": "rule_based_agent_2",
+          "type": "opponent_bomb"
+        }
+      ],
+      "death_step": 97,
+      "round_index": 33,
+      "seed": 1033,
+      "self_death": false
+    },
+    {
+      "causes": [
+        {
+          "owner": "rule_based_agent_0",
+          "type": "opponent_bomb"
+        }
+      ],
+      "death_step": 97,
+      "round_index": 47,
+      "seed": 1033,
+      "self_death": false
+    }
+  ],
+  "failures": [],
+  "run": "/export/data/sfan/MLE_final_project_task4_reference/runs/task4_reference_20260918_B_badcb498_train_s33_c0050_f3f17d7",
+  "summary": {
+    "act_max_seconds": 0.1474294662475586,
+    "act_p95_seconds": 0.01898262500762939,
+    "act_skipped": 0,
+    "act_timeouts": 0,
+    "avoidable_escape_collapses": 0,
+    "bomb_survival_rate": 1.0,
+    "episodes": 50,
+    "invalid_action_rate": 0.004165972337943676,
+    "mean_bombs": 37.66,
+    "robust_guarantee_losses": 0,
+    "robust_search_timeouts": 0,
+    "suicide_rate": 0.0,
+    "zero_bomb_round_rate": 0.0
+  }
+}

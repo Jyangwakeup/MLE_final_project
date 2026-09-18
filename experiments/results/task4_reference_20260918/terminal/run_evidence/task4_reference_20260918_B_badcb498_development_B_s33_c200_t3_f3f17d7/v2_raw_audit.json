@@ -1,0 +1,21 @@
+{
+  "actions": 23683,
+  "deaths": [],
+  "failures": [],
+  "run": "/export/data/sfan/MLE_final_project_task4_reference/runs/task4_reference_20260918_B_badcb498_development_B_s33_c200_t3_f3f17d7",
+  "summary": {
+    "act_max_seconds": 0.10966944694519043,
+    "act_p95_seconds": 0.01294202804565429,
+    "act_skipped": 0,
+    "act_timeouts": 0,
+    "avoidable_escape_collapses": 0,
+    "bomb_survival_rate": 1.0,
+    "episodes": 60,
+    "invalid_action_rate": 0.00046446818392940084,
+    "mean_bombs": 31.583333333333332,
+    "robust_guarantee_losses": 0,
+    "robust_search_timeouts": 0,
+    "suicide_rate": 0.0,
+    "zero_bomb_round_rate": 0.0
+  }
+}

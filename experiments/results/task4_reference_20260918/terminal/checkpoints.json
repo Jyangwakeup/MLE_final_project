@@ -1,0 +1,302 @@
+[
+  {
+    "path": "runs/task4_reference_20260918_A_badcb498_train_s11_c0050_f3f17d7/checkpoints/final.pt",
+    "bytes": 57248640,
+    "sha256": "65cfb7148875815edb634acdb3e125fd6e7c51dfbe74d4d49e37c1c3a246d923"
+  },
+  {
+    "path": "runs/task4_reference_20260918_A_badcb498_train_s11_c0050_f3f17d7/resume/generation-00000049/learner.pt",
+    "bytes": 56961088,
+    "sha256": "ce15667d76ee48da960f26e6a46bdb60246371fc382531dd1447cc460dc9e8b6"
+  },
+  {
+    "path": "runs/task4_reference_20260918_A_badcb498_train_s11_c0050_f3f17d7/resume/generation-00000050/learner.pt",
+    "bytes": 57248640,
+    "sha256": "65cfb7148875815edb634acdb3e125fd6e7c51dfbe74d4d49e37c1c3a246d923"
+  },
+  {
+    "path": "runs/task4_reference_20260918_A_badcb498_train_s11_c0100_f3f17d7/checkpoints/final.pt",
+    "bytes": 58124160,
+    "sha256": "ae5dfaa094fe459e1be5ae51a346d952fd26251a7536730a7e77dbd61328515d"
+  },
+  {
+    "path": "runs/task4_reference_20260918_A_badcb498_train_s11_c0100_f3f17d7/resume/generation-00000099/learner.pt",
+    "bytes": 58124096,
+    "sha256": "24d701cda8c8f9744bc7343ab1f8824e98e50a6035e28edcaf7d031df32076ed"
+  },
+  {
+    "path": "runs/task4_reference_20260918_A_badcb498_train_s11_c0100_f3f17d7/resume/generation-00000100/learner.pt",
+    "bytes": 58124160,
+    "sha256": "ae5dfaa094fe459e1be5ae51a346d952fd26251a7536730a7e77dbd61328515d"
+  },
+  {
+    "path": "runs/task4_reference_20260918_A_badcb498_train_s11_c0150_f3f17d7/checkpoints/final.pt",
+    "bytes": 58124160,
+    "sha256": "609424d1c33081ad2a00d6d169dd01668dceaf36269bf986bd1bd1138887e663"
+  },
+  {
+    "path": "runs/task4_reference_20260918_A_badcb498_train_s11_c0150_f3f17d7/resume/generation-00000149/learner.pt",
+    "bytes": 58124224,
+    "sha256": "b1db2dde95e35e1770ffb5319688581de01facfa43079c70add031819247af90"
+  },
+  {
+    "path": "runs/task4_reference_20260918_A_badcb498_train_s11_c0150_f3f17d7/resume/generation-00000150/learner.pt",
+    "bytes": 58124160,
+    "sha256": "609424d1c33081ad2a00d6d169dd01668dceaf36269bf986bd1bd1138887e663"
+  },
+  {
+    "path": "runs/task4_reference_20260918_A_badcb498_train_s11_c0200_f3f17d7/checkpoints/final.pt",
+    "bytes": 58124160,
+    "sha256": "da7439bab11ec08c8bd59a129d00d771ee9c917476931187517e00e6f467d412"
+  },
+  {
+    "path": "runs/task4_reference_20260918_A_badcb498_train_s11_c0200_f3f17d7/resume/generation-00000199/learner.pt",
+    "bytes": 58124160,
+    "sha256": "bee214b3530f0255f754651be50204d8f40313af3cdef111f85da1b5ef263714"
+  },
+  {
+    "path": "runs/task4_reference_20260918_A_badcb498_train_s11_c0200_f3f17d7/resume/generation-00000200/learner.pt",
+    "bytes": 58124160,
+    "sha256": "da7439bab11ec08c8bd59a129d00d771ee9c917476931187517e00e6f467d412"
+  },
+  {
+    "path": "runs/task4_reference_20260918_A_badcb498_train_s11_c0250_f3f17d7/checkpoints/final.pt",
+    "bytes": 58124160,
+    "sha256": "41a774d7d8b2118193ff0e3d1c182d1486a4982d95104268bd97836d9c396498"
+  },
+  {
+    "path": "runs/task4_reference_20260918_A_badcb498_train_s11_c0250_f3f17d7/resume/generation-00000249/learner.pt",
+    "bytes": 58124096,
+    "sha256": "d49a8bfd881de9d0ec3b4a68ddaf6cf73b8ffd45cb57ebedce3452e6d0b50013"
+  },
+  {
+    "path": "runs/task4_reference_20260918_A_badcb498_train_s11_c0250_f3f17d7/resume/generation-00000250/learner.pt",
+    "bytes": 58124160,
+    "sha256": "41a774d7d8b2118193ff0e3d1c182d1486a4982d95104268bd97836d9c396498"
+  },
+  {
+    "path": "runs/task4_reference_20260918_A_badcb498_train_s22_c0050_f3f17d7/checkpoints/final.pt",
+    "bytes": 57268288,
+    "sha256": "47154063ea0cedec97c58046475c3ac7d010a3cc2cb8f07c719d83c634a8507d"
+  },
+  {
+    "path": "runs/task4_reference_20260918_A_badcb498_train_s22_c0050_f3f17d7/resume/generation-00000049/learner.pt",
+    "bytes": 56980672,
+    "sha256": "9a7d4a701a48a47a9b27d881c5db36db3dc9249cdda36e7e6034c8de041a23e3"
+  },
+  {
+    "path": "runs/task4_reference_20260918_A_badcb498_train_s22_c0050_f3f17d7/resume/generation-00000050/learner.pt",
+    "bytes": 57268288,
+    "sha256": "47154063ea0cedec97c58046475c3ac7d010a3cc2cb8f07c719d83c634a8507d"
+  },
+  {
+    "path": "runs/task4_reference_20260918_A_badcb498_train_s33_c0050_f3f17d7/checkpoints/final.pt",
+    "bytes": 57057408,
+    "sha256": "5fae5f9072da379f39b68caaef5a93cd5fe213b1453114594e407b7e450b5d6e"
+  },
+  {
+    "path": "runs/task4_reference_20260918_A_badcb498_train_s33_c0050_f3f17d7/resume/generation-00000049/learner.pt",
+    "bytes": 56769920,
+    "sha256": "28fdbe557240472903a788b6952b969f86be49bdb90284f78a5747d90715ca43"
+  },
+  {
+    "path": "runs/task4_reference_20260918_A_badcb498_train_s33_c0050_f3f17d7/resume/generation-00000050/learner.pt",
+    "bytes": 57057408,
+    "sha256": "5fae5f9072da379f39b68caaef5a93cd5fe213b1453114594e407b7e450b5d6e"
+  },
+  {
+    "path": "runs/task4_reference_20260918_A_badcb498_train_s33_c0100_f3f17d7/checkpoints/final.pt",
+    "bytes": 58124096,
+    "sha256": "3de6ee91ee9e752548f9b41af24b2c668f66e20dc7d0263043fc7070989cbfdf"
+  },
+  {
+    "path": "runs/task4_reference_20260918_A_badcb498_train_s33_c0100_f3f17d7/resume/generation-00000099/learner.pt",
+    "bytes": 58124160,
+    "sha256": "576b63f16b3daf8aa969b6e2d4b65ac564fccfec9aa158d18a9e2ea4f17bd5bc"
+  },
+  {
+    "path": "runs/task4_reference_20260918_A_badcb498_train_s33_c0100_f3f17d7/resume/generation-00000100/learner.pt",
+    "bytes": 58124096,
+    "sha256": "3de6ee91ee9e752548f9b41af24b2c668f66e20dc7d0263043fc7070989cbfdf"
+  },
+  {
+    "path": "runs/task4_reference_20260918_A_badcb498_train_s33_c0150_f3f17d7/checkpoints/final.pt",
+    "bytes": 58124096,
+    "sha256": "9eece7589ba644ea5cf33a12e949108c9de6f22d71ea89fd94bc3b8875bcfe5d"
+  },
+  {
+    "path": "runs/task4_reference_20260918_A_badcb498_train_s33_c0150_f3f17d7/resume/generation-00000149/learner.pt",
+    "bytes": 58124160,
+    "sha256": "0ae2fa9ad13aa416f2a3ae7e99f726e1011a902344bc218c5f5a8ff2283fc88d"
+  },
+  {
+    "path": "runs/task4_reference_20260918_A_badcb498_train_s33_c0150_f3f17d7/resume/generation-00000150/learner.pt",
+    "bytes": 58124096,
+    "sha256": "9eece7589ba644ea5cf33a12e949108c9de6f22d71ea89fd94bc3b8875bcfe5d"
+  },
+  {
+    "path": "runs/task4_reference_20260918_A_badcb498_train_s33_c0200_f3f17d7/checkpoints/final.pt",
+    "bytes": 58124096,
+    "sha256": "c68b243d17240df6f79d7778e4e5d0a7bcabf2125dfc6ebdd3c846e5c7089329"
+  },
+  {
+    "path": "runs/task4_reference_20260918_A_badcb498_train_s33_c0200_f3f17d7/resume/generation-00000199/learner.pt",
+    "bytes": 58124160,
+    "sha256": "8a7e012b814264588846a2d4490c035b27d33a4e56a05b0fa6d0ff70c325e698"
+  },
+  {
+    "path": "runs/task4_reference_20260918_A_badcb498_train_s33_c0200_f3f17d7/resume/generation-00000200/learner.pt",
+    "bytes": 58124096,
+    "sha256": "c68b243d17240df6f79d7778e4e5d0a7bcabf2125dfc6ebdd3c846e5c7089329"
+  },
+  {
+    "path": "runs/task4_reference_20260918_A_badcb498_train_s33_c0250_f3f17d7/checkpoints/final.pt",
+    "bytes": 58124096,
+    "sha256": "dcdb9b0f737478bf2a594491a5615c0e2791330f48688bc4613d3f1350af2ff5"
+  },
+  {
+    "path": "runs/task4_reference_20260918_A_badcb498_train_s33_c0250_f3f17d7/resume/generation-00000249/learner.pt",
+    "bytes": 58124096,
+    "sha256": "c694e19478a19939957bff5ab0844c7e17f0d3a750200dc7e70453d5b7d8d1a3"
+  },
+  {
+    "path": "runs/task4_reference_20260918_A_badcb498_train_s33_c0250_f3f17d7/resume/generation-00000250/learner.pt",
+    "bytes": 58124096,
+    "sha256": "dcdb9b0f737478bf2a594491a5615c0e2791330f48688bc4613d3f1350af2ff5"
+  },
+  {
+    "path": "runs/task4_reference_20260918_A_badcb498_train_s33_c0300_f3f17d7/checkpoints/final.pt",
+    "bytes": 58124160,
+    "sha256": "669673d7f6ceae9ac5138cb4083c9b968373aae15154b5efe616ad9f46facb17"
+  },
+  {
+    "path": "runs/task4_reference_20260918_A_badcb498_train_s33_c0300_f3f17d7/resume/generation-00000299/learner.pt",
+    "bytes": 58124096,
+    "sha256": "2ee1b3b572f31ea902a0aeac31f7e47c270f55e4441ae070a9e65e8e08f4d669"
+  },
+  {
+    "path": "runs/task4_reference_20260918_A_badcb498_train_s33_c0300_f3f17d7/resume/generation-00000300/learner.pt",
+    "bytes": 58124160,
+    "sha256": "669673d7f6ceae9ac5138cb4083c9b968373aae15154b5efe616ad9f46facb17"
+  },
+  {
+    "path": "runs/task4_reference_20260918_B_badcb498_train_s11_c0050_f3f17d7/checkpoints/final.pt",
+    "bytes": 56763520,
+    "sha256": "3acb9b5cbd8f4028055cd64d931b486dfa0ef382bbd6aab1f2115935ce775076"
+  },
+  {
+    "path": "runs/task4_reference_20260918_B_badcb498_train_s11_c0050_f3f17d7/resume/generation-00000049/learner.pt",
+    "bytes": 56476032,
+    "sha256": "142ee44d7b636214133ef168f1209ce65194335c368d3679b95cee7caed3e428"
+  },
+  {
+    "path": "runs/task4_reference_20260918_B_badcb498_train_s11_c0050_f3f17d7/resume/generation-00000050/learner.pt",
+    "bytes": 56763520,
+    "sha256": "3acb9b5cbd8f4028055cd64d931b486dfa0ef382bbd6aab1f2115935ce775076"
+  },
+  {
+    "path": "runs/task4_reference_20260918_B_badcb498_train_s22_c0050_f3f17d7/checkpoints/final.pt",
+    "bytes": 57537920,
+    "sha256": "babea487b1d5fabf3439efcb1ebd8dfbd5d180013ac75df0d522c96cc3863ae9"
+  },
+  {
+    "path": "runs/task4_reference_20260918_B_badcb498_train_s22_c0050_f3f17d7/resume/generation-00000049/learner.pt",
+    "bytes": 57250496,
+    "sha256": "d5ae780b35da1ee61c2c0232a16cf7b3d07c01b30f3f63e7ff815e9d4659a591"
+  },
+  {
+    "path": "runs/task4_reference_20260918_B_badcb498_train_s22_c0050_f3f17d7/resume/generation-00000050/learner.pt",
+    "bytes": 57537920,
+    "sha256": "babea487b1d5fabf3439efcb1ebd8dfbd5d180013ac75df0d522c96cc3863ae9"
+  },
+  {
+    "path": "runs/task4_reference_20260918_B_badcb498_train_s22_c0100_f3f17d7/checkpoints/final.pt",
+    "bytes": 58124096,
+    "sha256": "df882af16e8a762fcb07b38e837afbcd9d437311274ad98e7e148374e03fcedc"
+  },
+  {
+    "path": "runs/task4_reference_20260918_B_badcb498_train_s22_c0100_f3f17d7/resume/generation-00000099/learner.pt",
+    "bytes": 58124096,
+    "sha256": "6e13cce035e60f172f80ec77d3712f17242258accb846aef3fb4005d7a6bbef5"
+  },
+  {
+    "path": "runs/task4_reference_20260918_B_badcb498_train_s22_c0100_f3f17d7/resume/generation-00000100/learner.pt",
+    "bytes": 58124096,
+    "sha256": "df882af16e8a762fcb07b38e837afbcd9d437311274ad98e7e148374e03fcedc"
+  },
+  {
+    "path": "runs/task4_reference_20260918_B_badcb498_train_s22_c0150_f3f17d7/checkpoints/final.pt",
+    "bytes": 58124224,
+    "sha256": "220084f05caefcdd37e8c8577402d32c06eb4a22a52ed7bbbff8c646f9aaf9b3"
+  },
+  {
+    "path": "runs/task4_reference_20260918_B_badcb498_train_s22_c0150_f3f17d7/resume/generation-00000149/learner.pt",
+    "bytes": 58124096,
+    "sha256": "92be574833dfb1f50b28a54fc0a3acb4f96f8dc9fb2fb8a3e3326ba0e7bd37c4"
+  },
+  {
+    "path": "runs/task4_reference_20260918_B_badcb498_train_s22_c0150_f3f17d7/resume/generation-00000150/learner.pt",
+    "bytes": 58124224,
+    "sha256": "220084f05caefcdd37e8c8577402d32c06eb4a22a52ed7bbbff8c646f9aaf9b3"
+  },
+  {
+    "path": "runs/task4_reference_20260918_B_badcb498_train_s33_c0050_f3f17d7/checkpoints/final.pt",
+    "bytes": 56687936,
+    "sha256": "22d17910ec5e6c7b1b5990defdcabff96ef99fe331c824746a529a1365cc9229"
+  },
+  {
+    "path": "runs/task4_reference_20260918_B_badcb498_train_s33_c0050_f3f17d7/resume/generation-00000049/learner.pt",
+    "bytes": 56400384,
+    "sha256": "47a3fd92c5a8162216cf1515fe072a98a82c377bfb5b09b7cd94de3a663306ac"
+  },
+  {
+    "path": "runs/task4_reference_20260918_B_badcb498_train_s33_c0050_f3f17d7/resume/generation-00000050/learner.pt",
+    "bytes": 56687936,
+    "sha256": "22d17910ec5e6c7b1b5990defdcabff96ef99fe331c824746a529a1365cc9229"
+  },
+  {
+    "path": "runs/task4_reference_20260918_B_badcb498_train_s33_c0100_f3f17d7/checkpoints/final.pt",
+    "bytes": 58124160,
+    "sha256": "b6df35c9fa20cc0a058d909a331b09875d8440432f81f78fecc627acb447dfd0"
+  },
+  {
+    "path": "runs/task4_reference_20260918_B_badcb498_train_s33_c0100_f3f17d7/resume/generation-00000099/learner.pt",
+    "bytes": 58124096,
+    "sha256": "aac21e27303ec5a2cac8162d9c07f5da3b77d7b74c4127efa2f760abd011a694"
+  },
+  {
+    "path": "runs/task4_reference_20260918_B_badcb498_train_s33_c0100_f3f17d7/resume/generation-00000100/learner.pt",
+    "bytes": 58124160,
+    "sha256": "b6df35c9fa20cc0a058d909a331b09875d8440432f81f78fecc627acb447dfd0"
+  },
+  {
+    "path": "runs/task4_reference_20260918_B_badcb498_train_s33_c0150_f3f17d7/checkpoints/final.pt",
+    "bytes": 58124160,
+    "sha256": "d3e3cfe20ec3e4c1d3d522639dbd2600407e0882274388234c6062b16d048f75"
+  },
+  {
+    "path": "runs/task4_reference_20260918_B_badcb498_train_s33_c0150_f3f17d7/resume/generation-00000149/learner.pt",
+    "bytes": 58124096,
+    "sha256": "f05bbe5821818d88b8eb4111fe1b9aef231d0cf29f14472e7dc8cedb761d3083"
+  },
+  {
+    "path": "runs/task4_reference_20260918_B_badcb498_train_s33_c0150_f3f17d7/resume/generation-00000150/learner.pt",
+    "bytes": 58124160,
+    "sha256": "d3e3cfe20ec3e4c1d3d522639dbd2600407e0882274388234c6062b16d048f75"
+  },
+  {
+    "path": "runs/task4_reference_20260918_B_badcb498_train_s33_c0200_f3f17d7/checkpoints/final.pt",
+    "bytes": 58124096,
+    "sha256": "ae5cf37c7efaa9e7c6d2f41bbe0d1a3c8aa2a58c164ade9cf7cf1ee145686f7a"
+  },
+  {
+    "path": "runs/task4_reference_20260918_B_badcb498_train_s33_c0200_f3f17d7/resume/generation-00000199/learner.pt",
+    "bytes": 58124160,
+    "sha256": "f2fb903bc1eb23f02c8ebacda67c5777be4b546401d69edaf2f0f926f8a6deb6"
+  },
+  {
+    "path": "runs/task4_reference_20260918_B_badcb498_train_s33_c0200_f3f17d7/resume/generation-00000200/learner.pt",
+    "bytes": 58124096,
+    "sha256": "ae5cf37c7efaa9e7c6d2f41bbe0d1a3c8aa2a58c164ade9cf7cf1ee145686f7a"
+  }
+]

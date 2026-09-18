@@ -1,0 +1,53 @@
+{
+  "bootstrap_samples": 10000,
+  "candidate_agent": "double_dqn_continuous_v2_agent",
+  "matched_episode_key": [
+    "environment_seed",
+    "round_index"
+  ],
+  "metrics": [
+    {
+      "bootstrap_ci95_high": 0.0,
+      "bootstrap_ci95_low": 0.0,
+      "candidate_losses": 0,
+      "candidate_mean": 50.0,
+      "candidate_wins": 0,
+      "mean_difference": 0.0,
+      "median_difference": 0.0,
+      "metric": "score",
+      "paired_count": 60,
+      "reference_mean": 50.0,
+      "ties": 60
+    },
+    {
+      "bootstrap_ci95_high": 0.0,
+      "bootstrap_ci95_low": 0.0,
+      "candidate_losses": 0,
+      "candidate_mean": 50.0,
+      "candidate_wins": 0,
+      "mean_difference": 0.0,
+      "median_difference": 0.0,
+      "metric": "coins",
+      "paired_count": 60,
+      "reference_mean": 50.0,
+      "ties": 60
+    },
+    {
+      "bootstrap_ci95_high": 1.1,
+      "bootstrap_ci95_low": -2.5833333333333335,
+      "candidate_losses": 25,
+      "candidate_mean": 126.56666666666666,
+      "candidate_wins": 27,
+      "mean_difference": -0.6833333333333333,
+      "median_difference": 0.0,
+      "metric": "round_steps",
+      "paired_count": 60,
+      "reference_mean": 127.25,
+      "ties": 8
+    }
+  ],
+  "reference_agent": "double_dqn_continuous_v2_agent",
+  "replication_unit": "environment_seed",
+  "schema_version": "paired-evaluation-v1",
+  "task": "coin_navigation"
+}

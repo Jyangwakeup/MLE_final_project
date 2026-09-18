@@ -1,0 +1,115 @@
+{
+  "reason": "avoidable_escape_collapse",
+  "round": 1,
+  "step": 74,
+  "action": "LEFT",
+  "think_time": 0.004767656326293945,
+  "safety": {
+    "diagnostic_version": "escape-collapse-v2",
+    "raw_action": "LEFT",
+    "selected_action": "LEFT",
+    "intervened": false,
+    "fallback": true,
+    "robust_intervened": false,
+    "robust_to_v1_fallback": false,
+    "opponent_robust_intervened": false,
+    "opponent_to_v3_fallback": false,
+    "robust_guarantee_loss": false,
+    "robust_search_timed_out": false,
+    "robust_states_evaluated": 0,
+    "v1_to_physical_fallback": true,
+    "own_bomb_pending": true,
+    "own_bomb_visible": true,
+    "own_bomb_timer": 1,
+    "own_bomb_placed_step": 71,
+    "avoidable_escape_collapse": true,
+    "independent_routes": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "escape_slack": [
+      -1.0,
+      -1.0,
+      -1.0,
+      -1.0,
+      -1.0,
+      -1.0
+    ],
+    "opponent_scenario_counts": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "opponent_passing_counts": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "opponent_failing_profiles": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "opponent_failing_orders": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "physical_mask": [
+      false,
+      false,
+      false,
+      true,
+      true,
+      false
+    ],
+    "decision_mask": [
+      false,
+      false,
+      false,
+      true,
+      true,
+      false
+    ],
+    "survives_horizon": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ],
+    "safe_horizon": [
+      0,
+      0,
+      0,
+      3,
+      1,
+      0
+    ],
+    "escape_area": [
+      0,
+      0,
+      0,
+      1,
+      1,
+      0
+    ]
+  }
+}

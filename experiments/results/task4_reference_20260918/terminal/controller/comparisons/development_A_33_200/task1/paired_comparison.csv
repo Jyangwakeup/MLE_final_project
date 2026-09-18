@@ -1,0 +1,4 @@
+metric,paired_count,candidate_mean,reference_mean,mean_difference,median_difference,candidate_wins,ties,candidate_losses,bootstrap_ci95_low,bootstrap_ci95_high
+score,60,50.0,50.0,0.0,0.0,0,60,0,0.0,0.0
+coins,60,50.0,50.0,0.0,0.0,0,60,0,0.0,0.0
+round_steps,60,129.16666666666666,127.25,1.9166666666666667,0.5,30,11,19,0.016666666666666666,3.7666666666666666

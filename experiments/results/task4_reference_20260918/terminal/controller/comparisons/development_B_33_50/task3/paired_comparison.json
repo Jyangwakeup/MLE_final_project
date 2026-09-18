@@ -1,0 +1,131 @@
+{
+  "bootstrap_samples": 10000,
+  "candidate_agent": "double_dqn_continuous_v2_agent",
+  "matched_episode_key": [
+    "environment_seed",
+    "round_index"
+  ],
+  "metrics": [
+    {
+      "bootstrap_ci95_high": 0.8666666666666667,
+      "bootstrap_ci95_low": -1.2666666666666666,
+      "candidate_losses": 27,
+      "candidate_mean": 6.9,
+      "candidate_wins": 25,
+      "mean_difference": -0.2,
+      "median_difference": 0.0,
+      "metric": "score",
+      "paired_count": 60,
+      "reference_mean": 7.1,
+      "ties": 8
+    },
+    {
+      "bootstrap_ci95_high": 0.55,
+      "bootstrap_ci95_low": -0.45,
+      "candidate_losses": 23,
+      "candidate_mean": 4.816666666666666,
+      "candidate_wins": 24,
+      "mean_difference": 0.05,
+      "median_difference": 0.0,
+      "metric": "coins",
+      "paired_count": 60,
+      "reference_mean": 4.766666666666667,
+      "ties": 13
+    },
+    {
+      "bootstrap_ci95_high": 5.683333333333334,
+      "bootstrap_ci95_low": -0.8166666666666667,
+      "candidate_losses": 22,
+      "candidate_mean": 59.71666666666667,
+      "candidate_wins": 37,
+      "mean_difference": 2.3666666666666667,
+      "median_difference": 2.0,
+      "metric": "crates",
+      "paired_count": 60,
+      "reference_mean": 57.35,
+      "ties": 1
+    },
+    {
+      "bootstrap_ci95_high": 0.13333333333333333,
+      "bootstrap_ci95_low": -0.23333333333333334,
+      "candidate_losses": 18,
+      "candidate_mean": 0.4166666666666667,
+      "candidate_wins": 15,
+      "mean_difference": -0.05,
+      "median_difference": 0.0,
+      "metric": "kills",
+      "paired_count": 60,
+      "reference_mean": 0.4666666666666667,
+      "ties": 27
+    },
+    {
+      "bootstrap_ci95_high": 0.0,
+      "bootstrap_ci95_low": 0.0,
+      "candidate_losses": 0,
+      "candidate_mean": 0.0,
+      "candidate_wins": 0,
+      "mean_difference": 0.0,
+      "median_difference": 0.0,
+      "metric": "suicides",
+      "paired_count": 60,
+      "reference_mean": 0.0,
+      "ties": 60
+    },
+    {
+      "bootstrap_ci95_high": 0.0,
+      "bootstrap_ci95_low": 0.0,
+      "candidate_losses": 0,
+      "candidate_mean": 1.0,
+      "candidate_wins": 0,
+      "mean_difference": 0.0,
+      "median_difference": 0.0,
+      "metric": "survived",
+      "paired_count": 60,
+      "reference_mean": 1.0,
+      "ties": 60
+    },
+    {
+      "bootstrap_ci95_high": -1.3166666666666667,
+      "bootstrap_ci95_low": -14.2,
+      "candidate_losses": 4,
+      "candidate_mean": 393.15,
+      "candidate_wins": 0,
+      "mean_difference": -6.85,
+      "median_difference": 0.0,
+      "metric": "survival_steps",
+      "paired_count": 60,
+      "reference_mean": 400.0,
+      "ties": 56
+    },
+    {
+      "bootstrap_ci95_high": 0.11666666666666667,
+      "bootstrap_ci95_low": -0.21666666666666667,
+      "candidate_losses": 16,
+      "candidate_mean": 0.48333333333333334,
+      "candidate_wins": 13,
+      "mean_difference": -0.05,
+      "median_difference": 0.0,
+      "metric": "exclusive_win",
+      "paired_count": 60,
+      "reference_mean": 0.5333333333333333,
+      "ties": 31
+    },
+    {
+      "bootstrap_ci95_high": 0.11666666666666667,
+      "bootstrap_ci95_low": -0.05,
+      "candidate_losses": 2,
+      "candidate_mean": 0.06666666666666667,
+      "candidate_wins": 4,
+      "mean_difference": 0.03333333333333333,
+      "median_difference": 0.0,
+      "metric": "tied_first",
+      "paired_count": 60,
+      "reference_mean": 0.03333333333333333,
+      "ties": 54
+    }
+  ],
+  "reference_agent": "double_dqn_continuous_v2_agent",
+  "replication_unit": "environment_seed",
+  "schema_version": "paired-evaluation-v1",
+  "task": "weak_opponents"
+}

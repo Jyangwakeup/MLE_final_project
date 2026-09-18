@@ -1,0 +1,104 @@
+{
+  "config_sha256": {
+    "A": "1492eeefa81e5842639f7f05dc6da00f9fa3f96ef58a2f9347e39248efb1dcc8",
+    "B": "5b1ee4abfdda59797bb5dffd19105a153f4b29da83dc1b782a2501809deac2e5"
+  },
+  "limits": {
+    "candidate": {
+      "maximum": 0.3,
+      "p95": 0.1
+    },
+    "reference": {
+      "maximum": 0.48,
+      "p95": 0.25
+    }
+  },
+  "manifest_sha256": "badcb498bec753ecb754c309f67bc61a0d8bb04d9b85085cd13eb588e0416c1d",
+  "opponent_hashes": {
+    "agent_code/coin_collector_agent/callbacks.py": "bb9007137dd89712c142b67ff8b26d81b075511e572ad334f94414d96eb40a9c",
+    "agent_code/peaceful_agent/callbacks.py": "db408b7c86d8d308e20b529da378c29a26deb11a34f4a2b69dd942491bc44d82",
+    "agent_code/rule_based_agent/callbacks.py": "78fae8121ffab5c849d69857aeaeabcee23e1015c923e5e701d9a2bce2c879f6"
+  },
+  "parent_sha256": "b0b9e7ae9cbefa6523ed01e1d7a6d474b90b6272f9de1706ee80f1f109cc803d",
+  "phase": "diagnostic",
+  "protocol": "task4-campaign-v3",
+  "reference_config_sha256": "7400323cc06164fb6919078bf46fd3a76acfbadae341d00f8131fda204d4d107",
+  "request": {
+    "arm": "A",
+    "checkpoint_sha256": "b0b9e7ae9cbefa6523ed01e1d7a6d474b90b6272f9de1706ee80f1f109cc803d",
+    "config_sha256": "7400323cc06164fb6919078bf46fd3a76acfbadae341d00f8131fda204d4d107",
+    "limits": {
+      "maximum": 0.48,
+      "p95": 0.25
+    },
+    "opponents": [
+      "rule_based_agent",
+      "peaceful_agent",
+      "coin_collector_agent"
+    ],
+    "role": "reference",
+    "safety": {
+      "danger_interval": "own_bomb_and_lingering",
+      "execution_orders": "all",
+      "fallback": "physical_q",
+      "horizon": 7,
+      "include_opponent_bombs": true,
+      "mode": "all",
+      "opponent_action_space": "all_physical",
+      "robust_fallback": "survival-mask-v1",
+      "search_budget_ms": 400,
+      "version": "survival-mask-v5"
+    },
+    "tasks": [
+      4
+    ],
+    "worlds": [
+      24900,
+      24901,
+      24902,
+      24903,
+      24904,
+      24905,
+      24906,
+      24907,
+      24908,
+      24909,
+      24910,
+      24911,
+      24912,
+      24913,
+      24914,
+      24915,
+      24916,
+      24917,
+      24918,
+      24919
+    ]
+  },
+  "runs": {
+    "4": "task4_reference_20260918_A_badcb498_mixed_parent_t4_f3f17d7"
+  },
+  "source_commit": "f3f17d756ffc5ebcb8b731f79fc0c0b7f6290d68",
+  "summaries": {
+    "task4": {
+      "act_max_seconds": 0.023591995239257812,
+      "act_p95_seconds": 0.013074874877929688,
+      "act_skipped": 0.0,
+      "act_timeouts": 0.0,
+      "avoidable_escape_collapses": 0.0,
+      "bomb_survival_rate": 0.9944827586206897,
+      "episodes": 20.0,
+      "first_place_rate": 0.3,
+      "invalid_action_rate": 0.0027389361395415888,
+      "mean_bombs": 36.65,
+      "mean_coins": 3.4,
+      "mean_crates": 38.9,
+      "mean_kills": 0.3,
+      "mean_score": 4.9,
+      "robust_guarantee_losses": 0.0,
+      "robust_search_timeouts": 0.0,
+      "suicide_rate": 0.0,
+      "zero_bomb_round_rate": 0.0
+    }
+  }
+}

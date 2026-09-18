@@ -1,0 +1,46 @@
+{
+  "actions": 22609,
+  "deaths": [
+    {
+      "causes": [
+        {
+          "owner": "rule_based_agent_1",
+          "type": "opponent_bomb"
+        }
+      ],
+      "death_step": 77,
+      "round_index": 1,
+      "seed": 25040,
+      "self_death": false
+    },
+    {
+      "causes": [
+        {
+          "owner": "rule_based_agent_1",
+          "type": "opponent_bomb"
+        }
+      ],
+      "death_step": 101,
+      "round_index": 1,
+      "seed": 25042,
+      "self_death": false
+    }
+  ],
+  "failures": [],
+  "run": "/export/data/sfan/MLE_final_project_task4_reference/runs/task4_reference_20260918_A_badcb498_development_A_s33_c100_t4_f3f17d7",
+  "summary": {
+    "act_max_seconds": 0.11520791053771973,
+    "act_p95_seconds": 0.019295740127563472,
+    "act_skipped": 0,
+    "act_timeouts": 0,
+    "avoidable_escape_collapses": 0,
+    "bomb_survival_rate": 1.0,
+    "episodes": 60,
+    "invalid_action_rate": 0.003051881993896236,
+    "mean_bombs": 35.21666666666667,
+    "robust_guarantee_losses": 0,
+    "robust_search_timeouts": 0,
+    "suicide_rate": 0.0,
+    "zero_bomb_round_rate": 0.0
+  }
+}
