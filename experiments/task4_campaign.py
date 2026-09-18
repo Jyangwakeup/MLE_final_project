@@ -21,6 +21,7 @@ from experiments import task3_plateau_stopping as p
 from experiments.task3_retention_prefix import summarize_evaluation, _evaluation_directories
 from experiments.compare_evaluations import compare_evaluations
 from experiments.task4_transfer import digest, PARENT_SHA256
+from experiments.task4_protocol import VERSION as V2, LEGACY, limits
 
 VERSION='task4-campaign-v1'
 ENGINEERING=('act_timeouts','act_skipped','avoidable_escape_collapses',
@@ -34,7 +35,7 @@ class EngineeringFailure(RuntimeError):
 
 
 def validate_manifest(m):
-    if m['schema_version']!=VERSION or m['training_seeds']!=[11,22,33]:
+    if m['schema_version'] not in (VERSION,V2) or m['training_seeds']!=[11,22,33]:
         raise ValueError('Task 4 protocol/training seeds mismatch')
     if set(m['arm_configs'])!={'A','B'} or m['parent']['checkpoint_sha256']!=PARENT_SHA256:
         raise ValueError('Task 4 parent/arms mismatch')
@@ -47,10 +48,13 @@ def validate_manifest(m):
         raise ValueError('Task 4 validation worlds were used/reserved')
     if not 1<=len(m['cpus'])<=6 or len(set(m['cpus']))!=len(m['cpus']):
         raise ValueError('Task 4 requires 1..6 separate cores')
+    if m['schema_version']==V2:
+        from experiments.task4_v2_evidence import validate_protocol
+        validate_protocol(m)
     return m
 
 
-def evaluate_gates(parent,child):
+def evaluate_gates(parent,child,policy=LEGACY):
     checks={}
     def check(name,value,threshold,op):
         checks[name]=dict(actual=value,threshold=threshold,operator=op,
@@ -69,8 +73,8 @@ def evaluate_gates(parent,child):
     for task,s in child.items():
         for metric in ENGINEERING:
             check(task+'_'+metric,s[metric],0.,'<=')
-        check(task+'_act_p95',s['act_p95_seconds'],.25,'<=')
-        check(task+'_act_max',s['act_max_seconds'],.48,'<=')
+        check(task+'_act_p95',s['act_p95_seconds'],policy.p95,'<=')
+        check(task+'_act_max',s['act_max_seconds'],policy.maximum,'<=')
         check(task+'_invalid_action_rate',s['invalid_action_rate'],.01,'<=')
         if task=='task1':
             check('task1_bombs',s['mean_bombs'],0.,'<=')
@@ -82,10 +86,10 @@ def evaluate_gates(parent,child):
     return all(c['passed'] for c in checks.values()),checks
 
 
-def engineering_checks(summaries):
+def engineering_checks(summaries,policy=LEGACY):
     return [f'{task}_{key}' for task,s in summaries.items()
             for key,bad in [(k,s[k]!=0) for k in ENGINEERING]+[
-                ('act_p95',s['act_p95_seconds']>.25),('act_max',s['act_max_seconds']>.48),
+                ('act_p95',s['act_p95_seconds']>policy.p95),('act_max',s['act_max_seconds']>policy.maximum),
                 ('task1_bomb',task=='task1' and s['mean_bombs']!=0)] if bad]
 
 
@@ -110,7 +114,7 @@ def candidate_key(point):
             -retention,max(t['act_p95_seconds'] for t in point['child']['summaries'].values()),point['seed'])
 
 
-def audit_training(directory,agent,*,check_timing=True):
+def audit_training(directory,agent,*,check_timing=True,policy=LEGACY):
     episodes=[json.loads(l) for l in (directory/'episodes.jsonl').read_text().splitlines()]
     deaths={e['round_index']:next(a for a in e['agents'] if a['name']==agent)
             for e in episodes if next(a for a in e['agents'] if a['name']==agent)['dead']}
@@ -136,7 +140,7 @@ def audit_training(directory,agent,*,check_timing=True):
             fallback=last.get('safety',{}).get('v1_to_physical_fallback'))
     result=dict(rounds=len(episodes),deaths=classified,death_traces=traces,unresolved=unresolved,timing=timing)
     p._write_json(directory/'task4_training_audit.json',result)
-    if check_timing and (not timing or timing['act_p95_seconds']>.25 or timing['act_max_seconds']>.48):
+    if check_timing and (not timing or timing['act_p95_seconds']>policy.p95 or timing['act_max_seconds']>policy.maximum):
         raise EngineeringFailure(f'Training complete act timing gate: {directory} {timing}')
     if unresolved:raise EngineeringFailure(f'Unexplained training self-death: {directory} rounds {unresolved}')
     return dict(rounds=len(episodes),deaths=classified,timing=timing,audit=str(directory/'task4_training_audit.json'))
@@ -148,6 +152,9 @@ class Campaign:
         self.identity=dict(source_commit=self.commit,manifest_sha256=digest(self.m),
             config_sha256={a:p._sha256(self.root/c) for a,c in self.m['arm_configs'].items()},
             parent_sha256=self.m['parent']['checkpoint_sha256'],opponent_hashes=self.m['opponent_hashes'])
+        if self.m['schema_version']==V2:
+            self.identity.update(reference_config_sha256=p._sha256(self.root/self.m['reference_config']),
+                                 protocol=V2,limits=self.m['limits'])
         self.started=datetime.fromisoformat(self.m['started_at'].replace('Z','+00:00')).timestamp()
         self.deadline=self.started+86400
         self.directory=self.root/'runs'/f"{self.m['campaign_id']}_{self.commit[:7]}"
@@ -155,11 +162,19 @@ class Campaign:
         if self.path.exists():
             if not resume:raise FileExistsError('Use --resume for same-identity infrastructure recovery')
             self.state=self.read(self.path)
+            if self.m['schema_version']==V2 and self.state['status'] in TERMINAL:
+                raise ValueError('Terminal campaign cannot resume')
         else:self.state=dict(status='created',task4_qualified=False,arms={},diagnostics={})
         self.stop=threading.Event();self.check_identity()
+        if self.m['schema_version']==V2:
+            from experiments.task4_v2_evidence import validate_evidence
+            validate_evidence(self.root,self.m)
         if self.m.get('admission_prerequisites'):
             from experiments.viability_prerequisites import validate
             validate(self.root,self.m)
+
+    def policy(self,role='candidate'):
+        return limits(self.m.get('schema_version',VERSION),role)
 
     def write(self,path,value):
         value.update(self.identity);p._write_json(path,value)
@@ -178,6 +193,11 @@ class Campaign:
             raise ValueError('Task 4 manifest changed')
         if p._sha256(self.root/self.m['parent']['checkpoint'])!=self.identity['parent_sha256']:
             raise ValueError('Task 4 parent weight changed')
+        if self.m['schema_version']==V2:
+            if p._sha256(self.root/self.m['reference_config'])!=self.identity['reference_config_sha256']:
+                raise ValueError('Reference config changed')
+            for path,sha in self.m['frozen_files'].items():
+                if p._sha256(self.root/path)!=sha:raise ValueError('Frozen file changed: '+path)
         for path,sha in self.m['opponent_hashes'].items():
             if p._sha256(self.root/path)!=sha:raise ValueError('Task 4 opponent changed')
 
@@ -185,10 +205,14 @@ class Campaign:
         hours=18 if new_arm else 23 if evaluation else 24
         if time.time()>=self.started+hours*3600:raise TimeoutError('Task 4 campaign cutoff reached')
 
-    def execute(self,args,name,cpu):
+    def execute(self,args,name,cpu,role='candidate'):
         self.check_time();self.check_identity()
         log=self.directory/'logs'/(name+'.log');log.parent.mkdir(parents=True,exist_ok=True)
-        command=['taskset','-c',str(cpu),sys.executable,'experiments/task4_worker.py',*args]
+        worker=['experiments/task4_worker.py']
+        if self.m['schema_version']==V2:
+            worker=['experiments/task4_v2_worker.py','--campaign-manifest',str(self.manifest_path),'--evaluation-role',role]
+        command=['taskset','-c',str(cpu),sys.executable,*worker,*args]
+        p._write_json(log.with_suffix('.command.json'),command)
         with log.open('w') as output:
             proc=subprocess.Popen(command,cwd=self.root,env={**os.environ,**p.THREAD_ENVIRONMENT},
                 stdout=output,stderr=subprocess.STDOUT,start_new_session=True)
@@ -212,9 +236,13 @@ class Campaign:
                         os.killpg(proc.pid,signal.SIGKILL);proc.wait()
                 raise
 
-    def evaluate(self,arm,checkpoint,label,phase,worlds,tasks=(1,2,3,4),opponents=None):
+    def evaluate(self,arm,checkpoint,label,phase,worlds,tasks=(1,2,3,4),opponents=None,role='candidate'):
         self.check_time(evaluation=True);self.check_identity()
+        config=self.m['reference_config'] if role=='reference' and self.m.get('schema_version')==V2 else self.m['arm_configs'][arm]
         expected=dict(arm=arm,checkpoint_sha256=p._sha256(checkpoint),worlds=list(worlds),tasks=list(tasks),opponents=opponents)
+        if self.m.get('schema_version')==V2:
+            expected.update(role=role,config_sha256=p._sha256(self.root/config),
+                            safety=p._json(self.root/config)['safety'],limits=self.policy(role).__dict__)
         cache=self.directory/'evaluations'/(label+'.json')
         if cache.exists():
             value=self.read(cache)
@@ -229,11 +257,11 @@ class Campaign:
                 for i,task in enumerate(batch):
                     base=self.root/'runs'/f"{self.m['campaign_id']}_{arm}_{self.identity['manifest_sha256'][:8]}_{label}_t{task}_{self.commit[:7]}"
                     target,_=p._unique_target(base);prefixes[str(task)]=target.name
-                    args=['--config',self.m['arm_configs'][arm],'--mode','evaluate','--device','cpu',
+                    args=['--config',config,'--mode','evaluate','--device','cpu',
                           '--task',str(task),'--agent',self.m['agent'],'--seeds',*map(str,worlds),
                           '--n-rounds','1','--checkpoint',str(checkpoint),'--run-id',target.name,'--replay-policy','all']
                     if opponents:args.extend(['--opponents',*opponents])
-                    futures.append(pool.submit(self.execute,args,target.name,self.m['cpus'][i]))
+                    futures.append(pool.submit(self.execute,args,target.name,self.m['cpus'][i],role))
                 try:
                     for f in as_completed(futures):f.result()
                 except BaseException:
@@ -244,8 +272,14 @@ class Campaign:
                 with (directory/(directory.name+'_summary')/'summary.csv').open() as handle:
                     average=next(r for r in csv.DictReader(handle) if r['agent_name']==self.m['agent'] and r['run_id']=='AVERAGE')
                 summary['mean_bombs']=float(average['mean_bombs'])
+                if self.m.get('schema_version')==V2 and role=='candidate':
+                    from experiments.compact_audit import audit_run
+                    raw=audit_run(directory,task,policy=self.policy())
+                    p._write_json(directory/'v2_raw_audit.json',raw)
+                    fatal=[f for f in raw['failures'] if f not in ('suicide_rate','bomb_survival_rate','zero_bomb_round_rate','invalid_action_rate')]
+                    if fatal:raise EngineeringFailure('Raw candidate audit: '+str(fatal))
                 summaries[f'task{task}']=summary
-            bad=engineering_checks(summaries)
+            bad=engineering_checks(summaries,self.policy(role))
             if bad:raise EngineeringFailure('Frozen engineering gates: '+str(bad))
         result=dict(request=expected,summaries=summaries,runs=prefixes,phase=phase)
         self.write(cache,result)
@@ -262,7 +296,18 @@ class Campaign:
         if previous:args.extend(['--resume-from',str(previous)])
         else:args.extend(['--transfer-task4-from-checkpoint',str(self.root/self.m['parent']['checkpoint'])])
         self.execute(args,target.name,self.m['cpus'][0])
-        audit=audit_training(target,self.m['agent'])
+        audit=audit_training(target,self.m['agent'],policy=self.policy())
+        if self.m.get('schema_version')==V2:
+            from experiments.compact_audit import audit_run
+            raw=audit_run(target,4,policy=self.policy())
+            p._write_json(target/'v2_raw_audit.json',raw)
+            fatal=raw['failures'] if diagnostic else [f for f in raw['failures'] if f not in ('suicide_rate','bomb_survival_rate','zero_bomb_round_rate','invalid_action_rate')]
+            if fatal:raise EngineeringFailure('Training raw audit: '+str(fatal))
+            if diagnostic and seed==22433:
+                from experiments.task4_v2_evidence import check_failure_prefix
+                try:check_failure_prefix(self.root,self.m,target)
+                except (ValueError,OSError) as exc:raise EngineeringFailure(str(exc)) from exc
+            audit['raw']=raw
         from experiments.resume import load_training_snapshot, _load_generation
         snap=load_training_snapshot(target)
         latest=p._json(target/'resume/latest.json')
@@ -280,7 +325,7 @@ class Campaign:
         if p._sha256(Path(trained['checkpoint'])) != trained['checkpoint_sha256']:
             raise ValueError('Frozen Task 4 child weight changed')
         child=self.evaluate(arm,Path(trained['checkpoint']),f'{phase}_{arm}_s{seed}_c{trained["rounds"]}',phase,worlds)
-        passed,checks=evaluate_gates(parent['summaries'],child['summaries'])
+        passed,checks=evaluate_gates(parent['summaries'],child['summaries'],self.policy())
         comparisons={}
         for task in (1,2,3,4):
             comparisons[f'task{task}']=compare_evaluations(
@@ -315,7 +360,7 @@ class Campaign:
         self.write(path,result);return result
 
     def validation(self,arm,results):
-        parent=self.evaluate('A',self.root/self.m['parent']['checkpoint'],'confirmation_parent','confirmation',self.m['confirmation_seeds'])
+        parent=self.evaluate('A',self.root/self.m['parent']['checkpoint'],'confirmation_parent','confirmation',self.m['confirmation_seeds'],role='reference')
         confirmation={}
         for seed in (11,22,33):
             confirmation[str(seed)]=self.assess(arm,seed,results[str(seed)]['selected'],'confirmation',parent,self.m['confirmation_seeds'])
@@ -325,7 +370,7 @@ class Campaign:
                 self.state['status']='stopped_confirmation_failure';return
         candidate=min(confirmation.values(),key=candidate_key)
         self.state['selected_training_seed']=candidate['seed'];self.write(self.path,self.state)
-        parent=self.evaluate('A',self.root/self.m['parent']['checkpoint'],'main_parent','main_validation',self.m['main_validation_seeds'])
+        parent=self.evaluate('A',self.root/self.m['parent']['checkpoint'],'main_parent','main_validation',self.m['main_validation_seeds'],role='reference')
         main=self.assess(arm,candidate['seed'],results[str(candidate['seed'])]['selected'],
                          'main_validation',parent,self.m['main_validation_seeds'])
         self.state['main_validation']=main
@@ -340,8 +385,8 @@ class Campaign:
                     actual=self.m['diagnostic_training_seeds'][str(seed)]
                     self.state['diagnostics'][str(seed)]=self.train('A',actual,20,diagnostic=True)
                     self.write(self.path,self.state)
-            self.state['mixed_baseline']=self.evaluate('A',self.root/self.m['parent']['checkpoint'],'mixed_parent','diagnostic',self.m['diagnostic_seeds'],tasks=(4,),opponents=['rule_based_agent','peaceful_agent','coin_collector_agent'])
-            parent=self.evaluate('A',self.root/self.m['parent']['checkpoint'],'development_parent','development',self.m['development_seeds'])
+            self.state['mixed_baseline']=self.evaluate('A',self.root/self.m['parent']['checkpoint'],'mixed_parent','diagnostic',self.m['diagnostic_seeds'],tasks=(4,),opponents=['rule_based_agent','peaceful_agent','coin_collector_agent'],role='reference')
+            parent=self.evaluate('A',self.root/self.m['parent']['checkpoint'],'development_parent','development',self.m['development_seeds'],role='reference')
             self.state['parent_baseline']=parent;self.write(self.path,self.state)
             for arm in ('A','B'):
                 if arm=='B' and not b_eligible(self.state['arms']['A']):break

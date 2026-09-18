@@ -1,0 +1,27 @@
+"""Versioned admission limits; v1 evidence keeps its original interpretation."""
+from dataclasses import dataclass
+
+
+@dataclass(frozen=True)
+class Limits:
+    p95: float
+    maximum: float
+
+
+LEGACY = Limits(.25, .48)
+CANDIDATE = Limits(.1, .3)
+VERSION = 'task4-campaign-v2'
+
+
+def limits(version, role='candidate'):
+    if role not in ('candidate', 'reference'):
+        raise ValueError('Unknown evaluation role')
+    if version not in ('task4-campaign-v1', VERSION):
+        raise ValueError('Unknown campaign protocol')
+    return CANDIDATE if version == VERSION and role == 'candidate' else LEGACY
+
+
+def timing_failures(summary, policy):
+    return [key for key, bound in (
+        ('act_p95_seconds', policy.p95), ('act_max_seconds', policy.maximum)
+    ) if summary[key] > bound]

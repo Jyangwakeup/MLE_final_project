@@ -4,7 +4,7 @@ from pathlib import Path
 import numpy as np
 AGENT='double_dqn_continuous_v2_agent';ACTIONS=('UP','RIGHT','DOWN','LEFT','WAIT','BOMB')
 
-def audit_run(directory,task):
+def audit_run(directory,task,policy=None):
     root=Path(directory);episodes=[];rows=[];issues=[];deaths=[]
     files=[root/'episodes.jsonl'] if (root/'episodes.jsonl').exists() else sorted(root.glob('*/episodes.jsonl'))
     for ep in files:
@@ -39,4 +39,16 @@ def audit_run(directory,task):
              'act_timeouts':sum(r['timed_out'] for r in rows),'act_skipped':sum(r['skipped'] for r in rows)}
     for plural,singular in [('robust_search_timeouts','robust_search_timed_out'),('robust_guarantee_losses','robust_guarantee_loss'),('avoidable_escape_collapses','avoidable_escape_collapse')]:summary[plural]=sum(r['safety'][singular] for r in rows)
     from experiments.compact_admission import gates
-    return {'run':str(root),'summary':summary,'actions':len(rows),'deaths':deaths,'failures':sorted(set(issues+gates(task,summary)))}
+    failures=gates(task,summary) if policy is None else policy_gates(task,summary,policy)
+    return {'run':str(root),'summary':summary,'actions':len(rows),'deaths':deaths,'failures':sorted(set(issues+failures))}
+
+
+def policy_gates(task, summary, policy):
+    from experiments.task4_campaign import engineering_checks
+    bad=engineering_checks({f'task{task}':summary},policy)
+    if summary['invalid_action_rate']>.01:bad.append('invalid_action_rate')
+    if task>1:
+        if summary['suicide_rate']>.05:bad.append('suicide_rate')
+        if summary['bomb_survival_rate']<.95:bad.append('bomb_survival_rate')
+    if task>2 and summary['zero_bomb_round_rate']>.1:bad.append('zero_bomb_round_rate')
+    return bad

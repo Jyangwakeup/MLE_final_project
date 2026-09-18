@@ -1,0 +1,14 @@
+{
+  "status": "passed",
+  "states": 20,
+  "repetitions": 10,
+  "corpus_sha256": "e3dd7282ae67d9b7b1ac209dd4b7dd940d3137da38ec7992aadee0d5cca03ae8",
+  "affinity": [
+    3
+  ],
+  "gc_enabled": true,
+  "search_budget_ms": 400,
+  "offline_budget_ms": 60000,
+  "p95_ms": 22.117486735805738,
+  "max_ms": 30.074122361838818
+}

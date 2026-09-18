@@ -1,0 +1,3 @@
+# Register a new 300ms admission without changing the old failure
+
+The compact v9 attempt failed at262.60ms against its250ms maximum despite passing correctness, retention and400 engineering games. The user selected a new100/300ms candidate contract, verified reuse of unchanged-runtime evidence and three fresh20-round diagnostics before the bounded24-hour campaign; the original failure remains terminal. The original qualified v5 parent remains the explicit250/480ms reference, so reported gains include both safety behavior changes and training, while all resumes, caches and stop decisions bind the new protocol identity.

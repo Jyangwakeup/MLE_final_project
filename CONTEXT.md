@@ -255,3 +255,7 @@ _Avoid_: Guaranteed movement, unconditional safety
 **Explicit safety-contract transfer**:
 A registered curriculum transition that preserves the learned state while changing the safety contract under an audited source/target mapping. It does not authorize a mismatched ordinary resume or retroactively certify historical replay.
 _Avoid_: Implicit safety upgrade, interchangeable resume
+
+**Task 4 engineering readmission**:
+A new, separately registered gate for an unchanged agent runtime under revised engineering limits. It can cite verified earlier evidence without changing that attempt's failed outcome, and it is not a Task 4 qualification.
+_Avoid_: Reclassifying a failed admission as passed
