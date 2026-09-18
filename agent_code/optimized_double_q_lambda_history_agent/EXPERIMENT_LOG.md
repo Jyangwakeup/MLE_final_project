@@ -25,7 +25,16 @@
 
 ## H-E01：seed 11 正式链
 
-状态：planned
+状态：submitted
+
+- 稳定训练源码：`8b9a5b8`。
+- 训练前验证：专用及运行器回归 34 项通过；3 局 smoke、checkpoint 冻结重载和
+  官方式隔离包运行通过。CPU act p95 14.64 ms、max 19.23 ms。
+- Task 1 Slurm job：`473164`；run：
+  `runs/qlambda_history_r20_t1_s11_j473164`；提交于 2026-09-18 19:42 CEST，
+  预计 50–80 分钟。
+- Task 2 Slurm job：`473165`，依赖 `afterok:473164`；预计在 Task 1 完成后再运行
+  45–70 分钟。若父链训练或晋级审计失败，该 job 不会训练 Task 2。
 
 - Task 1：从零训练；200 局起每 50 局在 seeds 9000–9019 冻结检查，连续三次
   `mean_score ≥ 48`；随后在 seeds 10000–10019 做晋级审计。
