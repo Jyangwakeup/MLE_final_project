@@ -34,6 +34,7 @@ _OFFICIAL_BASELINES = {
     "coin_collector_agent",
 }
 _NEW_AGENTS = {
+    "optimized_double_q_lambda_crate_agent",
     "double_q_compact_agent", "double_dqn_continuous_agent",
     "cnn_double_dqn_agent", "hybrid_dueling_double_dqn_agent",
     "double_q_agent", "double_dqn_continuous_v2_agent",
