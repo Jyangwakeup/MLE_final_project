@@ -1,0 +1,9 @@
+{
+  "pid": 1047655,
+  "started_at": "2026-09-18T20:16:47.663932+00:00",
+  "source_commit": "7a1f04f4ffba05b42de6492dd3fa9fbd3cf8bae0",
+  "manifest": "/export/data/sfan/MLE_final_project_task4_v9_reference/experiments/task4_v9_reference_campaign.json",
+  "result": "/export/data/sfan/MLE_final_project_task4_v9_reference/runs/task4_v9_reference_20260918_7a1f04f/result.json",
+  "status": "stopped_development_failure",
+  "ended_at": "2026-09-18T23:15:08.875431+00:00"
+}

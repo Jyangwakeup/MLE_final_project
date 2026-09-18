@@ -1,0 +1,189 @@
+{
+  "audit": {
+    "audit": "/export/data/sfan/MLE_final_project_task4_v9_reference/runs/task4_v9_reference_20260918_B_b2e6687e_train_s22_c0200_7a1f04f/task4_training_audit.json",
+    "deaths": {
+      "151": {
+        "category": "opponent_bomb",
+        "causes": [
+          {
+            "owner": "rule_based_agent_2",
+            "type": "opponent_bomb"
+          }
+        ],
+        "death_step": 102,
+        "fallback": true,
+        "own_bomb_pending": false
+      },
+      "157": {
+        "category": "opponent_bomb",
+        "causes": [
+          {
+            "owner": "rule_based_agent_2",
+            "type": "opponent_bomb"
+          }
+        ],
+        "death_step": 140,
+        "fallback": true,
+        "own_bomb_pending": false
+      },
+      "160": {
+        "category": "opponent_bomb",
+        "causes": [
+          {
+            "owner": "rule_based_agent_0",
+            "type": "opponent_bomb"
+          }
+        ],
+        "death_step": 115,
+        "fallback": true,
+        "own_bomb_pending": false
+      },
+      "189": {
+        "category": "opponent_bomb",
+        "causes": [
+          {
+            "owner": "rule_based_agent_0",
+            "type": "opponent_bomb"
+          },
+          {
+            "owner": "rule_based_agent_2",
+            "type": "opponent_bomb"
+          }
+        ],
+        "death_step": 235,
+        "fallback": true,
+        "own_bomb_pending": false
+      },
+      "200": {
+        "category": "opponent_bomb",
+        "causes": [
+          {
+            "owner": "rule_based_agent_1",
+            "type": "opponent_bomb"
+          }
+        ],
+        "death_step": 130,
+        "fallback": true,
+        "own_bomb_pending": false
+      }
+    },
+    "raw": {
+      "actions": 18086,
+      "deaths": [
+        {
+          "causes": [
+            {
+              "owner": "rule_based_agent_2",
+              "type": "opponent_bomb"
+            }
+          ],
+          "death_step": 102,
+          "round_index": 151,
+          "seed": 1022,
+          "self_death": false
+        },
+        {
+          "causes": [
+            {
+              "owner": "rule_based_agent_2",
+              "type": "opponent_bomb"
+            }
+          ],
+          "death_step": 140,
+          "round_index": 157,
+          "seed": 1022,
+          "self_death": false
+        },
+        {
+          "causes": [
+            {
+              "owner": "rule_based_agent_0",
+              "type": "opponent_bomb"
+            }
+          ],
+          "death_step": 115,
+          "round_index": 160,
+          "seed": 1022,
+          "self_death": false
+        },
+        {
+          "causes": [
+            {
+              "owner": "rule_based_agent_0",
+              "type": "opponent_bomb"
+            },
+            {
+              "owner": "rule_based_agent_2",
+              "type": "opponent_bomb"
+            }
+          ],
+          "death_step": 235,
+          "round_index": 189,
+          "seed": 1022,
+          "self_death": false
+        },
+        {
+          "causes": [
+            {
+              "owner": "rule_based_agent_1",
+              "type": "opponent_bomb"
+            }
+          ],
+          "death_step": 130,
+          "round_index": 200,
+          "seed": 1022,
+          "self_death": false
+        }
+      ],
+      "failures": [],
+      "run": "/export/data/sfan/MLE_final_project_task4_v9_reference/runs/task4_v9_reference_20260918_B_b2e6687e_train_s22_c0200_7a1f04f",
+      "summary": {
+        "act_max_seconds": 0.20674753189086914,
+        "act_p95_seconds": 0.020893394947052002,
+        "act_skipped": 0,
+        "act_timeouts": 0,
+        "avoidable_escape_collapses": 0,
+        "bomb_survival_rate": 1.0,
+        "episodes": 50,
+        "invalid_action_rate": 0.004368019462567732,
+        "mean_bombs": 36.86,
+        "robust_guarantee_losses": 0,
+        "robust_search_timeouts": 0,
+        "suicide_rate": 0.0,
+        "zero_bomb_round_rate": 0.0
+      }
+    },
+    "rounds": 50,
+    "timing": {
+      "act_max_seconds": 0.20674753189086914,
+      "act_p95_seconds": 0.020893394947052002
+    }
+  },
+  "checkpoint": "/export/data/sfan/MLE_final_project_task4_v9_reference/runs/task4_v9_reference_20260918_B_b2e6687e_train_s22_c0200_7a1f04f/checkpoints/final.pt",
+  "checkpoint_sha256": "8d45d5811807b667fd999b3ec4d2f9ec5e735be03899daeeb08fcfbf9fefbb24",
+  "config_sha256": {
+    "B": "9a0fa9555b9720e7daa1376a02c3967e97da871cebefc8a39cf71a2db2b7d9e9"
+  },
+  "limits": {
+    "candidate": {
+      "maximum": 0.3,
+      "p95": 0.1
+    },
+    "reference": {
+      "maximum": 0.3,
+      "p95": 0.1
+    }
+  },
+  "manifest_sha256": "b2e6687efc95a3252e8ed006e5e24ac7004522d65b10a45b3226c6199d38ccf2",
+  "opponent_hashes": {
+    "agent_code/coin_collector_agent/callbacks.py": "bb9007137dd89712c142b67ff8b26d81b075511e572ad334f94414d96eb40a9c",
+    "agent_code/peaceful_agent/callbacks.py": "db408b7c86d8d308e20b529da378c29a26deb11a34f4a2b69dd942491bc44d82",
+    "agent_code/rule_based_agent/callbacks.py": "78fae8121ffab5c849d69857aeaeabcee23e1015c923e5e701d9a2bce2c879f6"
+  },
+  "parent_sha256": "b0b9e7ae9cbefa6523ed01e1d7a6d474b90b6272f9de1706ee80f1f109cc803d",
+  "protocol": "task4-campaign-v4",
+  "reference_config_sha256": "d6c9d44e0f4aa0b43caebfa8b7e74032cfa9d87897bd453752d6bbabbc060389",
+  "rounds": 200,
+  "run": "/export/data/sfan/MLE_final_project_task4_v9_reference/runs/task4_v9_reference_20260918_B_b2e6687e_train_s22_c0200_7a1f04f",
+  "source_commit": "7a1f04f4ffba05b42de6492dd3fa9fbd3cf8bae0"
+}
