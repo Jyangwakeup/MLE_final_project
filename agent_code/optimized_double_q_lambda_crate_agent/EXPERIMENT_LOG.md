@@ -1,6 +1,16 @@
 # Double Q(λ) 箱子距离量化对照
 
-## CQ-E01：计划中
+## CQ-E01：已提交，等待预检及正式父链
+
+代码提交：`99887a3`（本地 main，未 push）。2026-09-18 提交 CPU compute 单线程依赖链：
+
+| 阶段 | Slurm job | 预计运行时间 | 依赖 |
+|---|---|---|---|
+| 31项回归测试、3局 smoke、reload、独立打包运行 | 473115 | 3–8分钟 | 无 |
+| 正式Task1父链与晋级审计 | 473116 | 60–100分钟 | 473115成功 |
+| Task2 100k训练及双任务冻结快照评估 | 473117 | 60–90分钟 | 473116成功且审计passed |
+
+预检中的31项回归测试已通过；三局训练与打包检查提交时仍在进行，不提前记为通过。预计总计约2–3小时，排队另计。Task1目录为 `runs/qlambda_crate_r7_t1_s11_j473116`，Task2目录为 `runs/qlambda_crate_r7_t2_100k_s11_j473117`。最终性能和CPU时延尚待冻结评估。
 
 仅将 continuous-v2 的 crate_frontier_distance_delta 在 tile coding 前映射为 -1/0/+1；金币距离原来已有同类处理。84维输入、每动作29维投影、奖励 r7_safe_credit_potential、safety-all、γ=0.95、λ=0.8、学习率0.08→0.02（累计200k更新）、8 tilings、8 bins、memory32768 全部不变。不引入 DQN 或规则动作覆盖。
 
