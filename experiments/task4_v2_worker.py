@@ -7,7 +7,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from experiments import task4_worker
-from experiments.task4_protocol import VERSION, OBSERVED_VERSION, MODERN, limits
+from experiments.task4_protocol import VERSION, OBSERVED_VERSION, ALIGNED_VERSION, MODERN, limits
 
 
 def checked_failure(original, policy, state, action, safety, **kwargs):
@@ -22,21 +22,28 @@ def checked_failure(original, policy, state, action, safety, **kwargs):
 def main(argv=None):
     parser = argparse.ArgumentParser(add_help=False)
     parser.add_argument('--campaign-manifest', required=True)
-    parser.add_argument('--evaluation-role', choices=('candidate', 'reference'), required=True)
+    parser.add_argument('--evaluation-role', choices=('candidate', 'reference', 'historical_reference'), required=True)
     args, remaining = parser.parse_known_args(argv)
     manifest = json.loads(Path(args.campaign_manifest).read_text())
     if manifest['schema_version'] not in MODERN:
         raise ValueError('v2 worker requires v2 manifest')
+    if args.evaluation_role=='historical_reference' and manifest['schema_version']!=ALIGNED_VERSION:
+        raise ValueError('Historical role is exclusive to v4 retention')
+    if args.evaluation_role=='historical_reference':
+        start=remaining.index('--seeds')+1;end=remaining.index('--n-rounds')
+        if list(map(int,remaining[start:end]))!=list(range(24000,24060)) or remaining[remaining.index('--task')+1] not in ('1','2','3'):
+            raise ValueError('Historical reference only allowed on registered retention worlds')
     policy = limits(manifest['schema_version'], args.evaluation_role)
     config = remaining[remaining.index('--config') + 1]
-    allowed = ([manifest['reference_config']] if args.evaluation_role == 'reference'
+    allowed = ([manifest['historical_reference_config']] if args.evaluation_role=='historical_reference' and manifest['schema_version']==ALIGNED_VERSION else
+               [manifest['reference_config']] if args.evaluation_role == 'reference'
                else list(manifest['arm_configs'].values()))
     if Path(config).resolve() not in [(ROOT / value).resolve() for value in allowed]:
         raise ValueError('Worker role/config mismatch')
-    if args.evaluation_role == 'reference' and remaining[remaining.index('--mode') + 1] != 'evaluate':
+    if args.evaluation_role != 'candidate' and remaining[remaining.index('--mode') + 1] != 'evaluate':
         raise ValueError('Reference may only evaluate')
     replay = None
-    if '--seed' in remaining and remaining[remaining.index('--seed') + 1] == '22433':
+    if manifest['schema_version']!=ALIGNED_VERSION and '--seed' in remaining and remaining[remaining.index('--seed') + 1] == '22433':
         import pickle
         replay = {row['state']['step']: row for row in pickle.loads((ROOT / manifest['failure_corpus']).read_bytes())}
     matched = []

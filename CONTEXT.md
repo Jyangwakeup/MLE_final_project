@@ -262,3 +262,11 @@ _Avoid_: Reclassifying a failed admission as passed
 
 **Recognized legacy reference defect**:
 An observed v5 guarantee-loss or escape-collapse event traceable to that reference's earlier unproved physical-fallback bomb placement. It remains visible in reference metrics; it never grants an exception to a candidate's safety gate.
+
+**Safety-aligned parent baseline**:
+The original Task3 policy evaluated under the same frozen safety contract as its Task4 children. Its certification authorizes one new transfer experiment; it does not rewrite the original Task3 qualification or certify historical Replay.
+_Avoid_: Retrained Task3 model, repaired historical result
+
+**Baseline recertification**:
+A protocol-specific check of retained capabilities, current safety behavior and diagnostic training before a new experiment. Reused historical capability evidence remains distinct from newly sampled engineering evaluations.
+_Avoid_: New independent curriculum chain, completed Task4 confirmation
