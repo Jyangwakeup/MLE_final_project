@@ -1,0 +1,143 @@
+{
+  "fixture": "runs/task4_reference_20260918_A_badcb498_confirmation_parent_t4_f3f17d7/task4_reference_20260918_A_badcb498_confirmation_parent_t4_f3f17d7_s25106/task4_failure_states.pkl",
+  "reproduction": [
+    {
+      "step": 71,
+      "observed_action": "BOMB",
+      "v5": {
+        "mask": [
+          false,
+          true,
+          false,
+          true,
+          true,
+          true
+        ],
+        "physical_fallback": false,
+        "guarantee_loss": false
+      },
+      "v9": {
+        "mask": [
+          false,
+          true,
+          false,
+          false,
+          false,
+          false
+        ],
+        "physical_fallback": false,
+        "guarantee_loss": false
+      }
+    },
+    {
+      "step": 72,
+      "observed_action": "WAIT",
+      "v5": {
+        "mask": [
+          false,
+          false,
+          false,
+          true,
+          true,
+          false
+        ],
+        "physical_fallback": false,
+        "guarantee_loss": false
+      },
+      "v9": {
+        "mask": [
+          false,
+          true,
+          false,
+          true,
+          true,
+          false
+        ],
+        "physical_fallback": false,
+        "guarantee_loss": true
+      }
+    },
+    {
+      "step": 73,
+      "observed_action": "LEFT",
+      "v5": {
+        "mask": [
+          false,
+          true,
+          false,
+          true,
+          false,
+          false
+        ],
+        "physical_fallback": false,
+        "guarantee_loss": false
+      },
+      "v9": {
+        "mask": [
+          false,
+          true,
+          false,
+          false,
+          false,
+          false
+        ],
+        "physical_fallback": false,
+        "guarantee_loss": false
+      }
+    },
+    {
+      "step": 74,
+      "observed_action": "LEFT",
+      "v5": {
+        "mask": [
+          false,
+          false,
+          false,
+          true,
+          true,
+          false
+        ],
+        "physical_fallback": true,
+        "guarantee_loss": false
+      },
+      "v9": {
+        "mask": [
+          false,
+          false,
+          false,
+          true,
+          true,
+          false
+        ],
+        "physical_fallback": true,
+        "guarantee_loss": true
+      }
+    }
+  ],
+  "ablation": [
+    {
+      "duration": 6,
+      "rearming": false,
+      "proven": [
+        "BOMB"
+      ]
+    },
+    {
+      "duration": 6,
+      "rearming": true,
+      "proven": [
+        "BOMB"
+      ]
+    },
+    {
+      "duration": 7,
+      "rearming": false,
+      "proven": []
+    },
+    {
+      "duration": 7,
+      "rearming": true,
+      "proven": []
+    }
+  ]
+}

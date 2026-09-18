@@ -1,0 +1,9 @@
+# World25106 diagnosis and standalone candidate assessment
+
+The terminated v3 campaign remains failed. At step71 v5 certifies BOMB with a six-step proof; a seven-step proof rejects it with either setting of opponent rearming. At step74 the recorded own obligation is still active and v5 reaches physical fallback. Unchanged v9 rejects the step71 placement and the step73 LEFT choice. This reproduces a finite proof-window mismatch, not an act timeout or missing responsibility. It does not establish a general guarantee for v9.
+
+Changing the original v5 reference would change the frozen baseline and invalidate continuation of the old protocol. No production algorithm, parent model, candidate weight, old manifest or terminal result is changed. The user requested evaluating the trained models if this cannot be repaired quickly; evaluate all three frozen B candidates on Task4, 100 worlds25100–25199, three distinct cores, CPU single-thread, no exploration, all replays. These are previously registered confirmation worlds, partly observed in the failed parent run, not a new independent validation set. No complete paired baseline means no score-gain qualification or full Task1–4 confirmation claim. Candidate per-step safety and 100/300ms timing remain enforced; any engineering failure stops the new assessment. A separate four-hour worker deadline bounds these evaluations; it does not extend the terminated campaign.
+
+Run diagnosis from repository root: `OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 /export/data/sfan/miniforge3/envs/mle/bin/python experiments/results/task4_candidate_assessment_25106/diagnose.py`.
+
+Run standalone assessment once: `/export/data/sfan/miniforge3/envs/mle/bin/python experiments/results/task4_candidate_assessment_25106/launch.py`. Commands, weights, hashes, world list, logs and atomic status are stored in `runs/task4_candidate_assessment_25106/`.
