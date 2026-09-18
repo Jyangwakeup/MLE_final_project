@@ -65,6 +65,7 @@ from agent_code.team_agent.rewards import REWARD_VERSION, resolve_reward_spec
 from agent_code.team_agent.safety import resolve_safety_spec
 from experiments.agent_contracts import resolve_agent_contract
 from experiments.navigation_diagnostics import navigation_diagnostic
+from experiments.q_learning_decision_diagnostics import q_learning_decision_record
 from agent_code.learning_common.training_spec import resolve_retention_spec
 
 
@@ -179,6 +180,7 @@ class ExperimentWorld(BombeRLeWorld):
         replay_policy: str = "none", replay_interval: int = DEFAULT_REPLAY_INTERVAL,
         snapshot_config: dict[str, Any] | None = None,
         navigation_diagnostics: bool = False,
+        q_learning_decision_diagnostics: bool = False,
     ):
         self._episodes_path = output / "episodes.jsonl"
         self._timing_path = output / "timing.jsonl"
@@ -201,6 +203,11 @@ class ExperimentWorld(BombeRLeWorld):
         self._snapshot_config = snapshot_config
         self._checkpoint_snapshot_milestones: set[int] = set()
         self._navigation_diagnostics = navigation_diagnostics
+        self._q_learning_decision_diagnostics = q_learning_decision_diagnostics
+        self._q_learning_decisions_file = (
+            (output / "q_learning_decisions.jsonl").open(
+                "a", encoding="utf-8", buffering=1)
+            if q_learning_decision_diagnostics else None)
         self._navigation_previous_action: dict[str, str] = {}
         self._navigation_previous_target: dict[str, tuple[int, int] | None] = {}
         self._training_rewards: list[float] = []
@@ -295,6 +302,11 @@ class ExperimentWorld(BombeRLeWorld):
         if isinstance(safety, dict):
             record["safety"] = safety
         fake_self = getattr(runner, "fake_self", None)
+        if self._q_learning_decision_diagnostics and fake_self is not None:
+            q_record = q_learning_decision_record(fake_self, game_state, action)
+            if q_record is not None:
+                self._q_learning_decisions_file.write(
+                    json.dumps(q_record, sort_keys=True) + "\n")
         if fake_self is not None and (
             getattr(fake_self, "feature_id", None) == "continuous-phase-v1"
             or self._navigation_diagnostics
@@ -592,6 +604,8 @@ class ExperimentWorld(BombeRLeWorld):
             self._episodes_file.close()
             self._timing_file.close()
             self._phase_events_file.close()
+            if self._q_learning_decisions_file is not None:
+                self._q_learning_decisions_file.close()
 
     def _read_new_training_rewards(self, training_path: Path) -> None:
         """Consume only CSV rows appended since the previous round."""
@@ -1044,6 +1058,13 @@ def run_agent_session(
     if not isinstance(navigation_diagnostics, bool):
         raise ValueError("config.evaluation.navigation_diagnostics must be a boolean")
     navigation_diagnostics = bool(navigation_diagnostics and not training)
+    q_learning_decision_diagnostics = evaluation_config.get(
+        "q_learning_decision_diagnostics", False)
+    if not isinstance(q_learning_decision_diagnostics, bool):
+        raise ValueError(
+            "config.evaluation.q_learning_decision_diagnostics must be a boolean")
+    q_learning_decision_diagnostics = bool(
+        q_learning_decision_diagnostics and not training)
     agent_seed = int(seed)
     if device_info is None:
         section = expanded.get("training" if training else "evaluation", {})
@@ -1163,6 +1184,7 @@ def run_agent_session(
         "checkpoint_reward_contract": checkpoint_reward_contract,
         "checkpoint_feature_contract": checkpoint_feature_contract,
         "navigation_diagnostics": navigation_diagnostics,
+        "q_learning_decision_diagnostics": q_learning_decision_diagnostics,
     }
     metadata["expanded_config"] = expanded
     metadata["agent"] = agent
@@ -1382,6 +1404,7 @@ def run_agent_session(
                 } else None
             ),
             navigation_diagnostics=navigation_diagnostics,
+            q_learning_decision_diagnostics=q_learning_decision_diagnostics,
         )
         if resume_snapshot is not None and resume_kind in {"same_task", "v6_migration"}:
             runner_state = resume_snapshot.runner_state
