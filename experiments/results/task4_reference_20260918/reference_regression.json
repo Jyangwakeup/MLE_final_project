@@ -1,0 +1,103 @@
+{
+  "status": "passed",
+  "original_reason": "unproved physical-fallback BOMB at106",
+  "reference_raw": {
+    "episodes": 1.0,
+    "mean_score": 4.0,
+    "mean_coins": 4.0,
+    "mean_crates": 25.0,
+    "mean_kills": 0.0,
+    "first_place_rate": 0.0,
+    "suicide_rate": 0.0,
+    "bomb_survival_rate": 0.9,
+    "zero_bomb_round_rate": 0.0,
+    "invalid_action_rate": 0.009174311926605505,
+    "act_p95_seconds": 0.01711869239807129,
+    "act_max_seconds": 0.02187967300415039,
+    "act_timeouts": 0.0,
+    "act_skipped": 0.0,
+    "avoidable_escape_collapses": 1.0,
+    "robust_guarantee_losses": 1.0,
+    "robust_search_timeouts": 0.0,
+    "mean_bombs": 10
+  },
+  "reference_observations": [
+    {
+      "policy": "record_uncertified_placement_consequences_v1",
+      "round": 1,
+      "step": 107,
+      "placed_step": 106,
+      "reason": "robust_guarantee_loss",
+      "events": [
+        "robust_guarantee_loss"
+      ],
+      "action": "WAIT",
+      "think_time": 0.007364034652709961
+    },
+    {
+      "policy": "record_uncertified_placement_consequences_v1",
+      "round": 1,
+      "step": 108,
+      "placed_step": 106,
+      "reason": "avoidable_escape_collapse",
+      "events": [
+        "avoidable_escape_collapse"
+      ],
+      "action": "WAIT",
+      "think_time": 0.0038907527923583984
+    }
+  ],
+  "reference_engineering_view": {
+    "episodes": 1.0,
+    "mean_score": 4.0,
+    "mean_coins": 4.0,
+    "mean_crates": 25.0,
+    "mean_kills": 0.0,
+    "first_place_rate": 0.0,
+    "suicide_rate": 0.0,
+    "bomb_survival_rate": 0.9,
+    "zero_bomb_round_rate": 0.0,
+    "invalid_action_rate": 0.009174311926605505,
+    "act_p95_seconds": 0.01711869239807129,
+    "act_max_seconds": 0.02187967300415039,
+    "act_timeouts": 0.0,
+    "act_skipped": 0.0,
+    "avoidable_escape_collapses": 0.0,
+    "robust_guarantee_losses": 0.0,
+    "robust_search_timeouts": 0.0,
+    "mean_bombs": 10
+  },
+  "candidate": {
+    "run": "/export/data/sfan/MLE_final_project_task4_300ms/runs/reference_failure_v9_24614",
+    "summary": {
+      "episodes": 1,
+      "mean_bombs": 39.0,
+      "suicide_rate": 0.0,
+      "bomb_survival_rate": 1.0,
+      "zero_bomb_round_rate": 0.0,
+      "invalid_action_rate": 0.0,
+      "act_p95_seconds": 0.024011778831481905,
+      "act_max_seconds": 0.038803815841674805,
+      "act_timeouts": 0,
+      "act_skipped": 0,
+      "robust_search_timeouts": 0,
+      "robust_guarantee_losses": 0,
+      "avoidable_escape_collapses": 0
+    },
+    "actions": 400,
+    "deaths": [],
+    "failures": []
+  },
+  "reference_death": {
+    "dead": true,
+    "death_step": 109,
+    "killed_by_self": false,
+    "suicides": 0,
+    "death_causes": [
+      {
+        "owner": "rule_based_agent_0",
+        "type": "opponent_bomb"
+      }
+    ]
+  }
+}

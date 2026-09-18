@@ -7,7 +7,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from experiments import task4_worker
-from experiments.task4_protocol import VERSION, limits
+from experiments.task4_protocol import VERSION, OBSERVED_VERSION, MODERN, limits
 
 
 def checked_failure(original, policy, state, action, safety, **kwargs):
@@ -25,9 +25,9 @@ def main(argv=None):
     parser.add_argument('--evaluation-role', choices=('candidate', 'reference'), required=True)
     args, remaining = parser.parse_known_args(argv)
     manifest = json.loads(Path(args.campaign_manifest).read_text())
-    if manifest['schema_version'] != VERSION:
+    if manifest['schema_version'] not in MODERN:
         raise ValueError('v2 worker requires v2 manifest')
-    policy = limits(VERSION, args.evaluation_role)
+    policy = limits(manifest['schema_version'], args.evaluation_role)
     config = remaining[remaining.index('--config') + 1]
     allowed = ([manifest['reference_config']] if args.evaluation_role == 'reference'
                else list(manifest['arm_configs'].values()))
@@ -40,8 +40,19 @@ def main(argv=None):
         import pickle
         replay = {row['state']['step']: row for row in pickle.loads((ROOT / manifest['failure_corpus']).read_bytes())}
     matched = []
+    from experiments.task4_reference_observation import ReferenceObservation
+    observation=ReferenceObservation() if manifest['schema_version']==OBSERVED_VERSION and args.evaluation_role=='reference' else None
     def checked(state, action, safety, **kw):
         reason = checked_failure(original, policy, state, action, safety, **kw)
+        if observation:
+            reason,record=observation.inspect(state,action,safety,reason,original,**kw)
+            if record:
+                target = ROOT / 'runs' / remaining[remaining.index('--run-id') + 1]
+                # Evaluation uses one child directory per registered world.
+                active=[p for p in target.glob('*/timing.jsonl') if p.parent.joinpath('metadata.json').exists()]
+                current=max(active,key=lambda p:p.stat().st_mtime).parent
+                with (current/'reference_observations.jsonl').open('a') as stream:
+                    stream.write(json.dumps(record)+'\n')
         if replay and state['round'] == 13 and state['step'] in replay:
             from experiments.task4_v2_evidence import fingerprint
             expected = replay[state['step']]

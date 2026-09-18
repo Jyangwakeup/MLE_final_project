@@ -1,0 +1,2 @@
+{"policy": "record_uncertified_placement_consequences_v1", "round": 1, "step": 107, "placed_step": 106, "reason": "robust_guarantee_loss", "events": ["robust_guarantee_loss"], "action": "WAIT", "think_time": 0.007364034652709961}
+{"policy": "record_uncertified_placement_consequences_v1", "round": 1, "step": 108, "placed_step": 106, "reason": "avoidable_escape_collapse", "events": ["avoidable_escape_collapse"], "action": "WAIT", "think_time": 0.0038907527923583984}

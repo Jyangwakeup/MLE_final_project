@@ -1,0 +1,66 @@
+{
+    "by_agent": {
+        "double_dqn_continuous_v2_agent": {
+            "bombs": 10,
+            "bombs_resolved": 10,
+            "bombs_survived": 9,
+            "coins": 4,
+            "crates": 25,
+            "invalid": 1,
+            "moves": 78,
+            "rounds": 1,
+            "score": 4,
+            "steps": 109,
+            "time": 1.1439478397369385,
+            "zero_utility_bombs": 1
+        },
+        "rule_based_agent_0": {
+            "bombs": 19,
+            "bombs_resolved": 19,
+            "bombs_survived": 18,
+            "coins": 1,
+            "crates": 31,
+            "invalid": 15,
+            "kills": 1,
+            "moves": 193,
+            "rounds": 1,
+            "score": 6,
+            "steps": 227,
+            "suicides": 1,
+            "time": 0.27178359031677246
+        },
+        "rule_based_agent_1": {
+            "bombs": 27,
+            "bombs_resolved": 27,
+            "bombs_survived": 27,
+            "coins": 4,
+            "crates": 41,
+            "invalid": 10,
+            "moves": 363,
+            "rounds": 1,
+            "score": 4,
+            "steps": 400,
+            "time": 0.6123456954956055
+        },
+        "rule_based_agent_2": {
+            "bombs": 27,
+            "bombs_resolved": 27,
+            "bombs_survived": 27,
+            "crates": 26,
+            "invalid": 11,
+            "moves": 362,
+            "rounds": 1,
+            "score": 0,
+            "steps": 400,
+            "time": 0.5953445434570312
+        }
+    },
+    "by_round": {
+        "reference_observation_regression_24614_02_s24614 | Round 01 (2026-09-18 14-05-13)": {
+            "coins": 9,
+            "kills": 1,
+            "steps": 400,
+            "suicides": 1
+        }
+    }
+}

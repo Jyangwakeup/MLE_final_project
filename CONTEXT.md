@@ -259,3 +259,6 @@ _Avoid_: Implicit safety upgrade, interchangeable resume
 **Task 4 engineering readmission**:
 A new, separately registered gate for an unchanged agent runtime under revised engineering limits. It can cite verified earlier evidence without changing that attempt's failed outcome, and it is not a Task 4 qualification.
 _Avoid_: Reclassifying a failed admission as passed
+
+**Recognized legacy reference defect**:
+An observed v5 guarantee-loss or escape-collapse event traceable to that reference's earlier unproved physical-fallback bomb placement. It remains visible in reference metrics; it never grants an exception to a candidate's safety gate.

@@ -4,11 +4,15 @@ import pickle
 import re
 from pathlib import Path
 
-from experiments.task4_protocol import VERSION
+from experiments.task4_protocol import VERSION, OBSERVED_VERSION
 from experiments.task4_transfer import sha256, PARENT_SAFETY, TARGET_SAFETY
 
 
 def validate_protocol(m):
+    if m['schema_version']==OBSERVED_VERSION:
+        from experiments.task4_reference_observation import POLICY
+        if m.get('reference_observation_policy')!=POLICY or not m.get('diagnostic_evidence'):
+            raise ValueError('Missing observed-reference contract')
     if m['limits'] != {'candidate': {'p95': .1, 'maximum': .3},
                        'reference': {'p95': .25, 'maximum': .48}}:
         raise ValueError('Unregistered timing limits')
@@ -57,6 +61,13 @@ def validate_evidence(root, m):
     regression = json.loads((root / m['regression_result']).read_text())
     if regression['status'] != 'passed' or regression['states'] != 20 or regression['repetitions'] != 10:
         raise ValueError('Incomplete new failure regression')
+    if m['schema_version']==OBSERVED_VERSION:
+        probe=json.loads((root/m['reference_regression_result']).read_text())
+        if probe['status']!='passed' or probe['candidate']['failures']:
+            raise ValueError('Observed-reference regression incomplete')
+        events=[event for record in probe['reference_observations'] for event in record['events']]
+        if events!=['robust_guarantee_loss','avoidable_escape_collapse']:
+            raise ValueError('Known reference chain not verified')
     if not re.search(r'Ran \d+ tests in [^\n]+\n\nOK(?: \(skipped=\d+\))?\s*$',
                      (root / m['unittest_log']).read_text()):
         raise ValueError('Full unittest not completed')

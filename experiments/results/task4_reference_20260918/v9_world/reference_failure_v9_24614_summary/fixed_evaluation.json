@@ -1,0 +1,52 @@
+{
+  "agent": "double_dqn_continuous_v2_agent",
+  "checkpoint": "/export/data/sfan/MLE_final_project_task4_300ms/agent_code/double_dqn_continuous_v2_agent/task3_validated.pt",
+  "device": {
+    "actual": "cpu",
+    "cuda_version": "11.8",
+    "cuda_visible_devices": null,
+    "name": null,
+    "requested": "cpu",
+    "torch_version": "2.5.1",
+    "type": "cpu"
+  },
+  "exploration_disabled": true,
+  "n_rounds_per_seed": 1,
+  "navigation_metrics": {
+    "all_coins_target": 9,
+    "long_loop_threshold_steps": 10,
+    "max_round_steps": 400,
+    "reported": [
+      "mean_coins",
+      "min_coins_per_round",
+      "max_coins_per_round",
+      "zero_coin_round_rate",
+      "all_coins_rate",
+      "max_steps_rate",
+      "long_wait_loop_rate",
+      "long_ping_pong_loop_rate",
+      "zero_utility_bomb_rate",
+      "crates_per_bomb",
+      "coins_per_100_steps",
+      "steps_per_coin",
+      "mean_all_coins_completion_steps",
+      "wait_action_rate",
+      "immediate_reverse_rate",
+      "coin_distance_reducing_rate",
+      "coin_target_switch_rate",
+      "multiple_nearest_coin_rate"
+    ]
+  },
+  "opponents": [
+    "rule_based_agent",
+    "rule_based_agent",
+    "rule_based_agent"
+  ],
+  "replay_interval": 500,
+  "replay_policy": "all",
+  "scenario": "classic",
+  "seeds": [
+    24614
+  ],
+  "task": "full_match"
+}

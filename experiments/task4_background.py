@@ -31,7 +31,7 @@ def sha(path):
 
 def finish(campaign):
     state = campaign.state
-    out = ROOT/'experiments/results/task4_300ms_20260918/terminal'
+    out = ROOT/campaign.m.get('artifact_root','experiments/results/task4_300ms_20260918')/'terminal'
     if out.exists():
         raise FileExistsError('Terminal archive already exists')
     out.mkdir(parents=True)
@@ -49,7 +49,7 @@ def finish(campaign):
             if path.name in ('final.pt', 'learner.pt'):
                 checkpoints.append(entry)
             if (path.name in ('task4_safety_failure.json','task4_failure_states.pkl','v2_raw_audit.json',
-                              'failure_regression.json','episodes.jsonl','metadata.json')
+                              'failure_regression.json','episodes.jsonl','metadata.json','reference_observations.jsonl','reference_observation_audit.json')
                     or path.name.startswith('task4_death_states')):
                 target = out/'run_evidence'/path.relative_to(ROOT/'runs')
                 target.parent.mkdir(parents=True, exist_ok=True)
@@ -65,7 +65,8 @@ def finish(campaign):
               '', 'The previous 250ms admission remains failed. Reused engineering evidence is not new validation.',
               'The reference is the original v5 parent; candidate v9 gains include both controller changes and learning.',
               'Candidate complete-act P95/max limits are100/300ms; reference limits250/480ms; search budget400ms.',
-              'Historical parent replay is retained without retroactive certification.', '',
+              'Historical parent replay is retained without retroactive certification.',
+              'Under v3, only recognized v5 unproved-placement guarantee losses/escape collapses are reference observations; raw counters are unchanged. Candidate gates remain strict.', '',
               '## Diagnostics', '']
     for seed, result in state.get('diagnostics', {}).items():
         audit = result['audit']

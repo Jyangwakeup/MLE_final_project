@@ -11,14 +11,16 @@ class Limits:
 LEGACY = Limits(.25, .48)
 CANDIDATE = Limits(.1, .3)
 VERSION = 'task4-campaign-v2'
+OBSERVED_VERSION = 'task4-campaign-v3'
+MODERN = (VERSION, OBSERVED_VERSION)
 
 
 def limits(version, role='candidate'):
     if role not in ('candidate', 'reference'):
         raise ValueError('Unknown evaluation role')
-    if version not in ('task4-campaign-v1', VERSION):
+    if version not in ('task4-campaign-v1', *MODERN):
         raise ValueError('Unknown campaign protocol')
-    return CANDIDATE if version == VERSION and role == 'candidate' else LEGACY
+    return CANDIDATE if version in MODERN and role == 'candidate' else LEGACY
 
 
 def timing_failures(summary, policy):

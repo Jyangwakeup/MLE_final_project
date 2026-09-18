@@ -21,7 +21,7 @@ from experiments import task3_plateau_stopping as p
 from experiments.task3_retention_prefix import summarize_evaluation, _evaluation_directories
 from experiments.compare_evaluations import compare_evaluations
 from experiments.task4_transfer import digest, PARENT_SHA256
-from experiments.task4_protocol import VERSION as V2, LEGACY, limits
+from experiments.task4_protocol import VERSION as V2, OBSERVED_VERSION as V3, MODERN, LEGACY, limits
 
 VERSION='task4-campaign-v1'
 ENGINEERING=('act_timeouts','act_skipped','avoidable_escape_collapses',
@@ -35,7 +35,7 @@ class EngineeringFailure(RuntimeError):
 
 
 def validate_manifest(m):
-    if m['schema_version'] not in (VERSION,V2) or m['training_seeds']!=[11,22,33]:
+    if m['schema_version'] not in (VERSION,*MODERN) or m['training_seeds']!=[11,22,33]:
         raise ValueError('Task 4 protocol/training seeds mismatch')
     if set(m['arm_configs'])!={'A','B'} or m['parent']['checkpoint_sha256']!=PARENT_SHA256:
         raise ValueError('Task 4 parent/arms mismatch')
@@ -48,7 +48,7 @@ def validate_manifest(m):
         raise ValueError('Task 4 validation worlds were used/reserved')
     if not 1<=len(m['cpus'])<=6 or len(set(m['cpus']))!=len(m['cpus']):
         raise ValueError('Task 4 requires 1..6 separate cores')
-    if m['schema_version']==V2:
+    if m['schema_version'] in MODERN:
         from experiments.task4_v2_evidence import validate_protocol
         validate_protocol(m)
     return m
@@ -152,9 +152,9 @@ class Campaign:
         self.identity=dict(source_commit=self.commit,manifest_sha256=digest(self.m),
             config_sha256={a:p._sha256(self.root/c) for a,c in self.m['arm_configs'].items()},
             parent_sha256=self.m['parent']['checkpoint_sha256'],opponent_hashes=self.m['opponent_hashes'])
-        if self.m['schema_version']==V2:
+        if self.m['schema_version'] in MODERN:
             self.identity.update(reference_config_sha256=p._sha256(self.root/self.m['reference_config']),
-                                 protocol=V2,limits=self.m['limits'])
+                                 protocol=self.m['schema_version'],limits=self.m['limits'])
         self.started=datetime.fromisoformat(self.m['started_at'].replace('Z','+00:00')).timestamp()
         self.deadline=self.started+86400
         self.directory=self.root/'runs'/f"{self.m['campaign_id']}_{self.commit[:7]}"
@@ -162,13 +162,17 @@ class Campaign:
         if self.path.exists():
             if not resume:raise FileExistsError('Use --resume for same-identity infrastructure recovery')
             self.state=self.read(self.path)
-            if self.m['schema_version']==V2 and self.state['status'] in TERMINAL:
+            if self.m['schema_version'] in MODERN and self.state['status'] in TERMINAL:
                 raise ValueError('Terminal campaign cannot resume')
         else:self.state=dict(status='created',task4_qualified=False,arms={},diagnostics={})
         self.stop=threading.Event();self.check_identity()
-        if self.m['schema_version']==V2:
+        if self.m['schema_version'] in MODERN:
             from experiments.task4_v2_evidence import validate_evidence
             validate_evidence(self.root,self.m)
+            if self.m['schema_version']==V3 and not self.state['diagnostics']:
+                from experiments.task4_reference_observation import reused_diagnostics
+                self.state['diagnostics']=reused_diagnostics(self.root,self.m)
+                self.state['diagnostics_reused_from']=self.m['diagnostic_evidence']['result']
         if self.m.get('admission_prerequisites'):
             from experiments.viability_prerequisites import validate
             validate(self.root,self.m)
@@ -193,7 +197,7 @@ class Campaign:
             raise ValueError('Task 4 manifest changed')
         if p._sha256(self.root/self.m['parent']['checkpoint'])!=self.identity['parent_sha256']:
             raise ValueError('Task 4 parent weight changed')
-        if self.m['schema_version']==V2:
+        if self.m['schema_version'] in MODERN:
             if p._sha256(self.root/self.m['reference_config'])!=self.identity['reference_config_sha256']:
                 raise ValueError('Reference config changed')
             for path,sha in self.m['frozen_files'].items():
@@ -209,7 +213,7 @@ class Campaign:
         self.check_time();self.check_identity()
         log=self.directory/'logs'/(name+'.log');log.parent.mkdir(parents=True,exist_ok=True)
         worker=['experiments/task4_worker.py']
-        if self.m['schema_version']==V2:
+        if self.m['schema_version'] in MODERN:
             worker=['experiments/task4_v2_worker.py','--campaign-manifest',str(self.manifest_path),'--evaluation-role',role]
         command=['taskset','-c',str(cpu),sys.executable,*worker,*args]
         p._write_json(log.with_suffix('.command.json'),command)
@@ -238,9 +242,9 @@ class Campaign:
 
     def evaluate(self,arm,checkpoint,label,phase,worlds,tasks=(1,2,3,4),opponents=None,role='candidate'):
         self.check_time(evaluation=True);self.check_identity()
-        config=self.m['reference_config'] if role=='reference' and self.m.get('schema_version')==V2 else self.m['arm_configs'][arm]
+        config=self.m['reference_config'] if role=='reference' and self.m.get('schema_version') in MODERN else self.m['arm_configs'][arm]
         expected=dict(arm=arm,checkpoint_sha256=p._sha256(checkpoint),worlds=list(worlds),tasks=list(tasks),opponents=opponents)
-        if self.m.get('schema_version')==V2:
+        if self.m.get('schema_version') in MODERN:
             expected.update(role=role,config_sha256=p._sha256(self.root/config),
                             safety=p._json(self.root/config)['safety'],limits=self.policy(role).__dict__)
         cache=self.directory/'evaluations'/(label+'.json')
@@ -272,14 +276,22 @@ class Campaign:
                 with (directory/(directory.name+'_summary')/'summary.csv').open() as handle:
                     average=next(r for r in csv.DictReader(handle) if r['agent_name']==self.m['agent'] and r['run_id']=='AVERAGE')
                 summary['mean_bombs']=float(average['mean_bombs'])
-                if self.m.get('schema_version')==V2 and role=='candidate':
+                if self.m.get('schema_version') in MODERN and role=='candidate':
                     from experiments.compact_audit import audit_run
                     raw=audit_run(directory,task,policy=self.policy())
                     p._write_json(directory/'v2_raw_audit.json',raw)
                     fatal=[f for f in raw['failures'] if f not in ('suicide_rate','bomb_survival_rate','zero_bomb_round_rate','invalid_action_rate')]
                     if fatal:raise EngineeringFailure('Raw candidate audit: '+str(fatal))
                 summaries[f'task{task}']=summary
-            bad=engineering_checks(summaries,self.policy(role))
+            checked=summaries
+            if self.m.get('schema_version')==V3 and role=='reference':
+                from experiments.task4_reference_observation import engineering_view
+                checked={}
+                for task in summaries:
+                    directory=self.root/'runs'/prefixes[task.removeprefix('task')]
+                    checked[task],observations=engineering_view(directory,summaries[task])
+                    p._write_json(directory/'reference_observation_audit.json',observations)
+            bad=engineering_checks(checked,self.policy(role))
             if bad:raise EngineeringFailure('Frozen engineering gates: '+str(bad))
         result=dict(request=expected,summaries=summaries,runs=prefixes,phase=phase)
         self.write(cache,result)
@@ -297,7 +309,7 @@ class Campaign:
         else:args.extend(['--transfer-task4-from-checkpoint',str(self.root/self.m['parent']['checkpoint'])])
         self.execute(args,target.name,self.m['cpus'][0])
         audit=audit_training(target,self.m['agent'],policy=self.policy())
-        if self.m.get('schema_version')==V2:
+        if self.m.get('schema_version') in MODERN:
             from experiments.compact_audit import audit_run
             raw=audit_run(target,4,policy=self.policy())
             p._write_json(target/'v2_raw_audit.json',raw)

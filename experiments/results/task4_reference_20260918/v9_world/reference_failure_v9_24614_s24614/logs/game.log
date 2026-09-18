@@ -1,0 +1,595 @@
+2026-09-18 13:57:34,134 [BombeRLeWorld] INFO: Initializing game world
+2026-09-18 13:57:36,265 [BombeRLeWorld] INFO: STARTING ROUND #1
+2026-09-18 13:57:36,266 [BombeRLeWorld] INFO: STARTING STEP 1
+2026-09-18 13:57:36,296 [BombeRLeWorld] INFO: STARTING STEP 2
+2026-09-18 13:57:36,314 [BombeRLeWorld] INFO: Agent <rule_based_agent_0> drops bomb at (np.int64(2), np.int64(1))
+2026-09-18 13:57:36,317 [BombeRLeWorld] INFO: Agent <rule_based_agent_2> drops bomb at (np.int64(2), np.int64(15))
+2026-09-18 13:57:36,321 [BombeRLeWorld] INFO: Agent <rule_based_agent_1> drops bomb at (np.int64(15), np.int64(2))
+2026-09-18 13:57:36,321 [BombeRLeWorld] INFO: STARTING STEP 3
+2026-09-18 13:57:36,336 [BombeRLeWorld] INFO: Agent <double_dqn_continuous_v2_agent> drops bomb at (np.int64(15), np.int64(13))
+2026-09-18 13:57:36,338 [BombeRLeWorld] INFO: STARTING STEP 4
+2026-09-18 13:57:36,351 [BombeRLeWorld] INFO: STARTING STEP 5
+2026-09-18 13:57:36,365 [BombeRLeWorld] INFO: STARTING STEP 6
+2026-09-18 13:57:36,378 [BombeRLeWorld] INFO: Agent <rule_based_agent_0>'s bomb at (np.int64(2), np.int64(1)) explodes
+2026-09-18 13:57:36,378 [BombeRLeWorld] INFO: Agent <rule_based_agent_2>'s bomb at (np.int64(2), np.int64(15)) explodes
+2026-09-18 13:57:36,378 [BombeRLeWorld] INFO: Agent <rule_based_agent_1>'s bomb at (np.int64(15), np.int64(2)) explodes
+2026-09-18 13:57:36,378 [BombeRLeWorld] INFO: STARTING STEP 7
+2026-09-18 13:57:36,391 [BombeRLeWorld] INFO: Agent <double_dqn_continuous_v2_agent>'s bomb at (np.int64(15), np.int64(13)) explodes
+2026-09-18 13:57:36,391 [BombeRLeWorld] INFO: STARTING STEP 8
+2026-09-18 13:57:36,402 [BombeRLeWorld] INFO: STARTING STEP 9
+2026-09-18 13:57:36,417 [BombeRLeWorld] INFO: STARTING STEP 10
+2026-09-18 13:57:36,437 [BombeRLeWorld] INFO: Agent <rule_based_agent_0> drops bomb at (np.int64(1), np.int64(5))
+2026-09-18 13:57:36,440 [BombeRLeWorld] INFO: Agent <rule_based_agent_2> drops bomb at (np.int64(1), np.int64(13))
+2026-09-18 13:57:36,442 [BombeRLeWorld] INFO: Agent <rule_based_agent_1> drops bomb at (np.int64(14), np.int64(1))
+2026-09-18 13:57:36,443 [BombeRLeWorld] INFO: STARTING STEP 11
+2026-09-18 13:57:36,461 [BombeRLeWorld] INFO: Agent <double_dqn_continuous_v2_agent> drops bomb at (np.int64(15), np.int64(15))
+2026-09-18 13:57:36,461 [BombeRLeWorld] INFO: STARTING STEP 12
+2026-09-18 13:57:36,476 [BombeRLeWorld] INFO: STARTING STEP 13
+2026-09-18 13:57:36,491 [BombeRLeWorld] INFO: STARTING STEP 14
+2026-09-18 13:57:36,506 [BombeRLeWorld] INFO: Agent <rule_based_agent_0>'s bomb at (np.int64(1), np.int64(5)) explodes
+2026-09-18 13:57:36,506 [BombeRLeWorld] INFO: Agent <rule_based_agent_2>'s bomb at (np.int64(1), np.int64(13)) explodes
+2026-09-18 13:57:36,506 [BombeRLeWorld] INFO: Agent <rule_based_agent_1>'s bomb at (np.int64(14), np.int64(1)) explodes
+2026-09-18 13:57:36,506 [BombeRLeWorld] INFO: Coin found at (np.int64(12), np.int64(1))
+2026-09-18 13:57:36,507 [BombeRLeWorld] INFO: STARTING STEP 15
+2026-09-18 13:57:36,521 [BombeRLeWorld] INFO: Agent <double_dqn_continuous_v2_agent>'s bomb at (np.int64(15), np.int64(15)) explodes
+2026-09-18 13:57:36,521 [BombeRLeWorld] INFO: STARTING STEP 16
+2026-09-18 13:57:36,535 [BombeRLeWorld] INFO: STARTING STEP 17
+2026-09-18 13:57:36,554 [BombeRLeWorld] INFO: Agent <rule_based_agent_2> drops bomb at (np.int64(5), np.int64(15))
+2026-09-18 13:57:36,554 [BombeRLeWorld] INFO: STARTING STEP 18
+2026-09-18 13:57:36,573 [BombeRLeWorld] INFO: Agent <double_dqn_continuous_v2_agent> drops bomb at (np.int64(13), np.int64(13))
+2026-09-18 13:57:36,584 [BombeRLeWorld] INFO: Agent <rule_based_agent_1> drops bomb at (np.int64(13), np.int64(5))
+2026-09-18 13:57:36,584 [BombeRLeWorld] INFO: STARTING STEP 19
+2026-09-18 13:57:36,602 [BombeRLeWorld] INFO: STARTING STEP 20
+2026-09-18 13:57:36,615 [BombeRLeWorld] INFO: Agent <rule_based_agent_0> drops bomb at (np.int64(5), np.int64(2))
+2026-09-18 13:57:36,620 [BombeRLeWorld] INFO: STARTING STEP 21
+2026-09-18 13:57:36,636 [BombeRLeWorld] INFO: Agent <rule_based_agent_2>'s bomb at (np.int64(5), np.int64(15)) explodes
+2026-09-18 13:57:36,636 [BombeRLeWorld] INFO: STARTING STEP 22
+2026-09-18 13:57:36,653 [BombeRLeWorld] INFO: Agent <double_dqn_continuous_v2_agent>'s bomb at (np.int64(13), np.int64(13)) explodes
+2026-09-18 13:57:36,653 [BombeRLeWorld] INFO: Coin found at (np.int64(13), np.int64(11))
+2026-09-18 13:57:36,654 [BombeRLeWorld] INFO: Agent <rule_based_agent_1>'s bomb at (np.int64(13), np.int64(5)) explodes
+2026-09-18 13:57:36,654 [BombeRLeWorld] INFO: Coin found at (np.int64(13), np.int64(8))
+2026-09-18 13:57:36,654 [BombeRLeWorld] INFO: STARTING STEP 23
+2026-09-18 13:57:36,674 [BombeRLeWorld] INFO: STARTING STEP 24
+2026-09-18 13:57:36,693 [BombeRLeWorld] INFO: Agent <rule_based_agent_0>'s bomb at (np.int64(5), np.int64(2)) explodes
+2026-09-18 13:57:36,693 [BombeRLeWorld] INFO: STARTING STEP 25
+2026-09-18 13:57:36,722 [BombeRLeWorld] INFO: Agent <double_dqn_continuous_v2_agent> picked up coin at (np.int64(13), np.int64(11)) and receives 1 point
+2026-09-18 13:57:36,722 [BombeRLeWorld] INFO: STARTING STEP 26
+2026-09-18 13:57:36,758 [BombeRLeWorld] INFO: STARTING STEP 27
+2026-09-18 13:57:36,799 [BombeRLeWorld] INFO: Agent <double_dqn_continuous_v2_agent> drops bomb at (np.int64(13), np.int64(11))
+2026-09-18 13:57:36,799 [BombeRLeWorld] INFO: Agent <rule_based_agent_1> picked up coin at (np.int64(12), np.int64(1)) and receives 1 point
+2026-09-18 13:57:36,799 [BombeRLeWorld] INFO: STARTING STEP 28
+2026-09-18 13:57:36,831 [BombeRLeWorld] INFO: STARTING STEP 29
+2026-09-18 13:57:36,847 [BombeRLeWorld] INFO: Agent <rule_based_agent_1> drops bomb at (np.int64(11), np.int64(1))
+2026-09-18 13:57:36,854 [BombeRLeWorld] INFO: Agent <rule_based_agent_2> drops bomb at (np.int64(5), np.int64(12))
+2026-09-18 13:57:36,854 [BombeRLeWorld] INFO: STARTING STEP 30
+2026-09-18 13:57:36,873 [BombeRLeWorld] INFO: Agent <double_dqn_continuous_v2_agent> picked up coin at (np.int64(13), np.int64(8)) and receives 1 point
+2026-09-18 13:57:36,873 [BombeRLeWorld] INFO: STARTING STEP 31
+2026-09-18 13:57:36,892 [BombeRLeWorld] INFO: Agent <double_dqn_continuous_v2_agent>'s bomb at (np.int64(13), np.int64(11)) explodes
+2026-09-18 13:57:36,892 [BombeRLeWorld] INFO: STARTING STEP 32
+2026-09-18 13:57:36,910 [BombeRLeWorld] INFO: STARTING STEP 33
+2026-09-18 13:57:36,929 [BombeRLeWorld] INFO: Agent <rule_based_agent_1>'s bomb at (np.int64(11), np.int64(1)) explodes
+2026-09-18 13:57:36,929 [BombeRLeWorld] INFO: Agent <rule_based_agent_2>'s bomb at (np.int64(5), np.int64(12)) explodes
+2026-09-18 13:57:36,929 [BombeRLeWorld] INFO: STARTING STEP 34
+2026-09-18 13:57:36,951 [BombeRLeWorld] INFO: STARTING STEP 35
+2026-09-18 13:57:36,975 [BombeRLeWorld] INFO: Agent <double_dqn_continuous_v2_agent> drops bomb at (np.int64(13), np.int64(9))
+2026-09-18 13:57:36,975 [BombeRLeWorld] INFO: STARTING STEP 36
+2026-09-18 13:57:37,006 [BombeRLeWorld] INFO: STARTING STEP 37
+2026-09-18 13:57:37,025 [BombeRLeWorld] INFO: Agent <rule_based_agent_2> drops bomb at (np.int64(6), np.int64(13))
+2026-09-18 13:57:37,029 [BombeRLeWorld] INFO: STARTING STEP 38
+2026-09-18 13:57:37,048 [BombeRLeWorld] INFO: STARTING STEP 39
+2026-09-18 13:57:37,065 [BombeRLeWorld] INFO: Agent <rule_based_agent_1> drops bomb at (np.int64(10), np.int64(5))
+2026-09-18 13:57:37,069 [BombeRLeWorld] INFO: Agent <double_dqn_continuous_v2_agent>'s bomb at (np.int64(13), np.int64(9)) explodes
+2026-09-18 13:57:37,069 [BombeRLeWorld] INFO: STARTING STEP 40
+2026-09-18 13:57:37,087 [BombeRLeWorld] INFO: STARTING STEP 41
+2026-09-18 13:57:37,106 [BombeRLeWorld] INFO: Agent <rule_based_agent_2>'s bomb at (np.int64(6), np.int64(13)) explodes
+2026-09-18 13:57:37,106 [BombeRLeWorld] INFO: STARTING STEP 42
+2026-09-18 13:57:37,136 [BombeRLeWorld] INFO: STARTING STEP 43
+2026-09-18 13:57:37,163 [BombeRLeWorld] INFO: Agent <rule_based_agent_1>'s bomb at (np.int64(10), np.int64(5)) explodes
+2026-09-18 13:57:37,164 [BombeRLeWorld] INFO: STARTING STEP 44
+2026-09-18 13:57:37,195 [BombeRLeWorld] INFO: STARTING STEP 45
+2026-09-18 13:57:37,227 [BombeRLeWorld] INFO: STARTING STEP 46
+2026-09-18 13:57:37,265 [BombeRLeWorld] INFO: Agent <rule_based_agent_2> drops bomb at (np.int64(8), np.int64(15))
+2026-09-18 13:57:37,267 [BombeRLeWorld] INFO: STARTING STEP 47
+2026-09-18 13:57:37,294 [BombeRLeWorld] INFO: Agent <double_dqn_continuous_v2_agent> drops bomb at (np.int64(15), np.int64(15))
+2026-09-18 13:57:37,297 [BombeRLeWorld] INFO: STARTING STEP 48
+2026-09-18 13:57:37,316 [BombeRLeWorld] INFO: Agent <rule_based_agent_1> drops bomb at (np.int64(9), np.int64(2))
+2026-09-18 13:57:37,318 [BombeRLeWorld] INFO: STARTING STEP 49
+2026-09-18 13:57:37,337 [BombeRLeWorld] INFO: STARTING STEP 50
+2026-09-18 13:57:37,357 [BombeRLeWorld] INFO: Agent <rule_based_agent_0> drops bomb at (np.int64(5), np.int64(14))
+2026-09-18 13:57:37,357 [BombeRLeWorld] INFO: Agent <rule_based_agent_2>'s bomb at (np.int64(8), np.int64(15)) explodes
+2026-09-18 13:57:37,357 [BombeRLeWorld] INFO: Coin found at (np.int64(11), np.int64(15))
+2026-09-18 13:57:37,357 [BombeRLeWorld] INFO: STARTING STEP 51
+2026-09-18 13:57:37,375 [BombeRLeWorld] INFO: Agent <double_dqn_continuous_v2_agent>'s bomb at (np.int64(15), np.int64(15)) explodes
+2026-09-18 13:57:37,375 [BombeRLeWorld] INFO: STARTING STEP 52
+2026-09-18 13:57:37,396 [BombeRLeWorld] INFO: Agent <rule_based_agent_1>'s bomb at (np.int64(9), np.int64(2)) explodes
+2026-09-18 13:57:37,396 [BombeRLeWorld] INFO: STARTING STEP 53
+2026-09-18 13:57:37,415 [BombeRLeWorld] INFO: STARTING STEP 54
+2026-09-18 13:57:37,444 [BombeRLeWorld] INFO: Agent <rule_based_agent_0>'s bomb at (np.int64(5), np.int64(14)) explodes
+2026-09-18 13:57:37,444 [BombeRLeWorld] INFO: STARTING STEP 55
+2026-09-18 13:57:37,473 [BombeRLeWorld] INFO: Agent <double_dqn_continuous_v2_agent> picked up coin at (np.int64(11), np.int64(15)) and receives 1 point
+2026-09-18 13:57:37,473 [BombeRLeWorld] INFO: STARTING STEP 56
+2026-09-18 13:57:37,502 [BombeRLeWorld] INFO: Agent <double_dqn_continuous_v2_agent> drops bomb at (np.int64(11), np.int64(15))
+2026-09-18 13:57:37,505 [BombeRLeWorld] INFO: STARTING STEP 57
+2026-09-18 13:57:37,530 [BombeRLeWorld] INFO: STARTING STEP 58
+2026-09-18 13:57:37,551 [BombeRLeWorld] INFO: Agent <rule_based_agent_1> drops bomb at (np.int64(7), np.int64(1))
+2026-09-18 13:57:37,555 [BombeRLeWorld] INFO: STARTING STEP 59
+2026-09-18 13:57:37,577 [BombeRLeWorld] INFO: STARTING STEP 60
+2026-09-18 13:57:37,599 [BombeRLeWorld] INFO: Agent <rule_based_agent_2> drops bomb at (np.int64(3), np.int64(15))
+2026-09-18 13:57:37,602 [BombeRLeWorld] INFO: Agent <double_dqn_continuous_v2_agent>'s bomb at (np.int64(11), np.int64(15)) explodes
+2026-09-18 13:57:37,602 [BombeRLeWorld] INFO: STARTING STEP 61
+2026-09-18 13:57:37,625 [BombeRLeWorld] INFO: STARTING STEP 62
+2026-09-18 13:57:37,646 [BombeRLeWorld] INFO: Agent <rule_based_agent_1>'s bomb at (np.int64(7), np.int64(1)) explodes
+2026-09-18 13:57:37,646 [BombeRLeWorld] INFO: Coin found at (np.int64(7), np.int64(4))
+2026-09-18 13:57:37,646 [BombeRLeWorld] INFO: STARTING STEP 63
+2026-09-18 13:57:37,678 [BombeRLeWorld] INFO: STARTING STEP 64
+2026-09-18 13:57:37,704 [BombeRLeWorld] INFO: Agent <rule_based_agent_2>'s bomb at (np.int64(3), np.int64(15)) explodes
+2026-09-18 13:57:37,705 [BombeRLeWorld] INFO: STARTING STEP 65
+2026-09-18 13:57:37,742 [BombeRLeWorld] INFO: Agent <rule_based_agent_0> drops bomb at (np.int64(3), np.int64(10))
+2026-09-18 13:57:37,745 [BombeRLeWorld] INFO: STARTING STEP 66
+2026-09-18 13:57:37,770 [BombeRLeWorld] INFO: STARTING STEP 67
+2026-09-18 13:57:37,805 [BombeRLeWorld] INFO: Agent <rule_based_agent_1> picked up coin at (np.int64(7), np.int64(4)) and receives 1 point
+2026-09-18 13:57:37,805 [BombeRLeWorld] INFO: STARTING STEP 68
+2026-09-18 13:57:37,836 [BombeRLeWorld] INFO: STARTING STEP 69
+2026-09-18 13:57:37,859 [BombeRLeWorld] INFO: Agent <rule_based_agent_2> drops bomb at (np.int64(5), np.int64(11))
+2026-09-18 13:57:37,866 [BombeRLeWorld] INFO: Agent <rule_based_agent_0>'s bomb at (np.int64(3), np.int64(10)) explodes
+2026-09-18 13:57:37,866 [BombeRLeWorld] INFO: STARTING STEP 70
+2026-09-18 13:57:37,889 [BombeRLeWorld] INFO: STARTING STEP 71
+2026-09-18 13:57:37,912 [BombeRLeWorld] INFO: Agent <double_dqn_continuous_v2_agent> drops bomb at (np.int64(9), np.int64(15))
+2026-09-18 13:57:37,914 [BombeRLeWorld] INFO: STARTING STEP 72
+2026-09-18 13:57:37,942 [BombeRLeWorld] INFO: STARTING STEP 73
+2026-09-18 13:57:37,964 [BombeRLeWorld] INFO: Agent <rule_based_agent_2>'s bomb at (np.int64(5), np.int64(11)) explodes
+2026-09-18 13:57:37,964 [BombeRLeWorld] INFO: Coin found at (np.int64(8), np.int64(11))
+2026-09-18 13:57:37,964 [BombeRLeWorld] INFO: STARTING STEP 74
+2026-09-18 13:57:37,989 [BombeRLeWorld] INFO: STARTING STEP 75
+2026-09-18 13:57:38,013 [BombeRLeWorld] INFO: Agent <double_dqn_continuous_v2_agent>'s bomb at (np.int64(9), np.int64(15)) explodes
+2026-09-18 13:57:38,013 [BombeRLeWorld] INFO: STARTING STEP 76
+2026-09-18 13:57:38,047 [BombeRLeWorld] INFO: STARTING STEP 77
+2026-09-18 13:57:38,076 [BombeRLeWorld] INFO: STARTING STEP 78
+2026-09-18 13:57:38,125 [BombeRLeWorld] INFO: STARTING STEP 79
+2026-09-18 13:57:38,179 [BombeRLeWorld] INFO: STARTING STEP 80
+2026-09-18 13:57:38,218 [BombeRLeWorld] INFO: Agent <rule_based_agent_0> drops bomb at (np.int64(3), np.int64(7))
+2026-09-18 13:57:38,221 [BombeRLeWorld] INFO: STARTING STEP 81
+2026-09-18 13:57:38,252 [BombeRLeWorld] INFO: Agent <double_dqn_continuous_v2_agent> picked up coin at (np.int64(8), np.int64(11)) and receives 1 point
+2026-09-18 13:57:38,252 [BombeRLeWorld] INFO: STARTING STEP 82
+2026-09-18 13:57:38,277 [BombeRLeWorld] INFO: Agent <rule_based_agent_1> drops bomb at (np.int64(10), np.int64(9))
+2026-09-18 13:57:38,282 [BombeRLeWorld] INFO: STARTING STEP 83
+2026-09-18 13:57:38,306 [BombeRLeWorld] INFO: Agent <double_dqn_continuous_v2_agent> drops bomb at (np.int64(7), np.int64(11))
+2026-09-18 13:57:38,308 [BombeRLeWorld] INFO: STARTING STEP 84
+2026-09-18 13:57:38,331 [BombeRLeWorld] INFO: Agent <rule_based_agent_0>'s bomb at (np.int64(3), np.int64(7)) explodes
+2026-09-18 13:57:38,331 [BombeRLeWorld] INFO: Coin found at (np.int64(3), np.int64(4))
+2026-09-18 13:57:38,331 [BombeRLeWorld] INFO: STARTING STEP 85
+2026-09-18 13:57:38,355 [BombeRLeWorld] INFO: STARTING STEP 86
+2026-09-18 13:57:38,387 [BombeRLeWorld] INFO: Agent <rule_based_agent_1>'s bomb at (np.int64(10), np.int64(9)) explodes
+2026-09-18 13:57:38,387 [BombeRLeWorld] INFO: STARTING STEP 87
+2026-09-18 13:57:38,413 [BombeRLeWorld] INFO: Agent <double_dqn_continuous_v2_agent>'s bomb at (np.int64(7), np.int64(11)) explodes
+2026-09-18 13:57:38,413 [BombeRLeWorld] INFO: STARTING STEP 88
+2026-09-18 13:57:38,443 [BombeRLeWorld] INFO: Agent <rule_based_agent_0> drops bomb at (np.int64(6), np.int64(7))
+2026-09-18 13:57:38,448 [BombeRLeWorld] INFO: STARTING STEP 89
+2026-09-18 13:57:38,470 [BombeRLeWorld] INFO: STARTING STEP 90
+2026-09-18 13:57:38,521 [BombeRLeWorld] INFO: STARTING STEP 91
+2026-09-18 13:57:38,554 [BombeRLeWorld] INFO: STARTING STEP 92
+2026-09-18 13:57:38,598 [BombeRLeWorld] INFO: Agent <rule_based_agent_0>'s bomb at (np.int64(6), np.int64(7)) explodes
+2026-09-18 13:57:38,598 [BombeRLeWorld] INFO: STARTING STEP 93
+2026-09-18 13:57:38,631 [BombeRLeWorld] INFO: Agent <rule_based_agent_1> drops bomb at (np.int64(15), np.int64(8))
+2026-09-18 13:57:38,632 [BombeRLeWorld] INFO: STARTING STEP 94
+2026-09-18 13:57:38,666 [BombeRLeWorld] INFO: STARTING STEP 95
+2026-09-18 13:57:38,691 [BombeRLeWorld] INFO: Agent <rule_based_agent_0> drops bomb at (np.int64(4), np.int64(9))
+2026-09-18 13:57:38,699 [BombeRLeWorld] INFO: Agent <rule_based_agent_2> drops bomb at (np.int64(3), np.int64(9))
+2026-09-18 13:57:38,703 [BombeRLeWorld] INFO: STARTING STEP 96
+2026-09-18 13:57:38,730 [BombeRLeWorld] INFO: STARTING STEP 97
+2026-09-18 13:57:38,759 [BombeRLeWorld] INFO: Agent <rule_based_agent_1>'s bomb at (np.int64(15), np.int64(8)) explodes
+2026-09-18 13:57:38,759 [BombeRLeWorld] INFO: STARTING STEP 98
+2026-09-18 13:57:38,792 [BombeRLeWorld] INFO: STARTING STEP 99
+2026-09-18 13:57:38,825 [BombeRLeWorld] INFO: Agent <rule_based_agent_0>'s bomb at (np.int64(4), np.int64(9)) explodes
+2026-09-18 13:57:38,825 [BombeRLeWorld] INFO: Agent <rule_based_agent_2>'s bomb at (np.int64(3), np.int64(9)) explodes
+2026-09-18 13:57:38,825 [BombeRLeWorld] INFO: STARTING STEP 100
+2026-09-18 13:57:38,856 [BombeRLeWorld] INFO: STARTING STEP 101
+2026-09-18 13:57:38,897 [BombeRLeWorld] INFO: STARTING STEP 102
+2026-09-18 13:57:38,943 [BombeRLeWorld] INFO: Agent <rule_based_agent_0> drops bomb at (np.int64(6), np.int64(11))
+2026-09-18 13:57:38,944 [BombeRLeWorld] INFO: STARTING STEP 103
+2026-09-18 13:57:38,975 [BombeRLeWorld] INFO: STARTING STEP 104
+2026-09-18 13:57:39,008 [BombeRLeWorld] INFO: Agent <rule_based_agent_2> drops bomb at (np.int64(9), np.int64(7))
+2026-09-18 13:57:39,011 [BombeRLeWorld] INFO: STARTING STEP 105
+2026-09-18 13:57:39,046 [BombeRLeWorld] INFO: STARTING STEP 106
+2026-09-18 13:57:39,079 [BombeRLeWorld] INFO: Agent <rule_based_agent_0>'s bomb at (np.int64(6), np.int64(11)) explodes
+2026-09-18 13:57:39,079 [BombeRLeWorld] INFO: STARTING STEP 107
+2026-09-18 13:57:39,107 [BombeRLeWorld] INFO: STARTING STEP 108
+2026-09-18 13:57:39,145 [BombeRLeWorld] INFO: Agent <rule_based_agent_2>'s bomb at (np.int64(9), np.int64(7)) explodes
+2026-09-18 13:57:39,145 [BombeRLeWorld] INFO: Coin found at (np.int64(12), np.int64(7))
+2026-09-18 13:57:39,146 [BombeRLeWorld] INFO: STARTING STEP 109
+2026-09-18 13:57:39,181 [BombeRLeWorld] INFO: Agent <rule_based_agent_0> drops bomb at (np.int64(6), np.int64(13))
+2026-09-18 13:57:39,184 [BombeRLeWorld] INFO: STARTING STEP 110
+2026-09-18 13:57:39,213 [BombeRLeWorld] INFO: STARTING STEP 111
+2026-09-18 13:57:39,269 [BombeRLeWorld] INFO: STARTING STEP 112
+2026-09-18 13:57:39,300 [BombeRLeWorld] INFO: STARTING STEP 113
+2026-09-18 13:57:39,344 [BombeRLeWorld] INFO: Agent <rule_based_agent_0>'s bomb at (np.int64(6), np.int64(13)) explodes
+2026-09-18 13:57:39,344 [BombeRLeWorld] INFO: STARTING STEP 114
+2026-09-18 13:57:39,378 [BombeRLeWorld] INFO: STARTING STEP 115
+2026-09-18 13:57:39,420 [BombeRLeWorld] INFO: Agent <rule_based_agent_1> picked up coin at (np.int64(12), np.int64(7)) and receives 1 point
+2026-09-18 13:57:39,420 [BombeRLeWorld] INFO: STARTING STEP 116
+2026-09-18 13:57:39,462 [BombeRLeWorld] INFO: STARTING STEP 117
+2026-09-18 13:57:39,495 [BombeRLeWorld] INFO: Agent <rule_based_agent_1> drops bomb at (np.int64(12), np.int64(7))
+2026-09-18 13:57:39,504 [BombeRLeWorld] INFO: Agent <rule_based_agent_2> drops bomb at (np.int64(11), np.int64(7))
+2026-09-18 13:57:39,504 [BombeRLeWorld] INFO: STARTING STEP 118
+2026-09-18 13:57:39,537 [BombeRLeWorld] INFO: STARTING STEP 119
+2026-09-18 13:57:39,568 [BombeRLeWorld] INFO: STARTING STEP 120
+2026-09-18 13:57:39,611 [BombeRLeWorld] INFO: STARTING STEP 121
+2026-09-18 13:57:39,647 [BombeRLeWorld] INFO: Agent <rule_based_agent_1>'s bomb at (np.int64(12), np.int64(7)) explodes
+2026-09-18 13:57:39,647 [BombeRLeWorld] INFO: Agent <rule_based_agent_2>'s bomb at (np.int64(11), np.int64(7)) explodes
+2026-09-18 13:57:39,648 [BombeRLeWorld] INFO: STARTING STEP 122
+2026-09-18 13:57:39,678 [BombeRLeWorld] INFO: STARTING STEP 123
+2026-09-18 13:57:39,722 [BombeRLeWorld] INFO: STARTING STEP 124
+2026-09-18 13:57:39,777 [BombeRLeWorld] INFO: STARTING STEP 125
+2026-09-18 13:57:39,814 [BombeRLeWorld] INFO: Agent <rule_based_agent_0> drops bomb at (np.int64(5), np.int64(9))
+2026-09-18 13:57:39,818 [BombeRLeWorld] INFO: STARTING STEP 126
+2026-09-18 13:57:39,864 [BombeRLeWorld] INFO: STARTING STEP 127
+2026-09-18 13:57:39,897 [BombeRLeWorld] INFO: STARTING STEP 128
+2026-09-18 13:57:39,931 [BombeRLeWorld] INFO: Agent <rule_based_agent_2> drops bomb at (np.int64(6), np.int64(7))
+2026-09-18 13:57:39,934 [BombeRLeWorld] INFO: STARTING STEP 129
+2026-09-18 13:57:39,968 [BombeRLeWorld] INFO: Agent <rule_based_agent_0>'s bomb at (np.int64(5), np.int64(9)) explodes
+2026-09-18 13:57:39,968 [BombeRLeWorld] INFO: STARTING STEP 130
+2026-09-18 13:57:40,004 [BombeRLeWorld] INFO: STARTING STEP 131
+2026-09-18 13:57:40,037 [BombeRLeWorld] INFO: STARTING STEP 132
+2026-09-18 13:57:40,075 [BombeRLeWorld] INFO: Agent <rule_based_agent_2>'s bomb at (np.int64(6), np.int64(7)) explodes
+2026-09-18 13:57:40,075 [BombeRLeWorld] INFO: STARTING STEP 133
+2026-09-18 13:57:40,113 [BombeRLeWorld] INFO: STARTING STEP 134
+2026-09-18 13:57:40,154 [BombeRLeWorld] INFO: Agent <rule_based_agent_1> drops bomb at (np.int64(8), np.int64(9))
+2026-09-18 13:57:40,154 [BombeRLeWorld] INFO: STARTING STEP 135
+2026-09-18 13:57:40,188 [BombeRLeWorld] INFO: STARTING STEP 136
+2026-09-18 13:57:40,217 [BombeRLeWorld] INFO: Agent <rule_based_agent_2> drops bomb at (np.int64(7), np.int64(10))
+2026-09-18 13:57:40,226 [BombeRLeWorld] INFO: STARTING STEP 137
+2026-09-18 13:57:40,255 [BombeRLeWorld] INFO: STARTING STEP 138
+2026-09-18 13:57:40,300 [BombeRLeWorld] INFO: Agent <rule_based_agent_1>'s bomb at (np.int64(8), np.int64(9)) explodes
+2026-09-18 13:57:40,300 [BombeRLeWorld] INFO: STARTING STEP 139
+2026-09-18 13:57:40,329 [BombeRLeWorld] INFO: STARTING STEP 140
+2026-09-18 13:57:40,375 [BombeRLeWorld] INFO: Agent <double_dqn_continuous_v2_agent> picked up coin at (np.int64(3), np.int64(4)) and receives 1 point
+2026-09-18 13:57:40,375 [BombeRLeWorld] INFO: Agent <rule_based_agent_2>'s bomb at (np.int64(7), np.int64(10)) explodes
+2026-09-18 13:57:40,376 [BombeRLeWorld] INFO: STARTING STEP 141
+2026-09-18 13:57:40,406 [BombeRLeWorld] INFO: Agent <double_dqn_continuous_v2_agent> drops bomb at (np.int64(3), np.int64(4))
+2026-09-18 13:57:40,415 [BombeRLeWorld] INFO: STARTING STEP 142
+2026-09-18 13:57:40,448 [BombeRLeWorld] INFO: STARTING STEP 143
+2026-09-18 13:57:40,479 [BombeRLeWorld] INFO: Agent <rule_based_agent_0> drops bomb at (np.int64(5), np.int64(10))
+2026-09-18 13:57:40,485 [BombeRLeWorld] INFO: Agent <rule_based_agent_1> drops bomb at (np.int64(5), np.int64(9))
+2026-09-18 13:57:40,485 [BombeRLeWorld] INFO: STARTING STEP 144
+2026-09-18 13:57:40,508 [BombeRLeWorld] INFO: STARTING STEP 145
+2026-09-18 13:57:40,530 [BombeRLeWorld] INFO: Agent <rule_based_agent_2> drops bomb at (np.int64(6), np.int64(11))
+2026-09-18 13:57:40,532 [BombeRLeWorld] INFO: Agent <double_dqn_continuous_v2_agent>'s bomb at (np.int64(3), np.int64(4)) explodes
+2026-09-18 13:57:40,532 [BombeRLeWorld] INFO: STARTING STEP 146
+2026-09-18 13:57:40,554 [BombeRLeWorld] INFO: STARTING STEP 147
+2026-09-18 13:57:40,576 [BombeRLeWorld] INFO: Agent <rule_based_agent_0>'s bomb at (np.int64(5), np.int64(10)) explodes
+2026-09-18 13:57:40,576 [BombeRLeWorld] INFO: Agent <rule_based_agent_1>'s bomb at (np.int64(5), np.int64(9)) explodes
+2026-09-18 13:57:40,576 [BombeRLeWorld] INFO: STARTING STEP 148
+2026-09-18 13:57:40,601 [BombeRLeWorld] INFO: Agent <double_dqn_continuous_v2_agent> drops bomb at (np.int64(4), np.int64(5))
+2026-09-18 13:57:40,607 [BombeRLeWorld] INFO: STARTING STEP 149
+2026-09-18 13:57:40,628 [BombeRLeWorld] INFO: Agent <rule_based_agent_2>'s bomb at (np.int64(6), np.int64(11)) explodes
+2026-09-18 13:57:40,628 [BombeRLeWorld] INFO: Agent <rule_based_agent_2> blown up by own bomb
+2026-09-18 13:57:40,628 [BombeRLeWorld] INFO: STARTING STEP 150
+2026-09-18 13:57:40,647 [BombeRLeWorld] INFO: STARTING STEP 151
+2026-09-18 13:57:40,666 [BombeRLeWorld] INFO: STARTING STEP 152
+2026-09-18 13:57:40,683 [BombeRLeWorld] INFO: Agent <double_dqn_continuous_v2_agent>'s bomb at (np.int64(4), np.int64(5)) explodes
+2026-09-18 13:57:40,683 [BombeRLeWorld] INFO: STARTING STEP 153
+2026-09-18 13:57:40,702 [BombeRLeWorld] INFO: STARTING STEP 154
+2026-09-18 13:57:40,724 [BombeRLeWorld] INFO: STARTING STEP 155
+2026-09-18 13:57:40,752 [BombeRLeWorld] INFO: STARTING STEP 156
+2026-09-18 13:57:40,776 [BombeRLeWorld] INFO: Agent <rule_based_agent_1> drops bomb at (np.int64(7), np.int64(7))
+2026-09-18 13:57:40,782 [BombeRLeWorld] INFO: STARTING STEP 157
+2026-09-18 13:57:40,808 [BombeRLeWorld] INFO: STARTING STEP 158
+2026-09-18 13:57:40,830 [BombeRLeWorld] INFO: STARTING STEP 159
+2026-09-18 13:57:40,856 [BombeRLeWorld] INFO: STARTING STEP 160
+2026-09-18 13:57:40,879 [BombeRLeWorld] INFO: Agent <double_dqn_continuous_v2_agent> drops bomb at (np.int64(1), np.int64(3))
+2026-09-18 13:57:40,881 [BombeRLeWorld] INFO: Agent <rule_based_agent_1>'s bomb at (np.int64(7), np.int64(7)) explodes
+2026-09-18 13:57:40,881 [BombeRLeWorld] INFO: STARTING STEP 161
+2026-09-18 13:57:40,903 [BombeRLeWorld] INFO: STARTING STEP 162
+2026-09-18 13:57:40,922 [BombeRLeWorld] INFO: STARTING STEP 163
+2026-09-18 13:57:40,947 [BombeRLeWorld] INFO: STARTING STEP 164
+2026-09-18 13:57:40,970 [BombeRLeWorld] INFO: Agent <double_dqn_continuous_v2_agent>'s bomb at (np.int64(1), np.int64(3)) explodes
+2026-09-18 13:57:40,970 [BombeRLeWorld] INFO: STARTING STEP 165
+2026-09-18 13:57:40,993 [BombeRLeWorld] INFO: STARTING STEP 166
+2026-09-18 13:57:41,013 [BombeRLeWorld] INFO: STARTING STEP 167
+2026-09-18 13:57:41,040 [BombeRLeWorld] INFO: Agent <rule_based_agent_1> drops bomb at (np.int64(5), np.int64(3))
+2026-09-18 13:57:41,040 [BombeRLeWorld] INFO: STARTING STEP 168
+2026-09-18 13:57:41,060 [BombeRLeWorld] INFO: STARTING STEP 169
+2026-09-18 13:57:41,079 [BombeRLeWorld] INFO: STARTING STEP 170
+2026-09-18 13:57:41,101 [BombeRLeWorld] INFO: STARTING STEP 171
+2026-09-18 13:57:41,121 [BombeRLeWorld] INFO: Agent <rule_based_agent_1>'s bomb at (np.int64(5), np.int64(3)) explodes
+2026-09-18 13:57:41,121 [BombeRLeWorld] INFO: Coin found at (np.int64(8), np.int64(3))
+2026-09-18 13:57:41,122 [BombeRLeWorld] INFO: STARTING STEP 172
+2026-09-18 13:57:41,145 [BombeRLeWorld] INFO: STARTING STEP 173
+2026-09-18 13:57:41,163 [BombeRLeWorld] INFO: Agent <rule_based_agent_0> drops bomb at (np.int64(3), np.int64(7))
+2026-09-18 13:57:41,169 [BombeRLeWorld] INFO: STARTING STEP 174
+2026-09-18 13:57:41,197 [BombeRLeWorld] INFO: Agent <double_dqn_continuous_v2_agent> picked up coin at (np.int64(8), np.int64(3)) and receives 1 point
+2026-09-18 13:57:41,198 [BombeRLeWorld] INFO: STARTING STEP 175
+2026-09-18 13:57:41,217 [BombeRLeWorld] INFO: STARTING STEP 176
+2026-09-18 13:57:41,234 [BombeRLeWorld] INFO: Agent <rule_based_agent_1> drops bomb at (np.int64(4), np.int64(5))
+2026-09-18 13:57:41,242 [BombeRLeWorld] INFO: Agent <double_dqn_continuous_v2_agent> drops bomb at (np.int64(9), np.int64(3))
+2026-09-18 13:57:41,242 [BombeRLeWorld] INFO: STARTING STEP 177
+2026-09-18 13:57:41,259 [BombeRLeWorld] INFO: Agent <rule_based_agent_0>'s bomb at (np.int64(3), np.int64(7)) explodes
+2026-09-18 13:57:41,259 [BombeRLeWorld] INFO: STARTING STEP 178
+2026-09-18 13:57:41,276 [BombeRLeWorld] INFO: STARTING STEP 179
+2026-09-18 13:57:41,293 [BombeRLeWorld] INFO: STARTING STEP 180
+2026-09-18 13:57:41,310 [BombeRLeWorld] INFO: Agent <rule_based_agent_1>'s bomb at (np.int64(4), np.int64(5)) explodes
+2026-09-18 13:57:41,310 [BombeRLeWorld] INFO: Agent <double_dqn_continuous_v2_agent>'s bomb at (np.int64(9), np.int64(3)) explodes
+2026-09-18 13:57:41,310 [BombeRLeWorld] INFO: STARTING STEP 181
+2026-09-18 13:57:41,327 [BombeRLeWorld] INFO: STARTING STEP 182
+2026-09-18 13:57:41,345 [BombeRLeWorld] INFO: STARTING STEP 183
+2026-09-18 13:57:41,368 [BombeRLeWorld] INFO: Agent <rule_based_agent_1> drops bomb at (np.int64(4), np.int64(7))
+2026-09-18 13:57:41,374 [BombeRLeWorld] INFO: STARTING STEP 184
+2026-09-18 13:57:41,399 [BombeRLeWorld] INFO: STARTING STEP 185
+2026-09-18 13:57:41,428 [BombeRLeWorld] INFO: Agent <double_dqn_continuous_v2_agent> drops bomb at (np.int64(7), np.int64(1))
+2026-09-18 13:57:41,428 [BombeRLeWorld] INFO: STARTING STEP 186
+2026-09-18 13:57:41,449 [BombeRLeWorld] INFO: STARTING STEP 187
+2026-09-18 13:57:41,469 [BombeRLeWorld] INFO: Agent <rule_based_agent_1>'s bomb at (np.int64(4), np.int64(7)) explodes
+2026-09-18 13:57:41,470 [BombeRLeWorld] INFO: STARTING STEP 188
+2026-09-18 13:57:41,487 [BombeRLeWorld] INFO: STARTING STEP 189
+2026-09-18 13:57:41,505 [BombeRLeWorld] INFO: Agent <double_dqn_continuous_v2_agent>'s bomb at (np.int64(7), np.int64(1)) explodes
+2026-09-18 13:57:41,505 [BombeRLeWorld] INFO: STARTING STEP 190
+2026-09-18 13:57:41,524 [BombeRLeWorld] INFO: STARTING STEP 191
+2026-09-18 13:57:41,541 [BombeRLeWorld] INFO: Agent <rule_based_agent_0> drops bomb at (np.int64(5), np.int64(7))
+2026-09-18 13:57:41,545 [BombeRLeWorld] INFO: Agent <rule_based_agent_1> drops bomb at (np.int64(5), np.int64(8))
+2026-09-18 13:57:41,548 [BombeRLeWorld] INFO: STARTING STEP 192
+2026-09-18 13:57:41,570 [BombeRLeWorld] INFO: STARTING STEP 193
+2026-09-18 13:57:41,589 [BombeRLeWorld] INFO: STARTING STEP 194
+2026-09-18 13:57:41,610 [BombeRLeWorld] INFO: STARTING STEP 195
+2026-09-18 13:57:41,631 [BombeRLeWorld] INFO: Agent <rule_based_agent_0>'s bomb at (np.int64(5), np.int64(7)) explodes
+2026-09-18 13:57:41,631 [BombeRLeWorld] INFO: Agent <rule_based_agent_1>'s bomb at (np.int64(5), np.int64(8)) explodes
+2026-09-18 13:57:41,631 [BombeRLeWorld] INFO: STARTING STEP 196
+2026-09-18 13:57:41,651 [BombeRLeWorld] INFO: STARTING STEP 197
+2026-09-18 13:57:41,669 [BombeRLeWorld] INFO: STARTING STEP 198
+2026-09-18 13:57:41,691 [BombeRLeWorld] INFO: Agent <double_dqn_continuous_v2_agent> drops bomb at (np.int64(15), np.int64(3))
+2026-09-18 13:57:41,695 [BombeRLeWorld] INFO: STARTING STEP 199
+2026-09-18 13:57:41,712 [BombeRLeWorld] INFO: Agent <rule_based_agent_0> drops bomb at (np.int64(7), np.int64(8))
+2026-09-18 13:57:41,717 [BombeRLeWorld] INFO: Agent <rule_based_agent_1> drops bomb at (np.int64(7), np.int64(9))
+2026-09-18 13:57:41,717 [BombeRLeWorld] INFO: STARTING STEP 200
+2026-09-18 13:57:41,736 [BombeRLeWorld] INFO: STARTING STEP 201
+2026-09-18 13:57:41,751 [BombeRLeWorld] INFO: STARTING STEP 202
+2026-09-18 13:57:41,767 [BombeRLeWorld] INFO: Agent <double_dqn_continuous_v2_agent>'s bomb at (np.int64(15), np.int64(3)) explodes
+2026-09-18 13:57:41,767 [BombeRLeWorld] INFO: STARTING STEP 203
+2026-09-18 13:57:41,782 [BombeRLeWorld] INFO: Agent <rule_based_agent_0>'s bomb at (np.int64(7), np.int64(8)) explodes
+2026-09-18 13:57:41,782 [BombeRLeWorld] INFO: Agent <rule_based_agent_1>'s bomb at (np.int64(7), np.int64(9)) explodes
+2026-09-18 13:57:41,782 [BombeRLeWorld] INFO: STARTING STEP 204
+2026-09-18 13:57:41,798 [BombeRLeWorld] INFO: STARTING STEP 205
+2026-09-18 13:57:41,817 [BombeRLeWorld] INFO: Agent <double_dqn_continuous_v2_agent> drops bomb at (np.int64(12), np.int64(1))
+2026-09-18 13:57:41,819 [BombeRLeWorld] INFO: STARTING STEP 206
+2026-09-18 13:57:41,842 [BombeRLeWorld] INFO: STARTING STEP 207
+2026-09-18 13:57:41,866 [BombeRLeWorld] INFO: STARTING STEP 208
+2026-09-18 13:57:41,888 [BombeRLeWorld] INFO: STARTING STEP 209
+2026-09-18 13:57:41,911 [BombeRLeWorld] INFO: Agent <double_dqn_continuous_v2_agent>'s bomb at (np.int64(12), np.int64(1)) explodes
+2026-09-18 13:57:41,911 [BombeRLeWorld] INFO: STARTING STEP 210
+2026-09-18 13:57:41,932 [BombeRLeWorld] INFO: STARTING STEP 211
+2026-09-18 13:57:41,954 [BombeRLeWorld] INFO: STARTING STEP 212
+2026-09-18 13:57:41,979 [BombeRLeWorld] INFO: STARTING STEP 213
+2026-09-18 13:57:42,006 [BombeRLeWorld] INFO: STARTING STEP 214
+2026-09-18 13:57:42,031 [BombeRLeWorld] INFO: STARTING STEP 215
+2026-09-18 13:57:42,058 [BombeRLeWorld] INFO: STARTING STEP 216
+2026-09-18 13:57:42,083 [BombeRLeWorld] INFO: STARTING STEP 217
+2026-09-18 13:57:42,111 [BombeRLeWorld] INFO: STARTING STEP 218
+2026-09-18 13:57:42,136 [BombeRLeWorld] INFO: STARTING STEP 219
+2026-09-18 13:57:42,163 [BombeRLeWorld] INFO: STARTING STEP 220
+2026-09-18 13:57:42,188 [BombeRLeWorld] INFO: STARTING STEP 221
+2026-09-18 13:57:42,213 [BombeRLeWorld] INFO: Agent <double_dqn_continuous_v2_agent> drops bomb at (np.int64(14), np.int64(1))
+2026-09-18 13:57:42,216 [BombeRLeWorld] INFO: STARTING STEP 222
+2026-09-18 13:57:42,238 [BombeRLeWorld] INFO: STARTING STEP 223
+2026-09-18 13:57:42,262 [BombeRLeWorld] INFO: STARTING STEP 224
+2026-09-18 13:57:42,284 [BombeRLeWorld] INFO: STARTING STEP 225
+2026-09-18 13:57:42,307 [BombeRLeWorld] INFO: Agent <double_dqn_continuous_v2_agent>'s bomb at (np.int64(14), np.int64(1)) explodes
+2026-09-18 13:57:42,307 [BombeRLeWorld] INFO: STARTING STEP 226
+2026-09-18 13:57:42,328 [BombeRLeWorld] INFO: STARTING STEP 227
+2026-09-18 13:57:42,350 [BombeRLeWorld] INFO: STARTING STEP 228
+2026-09-18 13:57:42,373 [BombeRLeWorld] INFO: Agent <double_dqn_continuous_v2_agent> drops bomb at (np.int64(15), np.int64(1))
+2026-09-18 13:57:42,376 [BombeRLeWorld] INFO: STARTING STEP 229
+2026-09-18 13:57:42,400 [BombeRLeWorld] INFO: STARTING STEP 230
+2026-09-18 13:57:42,421 [BombeRLeWorld] INFO: STARTING STEP 231
+2026-09-18 13:57:42,445 [BombeRLeWorld] INFO: STARTING STEP 232
+2026-09-18 13:57:42,466 [BombeRLeWorld] INFO: Agent <double_dqn_continuous_v2_agent>'s bomb at (np.int64(15), np.int64(1)) explodes
+2026-09-18 13:57:42,466 [BombeRLeWorld] INFO: STARTING STEP 233
+2026-09-18 13:57:42,490 [BombeRLeWorld] INFO: STARTING STEP 234
+2026-09-18 13:57:42,510 [BombeRLeWorld] INFO: STARTING STEP 235
+2026-09-18 13:57:42,540 [BombeRLeWorld] INFO: Agent <double_dqn_continuous_v2_agent> drops bomb at (np.int64(15), np.int64(5))
+2026-09-18 13:57:42,540 [BombeRLeWorld] INFO: STARTING STEP 236
+2026-09-18 13:57:42,563 [BombeRLeWorld] INFO: STARTING STEP 237
+2026-09-18 13:57:42,586 [BombeRLeWorld] INFO: STARTING STEP 238
+2026-09-18 13:57:42,608 [BombeRLeWorld] INFO: STARTING STEP 239
+2026-09-18 13:57:42,631 [BombeRLeWorld] INFO: Agent <double_dqn_continuous_v2_agent>'s bomb at (np.int64(15), np.int64(5)) explodes
+2026-09-18 13:57:42,631 [BombeRLeWorld] INFO: STARTING STEP 240
+2026-09-18 13:57:42,653 [BombeRLeWorld] INFO: STARTING STEP 241
+2026-09-18 13:57:42,675 [BombeRLeWorld] INFO: STARTING STEP 242
+2026-09-18 13:57:42,701 [BombeRLeWorld] INFO: STARTING STEP 243
+2026-09-18 13:57:42,730 [BombeRLeWorld] INFO: STARTING STEP 244
+2026-09-18 13:57:42,752 [BombeRLeWorld] INFO: Agent <double_dqn_continuous_v2_agent> drops bomb at (np.int64(15), np.int64(10))
+2026-09-18 13:57:42,758 [BombeRLeWorld] INFO: STARTING STEP 245
+2026-09-18 13:57:42,782 [BombeRLeWorld] INFO: STARTING STEP 246
+2026-09-18 13:57:42,804 [BombeRLeWorld] INFO: STARTING STEP 247
+2026-09-18 13:57:42,828 [BombeRLeWorld] INFO: STARTING STEP 248
+2026-09-18 13:57:42,849 [BombeRLeWorld] INFO: Agent <double_dqn_continuous_v2_agent>'s bomb at (np.int64(15), np.int64(10)) explodes
+2026-09-18 13:57:42,849 [BombeRLeWorld] INFO: STARTING STEP 249
+2026-09-18 13:57:42,874 [BombeRLeWorld] INFO: STARTING STEP 250
+2026-09-18 13:57:42,895 [BombeRLeWorld] INFO: STARTING STEP 251
+2026-09-18 13:57:42,926 [BombeRLeWorld] INFO: STARTING STEP 252
+2026-09-18 13:57:42,952 [BombeRLeWorld] INFO: STARTING STEP 253
+2026-09-18 13:57:42,984 [BombeRLeWorld] INFO: Agent <double_dqn_continuous_v2_agent> drops bomb at (np.int64(13), np.int64(9))
+2026-09-18 13:57:42,984 [BombeRLeWorld] INFO: STARTING STEP 254
+2026-09-18 13:57:43,008 [BombeRLeWorld] INFO: STARTING STEP 255
+2026-09-18 13:57:43,031 [BombeRLeWorld] INFO: STARTING STEP 256
+2026-09-18 13:57:43,054 [BombeRLeWorld] INFO: STARTING STEP 257
+2026-09-18 13:57:43,077 [BombeRLeWorld] INFO: Agent <double_dqn_continuous_v2_agent>'s bomb at (np.int64(13), np.int64(9)) explodes
+2026-09-18 13:57:43,077 [BombeRLeWorld] INFO: STARTING STEP 258
+2026-09-18 13:57:43,099 [BombeRLeWorld] INFO: STARTING STEP 259
+2026-09-18 13:57:43,121 [BombeRLeWorld] INFO: STARTING STEP 260
+2026-09-18 13:57:43,148 [BombeRLeWorld] INFO: Agent <double_dqn_continuous_v2_agent> drops bomb at (np.int64(11), np.int64(9))
+2026-09-18 13:57:43,151 [BombeRLeWorld] INFO: STARTING STEP 261
+2026-09-18 13:57:43,176 [BombeRLeWorld] INFO: STARTING STEP 262
+2026-09-18 13:57:43,199 [BombeRLeWorld] INFO: STARTING STEP 263
+2026-09-18 13:57:43,224 [BombeRLeWorld] INFO: STARTING STEP 264
+2026-09-18 13:57:43,247 [BombeRLeWorld] INFO: Agent <double_dqn_continuous_v2_agent>'s bomb at (np.int64(11), np.int64(9)) explodes
+2026-09-18 13:57:43,247 [BombeRLeWorld] INFO: STARTING STEP 265
+2026-09-18 13:57:43,271 [BombeRLeWorld] INFO: STARTING STEP 266
+2026-09-18 13:57:43,294 [BombeRLeWorld] INFO: STARTING STEP 267
+2026-09-18 13:57:43,329 [BombeRLeWorld] INFO: Agent <double_dqn_continuous_v2_agent> drops bomb at (np.int64(13), np.int64(9))
+2026-09-18 13:57:43,329 [BombeRLeWorld] INFO: STARTING STEP 268
+2026-09-18 13:57:43,354 [BombeRLeWorld] INFO: STARTING STEP 269
+2026-09-18 13:57:43,379 [BombeRLeWorld] INFO: STARTING STEP 270
+2026-09-18 13:57:43,402 [BombeRLeWorld] INFO: STARTING STEP 271
+2026-09-18 13:57:43,426 [BombeRLeWorld] INFO: Agent <double_dqn_continuous_v2_agent>'s bomb at (np.int64(13), np.int64(9)) explodes
+2026-09-18 13:57:43,426 [BombeRLeWorld] INFO: STARTING STEP 272
+2026-09-18 13:57:43,449 [BombeRLeWorld] INFO: STARTING STEP 273
+2026-09-18 13:57:43,473 [BombeRLeWorld] INFO: STARTING STEP 274
+2026-09-18 13:57:43,503 [BombeRLeWorld] INFO: Agent <double_dqn_continuous_v2_agent> drops bomb at (np.int64(11), np.int64(7))
+2026-09-18 13:57:43,503 [BombeRLeWorld] INFO: STARTING STEP 275
+2026-09-18 13:57:43,529 [BombeRLeWorld] INFO: STARTING STEP 276
+2026-09-18 13:57:43,551 [BombeRLeWorld] INFO: STARTING STEP 277
+2026-09-18 13:57:43,574 [BombeRLeWorld] INFO: STARTING STEP 278
+2026-09-18 13:57:43,596 [BombeRLeWorld] INFO: Agent <double_dqn_continuous_v2_agent>'s bomb at (np.int64(11), np.int64(7)) explodes
+2026-09-18 13:57:43,596 [BombeRLeWorld] INFO: STARTING STEP 279
+2026-09-18 13:57:43,619 [BombeRLeWorld] INFO: STARTING STEP 280
+2026-09-18 13:57:43,640 [BombeRLeWorld] INFO: STARTING STEP 281
+2026-09-18 13:57:43,668 [BombeRLeWorld] INFO: Agent <double_dqn_continuous_v2_agent> drops bomb at (np.int64(13), np.int64(5))
+2026-09-18 13:57:43,672 [BombeRLeWorld] INFO: STARTING STEP 282
+2026-09-18 13:57:43,695 [BombeRLeWorld] INFO: STARTING STEP 283
+2026-09-18 13:57:43,718 [BombeRLeWorld] INFO: STARTING STEP 284
+2026-09-18 13:57:43,740 [BombeRLeWorld] INFO: STARTING STEP 285
+2026-09-18 13:57:43,763 [BombeRLeWorld] INFO: Agent <double_dqn_continuous_v2_agent>'s bomb at (np.int64(13), np.int64(5)) explodes
+2026-09-18 13:57:43,763 [BombeRLeWorld] INFO: STARTING STEP 286
+2026-09-18 13:57:43,785 [BombeRLeWorld] INFO: STARTING STEP 287
+2026-09-18 13:57:43,807 [BombeRLeWorld] INFO: STARTING STEP 288
+2026-09-18 13:57:43,835 [BombeRLeWorld] INFO: Agent <double_dqn_continuous_v2_agent> drops bomb at (np.int64(15), np.int64(5))
+2026-09-18 13:57:43,835 [BombeRLeWorld] INFO: STARTING STEP 289
+2026-09-18 13:57:43,860 [BombeRLeWorld] INFO: STARTING STEP 290
+2026-09-18 13:57:43,881 [BombeRLeWorld] INFO: STARTING STEP 291
+2026-09-18 13:57:43,904 [BombeRLeWorld] INFO: STARTING STEP 292
+2026-09-18 13:57:43,925 [BombeRLeWorld] INFO: Agent <double_dqn_continuous_v2_agent>'s bomb at (np.int64(15), np.int64(5)) explodes
+2026-09-18 13:57:43,925 [BombeRLeWorld] INFO: STARTING STEP 293
+2026-09-18 13:57:43,948 [BombeRLeWorld] INFO: STARTING STEP 294
+2026-09-18 13:57:43,969 [BombeRLeWorld] INFO: STARTING STEP 295
+2026-09-18 13:57:43,993 [BombeRLeWorld] INFO: Agent <double_dqn_continuous_v2_agent> drops bomb at (np.int64(14), np.int64(7))
+2026-09-18 13:57:44,000 [BombeRLeWorld] INFO: STARTING STEP 296
+2026-09-18 13:57:44,022 [BombeRLeWorld] INFO: STARTING STEP 297
+2026-09-18 13:57:44,046 [BombeRLeWorld] INFO: STARTING STEP 298
+2026-09-18 13:57:44,068 [BombeRLeWorld] INFO: STARTING STEP 299
+2026-09-18 13:57:44,092 [BombeRLeWorld] INFO: Agent <double_dqn_continuous_v2_agent>'s bomb at (np.int64(14), np.int64(7)) explodes
+2026-09-18 13:57:44,092 [BombeRLeWorld] INFO: STARTING STEP 300
+2026-09-18 13:57:44,114 [BombeRLeWorld] INFO: STARTING STEP 301
+2026-09-18 13:57:44,136 [BombeRLeWorld] INFO: STARTING STEP 302
+2026-09-18 13:57:44,158 [BombeRLeWorld] INFO: Agent <double_dqn_continuous_v2_agent> drops bomb at (np.int64(15), np.int64(9))
+2026-09-18 13:57:44,164 [BombeRLeWorld] INFO: STARTING STEP 303
+2026-09-18 13:57:44,188 [BombeRLeWorld] INFO: STARTING STEP 304
+2026-09-18 13:57:44,210 [BombeRLeWorld] INFO: STARTING STEP 305
+2026-09-18 13:57:44,232 [BombeRLeWorld] INFO: STARTING STEP 306
+2026-09-18 13:57:44,254 [BombeRLeWorld] INFO: Agent <double_dqn_continuous_v2_agent>'s bomb at (np.int64(15), np.int64(9)) explodes
+2026-09-18 13:57:44,254 [BombeRLeWorld] INFO: STARTING STEP 307
+2026-09-18 13:57:44,277 [BombeRLeWorld] INFO: STARTING STEP 308
+2026-09-18 13:57:44,299 [BombeRLeWorld] INFO: STARTING STEP 309
+2026-09-18 13:57:44,328 [BombeRLeWorld] INFO: STARTING STEP 310
+2026-09-18 13:57:44,355 [BombeRLeWorld] INFO: STARTING STEP 311
+2026-09-18 13:57:44,382 [BombeRLeWorld] INFO: Agent <double_dqn_continuous_v2_agent> drops bomb at (np.int64(15), np.int64(11))
+2026-09-18 13:57:44,386 [BombeRLeWorld] INFO: STARTING STEP 312
+2026-09-18 13:57:44,408 [BombeRLeWorld] INFO: STARTING STEP 313
+2026-09-18 13:57:44,432 [BombeRLeWorld] INFO: STARTING STEP 314
+2026-09-18 13:57:44,453 [BombeRLeWorld] INFO: STARTING STEP 315
+2026-09-18 13:57:44,476 [BombeRLeWorld] INFO: Agent <double_dqn_continuous_v2_agent>'s bomb at (np.int64(15), np.int64(11)) explodes
+2026-09-18 13:57:44,476 [BombeRLeWorld] INFO: STARTING STEP 316
+2026-09-18 13:57:44,497 [BombeRLeWorld] INFO: STARTING STEP 317
+2026-09-18 13:57:44,519 [BombeRLeWorld] INFO: STARTING STEP 318
+2026-09-18 13:57:44,545 [BombeRLeWorld] INFO: STARTING STEP 319
+2026-09-18 13:57:44,572 [BombeRLeWorld] INFO: STARTING STEP 320
+2026-09-18 13:57:44,597 [BombeRLeWorld] INFO: STARTING STEP 321
+2026-09-18 13:57:44,624 [BombeRLeWorld] INFO: STARTING STEP 322
+2026-09-18 13:57:44,647 [BombeRLeWorld] INFO: Agent <double_dqn_continuous_v2_agent> drops bomb at (np.int64(15), np.int64(15))
+2026-09-18 13:57:44,650 [BombeRLeWorld] INFO: STARTING STEP 323
+2026-09-18 13:57:44,674 [BombeRLeWorld] INFO: STARTING STEP 324
+2026-09-18 13:57:44,695 [BombeRLeWorld] INFO: STARTING STEP 325
+2026-09-18 13:57:44,718 [BombeRLeWorld] INFO: STARTING STEP 326
+2026-09-18 13:57:44,739 [BombeRLeWorld] INFO: Agent <double_dqn_continuous_v2_agent>'s bomb at (np.int64(15), np.int64(15)) explodes
+2026-09-18 13:57:44,739 [BombeRLeWorld] INFO: STARTING STEP 327
+2026-09-18 13:57:44,761 [BombeRLeWorld] INFO: STARTING STEP 328
+2026-09-18 13:57:44,782 [BombeRLeWorld] INFO: STARTING STEP 329
+2026-09-18 13:57:44,810 [BombeRLeWorld] INFO: STARTING STEP 330
+2026-09-18 13:57:44,835 [BombeRLeWorld] INFO: STARTING STEP 331
+2026-09-18 13:57:44,857 [BombeRLeWorld] INFO: Agent <double_dqn_continuous_v2_agent> drops bomb at (np.int64(15), np.int64(15))
+2026-09-18 13:57:44,864 [BombeRLeWorld] INFO: STARTING STEP 332
+2026-09-18 13:57:44,886 [BombeRLeWorld] INFO: STARTING STEP 333
+2026-09-18 13:57:44,909 [BombeRLeWorld] INFO: STARTING STEP 334
+2026-09-18 13:57:44,930 [BombeRLeWorld] INFO: STARTING STEP 335
+2026-09-18 13:57:44,952 [BombeRLeWorld] INFO: Agent <double_dqn_continuous_v2_agent>'s bomb at (np.int64(15), np.int64(15)) explodes
+2026-09-18 13:57:44,953 [BombeRLeWorld] INFO: STARTING STEP 336
+2026-09-18 13:57:44,974 [BombeRLeWorld] INFO: STARTING STEP 337
+2026-09-18 13:57:44,996 [BombeRLeWorld] INFO: STARTING STEP 338
+2026-09-18 13:57:45,022 [BombeRLeWorld] INFO: STARTING STEP 339
+2026-09-18 13:57:45,049 [BombeRLeWorld] INFO: STARTING STEP 340
+2026-09-18 13:57:45,075 [BombeRLeWorld] INFO: Agent <double_dqn_continuous_v2_agent> drops bomb at (np.int64(15), np.int64(15))
+2026-09-18 13:57:45,075 [BombeRLeWorld] INFO: STARTING STEP 341
+2026-09-18 13:57:45,099 [BombeRLeWorld] INFO: STARTING STEP 342
+2026-09-18 13:57:45,122 [BombeRLeWorld] INFO: STARTING STEP 343
+2026-09-18 13:57:45,144 [BombeRLeWorld] INFO: STARTING STEP 344
+2026-09-18 13:57:45,166 [BombeRLeWorld] INFO: Agent <double_dqn_continuous_v2_agent>'s bomb at (np.int64(15), np.int64(15)) explodes
+2026-09-18 13:57:45,166 [BombeRLeWorld] INFO: STARTING STEP 345
+2026-09-18 13:57:45,190 [BombeRLeWorld] INFO: STARTING STEP 346
+2026-09-18 13:57:45,211 [BombeRLeWorld] INFO: STARTING STEP 347
+2026-09-18 13:57:45,241 [BombeRLeWorld] INFO: STARTING STEP 348
+2026-09-18 13:57:45,266 [BombeRLeWorld] INFO: STARTING STEP 349
+2026-09-18 13:57:45,296 [BombeRLeWorld] INFO: Agent <double_dqn_continuous_v2_agent> drops bomb at (np.int64(15), np.int64(15))
+2026-09-18 13:57:45,296 [BombeRLeWorld] INFO: STARTING STEP 350
+2026-09-18 13:57:45,319 [BombeRLeWorld] INFO: STARTING STEP 351
+2026-09-18 13:57:45,344 [BombeRLeWorld] INFO: STARTING STEP 352
+2026-09-18 13:57:45,366 [BombeRLeWorld] INFO: STARTING STEP 353
+2026-09-18 13:57:45,388 [BombeRLeWorld] INFO: Agent <double_dqn_continuous_v2_agent>'s bomb at (np.int64(15), np.int64(15)) explodes
+2026-09-18 13:57:45,388 [BombeRLeWorld] INFO: STARTING STEP 354
+2026-09-18 13:57:45,410 [BombeRLeWorld] INFO: STARTING STEP 355
+2026-09-18 13:57:45,432 [BombeRLeWorld] INFO: STARTING STEP 356
+2026-09-18 13:57:45,458 [BombeRLeWorld] INFO: STARTING STEP 357
+2026-09-18 13:57:45,487 [BombeRLeWorld] INFO: STARTING STEP 358
+2026-09-18 13:57:45,513 [BombeRLeWorld] INFO: Agent <double_dqn_continuous_v2_agent> drops bomb at (np.int64(15), np.int64(15))
+2026-09-18 13:57:45,513 [BombeRLeWorld] INFO: STARTING STEP 359
+2026-09-18 13:57:45,537 [BombeRLeWorld] INFO: STARTING STEP 360
+2026-09-18 13:57:45,559 [BombeRLeWorld] INFO: STARTING STEP 361
+2026-09-18 13:57:45,582 [BombeRLeWorld] INFO: STARTING STEP 362
+2026-09-18 13:57:45,603 [BombeRLeWorld] INFO: Agent <double_dqn_continuous_v2_agent>'s bomb at (np.int64(15), np.int64(15)) explodes
+2026-09-18 13:57:45,603 [BombeRLeWorld] INFO: STARTING STEP 363
+2026-09-18 13:57:45,626 [BombeRLeWorld] INFO: STARTING STEP 364
+2026-09-18 13:57:45,647 [BombeRLeWorld] INFO: STARTING STEP 365
+2026-09-18 13:57:45,671 [BombeRLeWorld] INFO: Agent <double_dqn_continuous_v2_agent> drops bomb at (np.int64(13), np.int64(14))
+2026-09-18 13:57:45,677 [BombeRLeWorld] INFO: STARTING STEP 366
+2026-09-18 13:57:45,700 [BombeRLeWorld] INFO: STARTING STEP 367
+2026-09-18 13:57:45,723 [BombeRLeWorld] INFO: STARTING STEP 368
+2026-09-18 13:57:45,745 [BombeRLeWorld] INFO: STARTING STEP 369
+2026-09-18 13:57:45,768 [BombeRLeWorld] INFO: Agent <double_dqn_continuous_v2_agent>'s bomb at (np.int64(13), np.int64(14)) explodes
+2026-09-18 13:57:45,769 [BombeRLeWorld] INFO: STARTING STEP 370
+2026-09-18 13:57:45,790 [BombeRLeWorld] INFO: STARTING STEP 371
+2026-09-18 13:57:45,814 [BombeRLeWorld] INFO: STARTING STEP 372
+2026-09-18 13:57:45,841 [BombeRLeWorld] INFO: STARTING STEP 373
+2026-09-18 13:57:45,870 [BombeRLeWorld] INFO: STARTING STEP 374
+2026-09-18 13:57:45,897 [BombeRLeWorld] INFO: STARTING STEP 375
+2026-09-18 13:57:45,925 [BombeRLeWorld] INFO: STARTING STEP 376
+2026-09-18 13:57:45,952 [BombeRLeWorld] INFO: Agent <double_dqn_continuous_v2_agent> drops bomb at (np.int64(15), np.int64(15))
+2026-09-18 13:57:45,952 [BombeRLeWorld] INFO: STARTING STEP 377
+2026-09-18 13:57:45,976 [BombeRLeWorld] INFO: STARTING STEP 378
+2026-09-18 13:57:45,997 [BombeRLeWorld] INFO: STARTING STEP 379
+2026-09-18 13:57:46,020 [BombeRLeWorld] INFO: STARTING STEP 380
+2026-09-18 13:57:46,041 [BombeRLeWorld] INFO: Agent <double_dqn_continuous_v2_agent>'s bomb at (np.int64(15), np.int64(15)) explodes
+2026-09-18 13:57:46,042 [BombeRLeWorld] INFO: STARTING STEP 381
+2026-09-18 13:57:46,065 [BombeRLeWorld] INFO: STARTING STEP 382
+2026-09-18 13:57:46,086 [BombeRLeWorld] INFO: STARTING STEP 383
+2026-09-18 13:57:46,109 [BombeRLeWorld] INFO: Agent <double_dqn_continuous_v2_agent> drops bomb at (np.int64(13), np.int64(14))
+2026-09-18 13:57:46,116 [BombeRLeWorld] INFO: STARTING STEP 384
+2026-09-18 13:57:46,138 [BombeRLeWorld] INFO: STARTING STEP 385
+2026-09-18 13:57:46,162 [BombeRLeWorld] INFO: STARTING STEP 386
+2026-09-18 13:57:46,184 [BombeRLeWorld] INFO: STARTING STEP 387
+2026-09-18 13:57:46,207 [BombeRLeWorld] INFO: Agent <double_dqn_continuous_v2_agent>'s bomb at (np.int64(13), np.int64(14)) explodes
+2026-09-18 13:57:46,207 [BombeRLeWorld] INFO: STARTING STEP 388
+2026-09-18 13:57:46,228 [BombeRLeWorld] INFO: STARTING STEP 389
+2026-09-18 13:57:46,251 [BombeRLeWorld] INFO: STARTING STEP 390
+2026-09-18 13:57:46,276 [BombeRLeWorld] INFO: STARTING STEP 391
+2026-09-18 13:57:46,304 [BombeRLeWorld] INFO: STARTING STEP 392
+2026-09-18 13:57:46,329 [BombeRLeWorld] INFO: STARTING STEP 393
+2026-09-18 13:57:46,358 [BombeRLeWorld] INFO: Agent <double_dqn_continuous_v2_agent> drops bomb at (np.int64(14), np.int64(15))
+2026-09-18 13:57:46,358 [BombeRLeWorld] INFO: STARTING STEP 394
+2026-09-18 13:57:46,380 [BombeRLeWorld] INFO: STARTING STEP 395
+2026-09-18 13:57:46,403 [BombeRLeWorld] INFO: STARTING STEP 396
+2026-09-18 13:57:46,426 [BombeRLeWorld] INFO: STARTING STEP 397
+2026-09-18 13:57:46,448 [BombeRLeWorld] INFO: Agent <double_dqn_continuous_v2_agent>'s bomb at (np.int64(14), np.int64(15)) explodes
+2026-09-18 13:57:46,449 [BombeRLeWorld] INFO: STARTING STEP 398
+2026-09-18 13:57:46,470 [BombeRLeWorld] INFO: STARTING STEP 399
+2026-09-18 13:57:46,493 [BombeRLeWorld] INFO: STARTING STEP 400
+2026-09-18 13:57:46,519 [BombeRLeWorld] INFO: Agent <double_dqn_continuous_v2_agent> drops bomb at (np.int64(15), np.int64(14))
+2026-09-18 13:57:46,519 [BombeRLeWorld] INFO: Maximum number of steps reached, wrap up round
+2026-09-18 13:57:46,519 [BombeRLeWorld] INFO: WRAPPING UP ROUND #1
+2026-09-18 13:57:46,532 [BombeRLeWorld] INFO: SHUT DOWN

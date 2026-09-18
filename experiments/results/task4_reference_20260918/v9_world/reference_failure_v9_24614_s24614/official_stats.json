@@ -1,0 +1,63 @@
+{
+    "by_agent": {
+        "double_dqn_continuous_v2_agent": {
+            "bombs": 39,
+            "bombs_resolved": 38,
+            "bombs_survived": 38,
+            "coins": 6,
+            "crates": 33,
+            "moves": 285,
+            "rounds": 1,
+            "score": 6,
+            "steps": 400,
+            "time": 4.820167779922485,
+            "zero_utility_bombs": 26
+        },
+        "rule_based_agent_0": {
+            "bombs": 15,
+            "bombs_resolved": 15,
+            "bombs_survived": 15,
+            "crates": 23,
+            "invalid": 5,
+            "moves": 380,
+            "rounds": 1,
+            "score": 0,
+            "steps": 400,
+            "time": 0.7551281452178955
+        },
+        "rule_based_agent_1": {
+            "bombs": 18,
+            "bombs_resolved": 18,
+            "bombs_survived": 18,
+            "coins": 3,
+            "crates": 35,
+            "invalid": 5,
+            "moves": 377,
+            "rounds": 1,
+            "score": 3,
+            "steps": 400,
+            "time": 0.7413573265075684
+        },
+        "rule_based_agent_2": {
+            "bombs": 14,
+            "bombs_resolved": 14,
+            "bombs_survived": 13,
+            "crates": 32,
+            "invalid": 10,
+            "moves": 125,
+            "rounds": 1,
+            "score": 0,
+            "steps": 149,
+            "suicides": 1,
+            "time": 0.12329721450805664
+        }
+    },
+    "by_round": {
+        "reference_failure_v9_24614_s24614 | Round 01 (2026-09-18 13-57-36)": {
+            "coins": 9,
+            "kills": 0,
+            "steps": 400,
+            "suicides": 1
+        }
+    }
+}
