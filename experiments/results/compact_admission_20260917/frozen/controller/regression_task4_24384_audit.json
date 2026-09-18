@@ -1,0 +1,21 @@
+{
+  "run": "/export/data/sfan/MLE_final_project_safety_compact/runs/compact_ae2b981_regression_task4_24384",
+  "summary": {
+    "episodes": 1,
+    "mean_bombs": 46.0,
+    "suicide_rate": 0.0,
+    "bomb_survival_rate": 1.0,
+    "zero_bomb_round_rate": 0.0,
+    "invalid_action_rate": 0.0025,
+    "act_p95_seconds": 0.023998725414276098,
+    "act_max_seconds": 0.0639040470123291,
+    "act_timeouts": 0,
+    "act_skipped": 0,
+    "robust_search_timeouts": 0,
+    "robust_guarantee_losses": 0,
+    "avoidable_escape_collapses": 0
+  },
+  "actions": 400,
+  "deaths": [],
+  "failures": []
+}

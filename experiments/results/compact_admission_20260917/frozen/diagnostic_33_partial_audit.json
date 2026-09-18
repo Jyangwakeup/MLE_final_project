@@ -1,0 +1,48 @@
+{
+  "run": "/export/data/sfan/MLE_final_project_safety_compact/runs/compact_ae2b981_diagnostic_33",
+  "summary": {
+    "episodes": 12,
+    "mean_bombs": 36.916666666666664,
+    "suicide_rate": 0.0,
+    "bomb_survival_rate": 1.0,
+    "zero_bomb_round_rate": 0.0,
+    "invalid_action_rate": 0.001152604887044721,
+    "act_p95_seconds": 0.02633925676345825,
+    "act_max_seconds": 0.2626025676727295,
+    "act_timeouts": 0,
+    "act_skipped": 0,
+    "robust_search_timeouts": 0,
+    "robust_guarantee_losses": 0,
+    "avoidable_escape_collapses": 0
+  },
+  "actions": 4338,
+  "deaths": [
+    {
+      "seed": 23433,
+      "round_index": 10,
+      "death_step": 184,
+      "self_death": false,
+      "causes": [
+        {
+          "owner": "rule_based_agent_2",
+          "type": "opponent_bomb"
+        }
+      ]
+    },
+    {
+      "seed": 23433,
+      "round_index": 12,
+      "death_step": 92,
+      "self_death": false,
+      "causes": [
+        {
+          "owner": "rule_based_agent_0",
+          "type": "opponent_bomb"
+        }
+      ]
+    }
+  ],
+  "failures": [
+    "act_max_seconds"
+  ]
+}

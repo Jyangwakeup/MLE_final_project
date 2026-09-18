@@ -1,0 +1,783 @@
+{
+  "source_commit": "ae2b981b1d5dad6b7ab7654fe7127f678b112038",
+  "manifest_sha256": "38d843cad07bc3bf52cf7b6f1da98380c63fbbed6398eccbb6b5505a69a93436",
+  "runtime_sha256": "5f3cde8415aecd1b1601d95ee39bcbc2ac07f8be922be7492e1533bd44ed98ca",
+  "status": "admission_failed",
+  "formal_training_started": false,
+  "task4_qualified": false,
+  "jobs": {
+    "regression_task3_24003": {
+      "run": "/export/data/sfan/MLE_final_project_safety_compact/runs/compact_ae2b981_regression_task3_24003",
+      "name": "compact_ae2b981_regression_task3_24003",
+      "summary": {
+        "episodes": 1.0,
+        "mean_score": 9.0,
+        "mean_coins": 4.0,
+        "mean_crates": 67.0,
+        "mean_kills": 1.0,
+        "first_place_rate": 1.0,
+        "suicide_rate": 0.0,
+        "bomb_survival_rate": 1.0,
+        "zero_bomb_round_rate": 0.0,
+        "invalid_action_rate": 0.0,
+        "act_p95_seconds": 0.017887353897094727,
+        "act_max_seconds": 0.0215456485748291,
+        "act_timeouts": 0.0,
+        "act_skipped": 0.0,
+        "avoidable_escape_collapses": 0.0,
+        "robust_guarantee_losses": 0.0,
+        "robust_search_timeouts": 0.0,
+        "mean_bombs": 45.0
+      },
+      "task": 3,
+      "reference": false
+    },
+    "regression_task3_24266": {
+      "run": "/export/data/sfan/MLE_final_project_safety_compact/runs/compact_ae2b981_regression_task3_24266",
+      "name": "compact_ae2b981_regression_task3_24266",
+      "summary": {
+        "episodes": 1.0,
+        "mean_score": 9.0,
+        "mean_coins": 4.0,
+        "mean_crates": 51.0,
+        "mean_kills": 1.0,
+        "first_place_rate": 1.0,
+        "suicide_rate": 0.0,
+        "bomb_survival_rate": 1.0,
+        "zero_bomb_round_rate": 0.0,
+        "invalid_action_rate": 0.0,
+        "act_p95_seconds": 0.013625621795654297,
+        "act_max_seconds": 0.02385854721069336,
+        "act_timeouts": 0.0,
+        "act_skipped": 0.0,
+        "avoidable_escape_collapses": 0.0,
+        "robust_guarantee_losses": 0.0,
+        "robust_search_timeouts": 0.0,
+        "mean_bombs": 40.0
+      },
+      "task": 3,
+      "reference": false
+    },
+    "regression_task4_24025": {
+      "run": "/export/data/sfan/MLE_final_project_safety_compact/runs/compact_ae2b981_regression_task4_24025",
+      "name": "compact_ae2b981_regression_task4_24025",
+      "summary": {
+        "episodes": 1.0,
+        "mean_score": 7.0,
+        "mean_coins": 2.0,
+        "mean_crates": 32.0,
+        "mean_kills": 1.0,
+        "first_place_rate": 1.0,
+        "suicide_rate": 0.0,
+        "bomb_survival_rate": 1.0,
+        "zero_bomb_round_rate": 0.0,
+        "invalid_action_rate": 0.0,
+        "act_p95_seconds": 0.027135133743286133,
+        "act_max_seconds": 0.0648038387298584,
+        "act_timeouts": 0.0,
+        "act_skipped": 0.0,
+        "avoidable_escape_collapses": 0.0,
+        "robust_guarantee_losses": 0.0,
+        "robust_search_timeouts": 0.0,
+        "mean_bombs": 44.0
+      },
+      "task": 4,
+      "reference": false
+    },
+    "regression_task4_24384": {
+      "run": "/export/data/sfan/MLE_final_project_safety_compact/runs/compact_ae2b981_regression_task4_24384",
+      "name": "compact_ae2b981_regression_task4_24384",
+      "summary": {
+        "episodes": 1.0,
+        "mean_score": 3.0,
+        "mean_coins": 3.0,
+        "mean_crates": 48.0,
+        "mean_kills": 0.0,
+        "first_place_rate": 1.0,
+        "suicide_rate": 0.0,
+        "bomb_survival_rate": 1.0,
+        "zero_bomb_round_rate": 0.0,
+        "invalid_action_rate": 0.0025,
+        "act_p95_seconds": 0.023972272872924805,
+        "act_max_seconds": 0.0639040470123291,
+        "act_timeouts": 0.0,
+        "act_skipped": 0.0,
+        "avoidable_escape_collapses": 0.0,
+        "robust_guarantee_losses": 0.0,
+        "robust_search_timeouts": 0.0,
+        "mean_bombs": 46.0
+      },
+      "task": 4,
+      "reference": false
+    },
+    "retention_1_parent": {
+      "run": "/export/data/sfan/MLE_final_project_safety_compact/runs/compact_ae2b981_retention_1_parent",
+      "name": "compact_ae2b981_retention_1_parent",
+      "summary": {
+        "episodes": 60.0,
+        "mean_score": 50.0,
+        "mean_coins": 50.0,
+        "mean_crates": 0.0,
+        "mean_kills": 0.0,
+        "first_place_rate": 1.0,
+        "suicide_rate": 0.0,
+        "bomb_survival_rate": 0.0,
+        "zero_bomb_round_rate": 1.0,
+        "invalid_action_rate": 0.0,
+        "act_p95_seconds": 0.00967097282409668,
+        "act_max_seconds": 0.01566028594970703,
+        "act_timeouts": 0.0,
+        "act_skipped": 0.0,
+        "avoidable_escape_collapses": 0.0,
+        "robust_guarantee_losses": 0.0,
+        "robust_search_timeouts": 0.0,
+        "mean_bombs": 0.0
+      },
+      "task": 1,
+      "reference": true
+    },
+    "retention_1_child": {
+      "run": "/export/data/sfan/MLE_final_project_safety_compact/runs/compact_ae2b981_retention_1_child",
+      "name": "compact_ae2b981_retention_1_child",
+      "summary": {
+        "episodes": 60.0,
+        "mean_score": 50.0,
+        "mean_coins": 50.0,
+        "mean_crates": 0.0,
+        "mean_kills": 0.0,
+        "first_place_rate": 1.0,
+        "suicide_rate": 0.0,
+        "bomb_survival_rate": 0.0,
+        "zero_bomb_round_rate": 1.0,
+        "invalid_action_rate": 0.0,
+        "act_p95_seconds": 0.012616395950317383,
+        "act_max_seconds": 0.018240928649902344,
+        "act_timeouts": 0.0,
+        "act_skipped": 0.0,
+        "avoidable_escape_collapses": 0.0,
+        "robust_guarantee_losses": 0.0,
+        "robust_search_timeouts": 0.0,
+        "mean_bombs": 0.0
+      },
+      "task": 1,
+      "reference": false
+    },
+    "retention_2_parent": {
+      "run": "/export/data/sfan/MLE_final_project_safety_compact/runs/compact_ae2b981_retention_2_parent",
+      "name": "compact_ae2b981_retention_2_parent",
+      "summary": {
+        "episodes": 60.0,
+        "mean_score": 7.133333333333334,
+        "mean_coins": 7.133333333333334,
+        "mean_crates": 99.68333333333334,
+        "mean_kills": 0.0,
+        "first_place_rate": 1.0,
+        "suicide_rate": 0.0,
+        "bomb_survival_rate": 1.0,
+        "zero_bomb_round_rate": 0.0,
+        "invalid_action_rate": 0.0,
+        "act_p95_seconds": 0.010706186294555664,
+        "act_max_seconds": 0.015661239624023438,
+        "act_timeouts": 0.0,
+        "act_skipped": 0.0,
+        "avoidable_escape_collapses": 0.0,
+        "robust_guarantee_losses": 0.0,
+        "robust_search_timeouts": 0.0,
+        "mean_bombs": 47.06666666666667
+      },
+      "task": 2,
+      "reference": true
+    },
+    "retention_2_child": {
+      "run": "/export/data/sfan/MLE_final_project_safety_compact/runs/compact_ae2b981_retention_2_child",
+      "name": "compact_ae2b981_retention_2_child",
+      "summary": {
+        "episodes": 60.0,
+        "mean_score": 7.133333333333334,
+        "mean_coins": 7.133333333333334,
+        "mean_crates": 99.68333333333334,
+        "mean_kills": 0.0,
+        "first_place_rate": 1.0,
+        "suicide_rate": 0.0,
+        "bomb_survival_rate": 1.0,
+        "zero_bomb_round_rate": 0.0,
+        "invalid_action_rate": 0.0,
+        "act_p95_seconds": 0.010561943054199219,
+        "act_max_seconds": 0.1868143081665039,
+        "act_timeouts": 0.0,
+        "act_skipped": 0.0,
+        "avoidable_escape_collapses": 0.0,
+        "robust_guarantee_losses": 0.0,
+        "robust_search_timeouts": 0.0,
+        "mean_bombs": 47.06666666666667
+      },
+      "task": 2,
+      "reference": false
+    },
+    "retention_3_parent": {
+      "run": "/export/data/sfan/MLE_final_project_safety_compact/runs/compact_ae2b981_retention_3_parent",
+      "name": "compact_ae2b981_retention_3_parent",
+      "summary": {
+        "episodes": 60.0,
+        "mean_score": 7.683333333333334,
+        "mean_coins": 4.766666666666667,
+        "mean_crates": 56.96666666666667,
+        "mean_kills": 0.5833333333333334,
+        "first_place_rate": 0.5666666666666667,
+        "suicide_rate": 0.0,
+        "bomb_survival_rate": 1.0,
+        "zero_bomb_round_rate": 0.0,
+        "invalid_action_rate": 0.00016666666666666666,
+        "act_p95_seconds": 0.012105464935302734,
+        "act_max_seconds": 0.18688201904296875,
+        "act_timeouts": 0.0,
+        "act_skipped": 0.0,
+        "avoidable_escape_collapses": 0.0,
+        "robust_guarantee_losses": 0.0,
+        "robust_search_timeouts": 0.0,
+        "mean_bombs": 43.06666666666667
+      },
+      "task": 3,
+      "reference": true
+    },
+    "retention_3_child": {
+      "run": "/export/data/sfan/MLE_final_project_safety_compact/runs/compact_ae2b981_retention_3_child",
+      "name": "compact_ae2b981_retention_3_child",
+      "summary": {
+        "episodes": 60.0,
+        "mean_score": 7.283333333333333,
+        "mean_coins": 4.7,
+        "mean_crates": 56.46666666666667,
+        "mean_kills": 0.5166666666666667,
+        "first_place_rate": 0.5666666666666667,
+        "suicide_rate": 0.0,
+        "bomb_survival_rate": 1.0,
+        "zero_bomb_round_rate": 0.0,
+        "invalid_action_rate": 0.000625443022140683,
+        "act_p95_seconds": 0.014312028884887695,
+        "act_max_seconds": 0.16915225982666016,
+        "act_timeouts": 0.0,
+        "act_skipped": 0.0,
+        "avoidable_escape_collapses": 0.0,
+        "robust_guarantee_losses": 0.0,
+        "robust_search_timeouts": 0.0,
+        "mean_bombs": 43.06666666666667
+      },
+      "task": 3,
+      "reference": false
+    },
+    "fresh_task1": {
+      "run": "/export/data/sfan/MLE_final_project_safety_compact/runs/compact_ae2b981_fresh_task1",
+      "name": "compact_ae2b981_fresh_task1",
+      "summary": {
+        "episodes": 100.0,
+        "mean_score": 50.0,
+        "mean_coins": 50.0,
+        "mean_crates": 0.0,
+        "mean_kills": 0.0,
+        "first_place_rate": 1.0,
+        "suicide_rate": 0.0,
+        "bomb_survival_rate": 0.0,
+        "zero_bomb_round_rate": 1.0,
+        "invalid_action_rate": 0.0,
+        "act_p95_seconds": 0.010933637619018555,
+        "act_max_seconds": 0.01688671112060547,
+        "act_timeouts": 0.0,
+        "act_skipped": 0.0,
+        "avoidable_escape_collapses": 0.0,
+        "robust_guarantee_losses": 0.0,
+        "robust_search_timeouts": 0.0,
+        "mean_bombs": 0.0
+      },
+      "task": 1,
+      "reference": false
+    },
+    "fresh_task2": {
+      "run": "/export/data/sfan/MLE_final_project_safety_compact/runs/compact_ae2b981_fresh_task2",
+      "name": "compact_ae2b981_fresh_task2",
+      "summary": {
+        "episodes": 100.0,
+        "mean_score": 7.36,
+        "mean_coins": 7.36,
+        "mean_crates": 101.62,
+        "mean_kills": 0.0,
+        "first_place_rate": 1.0,
+        "suicide_rate": 0.0,
+        "bomb_survival_rate": 1.0,
+        "zero_bomb_round_rate": 0.0,
+        "invalid_action_rate": 0.0,
+        "act_p95_seconds": 0.009485244750976562,
+        "act_max_seconds": 0.014478683471679688,
+        "act_timeouts": 0.0,
+        "act_skipped": 0.0,
+        "avoidable_escape_collapses": 0.0,
+        "robust_guarantee_losses": 0.0,
+        "robust_search_timeouts": 0.0,
+        "mean_bombs": 47.41
+      },
+      "task": 2,
+      "reference": false
+    },
+    "fresh_task3": {
+      "run": "/export/data/sfan/MLE_final_project_safety_compact/runs/compact_ae2b981_fresh_task3",
+      "name": "compact_ae2b981_fresh_task3",
+      "summary": {
+        "episodes": 100.0,
+        "mean_score": 7.31,
+        "mean_coins": 4.86,
+        "mean_crates": 58.26,
+        "mean_kills": 0.49,
+        "first_place_rate": 0.57,
+        "suicide_rate": 0.0,
+        "bomb_survival_rate": 1.0,
+        "zero_bomb_round_rate": 0.0,
+        "invalid_action_rate": 0.00040145527537322796,
+        "act_p95_seconds": 0.013613462448120117,
+        "act_max_seconds": 0.15921306610107422,
+        "act_timeouts": 0.0,
+        "act_skipped": 0.0,
+        "avoidable_escape_collapses": 0.0,
+        "robust_guarantee_losses": 0.0,
+        "robust_search_timeouts": 0.0,
+        "mean_bombs": 42.78
+      },
+      "task": 3,
+      "reference": false
+    },
+    "fresh_task4": {
+      "run": "/export/data/sfan/MLE_final_project_safety_compact/runs/compact_ae2b981_fresh_task4",
+      "name": "compact_ae2b981_fresh_task4",
+      "summary": {
+        "episodes": 100.0,
+        "mean_score": 4.1,
+        "mean_coins": 3.05,
+        "mean_crates": 34.16,
+        "mean_kills": 0.21,
+        "first_place_rate": 0.49,
+        "suicide_rate": 0.0,
+        "bomb_survival_rate": 1.0,
+        "zero_bomb_round_rate": 0.0,
+        "invalid_action_rate": 0.0028375188946935747,
+        "act_p95_seconds": 0.022428274154663086,
+        "act_max_seconds": 0.21114301681518555,
+        "act_timeouts": 0.0,
+        "act_skipped": 0.0,
+        "avoidable_escape_collapses": 0.0,
+        "robust_guarantee_losses": 0.0,
+        "robust_search_timeouts": 0.0,
+        "mean_bombs": 39.45
+      },
+      "task": 4,
+      "reference": false
+    },
+    "diagnostic_22": {
+      "run": "/export/data/sfan/MLE_final_project_safety_compact/runs/compact_ae2b981_diagnostic_22",
+      "summary": {
+        "episodes": 20,
+        "mean_bombs": 36.75,
+        "suicide_rate": 0.0,
+        "bomb_survival_rate": 1.0,
+        "zero_bomb_round_rate": 0.0,
+        "invalid_action_rate": 0.0037079292641186536,
+        "act_p95_seconds": 0.02489502429962158,
+        "act_max_seconds": 0.06605815887451172,
+        "act_timeouts": 0,
+        "act_skipped": 0,
+        "robust_search_timeouts": 0,
+        "robust_guarantee_losses": 0,
+        "avoidable_escape_collapses": 0
+      },
+      "actions": 7012,
+      "deaths": [
+        {
+          "seed": 23422,
+          "round_index": 8,
+          "death_step": 84,
+          "self_death": false,
+          "causes": [
+            {
+              "owner": "rule_based_agent_0",
+              "type": "opponent_bomb"
+            }
+          ]
+        },
+        {
+          "seed": 23422,
+          "round_index": 17,
+          "death_step": 83,
+          "self_death": false,
+          "causes": [
+            {
+              "owner": "rule_based_agent_2",
+              "type": "opponent_bomb"
+            }
+          ]
+        },
+        {
+          "seed": 23422,
+          "round_index": 20,
+          "death_step": 200,
+          "self_death": false,
+          "causes": [
+            {
+              "owner": "rule_based_agent_1",
+              "type": "opponent_bomb"
+            }
+          ]
+        }
+      ],
+      "failures": []
+    },
+    "diagnostic_11": {
+      "run": "/export/data/sfan/MLE_final_project_safety_compact/runs/compact_ae2b981_diagnostic_11",
+      "summary": {
+        "episodes": 20,
+        "mean_bombs": 35.75,
+        "suicide_rate": 0.0,
+        "bomb_survival_rate": 1.0,
+        "zero_bomb_round_rate": 0.0,
+        "invalid_action_rate": 0.002455228191796649,
+        "act_p95_seconds": 0.022686171531677235,
+        "act_max_seconds": 0.0691978931427002,
+        "act_timeouts": 0,
+        "act_skipped": 0,
+        "robust_search_timeouts": 0,
+        "robust_guarantee_losses": 0,
+        "avoidable_escape_collapses": 0
+      },
+      "actions": 6924,
+      "deaths": [
+        {
+          "seed": 23411,
+          "round_index": 4,
+          "death_step": 120,
+          "self_death": false,
+          "causes": [
+            {
+              "owner": "rule_based_agent_0",
+              "type": "opponent_bomb"
+            }
+          ]
+        },
+        {
+          "seed": 23411,
+          "round_index": 5,
+          "death_step": 100,
+          "self_death": false,
+          "causes": [
+            {
+              "owner": "rule_based_agent_0",
+              "type": "opponent_bomb"
+            }
+          ]
+        },
+        {
+          "seed": 23411,
+          "round_index": 14,
+          "death_step": 96,
+          "self_death": false,
+          "causes": [
+            {
+              "owner": "rule_based_agent_1",
+              "type": "opponent_bomb"
+            }
+          ]
+        }
+      ],
+      "failures": []
+    }
+  },
+  "retention": {
+    "1": {
+      "mean_score": 1.0
+    },
+    "2": {
+      "mean_coins": 1.0,
+      "mean_crates": 1.0
+    },
+    "3": {
+      "mean_score": 0.947939262472885,
+      "mean_coins": 0.986013986013986,
+      "mean_crates": 0.9912229373902867
+    }
+  },
+  "bootstrap": {
+    "1": {
+      "schema_version": "paired-evaluation-v1",
+      "task": "coin_navigation",
+      "candidate_agent": "double_dqn_continuous_v2_agent",
+      "reference_agent": "double_dqn_continuous_v2_agent",
+      "matched_episode_key": [
+        "environment_seed",
+        "round_index"
+      ],
+      "replication_unit": "environment_seed",
+      "bootstrap_samples": 10000,
+      "metrics": [
+        {
+          "metric": "score",
+          "paired_count": 60,
+          "candidate_mean": 50.0,
+          "reference_mean": 50.0,
+          "mean_difference": 0.0,
+          "median_difference": 0.0,
+          "candidate_wins": 0,
+          "ties": 60,
+          "candidate_losses": 0,
+          "bootstrap_ci95_low": 0.0,
+          "bootstrap_ci95_high": 0.0
+        },
+        {
+          "metric": "coins",
+          "paired_count": 60,
+          "candidate_mean": 50.0,
+          "reference_mean": 50.0,
+          "mean_difference": 0.0,
+          "median_difference": 0.0,
+          "candidate_wins": 0,
+          "ties": 60,
+          "candidate_losses": 0,
+          "bootstrap_ci95_low": 0.0,
+          "bootstrap_ci95_high": 0.0
+        },
+        {
+          "metric": "round_steps",
+          "paired_count": 60,
+          "candidate_mean": 127.06666666666666,
+          "reference_mean": 127.06666666666666,
+          "mean_difference": 0.0,
+          "median_difference": 0.0,
+          "candidate_wins": 0,
+          "ties": 60,
+          "candidate_losses": 0,
+          "bootstrap_ci95_low": 0.0,
+          "bootstrap_ci95_high": 0.0
+        }
+      ]
+    },
+    "2": {
+      "schema_version": "paired-evaluation-v1",
+      "task": "crate_navigation",
+      "candidate_agent": "double_dqn_continuous_v2_agent",
+      "reference_agent": "double_dqn_continuous_v2_agent",
+      "matched_episode_key": [
+        "environment_seed",
+        "round_index"
+      ],
+      "replication_unit": "environment_seed",
+      "bootstrap_samples": 10000,
+      "metrics": [
+        {
+          "metric": "score",
+          "paired_count": 60,
+          "candidate_mean": 7.133333333333334,
+          "reference_mean": 7.133333333333334,
+          "mean_difference": 0.0,
+          "median_difference": 0.0,
+          "candidate_wins": 0,
+          "ties": 60,
+          "candidate_losses": 0,
+          "bootstrap_ci95_low": 0.0,
+          "bootstrap_ci95_high": 0.0
+        },
+        {
+          "metric": "coins",
+          "paired_count": 60,
+          "candidate_mean": 7.133333333333334,
+          "reference_mean": 7.133333333333334,
+          "mean_difference": 0.0,
+          "median_difference": 0.0,
+          "candidate_wins": 0,
+          "ties": 60,
+          "candidate_losses": 0,
+          "bootstrap_ci95_low": 0.0,
+          "bootstrap_ci95_high": 0.0
+        },
+        {
+          "metric": "crates",
+          "paired_count": 60,
+          "candidate_mean": 99.68333333333334,
+          "reference_mean": 99.68333333333334,
+          "mean_difference": 0.0,
+          "median_difference": 0.0,
+          "candidate_wins": 0,
+          "ties": 60,
+          "candidate_losses": 0,
+          "bootstrap_ci95_low": 0.0,
+          "bootstrap_ci95_high": 0.0
+        },
+        {
+          "metric": "suicides",
+          "paired_count": 60,
+          "candidate_mean": 0.0,
+          "reference_mean": 0.0,
+          "mean_difference": 0.0,
+          "median_difference": 0.0,
+          "candidate_wins": 0,
+          "ties": 60,
+          "candidate_losses": 0,
+          "bootstrap_ci95_low": 0.0,
+          "bootstrap_ci95_high": 0.0
+        },
+        {
+          "metric": "survived",
+          "paired_count": 60,
+          "candidate_mean": 1.0,
+          "reference_mean": 1.0,
+          "mean_difference": 0.0,
+          "median_difference": 0.0,
+          "candidate_wins": 0,
+          "ties": 60,
+          "candidate_losses": 0,
+          "bootstrap_ci95_low": 0.0,
+          "bootstrap_ci95_high": 0.0
+        },
+        {
+          "metric": "survival_steps",
+          "paired_count": 60,
+          "candidate_mean": 400.0,
+          "reference_mean": 400.0,
+          "mean_difference": 0.0,
+          "median_difference": 0.0,
+          "candidate_wins": 0,
+          "ties": 60,
+          "candidate_losses": 0,
+          "bootstrap_ci95_low": 0.0,
+          "bootstrap_ci95_high": 0.0
+        }
+      ]
+    },
+    "3": {
+      "schema_version": "paired-evaluation-v1",
+      "task": "weak_opponents",
+      "candidate_agent": "double_dqn_continuous_v2_agent",
+      "reference_agent": "double_dqn_continuous_v2_agent",
+      "matched_episode_key": [
+        "environment_seed",
+        "round_index"
+      ],
+      "replication_unit": "environment_seed",
+      "bootstrap_samples": 10000,
+      "metrics": [
+        {
+          "metric": "score",
+          "paired_count": 60,
+          "candidate_mean": 7.283333333333333,
+          "reference_mean": 7.683333333333334,
+          "mean_difference": -0.4,
+          "median_difference": 0.0,
+          "candidate_wins": 8,
+          "ties": 41,
+          "candidate_losses": 11,
+          "bootstrap_ci95_low": -0.9833333333333333,
+          "bootstrap_ci95_high": 0.16666666666666666
+        },
+        {
+          "metric": "coins",
+          "paired_count": 60,
+          "candidate_mean": 4.7,
+          "reference_mean": 4.766666666666667,
+          "mean_difference": -0.06666666666666667,
+          "median_difference": 0.0,
+          "candidate_wins": 8,
+          "ties": 44,
+          "candidate_losses": 8,
+          "bootstrap_ci95_low": -0.2833333333333333,
+          "bootstrap_ci95_high": 0.13333333333333333
+        },
+        {
+          "metric": "crates",
+          "paired_count": 60,
+          "candidate_mean": 56.46666666666667,
+          "reference_mean": 56.96666666666667,
+          "mean_difference": -0.5,
+          "median_difference": 0.0,
+          "candidate_wins": 11,
+          "ties": 33,
+          "candidate_losses": 16,
+          "bootstrap_ci95_low": -2.15,
+          "bootstrap_ci95_high": 1.05
+        },
+        {
+          "metric": "kills",
+          "paired_count": 60,
+          "candidate_mean": 0.5166666666666667,
+          "reference_mean": 0.5833333333333334,
+          "mean_difference": -0.06666666666666667,
+          "median_difference": 0.0,
+          "candidate_wins": 2,
+          "ties": 52,
+          "candidate_losses": 6,
+          "bootstrap_ci95_low": -0.16666666666666666,
+          "bootstrap_ci95_high": 0.016666666666666666
+        },
+        {
+          "metric": "suicides",
+          "paired_count": 60,
+          "candidate_mean": 0.0,
+          "reference_mean": 0.0,
+          "mean_difference": 0.0,
+          "median_difference": 0.0,
+          "candidate_wins": 0,
+          "ties": 60,
+          "candidate_losses": 0,
+          "bootstrap_ci95_low": 0.0,
+          "bootstrap_ci95_high": 0.0
+        },
+        {
+          "metric": "survived",
+          "paired_count": 60,
+          "candidate_mean": 1.0,
+          "reference_mean": 1.0,
+          "mean_difference": 0.0,
+          "median_difference": 0.0,
+          "candidate_wins": 0,
+          "ties": 60,
+          "candidate_losses": 0,
+          "bootstrap_ci95_low": 0.0,
+          "bootstrap_ci95_high": 0.0
+        },
+        {
+          "metric": "survival_steps",
+          "paired_count": 60,
+          "candidate_mean": 399.71666666666664,
+          "reference_mean": 400.0,
+          "mean_difference": -0.2833333333333333,
+          "median_difference": 0.0,
+          "candidate_wins": 0,
+          "ties": 59,
+          "candidate_losses": 1,
+          "bootstrap_ci95_low": -0.85,
+          "bootstrap_ci95_high": 0.0
+        },
+        {
+          "metric": "exclusive_win",
+          "paired_count": 60,
+          "candidate_mean": 0.5333333333333333,
+          "reference_mean": 0.5333333333333333,
+          "mean_difference": 0.0,
+          "median_difference": 0.0,
+          "candidate_wins": 4,
+          "ties": 52,
+          "candidate_losses": 4,
+          "bootstrap_ci95_low": -0.1,
+          "bootstrap_ci95_high": 0.1
+        },
+        {
+          "metric": "tied_first",
+          "paired_count": 60,
+          "candidate_mean": 0.03333333333333333,
+          "reference_mean": 0.03333333333333333,
+          "mean_difference": 0.0,
+          "median_difference": 0.0,
+          "candidate_wins": 1,
+          "ties": 58,
+          "candidate_losses": 1,
+          "bootstrap_ci95_low": -0.05,
+          "bootstrap_ci95_high": 0.05
+        }
+      ]
+    }
+  },
+  "error": "RuntimeError('diagnostic_33: worker exit 2')"
+}

@@ -1,0 +1,115 @@
+{
+  "reason": "compact_act_max_exceeded",
+  "round": 13,
+  "step": 88,
+  "action": "UP",
+  "think_time": 0.2626025676727295,
+  "safety": {
+    "diagnostic_version": "escape-collapse-v2",
+    "raw_action": "UP",
+    "selected_action": "UP",
+    "intervened": false,
+    "fallback": false,
+    "robust_intervened": false,
+    "robust_to_v1_fallback": false,
+    "opponent_robust_intervened": false,
+    "opponent_to_v3_fallback": false,
+    "robust_guarantee_loss": false,
+    "robust_search_timed_out": false,
+    "robust_states_evaluated": 338680,
+    "v1_to_physical_fallback": false,
+    "own_bomb_pending": false,
+    "own_bomb_visible": false,
+    "own_bomb_timer": null,
+    "own_bomb_placed_step": null,
+    "avoidable_escape_collapse": false,
+    "independent_routes": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "escape_slack": [
+      -1.0,
+      -1.0,
+      -1.0,
+      -1.0,
+      -1.0,
+      -1.0
+    ],
+    "opponent_scenario_counts": [
+      432,
+      0,
+      432,
+      0,
+      432,
+      432
+    ],
+    "opponent_passing_counts": [
+      432,
+      0,
+      432,
+      0,
+      432,
+      432
+    ],
+    "opponent_failing_profiles": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "opponent_failing_orders": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "physical_mask": [
+      true,
+      false,
+      true,
+      false,
+      true,
+      true
+    ],
+    "decision_mask": [
+      true,
+      false,
+      true,
+      false,
+      true,
+      true
+    ],
+    "survives_horizon": [
+      true,
+      false,
+      true,
+      false,
+      true,
+      true
+    ],
+    "safe_horizon": [
+      7,
+      0,
+      7,
+      0,
+      7,
+      7
+    ],
+    "escape_area": [
+      43,
+      0,
+      39,
+      0,
+      43,
+      39
+    ]
+  }
+}
