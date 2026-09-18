@@ -1,0 +1,9 @@
+{
+  "pid": 713692,
+  "started_at": "2026-09-18T11:33:10.282629+00:00",
+  "source_commit": "93e5e5990451ab525c33e9d3346cb8112978b29a",
+  "manifest": "/export/data/sfan/MLE_final_project_task4_300ms/experiments/task4_300ms_campaign.json",
+  "result": "/export/data/sfan/MLE_final_project_task4_300ms/runs/task4_300ms_20260918_93e5e59/result.json",
+  "status": "stopped_engineering_failure",
+  "ended_at": "2026-09-18T11:49:48.582375+00:00"
+}

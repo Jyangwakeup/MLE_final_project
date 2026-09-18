@@ -1,0 +1,464 @@
+{
+  "arms": {},
+  "config_sha256": {
+    "A": "2a392611e4c2c820da78b464b8e3cc7edd48e1e13f2c983710a8079d07e6248a",
+    "B": "b9d2328ccff53e5b957c5a3b63f4008d8c179c156b89ddb2466e5d574e87cf3d"
+  },
+  "diagnostics": {
+    "11": {
+      "audit": {
+        "audit": "/export/data/sfan/MLE_final_project_task4_300ms/runs/task4_300ms_20260918_A_d7594474_diag_s22411_c0020_93e5e59/task4_training_audit.json",
+        "deaths": {
+          "14": {
+            "category": "opponent_bomb",
+            "causes": [
+              {
+                "owner": "rule_based_agent_1",
+                "type": "opponent_bomb"
+              }
+            ],
+            "death_step": 96,
+            "fallback": true,
+            "own_bomb_pending": false
+          },
+          "4": {
+            "category": "opponent_bomb",
+            "causes": [
+              {
+                "owner": "rule_based_agent_0",
+                "type": "opponent_bomb"
+              }
+            ],
+            "death_step": 120,
+            "fallback": true,
+            "own_bomb_pending": false
+          },
+          "5": {
+            "category": "opponent_bomb",
+            "causes": [
+              {
+                "owner": "rule_based_agent_0",
+                "type": "opponent_bomb"
+              }
+            ],
+            "death_step": 100,
+            "fallback": true,
+            "own_bomb_pending": false
+          }
+        },
+        "raw": {
+          "actions": 6924,
+          "deaths": [
+            {
+              "causes": [
+                {
+                  "owner": "rule_based_agent_0",
+                  "type": "opponent_bomb"
+                }
+              ],
+              "death_step": 120,
+              "round_index": 4,
+              "seed": 23411,
+              "self_death": false
+            },
+            {
+              "causes": [
+                {
+                  "owner": "rule_based_agent_0",
+                  "type": "opponent_bomb"
+                }
+              ],
+              "death_step": 100,
+              "round_index": 5,
+              "seed": 23411,
+              "self_death": false
+            },
+            {
+              "causes": [
+                {
+                  "owner": "rule_based_agent_1",
+                  "type": "opponent_bomb"
+                }
+              ],
+              "death_step": 96,
+              "round_index": 14,
+              "seed": 23411,
+              "self_death": false
+            }
+          ],
+          "failures": [],
+          "run": "/export/data/sfan/MLE_final_project_task4_300ms/runs/task4_300ms_20260918_A_d7594474_diag_s22411_c0020_93e5e59",
+          "summary": {
+            "act_max_seconds": 0.05854225158691406,
+            "act_p95_seconds": 0.019392240047454823,
+            "act_skipped": 0,
+            "act_timeouts": 0,
+            "avoidable_escape_collapses": 0,
+            "bomb_survival_rate": 1.0,
+            "episodes": 20,
+            "invalid_action_rate": 0.002455228191796649,
+            "mean_bombs": 35.75,
+            "robust_guarantee_losses": 0,
+            "robust_search_timeouts": 0,
+            "suicide_rate": 0.0,
+            "zero_bomb_round_rate": 0.0
+          }
+        },
+        "rounds": 20,
+        "timing": {
+          "act_max_seconds": 0.05854225158691406,
+          "act_p95_seconds": 0.019392240047454823
+        }
+      },
+      "checkpoint": "/export/data/sfan/MLE_final_project_task4_300ms/runs/task4_300ms_20260918_A_d7594474_diag_s22411_c0020_93e5e59/checkpoints/final.pt",
+      "checkpoint_sha256": "aa7e4f0cf42923484928b9b7930d6a88b34d1ca7f6f873b763ac5225ce116b34",
+      "run": "/export/data/sfan/MLE_final_project_task4_300ms/runs/task4_300ms_20260918_A_d7594474_diag_s22411_c0020_93e5e59"
+    },
+    "22": {
+      "audit": {
+        "audit": "/export/data/sfan/MLE_final_project_task4_300ms/runs/task4_300ms_20260918_A_d7594474_diag_s22422_c0020_93e5e59/task4_training_audit.json",
+        "deaths": {
+          "17": {
+            "category": "opponent_bomb",
+            "causes": [
+              {
+                "owner": "rule_based_agent_2",
+                "type": "opponent_bomb"
+              }
+            ],
+            "death_step": 83,
+            "fallback": true,
+            "own_bomb_pending": false
+          },
+          "20": {
+            "category": "opponent_bomb",
+            "causes": [
+              {
+                "owner": "rule_based_agent_1",
+                "type": "opponent_bomb"
+              }
+            ],
+            "death_step": 200,
+            "fallback": true,
+            "own_bomb_pending": false
+          },
+          "8": {
+            "category": "opponent_bomb",
+            "causes": [
+              {
+                "owner": "rule_based_agent_0",
+                "type": "opponent_bomb"
+              }
+            ],
+            "death_step": 84,
+            "fallback": true,
+            "own_bomb_pending": false
+          }
+        },
+        "raw": {
+          "actions": 7012,
+          "deaths": [
+            {
+              "causes": [
+                {
+                  "owner": "rule_based_agent_0",
+                  "type": "opponent_bomb"
+                }
+              ],
+              "death_step": 84,
+              "round_index": 8,
+              "seed": 23422,
+              "self_death": false
+            },
+            {
+              "causes": [
+                {
+                  "owner": "rule_based_agent_2",
+                  "type": "opponent_bomb"
+                }
+              ],
+              "death_step": 83,
+              "round_index": 17,
+              "seed": 23422,
+              "self_death": false
+            },
+            {
+              "causes": [
+                {
+                  "owner": "rule_based_agent_1",
+                  "type": "opponent_bomb"
+                }
+              ],
+              "death_step": 200,
+              "round_index": 20,
+              "seed": 23422,
+              "self_death": false
+            }
+          ],
+          "failures": [],
+          "run": "/export/data/sfan/MLE_final_project_task4_300ms/runs/task4_300ms_20260918_A_d7594474_diag_s22422_c0020_93e5e59",
+          "summary": {
+            "act_max_seconds": 0.1644737720489502,
+            "act_p95_seconds": 0.02125486135482788,
+            "act_skipped": 0,
+            "act_timeouts": 0,
+            "avoidable_escape_collapses": 0,
+            "bomb_survival_rate": 1.0,
+            "episodes": 20,
+            "invalid_action_rate": 0.0037079292641186536,
+            "mean_bombs": 36.75,
+            "robust_guarantee_losses": 0,
+            "robust_search_timeouts": 0,
+            "suicide_rate": 0.0,
+            "zero_bomb_round_rate": 0.0
+          }
+        },
+        "rounds": 20,
+        "timing": {
+          "act_max_seconds": 0.1644737720489502,
+          "act_p95_seconds": 0.02125486135482788
+        }
+      },
+      "checkpoint": "/export/data/sfan/MLE_final_project_task4_300ms/runs/task4_300ms_20260918_A_d7594474_diag_s22422_c0020_93e5e59/checkpoints/final.pt",
+      "checkpoint_sha256": "0c0396f6e6e2373f3e4d25e6b200a7b630583122e68e3bf328b36b7950ae621f",
+      "run": "/export/data/sfan/MLE_final_project_task4_300ms/runs/task4_300ms_20260918_A_d7594474_diag_s22422_c0020_93e5e59"
+    },
+    "33": {
+      "audit": {
+        "audit": "/export/data/sfan/MLE_final_project_task4_300ms/runs/task4_300ms_20260918_A_d7594474_diag_s22433_c0020_93e5e59/task4_training_audit.json",
+        "deaths": {
+          "10": {
+            "category": "opponent_bomb",
+            "causes": [
+              {
+                "owner": "rule_based_agent_2",
+                "type": "opponent_bomb"
+              }
+            ],
+            "death_step": 184,
+            "fallback": true,
+            "own_bomb_pending": false
+          },
+          "12": {
+            "category": "opponent_bomb",
+            "causes": [
+              {
+                "owner": "rule_based_agent_0",
+                "type": "opponent_bomb"
+              }
+            ],
+            "death_step": 92,
+            "fallback": true,
+            "own_bomb_pending": false
+          },
+          "17": {
+            "category": "opponent_bomb",
+            "causes": [
+              {
+                "owner": "rule_based_agent_2",
+                "type": "opponent_bomb"
+              }
+            ],
+            "death_step": 50,
+            "fallback": true,
+            "own_bomb_pending": false
+          }
+        },
+        "raw": {
+          "actions": 7068,
+          "deaths": [
+            {
+              "causes": [
+                {
+                  "owner": "rule_based_agent_2",
+                  "type": "opponent_bomb"
+                }
+              ],
+              "death_step": 184,
+              "round_index": 10,
+              "seed": 23433,
+              "self_death": false
+            },
+            {
+              "causes": [
+                {
+                  "owner": "rule_based_agent_0",
+                  "type": "opponent_bomb"
+                }
+              ],
+              "death_step": 92,
+              "round_index": 12,
+              "seed": 23433,
+              "self_death": false
+            },
+            {
+              "causes": [
+                {
+                  "owner": "rule_based_agent_2",
+                  "type": "opponent_bomb"
+                }
+              ],
+              "death_step": 50,
+              "round_index": 17,
+              "seed": 23433,
+              "self_death": false
+            }
+          ],
+          "failures": [],
+          "run": "/export/data/sfan/MLE_final_project_task4_300ms/runs/task4_300ms_20260918_A_d7594474_diag_s22433_c0020_93e5e59",
+          "summary": {
+            "act_max_seconds": 0.16808748245239258,
+            "act_p95_seconds": 0.02179452180862425,
+            "act_skipped": 0,
+            "act_timeouts": 0,
+            "avoidable_escape_collapses": 0,
+            "bomb_survival_rate": 1.0,
+            "episodes": 20,
+            "invalid_action_rate": 0.0024052065647990947,
+            "mean_bombs": 37.75,
+            "robust_guarantee_losses": 0,
+            "robust_search_timeouts": 0,
+            "suicide_rate": 0.0,
+            "zero_bomb_round_rate": 0.0
+          }
+        },
+        "rounds": 20,
+        "timing": {
+          "act_max_seconds": 0.16808748245239258,
+          "act_p95_seconds": 0.02179452180862425
+        }
+      },
+      "checkpoint": "/export/data/sfan/MLE_final_project_task4_300ms/runs/task4_300ms_20260918_A_d7594474_diag_s22433_c0020_93e5e59/checkpoints/final.pt",
+      "checkpoint_sha256": "7af8410f0873140bcac5d9c9c5c707d5f26d252a966f34857c6addf4e0d803c9",
+      "run": "/export/data/sfan/MLE_final_project_task4_300ms/runs/task4_300ms_20260918_A_d7594474_diag_s22433_c0020_93e5e59"
+    }
+  },
+  "error": "Safety failure: /export/data/sfan/MLE_final_project_task4_300ms/runs/task4_300ms_20260918_A_d7594474_development_parent_t4_93e5e59/task4_300ms_20260918_A_d7594474_development_parent_t4_93e5e59_s24614/task4_safety_failure.json",
+  "finished_at": "2026-09-18T13:49:48.576056+02:00",
+  "limits": {
+    "candidate": {
+      "maximum": 0.3,
+      "p95": 0.1
+    },
+    "reference": {
+      "maximum": 0.48,
+      "p95": 0.25
+    }
+  },
+  "manifest_sha256": "d7594474b595e914daec7f1ffa3f92f75cbdd0841575b6c93d3def128bdf0211",
+  "mixed_baseline": {
+    "config_sha256": {
+      "A": "2a392611e4c2c820da78b464b8e3cc7edd48e1e13f2c983710a8079d07e6248a",
+      "B": "b9d2328ccff53e5b957c5a3b63f4008d8c179c156b89ddb2466e5d574e87cf3d"
+    },
+    "limits": {
+      "candidate": {
+        "maximum": 0.3,
+        "p95": 0.1
+      },
+      "reference": {
+        "maximum": 0.48,
+        "p95": 0.25
+      }
+    },
+    "manifest_sha256": "d7594474b595e914daec7f1ffa3f92f75cbdd0841575b6c93d3def128bdf0211",
+    "opponent_hashes": {
+      "agent_code/coin_collector_agent/callbacks.py": "bb9007137dd89712c142b67ff8b26d81b075511e572ad334f94414d96eb40a9c",
+      "agent_code/peaceful_agent/callbacks.py": "db408b7c86d8d308e20b529da378c29a26deb11a34f4a2b69dd942491bc44d82",
+      "agent_code/rule_based_agent/callbacks.py": "78fae8121ffab5c849d69857aeaeabcee23e1015c923e5e701d9a2bce2c879f6"
+    },
+    "parent_sha256": "b0b9e7ae9cbefa6523ed01e1d7a6d474b90b6272f9de1706ee80f1f109cc803d",
+    "phase": "diagnostic",
+    "protocol": "task4-campaign-v2",
+    "reference_config_sha256": "9db2066005be95155522986466fb4aca8dbc0428907dd34fd46d6828f0772e63",
+    "request": {
+      "arm": "A",
+      "checkpoint_sha256": "b0b9e7ae9cbefa6523ed01e1d7a6d474b90b6272f9de1706ee80f1f109cc803d",
+      "config_sha256": "9db2066005be95155522986466fb4aca8dbc0428907dd34fd46d6828f0772e63",
+      "limits": {
+        "maximum": 0.48,
+        "p95": 0.25
+      },
+      "opponents": [
+        "rule_based_agent",
+        "peaceful_agent",
+        "coin_collector_agent"
+      ],
+      "role": "reference",
+      "safety": {
+        "danger_interval": "own_bomb_and_lingering",
+        "execution_orders": "all",
+        "fallback": "physical_q",
+        "horizon": 7,
+        "include_opponent_bombs": true,
+        "mode": "all",
+        "opponent_action_space": "all_physical",
+        "robust_fallback": "survival-mask-v1",
+        "search_budget_ms": 400,
+        "version": "survival-mask-v5"
+      },
+      "tasks": [
+        4
+      ],
+      "worlds": [
+        24500,
+        24501,
+        24502,
+        24503,
+        24504,
+        24505,
+        24506,
+        24507,
+        24508,
+        24509,
+        24510,
+        24511,
+        24512,
+        24513,
+        24514,
+        24515,
+        24516,
+        24517,
+        24518,
+        24519
+      ]
+    },
+    "runs": {
+      "4": "task4_300ms_20260918_A_d7594474_mixed_parent_t4_93e5e59"
+    },
+    "source_commit": "93e5e5990451ab525c33e9d3346cb8112978b29a",
+    "summaries": {
+      "task4": {
+        "act_max_seconds": 0.02621173858642578,
+        "act_p95_seconds": 0.012293338775634766,
+        "act_skipped": 0.0,
+        "act_timeouts": 0.0,
+        "avoidable_escape_collapses": 0.0,
+        "bomb_survival_rate": 0.9975308641975309,
+        "episodes": 20.0,
+        "first_place_rate": 0.4,
+        "invalid_action_rate": 0.0011956954962136308,
+        "mean_bombs": 40.85,
+        "mean_coins": 3.85,
+        "mean_crates": 46.05,
+        "mean_kills": 0.3,
+        "mean_score": 5.35,
+        "robust_guarantee_losses": 0.0,
+        "robust_search_timeouts": 0.0,
+        "suicide_rate": 0.0,
+        "zero_bomb_round_rate": 0.0
+      }
+    }
+  },
+  "opponent_hashes": {
+    "agent_code/coin_collector_agent/callbacks.py": "bb9007137dd89712c142b67ff8b26d81b075511e572ad334f94414d96eb40a9c",
+    "agent_code/peaceful_agent/callbacks.py": "db408b7c86d8d308e20b529da378c29a26deb11a34f4a2b69dd942491bc44d82",
+    "agent_code/rule_based_agent/callbacks.py": "78fae8121ffab5c849d69857aeaeabcee23e1015c923e5e701d9a2bce2c879f6"
+  },
+  "parent_sha256": "b0b9e7ae9cbefa6523ed01e1d7a6d474b90b6272f9de1706ee80f1f109cc803d",
+  "protocol": "task4-campaign-v2",
+  "reference_config_sha256": "9db2066005be95155522986466fb4aca8dbc0428907dd34fd46d6828f0772e63",
+  "source_commit": "93e5e5990451ab525c33e9d3346cb8112978b29a",
+  "status": "stopped_engineering_failure",
+  "task4_qualified": false
+}

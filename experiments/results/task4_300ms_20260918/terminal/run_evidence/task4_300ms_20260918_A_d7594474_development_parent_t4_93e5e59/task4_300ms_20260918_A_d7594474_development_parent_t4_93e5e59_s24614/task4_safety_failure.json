@@ -1,0 +1,125 @@
+{
+  "reason": "robust_guarantee_loss",
+  "round": 1,
+  "step": 107,
+  "action": "WAIT",
+  "think_time": 0.007854938507080078,
+  "safety": {
+    "diagnostic_version": "escape-collapse-v2",
+    "raw_action": "WAIT",
+    "selected_action": "WAIT",
+    "intervened": false,
+    "fallback": false,
+    "robust_intervened": false,
+    "robust_to_v1_fallback": false,
+    "opponent_robust_intervened": false,
+    "opponent_to_v3_fallback": true,
+    "robust_guarantee_loss": true,
+    "robust_search_timed_out": false,
+    "robust_states_evaluated": 1298,
+    "v1_to_physical_fallback": false,
+    "own_bomb_pending": true,
+    "own_bomb_visible": true,
+    "own_bomb_timer": 3,
+    "own_bomb_placed_step": 106,
+    "avoidable_escape_collapse": false,
+    "independent_routes": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "escape_slack": [
+      -1.0,
+      -1.0,
+      -1.0,
+      -1.0,
+      -1.0,
+      -1.0
+    ],
+    "opponent_scenario_counts": [
+      0,
+      2,
+      0,
+      0,
+      2,
+      0
+    ],
+    "opponent_passing_counts": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "opponent_failing_profiles": [
+      null,
+      [
+        "RIGHT",
+        "WAIT",
+        "WAIT",
+        "WAIT"
+      ],
+      null,
+      null,
+      null,
+      null
+    ],
+    "opponent_failing_orders": [
+      null,
+      [
+        0,
+        1,
+        2,
+        3
+      ],
+      null,
+      null,
+      null,
+      null
+    ],
+    "physical_mask": [
+      false,
+      true,
+      false,
+      false,
+      true,
+      false
+    ],
+    "decision_mask": [
+      false,
+      true,
+      false,
+      false,
+      true,
+      false
+    ],
+    "survives_horizon": [
+      false,
+      true,
+      false,
+      false,
+      true,
+      false
+    ],
+    "safe_horizon": [
+      0,
+      7,
+      0,
+      0,
+      7,
+      0
+    ],
+    "escape_area": [
+      0,
+      16,
+      0,
+      0,
+      13,
+      0
+    ]
+  }
+}

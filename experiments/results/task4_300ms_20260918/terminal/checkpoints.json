@@ -1,0 +1,47 @@
+[
+  {
+    "path": "runs/task4_300ms_20260918_A_d7594474_diag_s22411_c0020_93e5e59/checkpoints/final.pt",
+    "bytes": 48722240,
+    "sha256": "aa7e4f0cf42923484928b9b7930d6a88b34d1ca7f6f873b763ac5225ce116b34"
+  },
+  {
+    "path": "runs/task4_300ms_20260918_A_d7594474_diag_s22411_c0020_93e5e59/resume/generation-00000019/learner.pt",
+    "bytes": 48434624,
+    "sha256": "25b68de89bad6943acf5f53f9725c54a7bb8f688eb05e283b10453bec3555a7a"
+  },
+  {
+    "path": "runs/task4_300ms_20260918_A_d7594474_diag_s22411_c0020_93e5e59/resume/generation-00000020/learner.pt",
+    "bytes": 48722240,
+    "sha256": "aa7e4f0cf42923484928b9b7930d6a88b34d1ca7f6f873b763ac5225ce116b34"
+  },
+  {
+    "path": "runs/task4_300ms_20260918_A_d7594474_diag_s22422_c0020_93e5e59/checkpoints/final.pt",
+    "bytes": 48785536,
+    "sha256": "0c0396f6e6e2373f3e4d25e6b200a7b630583122e68e3bf328b36b7950ae621f"
+  },
+  {
+    "path": "runs/task4_300ms_20260918_A_d7594474_diag_s22422_c0020_93e5e59/resume/generation-00000019/learner.pt",
+    "bytes": 48641664,
+    "sha256": "3a616a2e85c679daea2792f806629a17f430609aecade15df2a124c4fb318706"
+  },
+  {
+    "path": "runs/task4_300ms_20260918_A_d7594474_diag_s22422_c0020_93e5e59/resume/generation-00000020/learner.pt",
+    "bytes": 48785536,
+    "sha256": "0c0396f6e6e2373f3e4d25e6b200a7b630583122e68e3bf328b36b7950ae621f"
+  },
+  {
+    "path": "runs/task4_300ms_20260918_A_d7594474_diag_s22433_c0020_93e5e59/checkpoints/final.pt",
+    "bytes": 48825728,
+    "sha256": "7af8410f0873140bcac5d9c9c5c707d5f26d252a966f34857c6addf4e0d803c9"
+  },
+  {
+    "path": "runs/task4_300ms_20260918_A_d7594474_diag_s22433_c0020_93e5e59/resume/generation-00000019/learner.pt",
+    "bytes": 48538176,
+    "sha256": "5832dc23d823d0909e3d88544c4054abd2b2b091a7608e116d14aec017aa66ed"
+  },
+  {
+    "path": "runs/task4_300ms_20260918_A_d7594474_diag_s22433_c0020_93e5e59/resume/generation-00000020/learner.pt",
+    "bytes": 48825728,
+    "sha256": "7af8410f0873140bcac5d9c9c5c707d5f26d252a966f34857c6addf4e0d803c9"
+  }
+]
