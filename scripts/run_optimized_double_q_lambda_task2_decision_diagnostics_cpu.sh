@@ -13,7 +13,10 @@ py=.venv-compute/bin/python
 config=experiments/configs/optimized_double_q_lambda_task2_decision_diagnostic.json
 job=${SLURM_JOB_ID:?submit through sbatch}
 run_one() {
-  local agent=$1 checkpoint=$2 label=$3 run_id="qlambda_t2_diag_${label}_j${job}"
+  local agent=$1
+  local checkpoint=$2
+  local label=$3
+  local run_id="qlambda_t2_diag_${label}_j${job}"
   "$py" -m experiments.run --config "$config" --mode evaluate --task 2 --device cpu \
     --agent "$agent" --checkpoint "$checkpoint" --seeds $(seq 10000 10019) \
     --n-rounds 1 --run-id "$run_id" --replay-policy none
