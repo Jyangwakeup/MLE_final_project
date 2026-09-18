@@ -126,6 +126,8 @@ T2-L01 父 run 重新开始 Task 2，不同时修改特征、奖励和超参数�
 `r20_safe_credit_targeted_wait` 是唯一变更：复制 `r7_safe_credit_potential`，只在当前位置与下一步安全、存在可达金币或箱子frontier，且有安全向目标移动或安全有效BOMB时，对WAIT额外给 `-0.04`。危险等待、无目标等待和无安全推进动作的等待不罚；不修改feature、tile、λ、学习率或mask。
 
 seed11先从零建立新的正式Task1父链，再以相同reward合同进入固定100k Task2筛选；每25k在seeds10000–10019冻结评估。Task1与Task2配置分别为 `optimized_double_q_lambda_r20_task1.json` 与 `optimized_double_q_lambda_r20_task2_100k.json`。若Task1审计失败，Task2不会启动；若100k没有在循环和金币指标上优于旧v2，不延长至200k。
+
+100k结果为平均金币3.70、平均炸箱50.25、长WAIT 45%、长往返70%、自杀0%、放弹存活100%。它优于旧v2的同预算结果，且25k至100k的金币/炸箱曲线持续上升，因此从100k checkpoint正常续训到最多200k；仅新增成功式早停（从100k后每25k检查，连续两次通过全部19项门槛才停止），不改变训练合同。
 SHA-256 为 `14d67cd834e8b0be68a2aac39ab27ca3867028cec433219c3a3dfeb52f9fc581`。它满足
 安全、无效动作、放弹存活、Task 1 保留及 CPU 时延门槛，但 19 个 Task 2 门槛仅通过 12 个，
 因此**不得**作为 Task 2 晋级模型，也不启动 seeds 22/33。
