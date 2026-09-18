@@ -263,6 +263,26 @@ class SharedRewardTestCase(unittest.TestCase):
             reward_id="r5_conditional_loop")
         self.assertFalse(context["avoidable_wait"])
 
+    def test_r20_is_r7_plus_only_targeted_wait_signal(self):
+        base = resolve_reward_spec("r7_safe_credit_potential")
+        targeted = resolve_reward_spec("r20_safe_credit_targeted_wait")
+        self.assertEqual(
+            {key: value for key, value in targeted.items()
+             if key not in {"avoidable_wait_penalty", "useful_bomb_counts_as_wait_progress"}},
+            base)
+        owner = SimpleNamespace()
+        init_temporal_reward_state(owner)
+        state = make_state(position=(3, 3), coins=())
+        state["field"][4, 3] = 1
+        context = temporal_reward_context(
+            owner, "WAIT", state, state, [], reward_id="r20_safe_credit_targeted_wait")
+        self.assertTrue(context["avoidable_wait"])
+        self.assertAlmostEqual(
+            reward_from_events([e.WAITED], "r20_safe_credit_targeted_wait",
+                               avoidable_wait=True)
+            - reward_from_events([e.WAITED], "r7_safe_credit_potential"),
+            targeted["avoidable_wait_penalty"])
+
     def test_conditional_reward_adds_only_explicit_flags(self):
         baseline = reward_from_events([e.WAITED], "r5_conditional_loop")
         spec = resolve_reward_spec("r5_conditional_loop")

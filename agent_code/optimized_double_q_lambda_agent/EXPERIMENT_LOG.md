@@ -118,6 +118,14 @@ T2-L01 父 run 重新开始 Task 2，不同时修改特征、奖励和超参数�
 | `step_0200000.pkl`（最终快照） | 3.45 / 9 | 50.2 | 0% | 0% | — | — | 100% | 后期未超过最佳快照。 |
 
 最佳 checkpoint 为 `runs/qlambda_t2_pilot_s11_j472902/checkpoints/snapshots/step_0175200.pkl`，
+
+### T2-R20：安全目标内无效 WAIT 信号（已提交）
+
+配对冻结诊断 `473125` 显示，旧v2的2,436个WAIT与crate变体的2,344个WAIT均无贪心Q值并列；安全mask只否决2.39%/1.25%的raw argmax。旧v2的WAIT中48.2%存在安全有效BOMB，crate变体为30.9%，故不进行tie-break或关闭safety。
+
+`r20_safe_credit_targeted_wait` 是唯一变更：复制 `r7_safe_credit_potential`，只在当前位置与下一步安全、存在可达金币或箱子frontier，且有安全向目标移动或安全有效BOMB时，对WAIT额外给 `-0.04`。危险等待、无目标等待和无安全推进动作的等待不罚；不修改feature、tile、λ、学习率或mask。
+
+seed11先从零建立新的正式Task1父链，再以相同reward合同进入固定100k Task2筛选；每25k在seeds10000–10019冻结评估。Task1与Task2配置分别为 `optimized_double_q_lambda_r20_task1.json` 与 `optimized_double_q_lambda_r20_task2_100k.json`。若Task1审计失败，Task2不会启动；若100k没有在循环和金币指标上优于旧v2，不延长至200k。
 SHA-256 为 `14d67cd834e8b0be68a2aac39ab27ca3867028cec433219c3a3dfeb52f9fc581`。它满足
 安全、无效动作、放弹存活、Task 1 保留及 CPU 时延门槛，但 19 个 Task 2 门槛仅通过 12 个，
 因此**不得**作为 Task 2 晋级模型，也不启动 seeds 22/33。
