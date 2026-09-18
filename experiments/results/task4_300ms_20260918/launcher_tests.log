@@ -1,0 +1,6 @@
+...............admission_failed RuntimeError('engine failure')
+..
+----------------------------------------------------------------------
+Ran 17 tests in 0.032s
+
+OK

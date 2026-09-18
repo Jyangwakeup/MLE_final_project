@@ -1,0 +1,10 @@
+Traceback (most recent call last):
+  File "/export/data/sfan/MLE_final_project_task4_300ms/experiments/task4_background.py", line 121, in <module>
+    main()
+  File "/export/data/sfan/MLE_final_project_task4_300ms/experiments/task4_background.py", line 101, in main
+    campaign=Campaign(ROOT,args.manifest,args.resume)
+  File "/export/data/sfan/MLE_final_project_task4_300ms/experiments/task4_campaign.py", line 151, in __init__
+    self.root=Path(root);self.manifest_path=Path(manifest).resolve();self.m=validate_manifest(p._json(manifest));self.commit=p._git(root,'rev-parse','HEAD')
+  File "/export/data/sfan/MLE_final_project_task4_300ms/experiments/task3_plateau_stopping.py", line 45, in _json
+    return json.loads(path.read_text(encoding="utf-8"))
+AttributeError: 'str' object has no attribute 'read_text'

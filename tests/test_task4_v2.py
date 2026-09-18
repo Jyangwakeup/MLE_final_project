@@ -13,6 +13,20 @@ from tests.test_task4_campaign import summary
 
 
 class ProtocolTests(unittest.TestCase):
+    def test_background_entry_passes_path_to_campaign(self):
+        from experiments import task4_background
+        class FakeCampaign:
+            def __init__(self,root,manifest,resume):
+                if not isinstance(manifest,Path):raise AssertionError('Manifest must be a Path')
+                self.directory=Path('unused');self.commit='frozen';self.manifest_path=manifest
+                self.path=Path('unused/result.json');self.state={'status':'created'}
+            def run(self):self.state['status']='budget_exhausted'
+        with patch.object(task4_background,'Campaign',FakeCampaign), \
+             patch.object(task4_background,'write'),patch.object(task4_background,'finish') as finish, \
+             patch('sys.argv',['background','--manifest','manifest.json']):
+            task4_background.main()
+        finish.assert_called_once()
+
     def test_boundary_and_original_failure(self):
         state={'self':('me',0,True,(1,1))}
         safe=dict(diagnostic_version='escape-collapse-v2',own_bomb_pending=False,

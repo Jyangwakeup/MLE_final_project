@@ -95,7 +95,7 @@ def finish(campaign):
 
 def main():
     parser=argparse.ArgumentParser()
-    parser.add_argument('--manifest',required=True)
+    parser.add_argument('--manifest',type=Path,required=True)
     parser.add_argument('--resume',action='store_true')
     args=parser.parse_args()
     campaign=Campaign(ROOT,args.manifest,args.resume)

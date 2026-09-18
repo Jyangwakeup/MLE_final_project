@@ -5782,7 +5782,7 @@
     "experiments/results/task4_300ms_20260918/seed_scan.py": "005553ebd23da31eb0bbad404f91e2f7bebe848b32b4b557af604e2ed02e05e9",
     "experiments/run.py": "4c60b1392facc252b7fdb24503469401f7c20cc858c00c3720336dda3e9dd917",
     "experiments/task3_retention_prefix.py": "57d3042363fbb03f0122dff68b455e51add87b0703d70de7ff9d3a023a7fe564",
-    "experiments/task4_background.py": "56d94109b11dc475a9f6d478ec19c31f4be17b2895caa36fed617720d0f7e869",
+    "experiments/task4_background.py": "768f401bd8ef43c6605dc222a12ffc5c642d13926e1c8aa5d4b12ac7bca5faec",
     "experiments/task4_campaign.py": "50a5fc5f3b5afbaac19e70411e27303dc4fc7b337d5eb180da0f78abf460cd38",
     "experiments/task4_protocol.py": "3c99c81b762206247671d3a35cd9ea10d5dbe927768b1297b664b572e4b3a797",
     "experiments/task4_transfer.py": "686405574ad6ec5ca1dc2dc571aa95a6e68e7ce1b1555aef78eced7aeda1d286",
@@ -5791,7 +5791,9 @@
     "experiments/task4_v2_worker.py": "846f4404eaf4d4ec9a4f0a44c21e835f64f21a8ddb214b3296964ad981c85a01",
     "experiments/task4_worker.py": "fc311b04e1a02812e079cec2291da248260374f42d77881afe0ee27462d6dd0c",
     "items.py": "49805da4d490d54ec410ce34e5dcdc763e3c8d9b212055b0f83b0972da02df0e",
-    "settings.py": "f0b97a16aae57bfc0131d76fca064749435e4d82c23fb967f7e09bd1ace9603a"
+    "settings.py": "f0b97a16aae57bfc0131d76fca064749435e4d82c23fb967f7e09bd1ace9603a",
+    "experiments/results/task4_300ms_20260918/startup_failure_01.log": "8e6b6b08776ef2363bdd869908fc89b63da25a4fbc0d64f64940132c955cb5f4",
+    "experiments/results/task4_300ms_20260918/launcher_tests.log": "973984691472acb7c2e1caa6d2e479bbfe178a098ca3e415bee19b4793805f9f"
   },
   "evidence_reuse_scope": "Unchanged compact runtime; old failure remains terminal; new protocol reuses engineering evidence only."
 }
