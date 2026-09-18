@@ -2,12 +2,17 @@
 
 ## G-E01：Task 1→Task 2 seed 11
 
-状态：preflight passed，待提交正式链
+状态：submitted
 
 - 模型、历史缓存、Double Q bootstrap、Watkins trace、终局清理和checkpoint恢复
   专用测试通过；实验运行器与提交包回归通过。
 - 3局smoke、冻结重载、same-task resume和官方式隔离包运行通过。
 - CPU act p95 15.00 ms、max 20.51 ms。
+- 稳定训练源码：`9799869`。
+- Task 1 job `473166`，run `runs/qlambda_grouped_r20_t1_s11_j473166`；
+  2026-09-18 22:05 CEST提交，预计55–85分钟。
+- Task 2 job `473167`，依赖 `afterok:473166`；100k预计50–80分钟。若满足延长
+  条件则在同一job续训200k；若seed 11完整通过，则自动提交seeds 22/33复制链。
 
 旧 r20 100k 比较门槛为平均金币 3.70、平均炸箱 50.25、长往返率 70%。本轮只改变
 tile 编码：基础组与历史组分别使用4个tilings和16,384容量，Q值为两组贡献之和。
