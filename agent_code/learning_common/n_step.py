@@ -28,8 +28,10 @@ class NStepAccumulator:
         reward = 0.0
         last = first
         steps = 0
+        observed_kill = False
         for candidate in list(self.pending)[:self.n_step]:
             reward += (self.gamma ** steps) * float(candidate.reward)
+            observed_kill |= bool(getattr(candidate, "observed_kill", False))
             steps += 1
             last = candidate
             if candidate.done:
@@ -40,6 +42,8 @@ class NStepAccumulator:
         values["next_state"] = last.next_state
         values["done"] = last.done
         values["next_legal"] = last.next_legal
+        if "observed_kill" in values:
+            values["observed_kill"] = observed_kill
         if "steps" in values:
             values["steps"] = steps
         return type(first)(**values)

@@ -48,7 +48,7 @@ RETENTION = dict(parent_fraction=0., distillation_weight=0., temperature=1.,
 EXPLORATION = dict(version='linear-v1', start=.20, end=.05, decay_action_steps=100000)
 
 
-def initialize(payload, config, seed, training_budget, contract):
+def initialize(payload, config, seed, training_budget, contract, *, retention_spec=None):
     """Pure construction from a validated parent; no inherited learning samples."""
     import torch
     from agent_code.dqn_agent.model import DQN
@@ -64,7 +64,7 @@ def initialize(payload, config, seed, training_budget, contract):
     h = config['learning']
     model = DQN(84, 6, seed=seed, gamma=h['gamma'], learning_rate=h['learning_rate'],
                 batch_size=64, replay_capacity=20000, warmup=2000, target_sync_interval=1000,
-                device='cpu', training_task='full_match', retention_spec=RETENTION,
+                device='cpu', training_task='full_match', retention_spec=RETENTION if retention_spec is None else retention_spec,
                 safety_replay_spec=config['training']['safety_replay'], double_dqn=True, hidden_size=128)
     model.load_policy_weights(payload)
     child.update(model.checkpoint())

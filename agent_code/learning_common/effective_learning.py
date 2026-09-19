@@ -6,6 +6,20 @@ from pathlib import Path
 VERSION = 'task4-exploration-v1'
 
 def resolve(defaults, config=None, checkpoint=None):
+    score = (config or {}).get('score_contract')
+    saved_score = (checkpoint or {}).get('transfer_contract') or {}
+    if (score and score['role'] != 'reference') or saved_score.get('version') == 'task4-score-improvement-v1':
+        arm = score['arm'] if score else saved_score['arm']
+        if arm not in ('C', 'L', 'LP', 'LPK'): raise ValueError('Unknown score improvement arm')
+        expected = dict(defaults, gamma=.95, learning_rate=1e-4 if arm == 'C' else 3e-5)
+        if score and (config or {}).get('learning') != expected:
+            raise ValueError('Score effective learning mismatch')
+        if checkpoint is not None:
+            archive = score and score['role'] == 'archive'
+            version = 'task4-frozen-opponents-v1' if archive else 'task4-score-improvement-v1'
+            if saved_score.get('version') != version or saved_score.get('arm') != arm or checkpoint['hyperparameters'] != expected:
+                raise ValueError('Score checkpoint learning/arm mismatch')
+        return expected
     frozen = (config or {}).get('frozen_opponents')
     saved_contract = (checkpoint or {}).get('transfer_contract') or {}
     if (frozen and frozen.get('role') == 'learner') or saved_contract.get('version') == 'task4-frozen-opponents-v1':

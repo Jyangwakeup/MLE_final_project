@@ -1006,3 +1006,14 @@ historical curriculum qualification criteria or certify an old failed run.
 下一轮探索采用 [固定终点 C/S 对照协议](docs/research/task4-frozen-opponents.md) 和
 [ADR 0025](docs/adr/0025-frozen-historical-opponent-control.md)。该轮不沿用旧专项实验的
 早期检查点选型，也不自动更新对手池；旧课程能力保留门槛不适用于这个专项问题。
+
+### Task4 three-step score experiment (2026-09-20)
+
+The isolated `task4-score-improvement-v1` campaign compares C/L/LP/LPK under
+ADR0026. It replaces no previous outcome. Use
+`python experiments/task4_score_campaign.py --manifest experiments/task4_score_manifest.json`
+after tests and real callback restore preflight pass. `--resume` is only for
+identity-matching infrastructure interruptions, never terminal experiments.
+The controller registers 24 hours from implementation start, runs independent
+20-round diagnostics, preserves all replays and weights, and archives its final
+report locally. Current-only learning does not inherit historical parent Replay.

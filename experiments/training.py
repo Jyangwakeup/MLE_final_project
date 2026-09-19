@@ -232,7 +232,8 @@ def run_training_mode(
             getattr(args, "transfer_task3_safety_from", None),
             getattr(args, "transfer_task4_from_checkpoint", None),
             getattr(args, "transfer_task4_exploration_from_checkpoint", None),
-            getattr(args, "transfer_task4_frozen_opponents_from_checkpoint", None))
+            getattr(args, "transfer_task4_frozen_opponents_from_checkpoint", None),
+            getattr(args, "transfer_task4_score_from_checkpoint", None))
         if value is not None
     ]
     if len(resume_sources) > 1:
@@ -243,8 +244,10 @@ def run_training_mode(
         raise ValueError('Registered Task 4 requires explicit transfer or exact resume')
     if config.get('exploration_contract') and args.resume_from is None and getattr(args, 'transfer_task4_exploration_from_checkpoint', None) is None:
         raise ValueError('Exploration requires explicit transfer or strict resume')
-    if config.get('frozen_opponents') and args.resume_from is None and getattr(args, 'transfer_task4_frozen_opponents_from_checkpoint', None) is None:
+    if config.get('frozen_opponents') and not config.get('score_contract') and args.resume_from is None and getattr(args, 'transfer_task4_frozen_opponents_from_checkpoint', None) is None:
         raise ValueError('Frozen-opponent training requires explicit transfer or strict resume')
+    if config.get("score_contract") and args.resume_from is None and getattr(args, "transfer_task4_score_from_checkpoint", None) is None:
+        raise ValueError("Score experiment requires explicit transfer or strict resume")
     training = config.get("training", {})
     if not isinstance(training, dict):
         raise ValueError("config.training must be an object")
@@ -350,6 +353,7 @@ def run_training_mode(
             *positional, init_checkpoint=init_checkpoint, device_info=device_info,
             task4_transfer=getattr(args, "transfer_task4_from_checkpoint", None),
             task4_exploration_transfer=getattr(args, "transfer_task4_exploration_from_checkpoint", None),
+            task4_score_transfer=getattr(args, "transfer_task4_score_from_checkpoint", None),
             task4_frozen_transfer=getattr(args, "transfer_task4_frozen_opponents_from_checkpoint", None),
             action_budget_config=budget_config,
             safe_exploration=safe_exploration,
@@ -379,7 +383,9 @@ def run_training_mode(
         else load_training_snapshot(parent_run)
     )
     if task_name == 'full_match' and args.agent == 'double_dqn_continuous_v2_agent':
-        if config.get("frozen_opponents"):
+        if config.get("score_contract"):
+            from experiments.task4_score_transfer import validate_resume
+        elif config.get("frozen_opponents"):
             from experiments.task4_frozen_transfer import validate_resume
         elif config.get("exploration_contract"):
             from experiments.task4_exploration_transfer import validate_resume

@@ -16,9 +16,9 @@ Transition = namedtuple(
     "Transition",
     (
         "state", "action", "reward", "next_state", "done", "next_legal",
-        "state_legal", "task_id", "steps", "safety_class",
+        "state_legal", "task_id", "steps", "safety_class", "observed_kill",
     ),
-    defaults=(None, None, 1, "ordinary"),
+    defaults=(None, None, 1, "ordinary", False),
 )
 REPLAY_CHECKPOINT_FORMAT = "vector-replay-task-partitioned-v3"
 DEFAULT_GAMMA = 0.95
@@ -152,6 +152,9 @@ class ReplayBuffer:
             self.random.shuffle(items)
         else:
             items = self.random.sample(self._all_items(), size)
+        return self.pack_batch(items, size)
+
+    def pack_batch(self, items, size):
         nonterminal = [item for item in items if not item.done]
         return {
             "states": np.stack([item.state for item in items]),
@@ -257,7 +260,7 @@ class ReplayBuffer:
                         bool(dones[index]),
                         None if bool(dones[index]) else next_legal[index].copy(),
                         state_legal[index].copy(), task_ids[index], int(steps[index]),
-                        safety_classes[index],
+                        safety_classes[index], bool(state.get("observed_kills", [False] * count)[index]),
                     )
                     self.append(transition)
         else:
@@ -340,6 +343,9 @@ class DQN:
         self.loss_function = nn.SmoothL1Loss()
         self.replay = ReplayBuffer(
             int(self.retention_spec["per_task_capacity"]), seed)
+        if self.retention_spec.get("sampling_version") == "task4-kill-replay-v1":
+            from agent_code.learning_common.kill_replay import KillReplayBuffer
+            self.replay = KillReplayBuffer(20000, seed)
         self.replay.configure(training_task)
         self.teacher = None
         self.distillation_dataset = None
@@ -404,7 +410,7 @@ class DQN:
             return self.policy(tensor).squeeze(0).cpu().numpy()
 
     def observe(self, transition: Transition):
-        if self.retention_spec.get('sampling_version') == 'task4-only-v1':
+        if self.retention_spec.get('sampling_version') in ('task4-only-v1', 'task4-kill-replay-v1'):
             if transition.task_id != 'full_match' or self.teacher is not None or self.distillation_dataset is not None:
                 raise ValueError('Task4-only observation contract violated')
         self.replay.append(transition)
@@ -555,7 +561,7 @@ class DQN:
         return checkpoint
 
     def load_checkpoint(self, checkpoint, training=False, training_task=None):
-        if self.retention_spec.get('sampling_version') == 'task4-only-v1':
+        if self.retention_spec.get('sampling_version') in ('task4-only-v1', 'task4-kill-replay-v1'):
             if (checkpoint.get('training_task') != 'full_match'
                     or set(checkpoint['replay'].get('task_ids', [])) - {'full_match'}
                     or checkpoint.get('teacher') is not None

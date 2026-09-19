@@ -290,3 +290,13 @@ _Avoid_: Static historical-pool evaluation
 **Observed historical-opponent training benefit**:
 A positive final paired mean-score difference against both the original parent and the matching-seed rule-trained control, after candidate safety gates pass. An interval containing zero leaves the evidence uncertain.
 _Avoid_: Guaranteed evolution, curriculum qualification
+
+**Observed-kill replay fragment**:
+An n-step learning sample whose actual callback events include an opponent kill.
+It may also include death or negative rewards and does not certify safe success.
+_Avoid_: Guaranteed successful attack, reconstructed posthumous reward
+
+**Three-step score comparison**:
+A controlled Task4 comparison of reduced learning rate, added coin potential,
+and retained/resampled observed-kill fragments, using equal checkpoint choices.
+_Avoid_: Three generations of self-play, guaranteed continuous evolution

@@ -62,10 +62,12 @@ def resolve_retention_spec(value: Mapping[str, Any] | None = None) -> dict[str, 
         "current_warmup": warmup,
     }
     if 'sampling_version' in raw:
-        if (raw['sampling_version'] != 'task4-only-v1' or parent_fraction != 0 or weight != 0
+        if (raw['sampling_version'] not in ('task4-only-v1', 'task4-kill-replay-v1') or parent_fraction != 0 or weight != 0
                 or 'task_samples' in raw):
             raise ValueError('Invalid Task4-only replay contract')
-        result['sampling_version'] = 'task4-only-v1'
+        result['sampling_version'] = raw['sampling_version']
+        if raw['sampling_version'] == 'task4-kill-replay-v1' and (capacity != 20000 or warmup != 2000):
+            raise ValueError('Kill replay requires capacity 20000 and warmup 2000')
     if 'task_samples' in raw:
         quotas = raw['task_samples']
         expected = {'coin_navigation': 16, 'crate_navigation': 32, 'weak_opponents': 16}

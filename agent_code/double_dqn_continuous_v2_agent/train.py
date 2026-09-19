@@ -108,7 +108,7 @@ def game_events_occurred(self, old_game_state, self_action, new_game_state, even
         new_game_state=new_game_state, action=self_action, **context)
     self.round_reward += reward
     self.pending = (key, _transition(
-        self, old_game_state, self_action, reward, new_game_state, False))
+        self, old_game_state, self_action, reward, new_game_state, False)._replace(observed_kill=e.KILLED_OPPONENT in events))
 
 
 def end_of_round(self, last_game_state, last_action, events):
@@ -125,7 +125,7 @@ def end_of_round(self, last_game_state, last_action, events):
                 allow_bomb=self.curriculum_allows_bomb))
         self.round_reward += reward
         _submit(self, _transition(
-            self, last_game_state, last_action, reward, None, True))
+            self, last_game_state, last_action, reward, None, True)._replace(observed_kill=e.KILLED_OPPONENT in events))
         if e.KILLED_SELF in events:
             self.model.replay.mark_recent_own_bomb_fatal(
                 self.training_task,
