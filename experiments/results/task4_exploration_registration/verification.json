@@ -1,0 +1,14 @@
+{
+  "full_unittest": {
+    "tests": 493,
+    "skipped": 1,
+    "result": "passed",
+    "log_sha256": "e1228556694b56e4ab7ec709784dfc4b663a293cb505d4243ca32d71110b70b8"
+  },
+  "specialist_tests_after_controller_changes": {
+    "tests": 12,
+    "result": "passed"
+  },
+  "preflight": "Full learner checkpoint and all-agent actions identical for continuous 2 rounds vs 1+1 resume at gamma .99; frozen evaluation on engineering world25800 passed.",
+  "formal_training_started": false
+}

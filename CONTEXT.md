@@ -262,3 +262,15 @@ _Avoid_: Reclassifying a failed admission as passed
 
 **Recognized legacy reference defect**:
 An observed v5 guarantee-loss or escape-collapse event traceable to that reference's earlier unproved physical-fallback bomb placement. It remains visible in reference metrics; it never grants an exception to a candidate's safety gate.
+
+**Task4 specialist exploration**:
+A comparison of agents optimized solely for official score against three rule-based opponents, with first-place probability as the secondary objective and no earlier-task retention requirement.
+_Avoid_: Curriculum-qualified Task4 model
+
+**Policy-only specialist transfer**:
+Initialization that inherits the registered parent's policy while beginning a new learning process without its optimizer, replay or distillation teacher.
+_Avoid_: Exact resume, retention transfer
+
+**Observed score improvement**:
+A positive mean score difference on the unique final paired assessment after safety gates pass. Its confidence interval may still include zero.
+_Avoid_: Proven superiority, Task4 qualification

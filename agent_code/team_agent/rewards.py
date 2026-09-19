@@ -11,6 +11,7 @@ import events as e
 
 
 REWARD_VERSION = "r1"
+TASK4_SCORE_REWARD = "task4-score-v1"
 REWARD_SPECS = {
     "r1": {
         "step": -0.01,
@@ -446,6 +447,12 @@ REWARD_SPECS['r9_task3_score_aligned'] = {
 DEATH_EVENTS = frozenset((e.KILLED_SELF, e.GOT_KILLED))
 
 
+REWARD_SPECS[TASK4_SCORE_REWARD] = {
+    'step': 0.0, 'coin_collected': 1.0, 'killed_opponent': 5.0,
+    'crate_destroyed': 0.0, 'death': 0.0, 'invalid_action': 0.0,
+}
+
+
 def resolve_reward_spec(version: str = REWARD_VERSION) -> dict[str, float]:
     """Return an independent copy of a registered reward definition."""
     try:
@@ -671,6 +678,8 @@ def reward_from_events(
 ) -> float:
     """Convert framework events and optional temporal context into a scalar."""
     spec = resolve_reward_spec(version)
+    if version == TASK4_SCORE_REWARD:
+        return float(events.count(e.COIN_COLLECTED) + 5 * events.count(e.KILLED_OPPONENT))
     if conditional_loop and avoidable_wait:
         raise ValueError(
             "conditional loop and avoidable WAIT penalties are mutually exclusive")

@@ -919,6 +919,7 @@ def run_agent_session(
     task3_transfer: bool = False,
     distillation_path: Path | None = None,
     task4_transfer: Path | None = None,
+    task4_exploration_transfer: Path | None = None,
 ) -> Path:
     """Run one isolated training or frozen-evaluation session."""
     training = mode == "train"
@@ -1018,7 +1019,7 @@ def run_agent_session(
         None if configured_id is None and configured_legacy is None
         else normalize_feature_id(configured_id, configured_legacy)
     )
-    contract = resolve_agent_contract(agent, requested_feature_id)
+    contract = resolve_agent_contract(agent, requested_feature_id, expanded)
     algorithm = contract.algorithm
     configured_algorithm = expanded.get("algorithm")
     if configured_algorithm not in (None, algorithm):
@@ -1053,13 +1054,16 @@ def run_agent_session(
         assert checkpoint is not None
         checkpoint.parent.mkdir(parents=True, exist_ok=True)
     transfer_contract = None
-    if task4_transfer is not None:
+    if task4_transfer is not None or task4_exploration_transfer is not None:
         if (not training or task_name != 'full_match' or agent != 'double_dqn_continuous_v2_agent'
                 or device_info['type'] != 'cpu' or resume_snapshot is not None
                 or init_checkpoint is not None or tuple(opponents) != ('rule_based_agent',)*3):
             raise ValueError('Task 4 transfer requires the registered CPU full-match agent')
-        from experiments.task4_transfer import materialize
-        transfer_contract = materialize(task4_transfer, checkpoint, root=PROJECT_ROOT,
+        if task4_exploration_transfer is not None:
+            from experiments.task4_exploration_transfer import materialize
+        else:
+            from experiments.task4_transfer import materialize
+        transfer_contract = materialize(task4_exploration_transfer or task4_transfer, checkpoint, root=PROJECT_ROOT,
             config_path=config_path, seed=seed, training_budget=action_budget_config)
     if resume_snapshot is not None:
         transfer_contract = resume_snapshot.contract.get('transfer_contract')
@@ -1215,7 +1219,8 @@ def run_agent_session(
     metadata["config_sha256"] = hashlib.sha256(
         json.dumps(expanded, sort_keys=True, separators=(",", ":")).encode("utf-8")
     ).hexdigest()
-    if task4_transfer is not None:
+    if task4_transfer is not None or task4_exploration_transfer is not None:
+        task4_transfer = task4_exploration_transfer or task4_transfer
         metadata['lineage'] = {'kind': 'task4_transfer', 'source_checkpoint': str(task4_transfer),
                                'transfer_contract': transfer_contract}
     metadata_path = output / "metadata.json"
@@ -1553,6 +1558,7 @@ def _parser() -> argparse.ArgumentParser:
         "--transfer-task3-from", type=Path,
         help="Complete v7 Task 2 run explicitly transferred into a v11 phase agent",
     )
+    resume_group.add_argument("--transfer-task4-exploration-from-checkpoint", type=Path)
     resume_group.add_argument("--transfer-task4-from-checkpoint", type=Path,
         help="Explicit registered Task 3 frozen checkpoint to Task 4 transfer")
     parser.add_argument(
@@ -1608,7 +1614,8 @@ def main(argv: Sequence[str] | None = None) -> int:
             if (args.resume_from is not None or args.migrate_resume_from is not None
                     or args.transfer_task3_safety_from is not None
                     or args.transfer_task3_from is not None
-                    or args.transfer_task4_from_checkpoint is not None):
+                    or args.transfer_task4_from_checkpoint is not None
+                    or args.transfer_task4_exploration_from_checkpoint is not None):
                 raise ValueError("resume and migration options are only valid with --mode train")
             if args.adaptation_trigger:
                 raise ValueError(

@@ -39,7 +39,7 @@ def n_step_from_environment(default: int = 1) -> int:
 def resolve_retention_spec(value: Mapping[str, Any] | None = None) -> dict[str, Any]:
     raw = DEFAULT_RETENTION_SPEC if value is None else value
     if (not isinstance(raw, Mapping)
-            or set(raw) - {'task_samples'} != set(DEFAULT_RETENTION_SPEC)):
+            or set(raw) - {'task_samples', 'sampling_version'} != set(DEFAULT_RETENTION_SPEC)):
         raise ValueError(
             "training.retention must contain exactly: "
             + ", ".join(sorted(DEFAULT_RETENTION_SPEC)))
@@ -61,6 +61,11 @@ def resolve_retention_spec(value: Mapping[str, Any] | None = None) -> dict[str, 
         "per_task_capacity": capacity,
         "current_warmup": warmup,
     }
+    if 'sampling_version' in raw:
+        if (raw['sampling_version'] != 'task4-only-v1' or parent_fraction != 0 or weight != 0
+                or 'task_samples' in raw):
+            raise ValueError('Invalid Task4-only replay contract')
+        result['sampling_version'] = 'task4-only-v1'
     if 'task_samples' in raw:
         quotas = raw['task_samples']
         expected = {'coin_navigation': 16, 'crate_navigation': 32, 'weak_opponents': 16}

@@ -55,7 +55,7 @@ _BASELINE_FEATURE_IDS = {
 
 
 def resolve_agent_contract(
-    agent: str, feature_id: str | None = None,
+    agent: str, feature_id: str | None = None, config=None,
 ) -> AgentContract:
     if agent in _OFFICIAL_BASELINES:
         resolved_feature_id = normalize_feature_id(feature_id or "discrete-v1")
@@ -136,4 +136,8 @@ def resolve_agent_contract(
     )
     if tuple(contract.feature_schema["action_order"]) != ACTIONS:
         raise ValueError("agent feature schema uses an incompatible action order")
+    if agent == "double_dqn_continuous_v2_agent" and config is not None:
+        from dataclasses import replace
+        from agent_code.learning_common.effective_learning import resolve
+        contract = replace(contract, hyperparameters=resolve(contract.hyperparameters, config))
     return contract

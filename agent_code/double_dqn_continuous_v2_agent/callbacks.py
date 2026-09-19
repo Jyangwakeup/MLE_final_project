@@ -107,15 +107,17 @@ def setup(self):
         checkpoint is not None
         and tuple(checkpoint.get("feature_schema", {}).get("vector_shape", ())) == (78,)
     )
+    from agent_code.learning_common.effective_learning import from_environment
+    self.effective_hyperparameters = from_environment(HYPERPARAMETERS, checkpoint)
     input_size = 78 if self._legacy78 else 84
     self.model = DQN(
         input_size, len(ACTIONS), seed=self.agent_seed,
-        gamma=HYPERPARAMETERS["gamma"],
-        learning_rate=HYPERPARAMETERS["learning_rate"],
-        batch_size=HYPERPARAMETERS["batch_size"],
-        replay_capacity=HYPERPARAMETERS["replay_capacity"],
-        warmup=HYPERPARAMETERS["warmup"],
-        target_sync_interval=HYPERPARAMETERS["target_sync_interval"],
+        gamma=self.effective_hyperparameters["gamma"],
+        learning_rate=self.effective_hyperparameters["learning_rate"],
+        batch_size=self.effective_hyperparameters["batch_size"],
+        replay_capacity=self.effective_hyperparameters["replay_capacity"],
+        warmup=self.effective_hyperparameters["warmup"],
+        target_sync_interval=self.effective_hyperparameters["target_sync_interval"],
         device=os.getenv("BOMBERMAN_TORCH_DEVICE", "cpu"),
         training_task=self.training_task,
         retention_spec=self.retention_spec,
@@ -146,7 +148,7 @@ def setup(self):
             checkpoint_for_validation, algorithm=ALGORITHM,
             feature_id=validation_feature_id,
             feature_schema=runtime_schema, actions=ACTIONS,
-            reward_id=self.reward_id, hyperparameters=HYPERPARAMETERS,
+            reward_id=self.reward_id, hyperparameters=self.effective_hyperparameters,
             network_spec=runtime_network, training=self.train,
             training_task=self.training_task, safety_spec=self.safety_spec,
             safety_replay_spec=self.safety_replay_spec,

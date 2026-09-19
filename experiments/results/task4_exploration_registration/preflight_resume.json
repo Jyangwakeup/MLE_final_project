@@ -1,0 +1,9 @@
+{
+  "checkpoint_equal": true,
+  "all_agent_actions_equal": true,
+  "actions": 773,
+  "gamma": 0.99,
+  "n_step_gamma": 0.99,
+  "full_run": "runs/exploration_preflight_e3_continuous",
+  "resumed_run": "runs/exploration_preflight_e3_split2"
+}

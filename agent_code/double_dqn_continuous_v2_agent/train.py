@@ -42,7 +42,7 @@ def setup_training(self):
     self.last_loss = None
     self.pending = None
     self.ended_key = None
-    self.accumulator = NStepAccumulator(self.n_step, HYPERPARAMETERS["gamma"])
+    self.accumulator = NStepAccumulator(self.n_step, getattr(self, "effective_hyperparameters", HYPERPARAMETERS)["gamma"])
     self.accumulator.load_state_dict(getattr(self, "_resume_n_step_state", None))
     reset_temporal_reward_state(self)
 
@@ -154,7 +154,7 @@ def end_of_round(self, last_game_state, last_action, events):
         "reward_id": self.reward_id,
         "reward_version": self.reward_id,
         "reward_spec": self.reward_spec,
-        "hyperparameters": HYPERPARAMETERS,
+        "hyperparameters": getattr(self, "effective_hyperparameters", HYPERPARAMETERS),
         "network_spec": NETWORK_SPEC,
         "action_steps": self.total_action_steps,
         "total_action_steps": self.total_action_steps,

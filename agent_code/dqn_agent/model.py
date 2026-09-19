@@ -83,14 +83,20 @@ class ReplayBuffer:
         return self.random.sample(self._all_items(), size)
 
     def sample_batch(self, size: int, parent_fraction: float = 0.0,
-                     safety_replay_spec=None, task_samples=None):
+                     safety_replay_spec=None, task_samples=None, sampling_version=None):
         current = list(self.partitions.get(self.current_task, ()))
         parents = [
             item for task, partition in self.partitions.items()
             if task != self.current_task for item in partition
         ]
         safety = dict(safety_replay_spec or {})
-        if task_samples is not None:
+        if sampling_version is not None:
+            if (sampling_version != 'task4-only-v1' or self.current_task != 'full_match'
+                    or set(self.partitions) - {'full_match'} or parent_fraction != 0
+                    or safety.get('enabled') or task_samples is not None):
+                raise ValueError('Foreign task or incompatible Task4-only sampling contract')
+            items = self.random.sample(current, size)
+        elif task_samples is not None:
             if safety.get('enabled') or sum(task_samples.values()) != size:
                 raise ValueError('Task quotas conflict with batch size or safety replay')
             items = []
@@ -398,6 +404,9 @@ class DQN:
             return self.policy(tensor).squeeze(0).cpu().numpy()
 
     def observe(self, transition: Transition):
+        if self.retention_spec.get('sampling_version') == 'task4-only-v1':
+            if transition.task_id != 'full_match' or self.teacher is not None or self.distillation_dataset is not None:
+                raise ValueError('Task4-only observation contract violated')
         self.replay.append(transition)
         required_current = max(
             self.batch_size, int(self.retention_spec["current_warmup"]))
@@ -415,7 +424,8 @@ class DQN:
             if self.teacher is not None else 0.0
         )
         batch = self.replay.sample_batch(
-            self.batch_size, parent_fraction, self.safety_replay_spec, task_samples)
+            self.batch_size, parent_fraction, self.safety_replay_spec, task_samples,
+            self.retention_spec.get("sampling_version"))
         states = torch.as_tensor(
             batch["states"], dtype=torch.float32, device=self.device)
         actions = torch.as_tensor(
@@ -545,6 +555,13 @@ class DQN:
         return checkpoint
 
     def load_checkpoint(self, checkpoint, training=False, training_task=None):
+        if self.retention_spec.get('sampling_version') == 'task4-only-v1':
+            if (checkpoint.get('training_task') != 'full_match'
+                    or set(checkpoint['replay'].get('task_ids', [])) - {'full_match'}
+                    or checkpoint.get('teacher') is not None
+                    or checkpoint.get('distillation_dataset') is not None
+                    or checkpoint.get('retention_spec') != self.retention_spec):
+                raise ValueError('Task4-only checkpoint contains foreign learning state')
         if training and checkpoint.get("training_device_type") not in (None, self.device.type):
             raise ValueError("Cannot resume DQN training on a different training device")
         if (

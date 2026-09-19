@@ -991,3 +991,12 @@ After a clean source freeze, launch `experiments/task4_background.py --manifest 
 ## Task4 observed-reference continuation (2026-09-18)
 
 The300ms attempt passed all three20-round candidate diagnostics but stopped at v5 reference world24614/step107. The cause was an unproved fallback BOMB at106; existing v9 already prohibits it. Protocol `task4-campaign-v3`, manifest `experiments/task4_reference_campaign.json`, observes only guarantee loss or escape collapse linked to a recorded unproved fallback placement in the reference. Raw reference counters remain unchanged. Search/decision timeouts, invalid masks, unexplained guarantee loss, other simultaneous faults and all candidate100/300ms gates still stop the attempt. New data blocks24900/25000/25100/25200 are registered. The old diagnostics are hash-verified and reused as evidence only; formalA/B start from the original Task3 parent. The existing2026-09-19T11:17:18Z deadline is unchanged. Launch `experiments/task4_background.py --manifest experiments/task4_reference_campaign.json`; terminal evidence goes under `experiments/results/task4_reference_20260918/terminal`. See ADR0023.
+
+### Task4 specialist exploration (separate protocol)
+
+The user-authorized E1/E2/E3 specialist experiment drops Task1–3 retention and
+optimizes official Task4 score, with first-place rate second. It uses policy-only
+transfer, no old Replay or teacher, and preserves v9 engineering gates. See
+[the specialist guide](docs/research/task4-specialist-exploration.md) and
+[ADR0024](docs/adr/0024-task4-specialist-exploration.md). It does not replace the
+historical curriculum qualification criteria or certify an old failed run.
