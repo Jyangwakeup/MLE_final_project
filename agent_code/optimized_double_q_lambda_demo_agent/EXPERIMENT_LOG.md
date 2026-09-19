@@ -1,6 +1,15 @@
 # Q-learning 示范经验实验日志
 
-## DQ-E01：计划中
+## DQ-E01：已提交
+
+- 训练源码提交：`f013f88`
+- teacher 采集与离线预训练：Slurm `473171`，预计 35--45 分钟
+- 示范组 50k 在线训练：Slurm `473172`，依赖 `473171`，预计 30--45 分钟
+- 在线对照组 50k 训练：Slurm `473173`，依赖 `473171`，预计 30--45 分钟
+- 自动对比：Slurm `473174`，依赖 `473172` 和 `473173`
+- 预计总墙钟时间：70--95 分钟，另加集群排队时间
+- teacher SHA-256：`74cf3fca33acb59f003949006c7401a5a9f58c1785dd8b294b548bd7bd307715`
+- 初始 r20 checkpoint SHA-256：`0d2410976e4b7a632fefc6591919faff36d60589646bc3f57b488275a8c739c1`
 
 以 r20 200k checkpoint 为共同 warm start。实验组先对 seeds 6000--6099 的
 teacher 轨迹执行5遍 trace-free 1-step Double Q 更新，再在线训练50k actions；
