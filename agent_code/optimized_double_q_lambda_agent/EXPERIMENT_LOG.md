@@ -134,11 +134,17 @@ SHA-256 为 `14d67cd834e8b0be68a2aac39ab27ca3867028cec433219c3a3dfeb52f9fc581`�
 
 ### T2-R21：最后一次窄条件折返奖励实验
 
-状态：planned。恢复原 `optimized_double_q_lambda_agent` 的联合tile编码，以r20为唯一基线，
+状态：submitted。恢复原 `optimized_double_q_lambda_agent` 的联合tile编码，以r20为唯一基线，
 仅加入 `conditional_loop_penalty=-0.08`。该信号只在当前位置安全、导航目标不变、移动
 成功且返回上一位置时触发；危险逃生、目标切换、必要WAIT和有效BOMB不罚。seed11从零
 建立相同奖励合同的正式Task1父链，再进入Task2 100k筛选。若未改善到平均金币>3.70、
 平均炸箱≥50.25且长往返<70%，本Q-learning奖励搜索结束并冻结旧r20最佳模型。
+
+- 稳定训练源码：`8c125e8`。
+- 预检：30项奖励测试、3局smoke、checkpoint冻结重载和打包通过；CPU act
+  p95 14.36 ms、max 18.35 ms。
+- Task 1 job `473168`，预计50–80分钟；Task 2 job `473169`，依赖
+  `afterok:473168`，100k预计45–70分钟，满足预注册条件时自动延长200k。
 
 重试使用本地且被 Git 忽略的 `.venv-compute` 环境：由
 `/home/students/ji/.local/bin/python3.10` 创建，并安装 CPU 训练依赖。
