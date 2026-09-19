@@ -119,6 +119,21 @@ class ScoreTests(unittest.TestCase):
         for kind,h in [('arm',18),('selection',20),('evaluation',23),('work',24)]:
             cutoff(0,kind=kind,now=h*3600-1)
             with self.assertRaises(TimeoutError):cutoff(0,kind=kind,now=h*3600)
+    def test_point_accepts_existing_arm_and_seed(self):
+        obj=Campaign.__new__(Campaign)
+        obj.m={'development_seeds':[27000]};obj.state={'parent_development':{}}
+        obj.update=lambda *a,**k:None
+        evaluation={'summary':{'mean_score':4},'raw':{'failures':[]}}
+        obj.evaluate=lambda *a,**k:evaluation
+        obj.compare=lambda *a,**k:{}
+        obj.navigation=lambda *a:{};obj.q_drift=lambda *a:{}
+        for role in ('archive','candidate'):
+            entry={'arm':'C','seed':22,'actual_actions':20001,'checkpoint':'frozen.pt'}
+            result=obj.point('C',22,entry,role)
+            self.assertEqual(result['arm'],'C');self.assertEqual(result['seed'],22)
+            self.assertEqual(result['evaluation'],evaluation)
+            self.assertNotIn('evaluation',entry)
+
     def test_each_checkpoint_evaluated_before_continuation(self):
         obj=Campaign.__new__(Campaign);obj.state={'arms':{}};obj.start=10**12;calls=[]
         obj.update=lambda status,**kw:None

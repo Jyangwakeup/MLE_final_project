@@ -306,7 +306,7 @@ class Campaign:
         actual=entry['actual_actions'];label=f'{arm}_s{seed}_a{actual}'
         self.update('development',active=dict(arm=arm,seed=seed,actions=actual))
         result=self.evaluate(Path(entry['checkpoint']),arm,label,self.m['development_seeds'],role)
-        point=dict(**entry,arm=arm,seed=seed,evaluation=result,summary=result['summary'],failures=failures(result['raw']),role=role)
+        point=dict(entry, arm=arm, seed=seed, evaluation=result, summary=result['summary'], failures=failures(result['raw']), role=role)
         point['comparison']=self.compare(result,self.state['parent_development'],label+'_parent')
         point['navigation']=self.navigation(result)
         point['q_drift']=self.q_drift(entry['checkpoint'])
