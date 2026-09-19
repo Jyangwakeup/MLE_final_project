@@ -40,7 +40,7 @@ for checkpoint in "runs/$run_id/checkpoints/snapshots/"*.pkl; do
   evaluate_candidate "$checkpoint" "$stem"
 done
 "$py" -m experiments.select_task2_snapshots --agent "$agent" \
-  --parent-task1 runs/qlambda_r20_t1_s11_j473126_stage_gate \
-  --parent-task2 runs/qlambda_r20_t2_100k_s11_j473127_parent_task2 \
+  --parent-task1 "runs/${run_id}_initial_task1" \
+  --parent-task2 "runs/${run_id}_initial_task2" \
   --gate experiments/task2_quality_gate.json \
   --output "runs/$run_id/best_task2_selection.json" "${candidates[@]}"
