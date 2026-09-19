@@ -17,6 +17,7 @@ from experiments.agent_contracts import resolve_agent_contract
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 SUPPORTED = {
+    "optimized_double_q_lambda_demo_agent",
     "optimized_double_q_lambda_crate_agent",
     "optimized_double_q_lambda_grouped_agent",
     "optimized_double_q_lambda_history_agent",

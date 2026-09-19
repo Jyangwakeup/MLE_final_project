@@ -334,7 +334,7 @@ def run_training_mode(
     if init_checkpoint is not None:
         if algorithm not in {
             "dqn", "double_dqn", "cnn_distilled_double_dqn", "rainbow_lite",
-            "expected_sarsa_lambda",
+            "expected_sarsa_lambda", "double_q_lambda",
         }:
             raise ValueError(
                 "--init-from-checkpoint only supports neural agents and "

@@ -208,6 +208,7 @@ class ExperimentWorld(BombeRLeWorld):
             (output / "q_learning_decisions.jsonl").open(
                 "a", encoding="utf-8", buffering=1)
             if q_learning_decision_diagnostics else None)
+        self._q_demo_capture = os.getenv("BOMBERMAN_Q_DEMO_CAPTURE")
         self._navigation_previous_action: dict[str, str] = {}
         self._navigation_previous_target: dict[str, tuple[int, int] | None] = {}
         self._training_rewards: list[float] = []
@@ -323,6 +324,21 @@ class ExperimentWorld(BombeRLeWorld):
 
     def send_game_events(self) -> None:
         """Persist event/phase pairs before training callbacks consume events."""
+        if self._q_demo_capture:
+            target = self.agents[0]
+            if not target.dead and target.last_game_state is not None:
+                capture = importlib.import_module(
+                    "experiments.q_learning_demo_data").append_raw_transition
+                capture(
+                    Path(self._q_demo_capture),
+                    environment_seed=self._environment_seed,
+                    round_index=self.round,
+                    old_state=target.last_game_state,
+                    action=target.last_action,
+                    new_state=self.get_state_for_agent(target),
+                    events=target.events,
+                    terminal=False,
+                )
         for agent in self.agents:
             phase = self._latest_phase_facts.get(agent.name)
             if phase is None:
@@ -422,6 +438,21 @@ class ExperimentWorld(BombeRLeWorld):
 
     def end_round(self) -> None:
         super().end_round()
+        if self._q_demo_capture:
+            target = self.agents[0]
+            if target.last_game_state is not None:
+                capture = importlib.import_module(
+                    "experiments.q_learning_demo_data").append_raw_transition
+                capture(
+                    Path(self._q_demo_capture),
+                    environment_seed=self._environment_seed,
+                    round_index=self.round,
+                    old_state=target.last_game_state,
+                    action=target.last_action,
+                    new_state=None,
+                    events=target.events,
+                    terminal=True,
+                )
         agents = []
         for agent in self.agents:
             statistics = agent.statistics
@@ -1233,7 +1264,18 @@ def run_agent_session(
             "cumulative_completed_rounds", termination.get("completed_rounds", 0)
         ))
     metadata["lineage"] = (
-        {
+        ({
+            "kind": "demonstration_warm_start",
+            "source_checkpoint": str(init_checkpoint),
+            "inherited": [
+                "policy_weights", "tile_coder", "learner_rng", "agent_rng",
+                "online_update_count",
+            ],
+            "reset": [
+                "eligibility_traces", "stage_action_steps",
+                "early_stopping", "round_state",
+            ],
+        } if agent == "optimized_double_q_lambda_demo_agent" else {
             "kind": "warm_start",
             "source_checkpoint": str(init_checkpoint),
             "inherited": ["policy_weights"],
@@ -1241,7 +1283,7 @@ def run_agent_session(
                 "target_network", "optimizer", "replay", "epsilon",
                 "agent_rng", "early_stopping", "round_state",
             ],
-        }
+        })
         if init_checkpoint is not None else None
     ) if resume_snapshot is None else {
         "fallback_reason": resume_snapshot.fallback_reason,
@@ -1290,6 +1332,7 @@ def run_agent_session(
             "BOMBERMAN_RETENTION_SPEC", "BOMBERMAN_TRAINING_BUDGET",
             "BOMBERMAN_SAFETY_REPLAY_SPEC",
             "BOMBERMAN_CAPTURE_ENVIRONMENT_SEED", "BOMBERMAN_CAPTURE_TASK_ID",
+            "BOMBERMAN_Q_DEMO_CAPTURE",
         )
     }
     try:
@@ -1326,7 +1369,8 @@ def run_agent_session(
         os.environ["BOMBERMAN_TRAINING_BUDGET"] = json.dumps(
             action_budget_config, sort_keys=True, separators=(",", ":"))
         if (os.getenv("BOMBERMAN_DISTILLATION_CAPTURE")
-                or os.getenv("BOMBERMAN_CNN_TEACHER_CAPTURE")):
+                or os.getenv("BOMBERMAN_CNN_TEACHER_CAPTURE")
+                or os.getenv("BOMBERMAN_Q_DEMO_CAPTURE")):
             os.environ["BOMBERMAN_CAPTURE_ENVIRONMENT_SEED"] = str(
                 seeds["environment_seed"])
             os.environ["BOMBERMAN_CAPTURE_TASK_ID"] = str(
