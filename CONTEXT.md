@@ -274,3 +274,19 @@ _Avoid_: Exact resume, retention transfer
 **Observed score improvement**:
 A positive mean score difference on the unique final paired assessment after safety gates pass. Its confidence interval may still include zero.
 _Avoid_: Proven superiority, Task4 qualification
+
+**Frozen historical-opponent training**:
+Training one learner against a registered, unchanging pool of earlier policies, with only the learner collecting experience and updating parameters.
+_Avoid_: Generational self-play, four simultaneous learners
+
+**Held-out historical strategy evaluation**:
+Evaluation against historical policies excluded from the training pool but sharing its training lineage. It measures transfer within that lineage, not generalization to independent unknown opponents.
+_Avoid_: Unseen independent opponents
+
+**Generational self-play**:
+A separate training process that promotes newly evaluated policies into future opponent pools. A frozen historical-opponent experiment does not perform these promotions.
+_Avoid_: Static historical-pool evaluation
+
+**Observed historical-opponent training benefit**:
+A positive final paired mean-score difference against both the original parent and the matching-seed rule-trained control, after candidate safety gates pass. An interval containing zero leaves the evidence uncertain.
+_Avoid_: Guaranteed evolution, curriculum qualification

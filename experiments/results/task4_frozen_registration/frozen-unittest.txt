@@ -1,0 +1,30 @@
+test_cache_refuses_changed_role_and_artifacts (tests.test_task4_frozen_controller.FrozenControllerTests) ... ok
+test_measured_budget_cannot_reduce_protocol (tests.test_task4_frozen_controller.FrozenControllerTests) ... ok
+test_only_training_opponents_differ_and_initial_learning_identical (tests.test_task4_frozen_controller.FrozenControllerTests) ... /export/data/sfan/miniforge3/envs/mle/lib/python3.10/site-packages/matplotlib/_fontconfig_pattern.py:64: PyparsingDeprecationWarning: 'oneOf' deprecated - use 'one_of'
+  prop = Group((name + Suppress("=") + comma_separated(value)) | oneOf(_CONSTANTS))
+/export/data/sfan/miniforge3/envs/mle/lib/python3.10/site-packages/matplotlib/_fontconfig_pattern.py:85: PyparsingDeprecationWarning: 'parseString' deprecated - use 'parse_string'
+  parse = parser.parseString(pattern)
+/export/data/sfan/miniforge3/envs/mle/lib/python3.10/site-packages/matplotlib/_fontconfig_pattern.py:89: PyparsingDeprecationWarning: 'resetCache' deprecated - use 'reset_cache'
+  parser.resetCache()
+/export/data/sfan/miniforge3/envs/mle/lib/python3.10/site-packages/matplotlib/_mathtext.py:45: PyparsingDeprecationWarning: 'enablePackrat' deprecated - use 'enable_packrat'
+  ParserElement.enablePackrat()
+In /export/data/sfan/miniforge3/envs/mle/lib/python3.10/site-packages/matplotlib/mpl-data/stylelib/classic.mplstyle: 'parseString' deprecated - use 'parse_string'
+In /export/data/sfan/miniforge3/envs/mle/lib/python3.10/site-packages/matplotlib/mpl-data/stylelib/classic.mplstyle: 'resetCache' deprecated - use 'reset_cache'
+ok
+test_retry_directory_keeps_previous_attempt (tests.test_task4_frozen_controller.FrozenControllerTests) ... ok
+test_terminal_and_changed_identity_cannot_resume (tests.test_task4_frozen_controller.FrozenControllerTests) ... ok
+test_fixed_endpoints_order_unique_final_and_matching_control (tests.test_task4_frozen_controller.FrozenFlowTests) ... ok
+test_initial_screen_failure_does_not_train_third_or_touch_final (tests.test_task4_frozen_controller.FrozenFlowTests) ... ok
+test_candidate_margin_and_all_seat_framework_failures (tests.test_task4_frozen_controller.FrozenSeatLimitsTests) ... ok
+test_all_models_registered_distinct_readonly (tests.test_task4_frozen_opponents.FrozenTests) ... ok
+test_behavior_and_opponent_failures_stop_at_endpoint (tests.test_task4_frozen_opponents.FrozenTests) ... ok
+test_data_budget_and_selection_contract (tests.test_task4_frozen_opponents.FrozenTests) ... ok
+test_first_engineering_failure_is_terminal (tests.test_task4_frozen_opponents.FrozenTests) ... ok
+test_isolation_and_original_frozen_decisions (tests.test_task4_frozen_opponents.FrozenTests) ... ok
+test_new_transfer_exact_and_legacy_rejected (tests.test_task4_frozen_opponents.FrozenTests) ... ok
+test_ten_round_mixture_and_full_balanced_cycle (tests.test_task4_frozen_opponents.FrozenTests) ... ok
+
+----------------------------------------------------------------------
+Ran 15 tests in 11.992s
+
+OK

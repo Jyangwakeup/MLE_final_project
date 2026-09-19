@@ -1000,3 +1000,9 @@ transfer, no old Replay or teacher, and preserves v9 engineering gates. See
 [the specialist guide](docs/research/task4-specialist-exploration.md) and
 [ADR0024](docs/adr/0024-task4-specialist-exploration.md). It does not replace the
 historical curriculum qualification criteria or certify an old failed run.
+
+### 冻结历史对手对照实验（2026-09-19）
+
+下一轮探索采用 [固定终点 C/S 对照协议](docs/research/task4-frozen-opponents.md) 和
+[ADR 0025](docs/adr/0025-frozen-historical-opponent-control.md)。该轮不沿用旧专项实验的
+早期检查点选型，也不自动更新对手池；旧课程能力保留门槛不适用于这个专项问题。

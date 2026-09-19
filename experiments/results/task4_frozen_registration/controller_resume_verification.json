@@ -1,0 +1,54 @@
+{
+  "fresh": {
+    "actions": 4800,
+    "rounds": 12,
+    "exposure": {
+      "rounds": 12,
+      "historical_rounds": 5,
+      "rule_rounds": 7,
+      "historical_fraction": 0.4166666666666667
+    },
+    "raw": {
+      "episodes": 12,
+      "mean_bombs": 38.666666666666664,
+      "suicide_rate": 0.0,
+      "bomb_survival_rate": 1.0,
+      "zero_bomb_round_rate": 0.0,
+      "invalid_action_rate": 0.004375,
+      "act_p95_seconds": 0.02237107753753663,
+      "act_max_seconds": 0.126295804977417,
+      "act_timeouts": 0,
+      "act_skipped": 0,
+      "robust_search_timeouts": 0,
+      "robust_guarantee_losses": 0,
+      "avoidable_escape_collapses": 0
+    },
+    "command_count": 1
+  },
+  "resumed": {
+    "actions": 4800,
+    "rounds": 12,
+    "exposure": {
+      "rounds": 12,
+      "historical_rounds": 5,
+      "rule_rounds": 7,
+      "historical_fraction": 0.4166666666666667
+    },
+    "raw": {
+      "episodes": 12,
+      "mean_bombs": 38.666666666666664,
+      "suicide_rate": 0.0,
+      "bomb_survival_rate": 1.0,
+      "zero_bomb_round_rate": 0.0,
+      "invalid_action_rate": 0.004375,
+      "act_p95_seconds": 0.02237107753753663,
+      "act_max_seconds": 0.126295804977417,
+      "act_timeouts": 0,
+      "act_skipped": 0,
+      "robust_search_timeouts": 0,
+      "robust_guarantee_losses": 0,
+      "avoidable_escape_collapses": 0
+    },
+    "command_count": 0
+  }
+}

@@ -205,9 +205,21 @@ class ExperimentWorld(BombeRLeWorld):
         self._death_causes: dict[str, list[dict[str, str]]] = {}
         self._bomb_owners_exploded_this_step = []
         self._latest_phase_facts: dict[str, dict[str, Any]] = {}
+        self._frozen_manager = None
+        config_path = os.getenv('BOMBERMAN_CONFIG')
+        if config_path:
+            frozen_config = json.loads(Path(config_path).read_text())
+            if frozen_config.get('frozen_opponents'):
+                from experiments.frozen_opponents import Manager
+                kind = os.getenv('BOMBERMAN_FROZEN_MATCH_KIND', 'training' if snapshot_config else 'rules')
+                self._frozen_manager = Manager(PROJECT_ROOT, frozen_config, kind, environment_seed,
+                    int(os.getenv('BOMBERMAN_AGENT_SEED', '0')))
         super().__init__(args, agents)
 
     def new_round(self) -> None:
+        if self._frozen_manager is not None:
+            if self.running:raise ValueError('Cannot switch opponents during a live round')
+            self._frozen_manager.bind(self)
         self._death_steps = {}
         self._death_causes = {}
         self._navigation_previous_action = {}
@@ -289,6 +301,8 @@ class ExperimentWorld(BombeRLeWorld):
             getattr(runner, "fake_self", None), "last_safety_diagnostic", None)
         if isinstance(safety, dict):
             record["safety"] = safety
+        if self._frozen_manager is not None:
+            record["frozen_model_id"] = getattr(getattr(runner, "fake_self", None), "frozen_model_id", "learner")
         fake_self = getattr(runner, "fake_self", None)
         if fake_self is not None and (
             getattr(fake_self, "feature_id", None) == "continuous-phase-v1"
@@ -404,6 +418,8 @@ class ExperimentWorld(BombeRLeWorld):
             self.perform_agent_action(agent, action)
 
     def end_round(self) -> None:
+        if self._frozen_manager is not None:
+            self._frozen_manager.verify(self)
         super().end_round()
         agents = []
         for agent in self.agents:
@@ -920,6 +936,7 @@ def run_agent_session(
     distillation_path: Path | None = None,
     task4_transfer: Path | None = None,
     task4_exploration_transfer: Path | None = None,
+    task4_frozen_transfer: Path | None = None,
 ) -> Path:
     """Run one isolated training or frozen-evaluation session."""
     training = mode == "train"
@@ -1054,16 +1071,18 @@ def run_agent_session(
         assert checkpoint is not None
         checkpoint.parent.mkdir(parents=True, exist_ok=True)
     transfer_contract = None
-    if task4_transfer is not None or task4_exploration_transfer is not None:
+    if task4_transfer is not None or task4_exploration_transfer is not None or task4_frozen_transfer is not None:
         if (not training or task_name != 'full_match' or agent != 'double_dqn_continuous_v2_agent'
                 or device_info['type'] != 'cpu' or resume_snapshot is not None
-                or init_checkpoint is not None or tuple(opponents) != ('rule_based_agent',)*3):
+                or init_checkpoint is not None or tuple(opponents) != (('frozen_history_agent',)*3 if task4_frozen_transfer else ('rule_based_agent',)*3)):
             raise ValueError('Task 4 transfer requires the registered CPU full-match agent')
-        if task4_exploration_transfer is not None:
+        if task4_frozen_transfer is not None:
+            from experiments.task4_frozen_transfer import materialize
+        elif task4_exploration_transfer is not None:
             from experiments.task4_exploration_transfer import materialize
         else:
             from experiments.task4_transfer import materialize
-        transfer_contract = materialize(task4_exploration_transfer or task4_transfer, checkpoint, root=PROJECT_ROOT,
+        transfer_contract = materialize(task4_frozen_transfer or task4_exploration_transfer or task4_transfer, checkpoint, root=PROJECT_ROOT,
             config_path=config_path, seed=seed, training_budget=action_budget_config)
     if resume_snapshot is not None:
         transfer_contract = resume_snapshot.contract.get('transfer_contract')
@@ -1219,8 +1238,8 @@ def run_agent_session(
     metadata["config_sha256"] = hashlib.sha256(
         json.dumps(expanded, sort_keys=True, separators=(",", ":")).encode("utf-8")
     ).hexdigest()
-    if task4_transfer is not None or task4_exploration_transfer is not None:
-        task4_transfer = task4_exploration_transfer or task4_transfer
+    if task4_transfer is not None or task4_exploration_transfer is not None or task4_frozen_transfer is not None:
+        task4_transfer = task4_frozen_transfer or task4_exploration_transfer or task4_transfer
         metadata['lineage'] = {'kind': 'task4_transfer', 'source_checkpoint': str(task4_transfer),
                                'transfer_contract': transfer_contract}
     metadata_path = output / "metadata.json"
@@ -1558,6 +1577,7 @@ def _parser() -> argparse.ArgumentParser:
         "--transfer-task3-from", type=Path,
         help="Complete v7 Task 2 run explicitly transferred into a v11 phase agent",
     )
+    resume_group.add_argument("--transfer-task4-frozen-opponents-from-checkpoint", type=Path)
     resume_group.add_argument("--transfer-task4-exploration-from-checkpoint", type=Path)
     resume_group.add_argument("--transfer-task4-from-checkpoint", type=Path,
         help="Explicit registered Task 3 frozen checkpoint to Task 4 transfer")
@@ -1615,7 +1635,8 @@ def main(argv: Sequence[str] | None = None) -> int:
                     or args.transfer_task3_safety_from is not None
                     or args.transfer_task3_from is not None
                     or args.transfer_task4_from_checkpoint is not None
-                    or args.transfer_task4_exploration_from_checkpoint is not None):
+                    or args.transfer_task4_exploration_from_checkpoint is not None
+                    or args.transfer_task4_frozen_opponents_from_checkpoint is not None):
                 raise ValueError("resume and migration options are only valid with --mode train")
             if args.adaptation_trigger:
                 raise ValueError(

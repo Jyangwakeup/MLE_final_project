@@ -6,6 +6,17 @@ from pathlib import Path
 VERSION = 'task4-exploration-v1'
 
 def resolve(defaults, config=None, checkpoint=None):
+    frozen = (config or {}).get('frozen_opponents')
+    saved_contract = (checkpoint or {}).get('transfer_contract') or {}
+    if (frozen and frozen.get('role') == 'learner') or saved_contract.get('version') == 'task4-frozen-opponents-v1':
+        expected = dict(defaults, gamma=.95, learning_rate=1e-4)
+        if frozen and ((config or {}).get('learning') != expected or frozen.get('arm') not in ('C','S')):
+            raise ValueError('Frozen-opponent learner parameter contract mismatch')
+        if checkpoint is not None and (saved_contract.get('version') != 'task4-frozen-opponents-v1'
+                or checkpoint['hyperparameters'] != expected
+                or (frozen and saved_contract['arm'] != frozen['arm'])):
+            raise ValueError('Frozen-opponent checkpoint parameter/arm mismatch')
+        return expected
     spec = (config or {}).get('exploration_contract')
     saved = (checkpoint or {}).get('transfer_contract') or {}
     specialist = saved.get('version') == VERSION
