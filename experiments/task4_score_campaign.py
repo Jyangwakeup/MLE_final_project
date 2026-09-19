@@ -85,7 +85,15 @@ class Campaign:
             self.state=json.loads(self.state_path.read_text())
             if self.state['identity']!=self.identity or self.state['status'] in TERMINAL:
                 raise ValueError('Cannot resume terminal or different experiment')
-        else:self.state=dict(status='created',identity=self.identity,arms={},diagnostics={},task4_qualified=False)
+        else:
+            proof=json.loads((self.directory/'preflight/result.json').read_text())
+            if not proof.get('passed') or proof['manifest_sha256']!=digest(self.m):raise ValueError('Missing/mismatched real callback preflight')
+            from experiments.run import _source_hash
+            proof_metadata=json.loads((Path(proof['whole'])/'metadata.json').read_text())
+            if proof_metadata['source_hash']!=_source_hash(self.m['agent']):raise ValueError('Runtime changed since preflight')
+            tests=json.loads((self.directory/'test_results.json').read_text())
+            if not tests['passed'] or any(sha256(p)!=h for p,h in tests['logs'].items()):raise ValueError('Missing or changed test evidence')
+            self.state=dict(status='created',identity=self.identity,arms={},diagnostics={},task4_qualified=False,preflight=proof,tests=tests)
         self.check_identity()
 
     def check_identity(self):
@@ -226,9 +234,13 @@ class Campaign:
         import torch
         key=f'{arm}_{seed}_{"diag" if diagnostic else target}'
         attempts=self.state.setdefault('training_attempts',{}).setdefault(key,[])
+        if previous and not attempts:
+            prior=self.state['trained_points'][arm][str(seed)]
+            inherited=next(v for v in prior.values() if v['run']==previous)
+            attempts.extend(copy_attempts(inherited['segments']))
         complete=False;previous_round=0
         if attempts:
-            if not self.resuming:raise ValueError('An existing training attempt requires infrastructure resume')
+            if not self.resuming and previous is None:raise ValueError('An existing training attempt requires infrastructure resume')
             last=ROOT/'runs'/attempts[-1]['run']
             if (last/'resume/latest.json').exists():
                 saved=load_training_snapshot(last)
@@ -339,33 +351,35 @@ class Campaign:
 
     def seed(self,arm,seed):
         records=self.state['arms'].setdefault(arm,{})
-        if str(seed) in records:return records[str(seed)]
+        record=records.setdefault(str(seed),dict(points=[],best=None,complete=False))
+        if record['complete']:return record
         cutoff(self.start,kind='selection')
         if arm=='C' and seed in (22,11):
-            entries=self.m['archived_controls'][str(seed)];role='archive'
+            for entry in self.m['archived_controls'][str(seed)]:
+                if any(p['actual_actions']==entry['actual_actions'] for p in record['points']):continue
+                record['points'].append(self.point(arm,seed,entry,'archive'))
+                record['best']=self.best(record['points'])
+                self.update('checkpoint_complete',active=dict(arm=arm,seed=seed,actions=entry['actual_actions']))
         else:
-            pending=self.state.setdefault('trained_endpoints',{}).setdefault(arm,{})
-            trained=pending.get(str(seed))
-            if trained is None:
-                trained=self.train(arm,seed,60000);pending[str(seed)]=trained
-                self.update('training_complete',active=dict(arm=arm,seed=seed))
-            elif sha256(trained['checkpoint'])!=trained['checkpoint_sha256']:raise ValueError('Trained checkpoint changed')
-            entries=[]
-            for segment in trained['segments']:
-                base=ROOT/'runs'/segment['run']/'checkpoints/snapshots'
-                if not base.exists():continue
-                for line in (base/'manifest.jsonl').read_text().splitlines():
-                    record=json.loads(line)
-                    entries.append(self.snapshot_entry(base,record,arm,seed))
-            # The first crossing of each target; snapshots are round-boundary only.
-            entries=sorted(entries,key=lambda e:e['actual_actions'])
-            entries=[next(e for e in entries if e['actual_actions']>=target) for target in (20000,40000,60000)]
-            if len({e['checkpoint'] for e in entries})!=3:raise ValueError('Missing distinct action snapshots')
-            role='candidate'
-        points=[self.point(arm,seed,e,role) for e in entries]
-        records[str(seed)]=dict(points=points,best=self.best(points))
-        self.update('seed_complete',active=dict(arm=arm,seed=seed,best_actions=records[str(seed)]['best']['actual_actions'] if records[str(seed)]['best'] else None))
-        return records[str(seed)]
+            pending=self.state.setdefault('trained_points',{}).setdefault(arm,{}).setdefault(str(seed),{})
+            previous=None
+            for target in (20000,40000,60000):
+                trained=pending.get(str(target))
+                if trained is None:
+                    trained=self.train(arm,seed,target,previous=previous)
+                    pending[str(target)]=trained
+                    self.update('training_segment_complete',active=dict(arm=arm,seed=seed,target_actions=target))
+                elif sha256(trained['checkpoint'])!=trained['checkpoint_sha256']:
+                    raise ValueError('Training segment checkpoint changed')
+                previous=trained['run']
+                if any(p['target_actions']==target for p in record['points']):continue
+                entry=dict(trained)
+                point=self.point(arm,seed,entry)
+                record['points'].append(point);record['best']=self.best(record['points'])
+                self.update('checkpoint_complete',active=dict(arm=arm,seed=seed,actions=trained['actual_actions']))
+        record['complete']=True
+        self.update('seed_complete',active=dict(arm=arm,seed=seed,best_actions=record['best']['actual_actions'] if record['best'] else None))
+        return record
 
     @staticmethod
     def snapshot_entry(base,record,arm,seed):
@@ -465,7 +479,7 @@ class Campaign:
         try:
             self.check_identity()
             destination.mkdir(parents=True,exist_ok=True)
-            for source in (self.state_path,self.directory/'report.md',self.path):
+            for source in (self.state_path,self.directory/'report.md',self.path,self.directory/'test_results.json',self.directory/'preflight/result.json'):
                 shutil.copy2(source,destination/source.name)
             subprocess.run(['git','add','-f',str(destination.relative_to(ROOT))],cwd=ROOT,check=True)
             subprocess.run(['git','commit','-m','Record Task4 three-step score experiment outcome'],cwd=ROOT,check=True)
@@ -480,6 +494,7 @@ class Campaign:
             '击杀标签只来自真实回调；死亡后的炸弹得分可能没有对应学习回调，不能声称训练回报等于最终得分。','',
             '| 配置 | 种子 | 实际动作 | 得分 | 金币 | 击杀 | 独占/并列第一 | 自杀率 | 炸弹存活 | P95/最大ms | 失败项 |',
             '|---|---:|---:|---:|---:|---:|---|---:|---:|---|---|']
+        lines += ['',f"测试证据：{self.state.get('tests',{})}；真实恢复对照：{self.state.get('preflight',{})}"]
         for arm,seeds in self.state['arms'].items():
             for seed,record in seeds.items():
                 for p in record['points']:

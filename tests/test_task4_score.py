@@ -119,6 +119,24 @@ class ScoreTests(unittest.TestCase):
         for kind,h in [('arm',18),('selection',20),('evaluation',23),('work',24)]:
             cutoff(0,kind=kind,now=h*3600-1)
             with self.assertRaises(TimeoutError):cutoff(0,kind=kind,now=h*3600)
+    def test_each_checkpoint_evaluated_before_continuation(self):
+        obj=Campaign.__new__(Campaign);obj.state={'arms':{}};obj.start=10**12;calls=[]
+        obj.update=lambda status,**kw:None
+        def train(arm,seed,target,previous=None):
+            calls.append(('train',target,previous))
+            return dict(checkpoint=str(target),checkpoint_sha256='sha',actual_actions=target,target_actions=target,run='run'+str(target))
+        def point(arm,seed,entry):
+            calls.append(('evaluate',entry['target_actions']))
+            return dict(entry,failures=[],summary=dict(mean_score=1,first_place_rate=.5))
+        obj.train=train;obj.point=point
+        result=obj.seed('L',22)
+        self.assertTrue(result['complete'])
+        self.assertEqual(calls,[('train',20000,None),('evaluate',20000),('train',40000,'run20000'),('evaluate',40000),('train',60000,'run40000'),('evaluate',60000)])
+        obj.state={'arms':{}};calls.clear()
+        obj.point=lambda *args:(_ for _ in ()).throw(EngineeringFailure('checkpoint failure'))
+        with self.assertRaises(EngineeringFailure):obj.seed('L',22)
+        self.assertEqual(calls,[('train',20000,None)])
+
     def test_behavior_gate_and_first_failure(self):
         obj=Campaign.__new__(Campaign)
         with tempfile.TemporaryDirectory() as tmp:
