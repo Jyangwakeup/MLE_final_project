@@ -283,6 +283,46 @@ class SharedRewardTestCase(unittest.TestCase):
             - reward_from_events([e.WAITED], "r7_safe_credit_potential"),
             targeted["avoidable_wait_penalty"])
 
+    def test_r21_adds_only_safe_unchanged_target_reverse_penalty(self):
+        r20 = resolve_reward_spec("r20_safe_credit_targeted_wait")
+        r21 = resolve_reward_spec("r21_safe_credit_targeted_reverse")
+        self.assertEqual(
+            {key: value for key, value in r21.items()
+             if key != "conditional_loop_penalty"}, r20)
+        owner = SimpleNamespace()
+        init_temporal_reward_state(owner)
+        first = make_state(position=(3, 3), coins=((8, 3),))
+        middle = make_state(position=(4, 3), coins=((8, 3),))
+        returned = make_state(position=(3, 3), coins=((8, 3),))
+        temporal_reward_context(
+            owner, "RIGHT", first, middle, [],
+            reward_id="r21_safe_credit_targeted_reverse")
+        context = temporal_reward_context(
+            owner, "LEFT", middle, returned, [],
+            reward_id="r21_safe_credit_targeted_reverse")
+        self.assertTrue(context["conditional_loop"])
+        self.assertAlmostEqual(
+            reward_from_events(
+                [], "r21_safe_credit_targeted_reverse",
+                conditional_loop=True)
+            - reward_from_events([], "r20_safe_credit_targeted_wait"),
+            -0.08)
+
+        owner.reward_previous_position = (3, 3)
+        owner.reward_previous_coin_target = (8, 3)
+        changed = make_state(position=(4, 3), coins=((7, 3),))
+        self.assertFalse(temporal_reward_context(
+            owner, "LEFT", changed, returned, [],
+            reward_id="r21_safe_credit_targeted_reverse")["conditional_loop"])
+
+        owner.reward_previous_position = (3, 3)
+        owner.reward_previous_coin_target = (8, 3)
+        danger = make_state(
+            position=(4, 3), coins=((8, 3),), bombs=(((4, 6), 0),))
+        self.assertFalse(temporal_reward_context(
+            owner, "LEFT", danger, returned, [],
+            reward_id="r21_safe_credit_targeted_reverse")["conditional_loop"])
+
     def test_conditional_reward_adds_only_explicit_flags(self):
         baseline = reward_from_events([e.WAITED], "r5_conditional_loop")
         spec = resolve_reward_spec("r5_conditional_loop")

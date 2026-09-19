@@ -132,6 +132,14 @@ SHA-256 为 `14d67cd834e8b0be68a2aac39ab27ca3867028cec433219c3a3dfeb52f9fc581`�
 安全、无效动作、放弹存活、Task 1 保留及 CPU 时延门槛，但 19 个 Task 2 门槛仅通过 12 个，
 因此**不得**作为 Task 2 晋级模型，也不启动 seeds 22/33。
 
+### T2-R21：最后一次窄条件折返奖励实验
+
+状态：planned。恢复原 `optimized_double_q_lambda_agent` 的联合tile编码，以r20为唯一基线，
+仅加入 `conditional_loop_penalty=-0.08`。该信号只在当前位置安全、导航目标不变、移动
+成功且返回上一位置时触发；危险逃生、目标切换、必要WAIT和有效BOMB不罚。seed11从零
+建立相同奖励合同的正式Task1父链，再进入Task2 100k筛选。若未改善到平均金币>3.70、
+平均炸箱≥50.25且长往返<70%，本Q-learning奖励搜索结束并冻结旧r20最佳模型。
+
 重试使用本地且被 Git 忽略的 `.venv-compute` 环境：由
 `/home/students/ji/.local/bin/python3.10` 创建，并安装 CPU 训练依赖。
 
