@@ -1,0 +1,21 @@
+{
+  "actions": 2610,
+  "checkpoint_hashes": {
+    "/export/data/sfan/MLE_final_project_task4_score/runs/task4_score_preflight_1789857367_LPK4restore/resume/generation-00000008/learner.pt": "59a76c138f9e530fde482f9e8ae1334ffb2bb7271b7196a463e147172a63684a",
+    "/export/data/sfan/MLE_final_project_task4_score/runs/task4_score_preflight_1789857367_LPK8/resume/generation-00000008/learner.pt": "a2235d6b3c6af68b31f1826473f8e8c056b78b7a0551f3835507af4718608c64"
+  },
+  "control": "/export/data/sfan/MLE_final_project_task4_score/runs/task4_score_preflight_1789857367_C8",
+  "control_matched_decisions": 8764,
+  "manifest_sha256": "b7e17ddc4df5e344cd5ac7643bb5a0512132e461b0fe403d03dd21d95048196e",
+  "matched_decisions": 8838,
+  "passed": true,
+  "prefix": "/export/data/sfan/MLE_final_project_task4_score/runs/task4_score_preflight_1789857367_LPK4",
+  "replay": {
+    "kills": 15,
+    "ordinary": 2595
+  },
+  "restored": "/export/data/sfan/MLE_final_project_task4_score/runs/task4_score_preflight_1789857367_LPK4restore",
+  "source_commit": "e808358b0bfd90ed38d4304d7287b2ce54b0ad0a",
+  "updates": 611,
+  "whole": "/export/data/sfan/MLE_final_project_task4_score/runs/task4_score_preflight_1789857367_LPK8"
+}

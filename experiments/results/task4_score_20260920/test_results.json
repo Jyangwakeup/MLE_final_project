@@ -1,0 +1,13 @@
+{
+  "passed": true,
+  "full_suite": {
+    "tests": 520,
+    "skipped": 1
+  },
+  "targeted_tests": 9,
+  "runtime_source_hash": "aac3991ba238bb4b34139528736b666c36f8c813df6db4da793be4b452c2e00b",
+  "logs": {
+    "/export/data/sfan/MLE_final_project_task4_score/runs/task4_score_20260920/unittest_full.log": "3169745f5398d020efe2ccd2804087b3c585c1259796af79f45a966b2fc1a58d",
+    "/export/data/sfan/MLE_final_project_task4_score/runs/task4_score_20260920/unit_score_release.log": "0b38e8624ebbdd244009cb0cdcdfa58c84302b1d036b45a72cbbc05ca0c703be"
+  }
+}
