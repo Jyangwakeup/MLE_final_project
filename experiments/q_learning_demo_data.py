@@ -19,7 +19,7 @@ from agent_code.learning_common.runtime import effective_legal_mask
 from agent_code.learning_common.temporal_reward import (
     observed_terminal_state, reset_temporal_reward_state, temporal_reward_context,
 )
-from agent_code.optimized_double_q_lambda_demo_agent import callbacks
+from experiments.agent_variants.optimized_double_q_lambda_demo_agent import callbacks
 from agent_code.team_agent.rewards import reward_from_events, resolve_reward_spec
 from agent_code.team_agent.safety import avoidable_fatal_action, mask_for_decision
 

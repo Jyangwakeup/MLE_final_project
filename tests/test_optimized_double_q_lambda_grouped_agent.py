@@ -5,7 +5,7 @@ import unittest
 
 import numpy as np
 
-from agent_code.optimized_double_q_lambda_grouped_agent.callbacks import (
+from experiments.agent_variants.optimized_double_q_lambda_grouped_agent.callbacks import (
     BASE_GROUPS, GROUP_ACTION_FEATURE_INDICES, HISTORY_GROUPS, HYPERPARAMETERS,
     make_model,
 )

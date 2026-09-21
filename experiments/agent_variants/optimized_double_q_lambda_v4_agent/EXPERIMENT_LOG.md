@@ -15,14 +15,15 @@
 | Task 2 筛选 | seed 11、100k actions、每25k快照、Task 1/2各20局冻结评估 |
 | Task 2 成功式早停 | 仅限筛选胜者的 100k→200k 延长；从100k起每25k做配对冻结评估，连续两次通过全部19项门槛才以 `task2_quality_converged` 停止 |
 
-## 计划中的实验
+## 已完成实验
 
 | ID | 特征 | 奖励 | 状态 | 目的 |
 |---|---|---|---|---|
-| V4-T1-R7 | continuous-v4 | r7_safe_credit_potential | running：Slurm `472903` | 建立正式 Task 1 父链；预计50–75分钟 |
-| V4-T1-R10 | continuous-v4 | r10_bounded_history_anti_loop | running：Slurm `472904` | 建立正式 Task 1 父链；预计50–75分钟 |
-| V4-T2-R7 | continuous-v4 | r7_safe_credit_potential | blocked on parent | 测量仅增加历史可观测性的收益 |
-| V4-T2-R10 | continuous-v4 | r10_bounded_history_anti_loop | blocked on parent | 测量有界反循环奖励的增量收益 |
+| V4-T1-R7 | continuous-v4 | r7_safe_credit_potential | completed：`472903` | 父链完成；后续 r7 Task 2 筛选未胜出。 |
+| V4-T1-R10 | continuous-v4 | r10_bounded_history_anti_loop | completed：`472904` | 父链完成；r10 筛选后续延长。 |
+| V4-T2-R7 | continuous-v4 | r7_safe_credit_potential | completed：`472949` | 100k 筛选完成，未满足完整门槛。 |
+| V4-T2-R10 | continuous-v4 | r10_bounded_history_anti_loop | completed：`472950` / `472952` | 100k 筛选与200k延长完成，未达标。 |
+| V4-T1-R12 / V4-T2-R12 | continuous-v4 | r12 reward-only | completed：`472954` / `472956` / `472958` | 后备链完成，未达标，归档。 |
 
 ## Task 2 启动失败与修复
 
@@ -44,4 +45,8 @@ promotion audit、学习合同完全一致且 Git 变更严格限于实验编排
 ## 训练控制变更（2026-09-17）
 
 首轮 r7/r10 的 100k action 筛选维持固定预算，因此不会受早停影响，保证消融可比。
-后续唯一胜者的 200k extension 启用 `task2_success_stopping`：它不读取训练 reward，也不会因长期无提升而淘汰模型；每次评估均保存不可变 checkpoint、19项 gates 与配对冻结结果。任一门槛失败会把连续通过次数清零。两次连续全通过才提前停止，否则仍跑满200k。运行中的 Task 1 jobs `472903` / `472904` 不改动。
+后续唯一胜者的 200k extension 启用 `task2_success_stopping`：它不读取训练 reward，也不会因长期无提升而淘汰模型；每次评估均保存不可变 checkpoint、19项 gates 与配对冻结结果。任一门槛失败会把连续通过次数清零。两次连续全通过才提前停止，否则仍跑满200k。全部相关 job 已结束。
+
+## 最终归档结果
+
+`r12` 的 200k 链在 125,200 Task-2 actions 的最佳冻结快照仍未通过完整质量门槛：Task 1 保留率 100%，Task 2 平均金币 0.95/9、平均炸箱 18.40、长 WAIT 0%、长往返 35%、跑满400步率 100%。最佳 checkpoint 为 `runs/qlambda_v4_r12_t2_200k_s11_j472958/checkpoints/snapshots/step_0125200.pkl`，SHA-256 为 `0f8db54eb0524187649efc5278c3cf940f2cfa7c36e7863be7bd2752a08de548`。该变体未成为主线。

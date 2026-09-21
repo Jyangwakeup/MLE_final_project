@@ -11,7 +11,7 @@ import pickle
 import numpy as np
 
 from agent_code.learning_common.linear_agent import LinearTransition
-from agent_code.optimized_double_q_lambda_demo_agent import callbacks
+from experiments.agent_variants.optimized_double_q_lambda_demo_agent import callbacks
 from experiments.q_learning_demo_data import sha256
 
 

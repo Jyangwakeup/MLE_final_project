@@ -27,8 +27,8 @@ _ALLOWED_PREFIXES = (
     "docs/",
 )
 _ALLOWED_AGENT_DOC = (
-    "agent_code/optimized_double_q_lambda_v4_agent/EXPERIMENT_LOG.md",
-    "agent_code/optimized_double_q_lambda_v4_agent/README.md",
+    "experiments/agent_variants/optimized_double_q_lambda_v4_agent/EXPERIMENT_LOG.md",
+    "experiments/agent_variants/optimized_double_q_lambda_v4_agent/README.md",
 )
 _IGNORED_DIRTY_PREFIXES = (".vscode/",)
 

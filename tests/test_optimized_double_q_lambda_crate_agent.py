@@ -2,7 +2,7 @@
 import unittest
 import numpy as np
 from agent_code.optimized_double_q_lambda_agent import callbacks as old
-from agent_code.optimized_double_q_lambda_crate_agent import callbacks as new
+from experiments.agent_variants.optimized_double_q_lambda_crate_agent import callbacks as new
 from agent_code.team_agent.feature_system.continuous_v2 import VECTOR_FIELDS
 from experiments.agent_contracts import resolve_agent_contract
 

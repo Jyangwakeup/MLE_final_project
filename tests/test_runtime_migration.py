@@ -52,7 +52,7 @@ class RuntimeMigrationTests(unittest.TestCase):
             "experiments/run.py", "scripts/x.sh", "tests/test_x.py",
         ]), ["experiments/run.py", "scripts/x.sh", "tests/test_x.py"])
         for path in (
-            "agent_code/optimized_double_q_lambda_v4_agent/train.py",
+            "experiments/agent_variants/optimized_double_q_lambda_v4_agent/train.py",
             "agent_code/team_agent/rewards.py", "settings.py",
         ):
             with self.subTest(path=path), self.assertRaisesRegex(ValueError, path):

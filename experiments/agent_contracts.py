@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from importlib import import_module
+from pathlib import Path
 from typing import Any
 
 import settings as s
@@ -53,6 +54,15 @@ _NEW_AGENTS = {
     "rainbow_lite_v5_agent",
     "expected_sarsa_lambda_v5_agent",
 }
+_ARCHIVED_Q_CNN_AGENTS = {
+    "cnn_double_dqn_agent", "cnn_path_double_dqn_agent",
+    "optimized_double_q_lambda_crate_agent",
+    "optimized_double_q_lambda_demo_agent",
+    "optimized_double_q_lambda_grouped_agent",
+    "optimized_double_q_lambda_history_agent",
+    "optimized_double_q_lambda_v4_agent",
+}
+_PROJECT_ROOT = Path(__file__).resolve().parents[1]
 _BASELINE_FEATURE_IDS = {
     "discrete-v1", "discrete-q-v2", "discrete-objective-v1",
 }
@@ -106,7 +116,12 @@ def resolve_agent_contract(
         )
     if agent not in _NEW_AGENTS:
         raise ValueError(f"experiments do not define a learning contract for {agent!r}")
-    module = import_module(f"agent_code.{agent}.callbacks")
+    module_name = f"agent_code.{agent}.callbacks"
+    if agent in _ARCHIVED_Q_CNN_AGENTS and not (
+        _PROJECT_ROOT / "agent_code" / agent
+    ).exists():
+        module_name = f"experiments.agent_variants.{agent}.callbacks"
+    module = import_module(module_name)
     metadata = module.AGENT_METADATA
     fixed_feature_id = metadata["feature_id"]
     # Agent-local experimental representations need not be globally registered

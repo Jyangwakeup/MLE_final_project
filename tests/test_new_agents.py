@@ -27,17 +27,17 @@ from agent_code.double_q_compact_agent.features import canonical_legal_mask
 from agent_code.double_dqn_continuous_agent import features as continuous_features
 from agent_code.double_dqn_continuous_agent import callbacks as continuous_callbacks
 from agent_code.double_dqn_continuous_agent import train as continuous_train
-from agent_code.cnn_double_dqn_agent import features as board_features
-from agent_code.cnn_double_dqn_agent import callbacks as cnn_callbacks
-from agent_code.cnn_double_dqn_agent import train as cnn_train
-from agent_code.cnn_double_dqn_agent.model import BoardQNetwork, build_learner as build_cnn
-from agent_code.cnn_path_double_dqn_agent.features import (
+from experiments.agent_variants.cnn_double_dqn_agent import features as board_features
+from experiments.agent_variants.cnn_double_dqn_agent import callbacks as cnn_callbacks
+from experiments.agent_variants.cnn_double_dqn_agent import train as cnn_train
+from experiments.agent_variants.cnn_double_dqn_agent.model import BoardQNetwork, build_learner as build_cnn
+from experiments.agent_variants.cnn_path_double_dqn_agent.features import (
     features_for_state as path_features, initialize_history, record_position,
 )
-from agent_code.cnn_path_double_dqn_agent.callbacks import cached_features
-from agent_code.cnn_path_double_dqn_agent.learner import PathReplay, PathTransition
+from experiments.agent_variants.cnn_path_double_dqn_agent.callbacks import cached_features
+from experiments.agent_variants.cnn_path_double_dqn_agent.learner import PathReplay, PathTransition
 from agent_code.learning_common.n_step import NStepAccumulator
-from agent_code.cnn_path_double_dqn_agent.model import PathBoardQNetwork
+from experiments.agent_variants.cnn_path_double_dqn_agent.model import PathBoardQNetwork
 from agent_code.hybrid_dueling_double_dqn_agent import features as hybrid_features
 from agent_code.hybrid_dueling_double_dqn_agent import callbacks as hybrid_callbacks
 from agent_code.hybrid_dueling_double_dqn_agent import train as hybrid_train

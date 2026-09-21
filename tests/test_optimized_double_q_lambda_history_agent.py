@@ -17,8 +17,8 @@ from agent_code.learning_common.action_history import (
 from agent_code.optimized_double_q_lambda_agent.callbacks import (
     HYPERPARAMETERS as LEGACY_HYPERPARAMETERS,
 )
-from agent_code.optimized_double_q_lambda_history_agent import callbacks
-from agent_code.optimized_double_q_lambda_history_agent.features import features_for_state
+from experiments.agent_variants.optimized_double_q_lambda_history_agent import callbacks
+from experiments.agent_variants.optimized_double_q_lambda_history_agent.features import features_for_state
 from experiments.agent_contracts import resolve_agent_contract
 from experiments.package_agent import build_submission
 from tests.test_danger import make_game_state
@@ -109,7 +109,7 @@ class HistoryInputAgentTests(unittest.TestCase):
             checkpoint = root / "legacy.pkl"
             with checkpoint.open("wb") as file:
                 pickle.dump(legacy, file)
-            with self.assertRaisesRegex(ValueError, "hyperparameters"):
+            with self.assertRaisesRegex(ValueError, "restore"):
                 build_submission(
                     "optimized_double_q_lambda_history_agent", checkpoint,
                     root / "submission.zip")

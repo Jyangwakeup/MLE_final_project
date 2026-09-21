@@ -11,11 +11,11 @@ from agent_code.learning_common.action_history import (
     record_selected_action,
 )
 from agent_code.learning_common.tile_coding import TraceControl
-from agent_code.optimized_double_q_lambda_v4_agent.callbacks import (
+from experiments.agent_variants.optimized_double_q_lambda_v4_agent.callbacks import (
     ACTION_FEATURE_INDICES,
     HYPERPARAMETERS,
 )
-from agent_code.optimized_double_q_lambda_v4_agent.features import features_for_state
+from experiments.agent_variants.optimized_double_q_lambda_v4_agent.features import features_for_state
 from experiments.agent_contracts import resolve_agent_contract
 from tests.test_danger import make_game_state
 
