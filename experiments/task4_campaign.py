@@ -21,7 +21,7 @@ from experiments import task3_plateau_stopping as p
 from experiments.task3_retention_prefix import summarize_evaluation, _evaluation_directories
 from experiments.compare_evaluations import compare_evaluations
 from experiments.task4_transfer import digest, PARENT_SHA256
-from experiments.task4_protocol import VERSION as V2, OBSERVED_VERSION as V3, MODERN, LEGACY, limits
+from experiments.task4_protocol import VERSION as V2, OBSERVED_VERSION as V3, MODERN, LEGACY, ALIGNED_VERSION as V4, limits
 
 VERSION='task4-campaign-v1'
 ENGINEERING=('act_timeouts','act_skipped','avoidable_escape_collapses',
@@ -37,6 +37,9 @@ class EngineeringFailure(RuntimeError):
 def validate_manifest(m):
     if m['schema_version'] not in (VERSION,*MODERN) or m['training_seeds']!=[11,22,33]:
         raise ValueError('Task 4 protocol/training seeds mismatch')
+    if m['schema_version']==V4:
+        from experiments.task4_aligned import validate_protocol
+        return validate_protocol(m)
     if set(m['arm_configs'])!={'A','B'} or m['parent']['checkpoint_sha256']!=PARENT_SHA256:
         raise ValueError('Task 4 parent/arms mismatch')
     groups=[m[k+'_seeds'] for k in ('diagnostic','development','confirmation','main_validation')]
@@ -168,6 +171,8 @@ class Campaign:
         self.stop=threading.Event();self.check_identity()
         if self.m['schema_version'] in MODERN:
             from experiments.task4_v2_evidence import validate_evidence
+            if self.m['schema_version']==V4:
+                from experiments.task4_aligned import validate_evidence
             validate_evidence(self.root,self.m)
             if self.m['schema_version']==V3 and not self.state['diagnostics']:
                 from experiments.task4_reference_observation import reused_diagnostics
@@ -242,7 +247,8 @@ class Campaign:
 
     def evaluate(self,arm,checkpoint,label,phase,worlds,tasks=(1,2,3,4),opponents=None,role='candidate'):
         self.check_time(evaluation=True);self.check_identity()
-        config=self.m['reference_config'] if role=='reference' and self.m.get('schema_version') in MODERN else self.m['arm_configs'][arm]
+        config=(self.m['historical_reference_config'] if role=='historical_reference' else
+                self.m['reference_config'] if role=='reference' and self.m.get('schema_version') in MODERN else self.m['arm_configs'][arm])
         expected=dict(arm=arm,checkpoint_sha256=p._sha256(checkpoint),worlds=list(worlds),tasks=list(tasks),opponents=opponents)
         if self.m.get('schema_version') in MODERN:
             expected.update(role=role,config_sha256=p._sha256(self.root/config),
@@ -276,12 +282,14 @@ class Campaign:
                 with (directory/(directory.name+'_summary')/'summary.csv').open() as handle:
                     average=next(r for r in csv.DictReader(handle) if r['agent_name']==self.m['agent'] and r['run_id']=='AVERAGE')
                 summary['mean_bombs']=float(average['mean_bombs'])
-                if self.m.get('schema_version') in MODERN and role=='candidate':
+                if self.m.get('schema_version') in MODERN and (role=='candidate' or self.m.get('schema_version')==V4 and role=='reference'):
                     from experiments.compact_audit import audit_run
                     raw=audit_run(directory,task,policy=self.policy())
                     p._write_json(directory/'v2_raw_audit.json',raw)
                     fatal=[f for f in raw['failures'] if f not in ('suicide_rate','bomb_survival_rate','zero_bomb_round_rate','invalid_action_rate')]
                     if fatal:raise EngineeringFailure('Raw candidate audit: '+str(fatal))
+                    if self.m.get('schema_version')==V4 and role=='reference' and raw['failures']:
+                        raise EngineeringFailure('v9 baseline absolute gates: '+str(raw['failures']))
                 summaries[f'task{task}']=summary
             checked=summaries
             if self.m.get('schema_version')==V3 and role=='reference':
@@ -315,7 +323,7 @@ class Campaign:
             p._write_json(target/'v2_raw_audit.json',raw)
             fatal=raw['failures'] if diagnostic else [f for f in raw['failures'] if f not in ('suicide_rate','bomb_survival_rate','zero_bomb_round_rate','invalid_action_rate')]
             if fatal:raise EngineeringFailure('Training raw audit: '+str(fatal))
-            if diagnostic and seed==22433:
+            if diagnostic and seed==22433 and self.m.get('schema_version')!=V4:
                 from experiments.task4_v2_evidence import check_failure_prefix
                 try:check_failure_prefix(self.root,self.m,target)
                 except (ValueError,OSError) as exc:raise EngineeringFailure(str(exc)) from exc
@@ -372,7 +380,7 @@ class Campaign:
         self.write(path,result);return result
 
     def validation(self,arm,results):
-        parent=self.evaluate('A',self.root/self.m['parent']['checkpoint'],'confirmation_parent','confirmation',self.m['confirmation_seeds'],role='reference')
+        parent=self.evaluate(arm,self.root/self.m['parent']['checkpoint'],'confirmation_parent','confirmation',self.m['confirmation_seeds'],role='reference')
         confirmation={}
         for seed in (11,22,33):
             confirmation[str(seed)]=self.assess(arm,seed,results[str(seed)]['selected'],'confirmation',parent,self.m['confirmation_seeds'])
@@ -382,7 +390,8 @@ class Campaign:
                 self.state['status']='stopped_confirmation_failure';return
         candidate=min(confirmation.values(),key=candidate_key)
         self.state['selected_training_seed']=candidate['seed'];self.write(self.path,self.state)
-        parent=self.evaluate('A',self.root/self.m['parent']['checkpoint'],'main_parent','main_validation',self.m['main_validation_seeds'],role='reference')
+        self.state['status']='main_validation';self.write(self.path,self.state)
+        parent=self.evaluate(arm,self.root/self.m['parent']['checkpoint'],'main_parent','main_validation',self.m['main_validation_seeds'],role='reference')
         main=self.assess(arm,candidate['seed'],results[str(candidate['seed'])]['selected'],
                          'main_validation',parent,self.m['main_validation_seeds'])
         self.state['main_validation']=main
@@ -391,6 +400,10 @@ class Campaign:
     def run(self):
         if self.state['status'] in TERMINAL:return self.state
         try:
+            if self.m.get('schema_version')==V4:
+                from experiments.task4_aligned import run_aligned
+                run_aligned(self)
+                return self.state
             self.state['status']='diagnostics';self.write(self.path,self.state)
             for seed in (22,11,33):
                 if str(seed) not in self.state['diagnostics']:

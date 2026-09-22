@@ -300,3 +300,11 @@ _Avoid_: Guaranteed successful attack, reconstructed posthumous reward
 A controlled Task4 comparison of reduced learning rate, added coin potential,
 and retained/resampled observed-kill fragments, using equal checkpoint choices.
 _Avoid_: Three generations of self-play, guaranteed continuous evolution
+
+**Safety-aligned parent baseline**:
+The original Task3 policy evaluated under the same frozen safety contract as its Task4 children. Its certification authorizes one new transfer experiment; it does not rewrite the original Task3 qualification or certify historical Replay.
+_Avoid_: Retrained Task3 model, repaired historical result
+
+**Baseline recertification**:
+A protocol-specific check of retained capabilities, current safety behavior and diagnostic training before a new experiment. Reused historical capability evidence remains distinct from newly sampled engineering evaluations.
+_Avoid_: New independent curriculum chain, completed Task4 confirmation

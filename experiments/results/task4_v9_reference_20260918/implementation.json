@@ -1,0 +1,21 @@
+{
+  "base_commit": "d1d3d5147f8a27b1e8562d95e7254f8546a8cafe",
+  "budget_started_at": "2026-09-18T20:00:00+00:00",
+  "deadline": "2026-09-19T20:00:00+00:00",
+  "changes": [
+    "v4 same-v9 strict parent and candidate roles",
+    "single B campaign with admission before training",
+    "verified historical paired retention",
+    "world25106 proof-duration and full-world regression",
+    "stage-correct background status and terminal report"
+  ],
+  "unchanged": [
+    "agent runtime",
+    "game rules",
+    "reward",
+    "network",
+    "parent weights",
+    "historical outcomes",
+    "submitted archive"
+  ]
+}

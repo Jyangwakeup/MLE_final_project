@@ -1,0 +1,137 @@
+[
+  {
+    "path": "runs/task4_v9_reference_20260918_B_b2e6687e_diag_s22411_c0020_7a1f04f/checkpoints/final.pt",
+    "bytes": 48715648,
+    "sha256": "e71bd2730837ec9303177c3fa7032f4127f57e99e8f1cef6bf77d2e45b67d8a3"
+  },
+  {
+    "path": "runs/task4_v9_reference_20260918_B_b2e6687e_diag_s22411_c0020_7a1f04f/resume/generation-00000019/learner.pt",
+    "bytes": 48428032,
+    "sha256": "7d8752c12f1cb8ade90b2b4ec184ad1c6dcc7413687f59bb342c99318d8c7cc0"
+  },
+  {
+    "path": "runs/task4_v9_reference_20260918_B_b2e6687e_diag_s22411_c0020_7a1f04f/resume/generation-00000020/learner.pt",
+    "bytes": 48715648,
+    "sha256": "e71bd2730837ec9303177c3fa7032f4127f57e99e8f1cef6bf77d2e45b67d8a3"
+  },
+  {
+    "path": "runs/task4_v9_reference_20260918_B_b2e6687e_diag_s22422_c0020_7a1f04f/checkpoints/final.pt",
+    "bytes": 49232000,
+    "sha256": "b01eebadd607ba261d6ce33c0610e69fb77b7aa7961d99761a5a9a74ef8399eb"
+  },
+  {
+    "path": "runs/task4_v9_reference_20260918_B_b2e6687e_diag_s22422_c0020_7a1f04f/resume/generation-00000019/learner.pt",
+    "bytes": 48944448,
+    "sha256": "18094333689c54f827ee2de33a1533276bb602016b00154635eba14d023dff0e"
+  },
+  {
+    "path": "runs/task4_v9_reference_20260918_B_b2e6687e_diag_s22422_c0020_7a1f04f/resume/generation-00000020/learner.pt",
+    "bytes": 49232000,
+    "sha256": "b01eebadd607ba261d6ce33c0610e69fb77b7aa7961d99761a5a9a74ef8399eb"
+  },
+  {
+    "path": "runs/task4_v9_reference_20260918_B_b2e6687e_diag_s22433_c0020_7a1f04f/checkpoints/final.pt",
+    "bytes": 49356160,
+    "sha256": "256a583df4d2b9a9444cb79ddf76e82f2c311cd684c93d490e7298765ff3c27f"
+  },
+  {
+    "path": "runs/task4_v9_reference_20260918_B_b2e6687e_diag_s22433_c0020_7a1f04f/resume/generation-00000019/learner.pt",
+    "bytes": 49068672,
+    "sha256": "02408731e0827a72cac85147b79f98dcb4a4f86ab87f1be95fec959125212460"
+  },
+  {
+    "path": "runs/task4_v9_reference_20260918_B_b2e6687e_diag_s22433_c0020_7a1f04f/resume/generation-00000020/learner.pt",
+    "bytes": 49356160,
+    "sha256": "256a583df4d2b9a9444cb79ddf76e82f2c311cd684c93d490e7298765ff3c27f"
+  },
+  {
+    "path": "runs/task4_v9_reference_20260918_B_b2e6687e_train_s22_c0050_7a1f04f/checkpoints/final.pt",
+    "bytes": 57537920,
+    "sha256": "2cab89e085be4320c4f4e65b1e99c8ade59fedb6fd904fb86cfdcaf1aff156c8"
+  },
+  {
+    "path": "runs/task4_v9_reference_20260918_B_b2e6687e_train_s22_c0050_7a1f04f/resume/generation-00000049/learner.pt",
+    "bytes": 57250496,
+    "sha256": "e5d629ff8c186698aedab7606647f07d6afe1ed56ad65b4114409345b48a006b"
+  },
+  {
+    "path": "runs/task4_v9_reference_20260918_B_b2e6687e_train_s22_c0050_7a1f04f/resume/generation-00000050/learner.pt",
+    "bytes": 57537920,
+    "sha256": "2cab89e085be4320c4f4e65b1e99c8ade59fedb6fd904fb86cfdcaf1aff156c8"
+  },
+  {
+    "path": "runs/task4_v9_reference_20260918_B_b2e6687e_train_s22_c0100_7a1f04f/checkpoints/final.pt",
+    "bytes": 58124096,
+    "sha256": "48a523f3a89e6feaef2d3962d346ab5eda49267a863d968724afd062dec4b999"
+  },
+  {
+    "path": "runs/task4_v9_reference_20260918_B_b2e6687e_train_s22_c0100_7a1f04f/resume/generation-00000099/learner.pt",
+    "bytes": 58124096,
+    "sha256": "eb9404dee23df8f61839546bcd3879e785bef128a717b5513bdc288270b85ec3"
+  },
+  {
+    "path": "runs/task4_v9_reference_20260918_B_b2e6687e_train_s22_c0100_7a1f04f/resume/generation-00000100/learner.pt",
+    "bytes": 58124096,
+    "sha256": "48a523f3a89e6feaef2d3962d346ab5eda49267a863d968724afd062dec4b999"
+  },
+  {
+    "path": "runs/task4_v9_reference_20260918_B_b2e6687e_train_s22_c0150_7a1f04f/checkpoints/final.pt",
+    "bytes": 58124224,
+    "sha256": "2b225cf07027bf905032a1c87951730ec2d363854e0d4ce5ac5750759ac8b0ad"
+  },
+  {
+    "path": "runs/task4_v9_reference_20260918_B_b2e6687e_train_s22_c0150_7a1f04f/resume/generation-00000149/learner.pt",
+    "bytes": 58124096,
+    "sha256": "cb5f2f409953b01f36f7e1bfd98e828e95256ebc07b208abbbad54428ca82bf3"
+  },
+  {
+    "path": "runs/task4_v9_reference_20260918_B_b2e6687e_train_s22_c0150_7a1f04f/resume/generation-00000150/learner.pt",
+    "bytes": 58124224,
+    "sha256": "2b225cf07027bf905032a1c87951730ec2d363854e0d4ce5ac5750759ac8b0ad"
+  },
+  {
+    "path": "runs/task4_v9_reference_20260918_B_b2e6687e_train_s22_c0200_7a1f04f/checkpoints/final.pt",
+    "bytes": 58124096,
+    "sha256": "8d45d5811807b667fd999b3ec4d2f9ec5e735be03899daeeb08fcfbf9fefbb24"
+  },
+  {
+    "path": "runs/task4_v9_reference_20260918_B_b2e6687e_train_s22_c0200_7a1f04f/resume/generation-00000199/learner.pt",
+    "bytes": 58124096,
+    "sha256": "5ca2ffee954efc8eaf0595923bc97bf54350bac1612ea5343b97944aecbbcdc8"
+  },
+  {
+    "path": "runs/task4_v9_reference_20260918_B_b2e6687e_train_s22_c0200_7a1f04f/resume/generation-00000200/learner.pt",
+    "bytes": 58124096,
+    "sha256": "8d45d5811807b667fd999b3ec4d2f9ec5e735be03899daeeb08fcfbf9fefbb24"
+  },
+  {
+    "path": "runs/task4_v9_reference_20260918_B_b2e6687e_train_s22_c0250_7a1f04f/checkpoints/final.pt",
+    "bytes": 58124096,
+    "sha256": "4f07a068d8f75ce62b47573787724c73dd7a183542b54df9c0c70a2fdefcc0f1"
+  },
+  {
+    "path": "runs/task4_v9_reference_20260918_B_b2e6687e_train_s22_c0250_7a1f04f/resume/generation-00000249/learner.pt",
+    "bytes": 58124160,
+    "sha256": "e7823c41513e696bce9873647653fc84a95ceedead0532d7afbd83df0dcc911c"
+  },
+  {
+    "path": "runs/task4_v9_reference_20260918_B_b2e6687e_train_s22_c0250_7a1f04f/resume/generation-00000250/learner.pt",
+    "bytes": 58124096,
+    "sha256": "4f07a068d8f75ce62b47573787724c73dd7a183542b54df9c0c70a2fdefcc0f1"
+  },
+  {
+    "path": "runs/task4_v9_reference_20260918_B_b2e6687e_train_s22_c0300_7a1f04f/checkpoints/final.pt",
+    "bytes": 58124096,
+    "sha256": "3f4e040c18ee12fe7109575cf8a4f77e3a8d9644903cfc03ebc29ccd0e9ce8f4"
+  },
+  {
+    "path": "runs/task4_v9_reference_20260918_B_b2e6687e_train_s22_c0300_7a1f04f/resume/generation-00000299/learner.pt",
+    "bytes": 58124096,
+    "sha256": "bf85846bc62fc61230619f99d22cd3c1b1610638095ac2786520e376c1283134"
+  },
+  {
+    "path": "runs/task4_v9_reference_20260918_B_b2e6687e_train_s22_c0300_7a1f04f/resume/generation-00000300/learner.pt",
+    "bytes": 58124096,
+    "sha256": "3f4e040c18ee12fe7109575cf8a4f77e3a8d9644903cfc03ebc29ccd0e9ce8f4"
+  }
+]

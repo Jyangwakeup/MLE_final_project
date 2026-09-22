@@ -68,6 +68,17 @@ def finish(campaign):
               'Historical parent replay is retained without retroactive certification.',
               'Under v3, only recognized v5 unproved-placement guarantee losses/escape collapses are reference observations; raw counters are unchanged. Candidate gates remain strict.', '',
               '## Diagnostics', '']
+    if campaign.m['schema_version']=='task4-campaign-v4':
+        report = [f'# Task4 same-v9 baseline: {conclusion}', '',
+                  f'Source: `{campaign.commit}`; manifest: `{campaign.identity["manifest_sha256"]}`.',
+                  f'Terminal status: `{status}`; error: `{state.get("error", "")}`.',
+                  'Both parent and child use v9 and 100/300ms act limits; no reference exceptions.',
+                  'Original v5 parent checkpoint and old terminal outcomes remain unchanged.',
+                  'Parent Replay comes from historical v5 behavior and is not retroactively certified.',
+                  'Retention: '+json.dumps(state.get('retention',{}),ensure_ascii=False),
+                  'Baseline certified: '+str(state.get('baseline_certified',False)),
+                  'Engineering baseline: '+json.dumps(state.get('engineering_baseline',{}).get('summaries',{})),
+                  '', '## Diagnostics', '']
     for seed, result in state.get('diagnostics', {}).items():
         audit = result['audit']
         report.append(f"- Logical seed{seed}: {audit['rounds']} rounds; timing `{audit['timing']}`; run `{result['run']}`.")

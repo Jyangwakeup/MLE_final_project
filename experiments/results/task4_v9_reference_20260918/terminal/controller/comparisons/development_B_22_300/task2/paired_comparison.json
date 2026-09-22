@@ -1,0 +1,92 @@
+{
+  "bootstrap_samples": 10000,
+  "candidate_agent": "double_dqn_continuous_v2_agent",
+  "matched_episode_key": [
+    "environment_seed",
+    "round_index"
+  ],
+  "metrics": [
+    {
+      "bootstrap_ci95_high": 0.26666666666666666,
+      "bootstrap_ci95_low": -0.48333333333333334,
+      "candidate_losses": 27,
+      "candidate_mean": 7.333333333333333,
+      "candidate_wins": 18,
+      "mean_difference": -0.11666666666666667,
+      "median_difference": 0.0,
+      "metric": "score",
+      "paired_count": 60,
+      "reference_mean": 7.45,
+      "ties": 15
+    },
+    {
+      "bootstrap_ci95_high": 0.26666666666666666,
+      "bootstrap_ci95_low": -0.48333333333333334,
+      "candidate_losses": 27,
+      "candidate_mean": 7.333333333333333,
+      "candidate_wins": 18,
+      "mean_difference": -0.11666666666666667,
+      "median_difference": 0.0,
+      "metric": "coins",
+      "paired_count": 60,
+      "reference_mean": 7.45,
+      "ties": 15
+    },
+    {
+      "bootstrap_ci95_high": 2.033333333333333,
+      "bootstrap_ci95_low": -6.6,
+      "candidate_losses": 36,
+      "candidate_mean": 100.83333333333333,
+      "candidate_wins": 24,
+      "mean_difference": -2.316666666666667,
+      "median_difference": -2.5,
+      "metric": "crates",
+      "paired_count": 60,
+      "reference_mean": 103.15,
+      "ties": 0
+    },
+    {
+      "bootstrap_ci95_high": 0.0,
+      "bootstrap_ci95_low": 0.0,
+      "candidate_losses": 0,
+      "candidate_mean": 0.0,
+      "candidate_wins": 0,
+      "mean_difference": 0.0,
+      "median_difference": 0.0,
+      "metric": "suicides",
+      "paired_count": 60,
+      "reference_mean": 0.0,
+      "ties": 60
+    },
+    {
+      "bootstrap_ci95_high": 0.0,
+      "bootstrap_ci95_low": 0.0,
+      "candidate_losses": 0,
+      "candidate_mean": 1.0,
+      "candidate_wins": 0,
+      "mean_difference": 0.0,
+      "median_difference": 0.0,
+      "metric": "survived",
+      "paired_count": 60,
+      "reference_mean": 1.0,
+      "ties": 60
+    },
+    {
+      "bootstrap_ci95_high": 0.0,
+      "bootstrap_ci95_low": 0.0,
+      "candidate_losses": 0,
+      "candidate_mean": 400.0,
+      "candidate_wins": 0,
+      "mean_difference": 0.0,
+      "median_difference": 0.0,
+      "metric": "survival_steps",
+      "paired_count": 60,
+      "reference_mean": 400.0,
+      "ties": 60
+    }
+  ],
+  "reference_agent": "double_dqn_continuous_v2_agent",
+  "replication_unit": "environment_seed",
+  "schema_version": "paired-evaluation-v1",
+  "task": "crate_navigation"
+}
