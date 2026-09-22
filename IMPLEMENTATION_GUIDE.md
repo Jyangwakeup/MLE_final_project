@@ -461,7 +461,7 @@ seed 11 优胜配置才从零复制 seeds 22/33。三训练 seed × 20 开发 se
 
 ### 8.9 Task 3 弱对手试验协议
 
-第一轮 Task 3 不修改 Feature、Reward 或 Safety：继续使用 84 维 `continuous-v2`、`r7_safe_credit_sparse` 和 `survival-mask-v1/all`，同时面对 `peaceful_agent` 与 `coin_collector_agent`。这样可以直接回答“加入弱对手训练是否有效”，不会把课程变化和奖励变化混在一起。完整预注册见 [`experiments/task3_pilot.json`](experiments/task3_pilot.json)，配置见 [`experiments/configs/task3_pilot_r7.json`](experiments/configs/task3_pilot_r7.json)，领域边界见 [`docs/adr/0004-pilot-task3-with-unchanged-r7.md`](docs/adr/0004-pilot-task3-with-unchanged-r7.md)。
+第一轮 Task 3 不修改 Feature、Reward 或 Safety：继续使用 84 维 `continuous-v2`、`r7_safe_credit_sparse` 和 `survival-mask-v1/all`，同时面对 `peaceful_agent` 与 `coin_collector_agent`。这样可以直接回答“加入弱对手训练是否有效”，不会把课程变化和奖励变化混在一起。完整预注册见 [`experiments/task3_pilot.json`](experiments/task3_pilot.json)，配置见 [`experiments/configs/task3_pilot_r7.json`](experiments/configs/task3_pilot_r7.json)，领域边界见 [`docs/adr/0030-pilot-task3-with-unchanged-r7.md`](docs/adr/0030-pilot-task3-with-unchanged-r7.md)。
 
 Task 2 三条父链属于源码提交 `814173b`，精确 v7 恢复要求源码身份相同；因此 Task 3 训练在该提交的隔离 worktree 中执行，但读取当前预注册配置并记录其 SHA256 和预注册提交。seeds 11、22、33 各自从对应父链晋级，不共享 seed 22 的公开权重。每段新增500局，累计500、1000、1500局时分别检查；一次通过即停止该链，动作数只控制 Task 3 的 `epsilon=0.30→0.05/120000 actions`，不控制停止。训练保持4-step return、75%旧Task replay、25%当前Task replay、蒸馏系数2和CPU单线程。
 
