@@ -1,0 +1,100 @@
+{
+  "status": "packaging_and_rename_checks_passed",
+  "checks": [
+    "trace-double_dqn_continuous_v2_agent",
+    "known-safety-double_dqn_continuous_v2_agent",
+    "trace-die_hardest",
+    "known-safety-die_hardest",
+    "game-0-double_dqn_continuous_v2_agent",
+    "game-0-die_hardest",
+    "game-1-double_dqn_continuous_v2_agent",
+    "game-1-die_hardest",
+    "game-2-double_dqn_continuous_v2_agent",
+    "game-2-die_hardest",
+    "game-3-double_dqn_continuous_v2_agent",
+    "game-3-die_hardest",
+    "game-4-double_dqn_continuous_v2_agent",
+    "game-4-die_hardest",
+    "game-5-double_dqn_continuous_v2_agent",
+    "game-5-die_hardest"
+  ],
+  "known_safety_failure_unresolved": true,
+  "uploaded": false,
+  "equivalent_trace_rows": 180,
+  "known_safety_failure_steps": [
+    77
+  ],
+  "elapsed_seconds": 124.29458510130644,
+  "full_safety_approved": false,
+  "paired_games": [
+    {
+      "pair": 0,
+      "opponents": "random_agent",
+      "world_seed": 2524112,
+      "score": 6,
+      "decisions": 400,
+      "full_replay_equal": true
+    },
+    {
+      "pair": 1,
+      "opponents": "random_agent",
+      "world_seed": 2259835,
+      "score": 8,
+      "decisions": 400,
+      "full_replay_equal": true
+    },
+    {
+      "pair": 2,
+      "opponents": "random_agent",
+      "world_seed": 2307069,
+      "score": 5,
+      "decisions": 400,
+      "full_replay_equal": true
+    },
+    {
+      "pair": 3,
+      "opponents": "rule_based_agent",
+      "world_seed": 2089124,
+      "score": 16,
+      "decisions": 400,
+      "full_replay_equal": true
+    },
+    {
+      "pair": 4,
+      "opponents": "rule_based_agent",
+      "world_seed": 2063090,
+      "score": 1,
+      "decisions": 130,
+      "full_replay_equal": true
+    },
+    {
+      "pair": 5,
+      "opponents": "rule_based_agent",
+      "world_seed": 2499292,
+      "score": 3,
+      "decisions": 400,
+      "full_replay_equal": true
+    }
+  ],
+  "timing": {
+    "double_dqn_continuous_v2_agent": {
+      "count": 2130,
+      "p95_ms": 14.626197796314955,
+      "max_ms": 48.9652780815959
+    },
+    "die_hardest": {
+      "count": 2130,
+      "p95_ms": 14.826001692563288,
+      "max_ms": 44.60097197443247
+    }
+  },
+  "peak_rss_mib": 319.64453125,
+  "python_files_name_only_changes": 47,
+  "framework_files_verified": 90,
+  "source_checkpoint_unchanged": true,
+  "source_zip_unchanged": true,
+  "archive_sha256": "0f64069f1ebdf7e7097780686514d123b245e6f71c1920e76ab60372303ac928",
+  "budget_seconds": 4895.818406581879,
+  "docker_tested": false,
+  "official_hardware_tested": false
+}
