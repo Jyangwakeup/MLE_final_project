@@ -1,0 +1,32 @@
+{
+  "world": 24011,
+  "death_step": 111,
+  "cause": "opponent bomb at sole exit",
+  "own_bomb_pending": false,
+  "first_physical_fallback_step": 108,
+  "probe": {
+    "state_step": 106,
+    "actions": [
+      "UP",
+      "WAIT"
+    ],
+    "remaining_steps": 7,
+    "consider_opponent_rearming": true,
+    "offline_budget_ms": 60000,
+    "proven_actions": [],
+    "scenarios_evaluated": 9,
+    "states_evaluated": 8108,
+    "timed_out": false,
+    "first_failing_profile": [
+      "UP",
+      "DOWN",
+      "WAIT"
+    ],
+    "first_failing_order": [
+      1,
+      0,
+      2
+    ]
+  },
+  "interpretation": "No robustly proven alternative at inspected step; does not establish global unavoidability or absence of an earlier policy improvement."
+}

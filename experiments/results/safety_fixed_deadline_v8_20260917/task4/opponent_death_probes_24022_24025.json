@@ -1,0 +1,260 @@
+[
+  {
+    "seed": 24022,
+    "step": 102,
+    "actual_action": "RIGHT",
+    "candidates": [
+      "RIGHT",
+      "LEFT",
+      "WAIT"
+    ],
+    "result": {
+      "proven_actions": [],
+      "scenarios_evaluated": 3,
+      "states_evaluated": 2601,
+      "timed_out": false,
+      "first_failing_profile": [
+        "RIGHT",
+        "WAIT",
+        "WAIT"
+      ],
+      "first_failing_order": [
+        0,
+        1,
+        2
+      ]
+    }
+  },
+  {
+    "seed": 24022,
+    "step": 103,
+    "actual_action": "WAIT",
+    "candidates": [
+      "RIGHT",
+      "LEFT",
+      "WAIT"
+    ],
+    "result": {
+      "proven_actions": [],
+      "scenarios_evaluated": 3,
+      "states_evaluated": 2547,
+      "timed_out": false,
+      "first_failing_profile": [
+        "RIGHT",
+        "WAIT",
+        "WAIT"
+      ],
+      "first_failing_order": [
+        0,
+        1,
+        2
+      ]
+    }
+  },
+  {
+    "seed": 24022,
+    "step": 104,
+    "actual_action": "WAIT",
+    "candidates": [
+      "RIGHT",
+      "WAIT"
+    ],
+    "result": {
+      "proven_actions": [],
+      "scenarios_evaluated": 2,
+      "states_evaluated": 1680,
+      "timed_out": false,
+      "first_failing_profile": [
+        "RIGHT",
+        "WAIT",
+        "WAIT"
+      ],
+      "first_failing_order": [
+        0,
+        1,
+        2
+      ]
+    }
+  },
+  {
+    "seed": 24022,
+    "step": 105,
+    "actual_action": "WAIT",
+    "candidates": [
+      "RIGHT",
+      "WAIT"
+    ],
+    "result": {
+      "proven_actions": [],
+      "scenarios_evaluated": 2,
+      "states_evaluated": 1666,
+      "timed_out": false,
+      "first_failing_profile": [
+        "RIGHT",
+        "WAIT",
+        "WAIT"
+      ],
+      "first_failing_order": [
+        0,
+        1,
+        2
+      ]
+    }
+  },
+  {
+    "seed": 24022,
+    "step": 106,
+    "actual_action": "RIGHT",
+    "candidates": [
+      "RIGHT"
+    ],
+    "result": {
+      "proven_actions": [],
+      "scenarios_evaluated": 1,
+      "states_evaluated": 819,
+      "timed_out": false,
+      "first_failing_profile": [
+        "RIGHT",
+        "WAIT",
+        "WAIT"
+      ],
+      "first_failing_order": [
+        0,
+        1,
+        2
+      ]
+    }
+  },
+  {
+    "seed": 24022,
+    "step": 107,
+    "actual_action": "RIGHT",
+    "candidates": [
+      "RIGHT"
+    ],
+    "result": {
+      "proven_actions": [],
+      "scenarios_evaluated": 1,
+      "states_evaluated": 832,
+      "timed_out": false,
+      "first_failing_profile": [
+        "RIGHT",
+        "WAIT",
+        "WAIT"
+      ],
+      "first_failing_order": [
+        0,
+        1,
+        2
+      ]
+    }
+  },
+  {
+    "seed": 24025,
+    "step": 189,
+    "actual_action": "RIGHT",
+    "candidates": [
+      "UP",
+      "RIGHT",
+      "DOWN",
+      "LEFT",
+      "WAIT"
+    ],
+    "result": {
+      "proven_actions": [
+        "UP",
+        "LEFT",
+        "WAIT"
+      ],
+      "scenarios_evaluated": 94,
+      "states_evaluated": 96439,
+      "timed_out": false,
+      "first_failing_profile": [
+        "RIGHT",
+        "UP",
+        "WAIT"
+      ],
+      "first_failing_order": [
+        0,
+        1,
+        2
+      ]
+    }
+  },
+  {
+    "seed": 24025,
+    "step": 190,
+    "actual_action": "LEFT",
+    "candidates": [
+      "RIGHT",
+      "LEFT",
+      "WAIT"
+    ],
+    "result": {
+      "proven_actions": [],
+      "scenarios_evaluated": 9,
+      "states_evaluated": 9274,
+      "timed_out": false,
+      "first_failing_profile": [
+        "RIGHT",
+        "WAIT",
+        "WAIT"
+      ],
+      "first_failing_order": [
+        0,
+        1,
+        2
+      ]
+    }
+  },
+  {
+    "seed": 24025,
+    "step": 191,
+    "actual_action": "WAIT",
+    "candidates": [
+      "RIGHT",
+      "WAIT"
+    ],
+    "result": {
+      "proven_actions": [],
+      "scenarios_evaluated": 2,
+      "states_evaluated": 2072,
+      "timed_out": false,
+      "first_failing_profile": [
+        "RIGHT",
+        "WAIT",
+        "WAIT"
+      ],
+      "first_failing_order": [
+        0,
+        1,
+        2
+      ]
+    }
+  },
+  {
+    "seed": 24025,
+    "step": 193,
+    "actual_action": "RIGHT",
+    "candidates": [
+      "RIGHT",
+      "WAIT"
+    ],
+    "result": {
+      "proven_actions": [],
+      "scenarios_evaluated": 2,
+      "states_evaluated": 2042,
+      "timed_out": false,
+      "first_failing_profile": [
+        "RIGHT",
+        "WAIT",
+        "WAIT"
+      ],
+      "first_failing_order": [
+        0,
+        1,
+        2
+      ]
+    }
+  }
+]
