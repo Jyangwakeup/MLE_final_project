@@ -1,0 +1,37 @@
+[
+  {
+    "module": "test_task4_aligned",
+    "returncode": 0,
+    "seconds": 4.996744159609079
+  },
+  {
+    "module": "test_task4_campaign",
+    "returncode": 0,
+    "seconds": 3.0732899345457554
+  },
+  {
+    "module": "test_task4_v2",
+    "returncode": 0,
+    "seconds": 3.2261895276606083
+  },
+  {
+    "module": "test_pending_fallback_diagnostic",
+    "returncode": 0,
+    "seconds": 3.229939578101039
+  },
+  {
+    "module": "test_evaluation",
+    "returncode": 0,
+    "seconds": 1.6465752683579922
+  },
+  {
+    "module": "test_opponent_robust_safety",
+    "returncode": 0,
+    "seconds": 0.6126006580889225
+  },
+  {
+    "module": "test_submission_package",
+    "returncode": 0,
+    "seconds": 14.333274916745722
+  }
+]

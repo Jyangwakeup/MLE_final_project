@@ -1,0 +1,10 @@
+{
+  "0003-validate-task2-winner-once.md": "0027-validate-task2-winner-once.md",
+  "0004-cnn-path-r7-safety-constraint.md": "0028-cnn-path-r7-safety-constraint.md",
+  "0004-enumerate-opponent-transitions-for-bomb-safety.md": "0029-enumerate-opponent-transitions-for-bomb-safety.md",
+  "0004-pilot-task3-with-unchanged-r7.md": "0030-pilot-task3-with-unchanged-r7.md",
+  "0005-use-observable-phase-rewards.md": "0031-use-observable-phase-rewards.md",
+  "0006-transfer-task2-policy-into-phase-model.md": "0032-transfer-task2-policy-into-phase-model.md",
+  "0007-enable-margin-mask-only-after-safety-failure.md": "0033-enable-margin-mask-only-after-safety-failure.md",
+  "0024-align-task4-parent-and-child-safety.md": "0034-align-task4-parent-and-child-safety.md"
+}

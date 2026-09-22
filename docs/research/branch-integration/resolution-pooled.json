@@ -1,0 +1,4 @@
+{
+  "path": "tests/test_evaluation.py",
+  "decision": "Retain later chart-dimension regression test; pooled-percentile implementation and tests already present."
+}

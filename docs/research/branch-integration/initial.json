@@ -1,0 +1,139 @@
+{
+  "backup": "/export/data/sfan/branch-integration-backups/20260922T145758Z",
+  "branches": {
+    "attribution/md-bh-preview": "0974eafc430942971e0a79365f7e1d9a45b24403",
+    "backup/pre-md-bh-attribution": "5269d01d3dcc5c28d97e8aac35eb845ac401374c",
+    "main": "0974eafc430942971e0a79365f7e1d9a45b24403",
+    "safety-certified-placement": "caddbaf4fa283f801b248235ff437e0b5f4f658b",
+    "safety-compact-admission": "f52f492f6a34ee90233790cdba434261191adfc1",
+    "safety-pending-diagnostic": "614021abeed48b37a6aad25548d592585b2427eb",
+    "safety-pooled-timing": "0028af7324e6ff818ff10d7f8c6e152c1f9a91b2",
+    "safety-proven-movement": "3eb3ea4f06e47fc1378f890b06d5221b7e6c7f1f",
+    "task3-bomb-credit": "546fbcc9a4355cb4177e431eea9c9e638f3b9ce3",
+    "task3-controllable-survival": "0974eafc430942971e0a79365f7e1d9a45b24403",
+    "task3-escape-obligation": "1a4095cd799511543c49dcc02acc00506bc69bc0",
+    "task3-opponent-robust": "87d6a1469f72d886ffead8a74948e11a3ee2de42",
+    "task4-300ms": "54d8677f5586147e284bbf0689282fbe330fed2f",
+    "task4-cache-admission-report": "2551b4ce178b106095af20149f35b68e27349fa3",
+    "task4-frozen-opponents": "312cc82d50a5edaa0b7123aac941ae07968d8209",
+    "task4-frozen-transfer": "ae86fac8d1a89622e6e0758947398f691d381d02",
+    "task4-order-equivalence": "dc72b173dcd5c088b540b84c7a36297880064371",
+    "task4-reference-observed": "d1d3d5147f8a27b1e8562d95e7254f8546a8cafe",
+    "task4-restored-reference": "d1d3d5147f8a27b1e8562d95e7254f8546a8cafe",
+    "task4-score-improvement": "bbf2ec08f716e74bc9e908b10d6fb33c328ad4a0",
+    "task4-specialist-exploration": "182f516d1aaba63ef56e3d667b22833db6eb3573",
+    "task4-v9-reference": "7c39ceca94f70b51c6d4ab5fabadff9c2fb14464",
+    "task4-viability-performance": "58f59104c39e65309a4a7d6420bcbff876e546f8"
+  },
+  "worktrees": [
+    {
+      "worktree": "/export/data/sfan/MLE_final_project",
+      "HEAD": "d1d3d5147f8a27b1e8562d95e7254f8546a8cafe",
+      "branch": "refs/heads/task4-restored-reference"
+    },
+    {
+      "worktree": "/export/data/sfan/MLE_final_project_safety",
+      "HEAD": "caddbaf4fa283f801b248235ff437e0b5f4f658b",
+      "branch": "refs/heads/safety-certified-placement"
+    },
+    {
+      "worktree": "/export/data/sfan/MLE_final_project_safety_compact",
+      "HEAD": "f52f492f6a34ee90233790cdba434261191adfc1",
+      "branch": "refs/heads/safety-compact-admission"
+    },
+    {
+      "worktree": "/export/data/sfan/MLE_final_project_safety_diagnostics",
+      "HEAD": "614021abeed48b37a6aad25548d592585b2427eb",
+      "branch": "refs/heads/safety-pending-diagnostic"
+    },
+    {
+      "worktree": "/export/data/sfan/MLE_final_project_safety_metrics",
+      "HEAD": "0028af7324e6ff818ff10d7f8c6e152c1f9a91b2",
+      "branch": "refs/heads/safety-pooled-timing"
+    },
+    {
+      "worktree": "/export/data/sfan/MLE_final_project_safety_movement",
+      "HEAD": "3eb3ea4f06e47fc1378f890b06d5221b7e6c7f1f",
+      "branch": "refs/heads/safety-proven-movement"
+    },
+    {
+      "worktree": "/export/data/sfan/MLE_final_project_task3_814173b",
+      "HEAD": "87d6a1469f72d886ffead8a74948e11a3ee2de42",
+      "branch": "refs/heads/task3-opponent-robust"
+    },
+    {
+      "worktree": "/export/data/sfan/MLE_final_project_task3_n5",
+      "HEAD": "546fbcc9a4355cb4177e431eea9c9e638f3b9ce3",
+      "branch": "refs/heads/task3-bomb-credit"
+    },
+    {
+      "worktree": "/export/data/sfan/MLE_final_project_task3_v5",
+      "HEAD": "0974eafc430942971e0a79365f7e1d9a45b24403",
+      "branch": "refs/heads/task3-controllable-survival"
+    },
+    {
+      "worktree": "/export/data/sfan/MLE_final_project_task4",
+      "HEAD": "ae86fac8d1a89622e6e0758947398f691d381d02",
+      "branch": "refs/heads/task4-frozen-transfer"
+    },
+    {
+      "worktree": "/export/data/sfan/MLE_final_project_task4_300ms",
+      "HEAD": "54d8677f5586147e284bbf0689282fbe330fed2f",
+      "branch": "refs/heads/task4-300ms"
+    },
+    {
+      "worktree": "/export/data/sfan/MLE_final_project_task4_exploration",
+      "HEAD": "182f516d1aaba63ef56e3d667b22833db6eb3573",
+      "branch": "refs/heads/task4-specialist-exploration"
+    },
+    {
+      "worktree": "/export/data/sfan/MLE_final_project_task4_fast",
+      "HEAD": "58f59104c39e65309a4a7d6420bcbff876e546f8",
+      "branch": "refs/heads/task4-viability-performance"
+    },
+    {
+      "worktree": "/export/data/sfan/MLE_final_project_task4_frozen",
+      "HEAD": "312cc82d50a5edaa0b7123aac941ae07968d8209",
+      "branch": "refs/heads/task4-frozen-opponents"
+    },
+    {
+      "worktree": "/export/data/sfan/MLE_final_project_task4_orders",
+      "HEAD": "dc72b173dcd5c088b540b84c7a36297880064371",
+      "branch": "refs/heads/task4-order-equivalence"
+    },
+    {
+      "worktree": "/export/data/sfan/MLE_final_project_task4_reference",
+      "HEAD": "d1d3d5147f8a27b1e8562d95e7254f8546a8cafe",
+      "branch": "refs/heads/task4-reference-observed"
+    },
+    {
+      "worktree": "/export/data/sfan/MLE_final_project_task4_report",
+      "HEAD": "2551b4ce178b106095af20149f35b68e27349fa3",
+      "branch": "refs/heads/task4-cache-admission-report"
+    },
+    {
+      "worktree": "/export/data/sfan/MLE_final_project_task4_score",
+      "HEAD": "bbf2ec08f716e74bc9e908b10d6fb33c328ad4a0",
+      "branch": "refs/heads/task4-score-improvement"
+    },
+    {
+      "worktree": "/export/data/sfan/MLE_final_project_task4_v9_reference",
+      "HEAD": "7c39ceca94f70b51c6d4ab5fabadff9c2fb14464",
+      "branch": "refs/heads/task4-v9-reference"
+    }
+  ],
+  "excluded_names": [
+    ".git",
+    "__pycache__",
+    ".pytest_cache",
+    ".mypy_cache",
+    ".ruff_cache",
+    ".venv",
+    "venv",
+    "node_modules"
+  ],
+  "files": [],
+  "links": [],
+  "excluded": [],
+  "status": {}
+}

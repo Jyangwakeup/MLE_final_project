@@ -1,0 +1,177 @@
+[
+  {
+    "path": "CONTEXT.md",
+    "hunks": 1,
+    "decision": "retain later v11/v5-v9 contracts and their tests; v4 behavior already present",
+    "primary_source": "591cd8e0; current score implementation and tests; 87d6a146 failure report",
+    "exception": null
+  },
+  {
+    "path": "IMPLEMENTATION_GUIDE.md",
+    "hunks": 1,
+    "decision": "retain later v11/v5-v9 contracts and their tests; v4 behavior already present",
+    "primary_source": "591cd8e0; current score implementation and tests; 87d6a146 failure report",
+    "exception": "preserve v4 terminal report before v5 section with explicit historical scope"
+  },
+  {
+    "path": "agent_code/double_dqn_continuous_v2_agent/callbacks.py",
+    "hunks": 7,
+    "decision": "retain later v11/v5-v9 contracts and their tests; v4 behavior already present",
+    "primary_source": "591cd8e0; current score implementation and tests; 87d6a146 failure report",
+    "exception": null
+  },
+  {
+    "path": "agent_code/double_dqn_continuous_v2_agent/train.py",
+    "hunks": 3,
+    "decision": "retain later v11/v5-v9 contracts and their tests; v4 behavior already present",
+    "primary_source": "591cd8e0; current score implementation and tests; 87d6a146 failure report",
+    "exception": null
+  },
+  {
+    "path": "agent_code/dqn_agent/README.md",
+    "hunks": 1,
+    "decision": "retain later v11/v5-v9 contracts and their tests; v4 behavior already present",
+    "primary_source": "591cd8e0; current score implementation and tests; 87d6a146 failure report",
+    "exception": null
+  },
+  {
+    "path": "agent_code/dqn_agent/callbacks.py",
+    "hunks": 1,
+    "decision": "retain later v11/v5-v9 contracts and their tests; v4 behavior already present",
+    "primary_source": "591cd8e0; current score implementation and tests; 87d6a146 failure report",
+    "exception": null
+  },
+  {
+    "path": "agent_code/learning_common/runtime.py",
+    "hunks": 3,
+    "decision": "retain later v11/v5-v9 contracts and their tests; v4 behavior already present",
+    "primary_source": "591cd8e0; current score implementation and tests; 87d6a146 failure report",
+    "exception": null
+  },
+  {
+    "path": "agent_code/q_learning_agent/README.md",
+    "hunks": 1,
+    "decision": "retain later v11/v5-v9 contracts and their tests; v4 behavior already present",
+    "primary_source": "591cd8e0; current score implementation and tests; 87d6a146 failure report",
+    "exception": null
+  },
+  {
+    "path": "agent_code/q_learning_agent/callbacks.py",
+    "hunks": 1,
+    "decision": "retain later v11/v5-v9 contracts and their tests; v4 behavior already present",
+    "primary_source": "591cd8e0; current score implementation and tests; 87d6a146 failure report",
+    "exception": null
+  },
+  {
+    "path": "agent_code/team_agent/README.md",
+    "hunks": 1,
+    "decision": "retain later v11/v5-v9 contracts and their tests; v4 behavior already present",
+    "primary_source": "591cd8e0; current score implementation and tests; 87d6a146 failure report",
+    "exception": null
+  },
+  {
+    "path": "agent_code/team_agent/opponent_transitions.py",
+    "hunks": 8,
+    "decision": "retain later v11/v5-v9 contracts and their tests; v4 behavior already present",
+    "primary_source": "591cd8e0; current score implementation and tests; 87d6a146 failure report",
+    "exception": null
+  },
+  {
+    "path": "agent_code/team_agent/safety.py",
+    "hunks": 7,
+    "decision": "retain later v11/v5-v9 contracts and their tests; v4 behavior already present",
+    "primary_source": "591cd8e0; current score implementation and tests; 87d6a146 failure report",
+    "exception": null
+  },
+  {
+    "path": "experiments/README.md",
+    "hunks": 2,
+    "decision": "retain later v11/v5-v9 contracts and their tests; v4 behavior already present",
+    "primary_source": "591cd8e0; current score implementation and tests; 87d6a146 failure report",
+    "exception": null
+  },
+  {
+    "path": "experiments/analyze.py",
+    "hunks": 4,
+    "decision": "retain later v11/v5-v9 contracts and their tests; v4 behavior already present",
+    "primary_source": "591cd8e0; current score implementation and tests; 87d6a146 failure report",
+    "exception": null
+  },
+  {
+    "path": "experiments/package_agent.py",
+    "hunks": 1,
+    "decision": "retain later v11/v5-v9 contracts and their tests; v4 behavior already present",
+    "primary_source": "591cd8e0; current score implementation and tests; 87d6a146 failure report",
+    "exception": null
+  },
+  {
+    "path": "experiments/resume.py",
+    "hunks": 8,
+    "decision": "retain later v11/v5-v9 contracts and their tests; v4 behavior already present",
+    "primary_source": "591cd8e0; current score implementation and tests; 87d6a146 failure report",
+    "exception": null
+  },
+  {
+    "path": "experiments/run.py",
+    "hunks": 2,
+    "decision": "retain later v11/v5-v9 contracts and their tests; v4 behavior already present",
+    "primary_source": "591cd8e0; current score implementation and tests; 87d6a146 failure report",
+    "exception": null
+  },
+  {
+    "path": "tests/test_dqn_agent.py",
+    "hunks": 1,
+    "decision": "retain later v11/v5-v9 contracts and their tests; v4 behavior already present",
+    "primary_source": "591cd8e0; current score implementation and tests; 87d6a146 failure report",
+    "exception": null
+  },
+  {
+    "path": "tests/test_experiment_run.py",
+    "hunks": 2,
+    "decision": "retain later v11/v5-v9 contracts and their tests; v4 behavior already present",
+    "primary_source": "591cd8e0; current score implementation and tests; 87d6a146 failure report",
+    "exception": null
+  },
+  {
+    "path": "tests/test_new_agents.py",
+    "hunks": 1,
+    "decision": "retain later v11/v5-v9 contracts and their tests; v4 behavior already present",
+    "primary_source": "591cd8e0; current score implementation and tests; 87d6a146 failure report",
+    "exception": null
+  },
+  {
+    "path": "tests/test_opponent_robust_safety.py",
+    "hunks": 4,
+    "decision": "retain later v11/v5-v9 contracts and their tests; v4 behavior already present",
+    "primary_source": "591cd8e0; current score implementation and tests; 87d6a146 failure report",
+    "exception": null
+  },
+  {
+    "path": "tests/test_q_learning_agent.py",
+    "hunks": 1,
+    "decision": "retain later v11/v5-v9 contracts and their tests; v4 behavior already present",
+    "primary_source": "591cd8e0; current score implementation and tests; 87d6a146 failure report",
+    "exception": null
+  },
+  {
+    "path": "tests/test_resume.py",
+    "hunks": 1,
+    "decision": "retain later v11/v5-v9 contracts and their tests; v4 behavior already present",
+    "primary_source": "591cd8e0; current score implementation and tests; 87d6a146 failure report",
+    "exception": null
+  },
+  {
+    "path": "tests/test_submission_package.py",
+    "hunks": 1,
+    "decision": "retain later v11/v5-v9 contracts and their tests; v4 behavior already present",
+    "primary_source": "591cd8e0; current score implementation and tests; 87d6a146 failure report",
+    "exception": null
+  },
+  {
+    "path": "tests/test_task3_escape_obligation.py",
+    "hunks": 1,
+    "decision": "retain later v11/v5-v9 contracts and their tests; v4 behavior already present",
+    "primary_source": "591cd8e0; current score implementation and tests; 87d6a146 failure report",
+    "exception": null
+  }
+]

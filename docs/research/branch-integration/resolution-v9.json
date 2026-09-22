@@ -1,0 +1,4 @@
+{
+  "path": "CONTEXT.md",
+  "decision": "Preserve both independent specialist/frozen-opponent and safety-aligned baseline terms; integrate v4 protocol under explicit schema dispatch."
+}

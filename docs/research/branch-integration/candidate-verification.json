@@ -1,0 +1,28 @@
+{
+  "status": "passed",
+  "checks": [
+    "trace",
+    "random_agent",
+    "rule_based_agent"
+  ],
+  "trace_rows_equal": 180,
+  "games": [
+    {
+      "opponent": "random_agent",
+      "decisions": 400,
+      "p95_ms": 9.436620399355888,
+      "max_ms": 23.50479271262884,
+      "peak_rss_bytes": 327806976,
+      "historical_trace_and_score_equal": true
+    },
+    {
+      "opponent": "rule_based_agent",
+      "decisions": 400,
+      "p95_ms": 16.340216621756554,
+      "max_ms": 39.23567198216915,
+      "peak_rss_bytes": 330059776,
+      "historical_trace_and_score_equal": true
+    }
+  ],
+  "seconds": 28.380551752634346
+}

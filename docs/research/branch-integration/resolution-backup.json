@@ -1,0 +1,107 @@
+{
+  "incoming": "backup/pre-md-bh-attribution",
+  "incoming_tree": "ce32c886c02b7d6be6207436666ae1b08d36d664",
+  "unchanged_result_tree": "104e7207ef40c5ff439516d12502e7ff64f66d73",
+  "files": [
+    {
+      "path": "CONTEXT.md",
+      "decision": "retain evolved HEAD",
+      "evidence": "incoming tree equals original main tree; original main is ancestor of HEAD"
+    },
+    {
+      "path": "IMPLEMENTATION_GUIDE.md",
+      "decision": "retain evolved HEAD",
+      "evidence": "incoming tree equals original main tree; original main is ancestor of HEAD"
+    },
+    {
+      "path": "agent_code/double_dqn_continuous_v2_agent/callbacks.py",
+      "decision": "retain evolved HEAD",
+      "evidence": "incoming tree equals original main tree; original main is ancestor of HEAD"
+    },
+    {
+      "path": "agent_code/double_dqn_continuous_v2_agent/train.py",
+      "decision": "retain evolved HEAD",
+      "evidence": "incoming tree equals original main tree; original main is ancestor of HEAD"
+    },
+    {
+      "path": "agent_code/dqn_agent/model.py",
+      "decision": "retain evolved HEAD",
+      "evidence": "incoming tree equals original main tree; original main is ancestor of HEAD"
+    },
+    {
+      "path": "agent_code/learning_common/action_history.py",
+      "decision": "retain evolved HEAD",
+      "evidence": "incoming tree equals original main tree; original main is ancestor of HEAD"
+    },
+    {
+      "path": "agent_code/learning_common/n_step.py",
+      "decision": "retain evolved HEAD",
+      "evidence": "incoming tree equals original main tree; original main is ancestor of HEAD"
+    },
+    {
+      "path": "agent_code/learning_common/training_spec.py",
+      "decision": "retain evolved HEAD",
+      "evidence": "incoming tree equals original main tree; original main is ancestor of HEAD"
+    },
+    {
+      "path": "agent_code/team_agent/controllable_survival.py",
+      "decision": "retain evolved HEAD",
+      "evidence": "incoming tree equals original main tree; original main is ancestor of HEAD"
+    },
+    {
+      "path": "agent_code/team_agent/opponent_transitions.py",
+      "decision": "retain evolved HEAD",
+      "evidence": "incoming tree equals original main tree; original main is ancestor of HEAD"
+    },
+    {
+      "path": "agent_code/team_agent/rewards.py",
+      "decision": "retain evolved HEAD",
+      "evidence": "incoming tree equals original main tree; original main is ancestor of HEAD"
+    },
+    {
+      "path": "agent_code/team_agent/safety.py",
+      "decision": "retain evolved HEAD",
+      "evidence": "incoming tree equals original main tree; original main is ancestor of HEAD"
+    },
+    {
+      "path": "experiments/agent_contracts.py",
+      "decision": "retain evolved HEAD",
+      "evidence": "incoming tree equals original main tree; original main is ancestor of HEAD"
+    },
+    {
+      "path": "experiments/analyze.py",
+      "decision": "retain evolved HEAD",
+      "evidence": "incoming tree equals original main tree; original main is ancestor of HEAD"
+    },
+    {
+      "path": "experiments/package_agent.py",
+      "decision": "retain evolved HEAD",
+      "evidence": "incoming tree equals original main tree; original main is ancestor of HEAD"
+    },
+    {
+      "path": "experiments/run.py",
+      "decision": "retain evolved HEAD",
+      "evidence": "incoming tree equals original main tree; original main is ancestor of HEAD"
+    },
+    {
+      "path": "experiments/training.py",
+      "decision": "retain evolved HEAD",
+      "evidence": "incoming tree equals original main tree; original main is ancestor of HEAD"
+    },
+    {
+      "path": "tests/test_evaluation.py",
+      "decision": "retain evolved HEAD",
+      "evidence": "incoming tree equals original main tree; original main is ancestor of HEAD"
+    },
+    {
+      "path": "tests/test_experiment_run.py",
+      "decision": "retain evolved HEAD",
+      "evidence": "incoming tree equals original main tree; original main is ancestor of HEAD"
+    },
+    {
+      "path": "tests/test_submission_package.py",
+      "decision": "retain evolved HEAD",
+      "evidence": "incoming tree equals original main tree; original main is ancestor of HEAD"
+    }
+  ]
+}
