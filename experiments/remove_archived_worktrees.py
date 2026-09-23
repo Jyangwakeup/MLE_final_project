@@ -22,6 +22,7 @@ def gates():
     require(load('bundle-verification.json')['passed'])
     require(load('validation/result.json')['status']=='passed')
     require((c.RECOVERY/'backup-destinations.json').exists())
+    require(load('external-backup-audit.json')['passed'])
     require(c.git(c.ROOT,'branch','--show-current')=='main')
     require(c.git(c.ROOT,'branch','--format=%(refname:short)')=='main')
     frozen=json.loads((c.ROOT/'docs/research/branch-integration/frozen-files.json').read_text())

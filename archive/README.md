@@ -8,6 +8,9 @@
 - `recovery/main.bundle`：归档开始时的 main 及可达源码历史；迁移工具和说明由后续 main 提交保存。
 - `recovery/previous-backup/`：此前备份的清单、原分支 bundle 和执行记录。
 - `recovery/backup-destinations.json`：此前备份每个数据文件在本项目内的最终去向。
+- `recovery/external-backup-audit.json`：删除前实际备份的完整文件、链接与保存位置核对。
+- `recovery/deletion-journal.json`：逐目录删除与中断恢复记录。
+- `recovery/validation/result.json`：归档路径下的行为、运行和包重建验收。
 - `backup-only/`：与当前主项目/工作区资料不同的备份独有版本，绝不覆盖现版本。
 
 原 manifest、报告、脚本保留原文；其中的旧绝对路径是历史出处，不代表目录仍存在。根据 registry 做路径映射，不对历史文档批量替换。
