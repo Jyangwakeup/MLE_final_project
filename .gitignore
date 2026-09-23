@@ -129,3 +129,7 @@ checkpoints/
 # Local Agent configuration and in-progress Agent artifacts
 /AGENTS.md
 /Agent/
+
+# Consolidated local experimental artifacts
+/archive/*
+!/archive/README.md
