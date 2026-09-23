@@ -167,7 +167,8 @@ def init():
     registry_path = RECOVERY / 'registry.json'
     if registry_path.exists(): return json.loads(registry_path.read_text())
     rows = worktrees()
-    assert len(rows) == 20 and git(ROOT, 'branch', '--show-current') == 'main'
+    if len(rows) != 20 or git(ROOT, 'branch', '--show-current') != 'main':
+        raise ValueError('Expected the 20 registered worktrees and current main')
     for row in rows:
         root = Path(row['worktree'])
         row['archive'] = str(root if root == ROOT else ARCHIVE / 'worktrees' / root.name)
@@ -287,6 +288,68 @@ def account_backup():
     print('BACKUP ACCOUNTED', len(locations), 'extra copies', sum(x['kind']=='backup-only' for x in locations), flush=True)
 
 
+def backup_entries(backup):
+    files=[];links=[]
+    for base,dirs,names in os.walk(backup,followlinks=False):
+        base=Path(base)
+        for name in list(dirs):
+            p=base/name
+            if p==backup/'restore-check.git':dirs.remove(name)
+            elif p.is_symlink():dirs.remove(name);names.append(name)
+        for name in names:
+            p=base/name;rel=str(p.relative_to(backup))
+            if p.is_symlink():links.append({'path':rel,'text':os.readlink(p)})
+            elif p.is_file():files.append(rel)
+            else:raise ValueError(f'Unsupported backup file: {p}')
+    return sorted(files),sorted(links,key=lambda x:x['path'])
+
+
+def audit_external_backup():
+    registry=init();backup=Path(registry['external_backup'])
+    expected={x['backup']:x for x in json.loads((RECOVERY/'backup-destinations.json').read_text())}
+    files,links=backup_entries(backup)
+    def inspect(rel):
+        source=backup/rel;before=identity(source);h=sha(source)
+        if identity(source)!=before:raise ValueError(f'Backup changed: {source}')
+        prior=expected.get(rel)
+        if prior and prior['sha256']==h:
+            dest=ROOT/prior['destination']
+            if identity(dest)!=prior['destination_identity']:raise ValueError(f'Destination changed: {dest}')
+        elif not rel.startswith('worktrees/'):
+            dest=RECOVERY/'previous-backup'/rel
+            checked_copy(source,dest)
+        else:
+            dest=ARCHIVE/'backup-only/current-backup'/rel;checked_copy(source,dest)
+        return {'path':rel,'sha256':h,'bytes':before[0],'identity':before,
+                'destination':str(dest.relative_to(ROOT)),'destination_identity':identity(dest)}
+    records=[]
+    with ThreadPoolExecutor(max_workers=4) as pool:
+        for start in range(0,len(files),1000):
+            records.extend(pool.map(inspect,files[start:start+1000]))
+            if start%20000==0:print('BACKUP AUDITED',len(records),flush=True)
+    dest_by_source={str(backup/x['path']):ROOT/x['destination'] for x in records}
+    for link in links:
+        p=backup/link['path']
+        target=Path(os.path.abspath(p.parent/link['text']))
+        if str(target) in dest_by_source:mapped=dest_by_source[str(target)]
+        else:mapped=map_path(p.resolve(),registry)
+        if not mapped.exists() or not mapped.resolve().is_relative_to(ROOT):
+            raise ValueError(f'Unpreserved backup link: {p}')
+        dest=ARCHIVE/'backup-only/links'/link['path'];dest.parent.mkdir(parents=True,exist_ok=True)
+        text=os.path.relpath(mapped,dest.parent)
+        if dest.is_symlink():
+            if os.readlink(dest)!=text:raise ValueError(f'Conflicting saved link: {dest}')
+        elif dest.exists():raise ValueError(f'Conflicting saved link: {dest}')
+        else:dest.symlink_to(text)
+        link.update(destination=str(dest.relative_to(ROOT)),target=str(mapped.relative_to(ROOT)))
+    # All refs in the redundant restore-test clone must exist in the integrated history.
+    clone=backup/'restore-check.git'
+    if clone.exists():
+        for tip in subprocess.check_output(['git','--git-dir='+str(clone),'for-each-ref','--format=%(objectname)'],text=True).splitlines():
+            subprocess.run(['git','-C',str(ROOT),'cat-file','-e',tip],check=True)
+    write_json(RECOVERY/'external-backup-audit.json',{'files':records,'links':links,'excluded_rebuildable_clone':str(clone),'passed':True})
+
+
 def verify_one_source(row, check_hashes=True):
     root = Path(row['worktree'])
     m = json.loads((RECOVERY/'worktree-manifests'/(root.name+'.json')).read_text())
@@ -296,15 +359,25 @@ def verify_one_source(row, check_hashes=True):
         raise ValueError(f'New or removed source files: {root}')
     if [(x['path'],x['text']) for x in links] != [(x['path'],x['text']) for x in m['links']]:
         raise ValueError(f'Source links changed: {root}')
+    audit_path=RECOVERY/'destination-verifications'/(root.name+'.json')
+    previous=json.loads(audit_path.read_text()) if not check_hashes else {}
+    verified={}
     for f in m['files']:
         source=root/f['path'];dest=Path(m['archive'])/f['path']
         if identity(source)!=f['identity'] or not dest.is_file():
             raise ValueError(f'Source/archive changed: {source}')
-        if check_hashes and sha(dest)!=f['sha256']:
-            raise ValueError(f'Archive hash changed: {dest}')
+        if dest.is_symlink():raise ValueError(f'Archive file replaced by link: {dest}')
+        if check_hashes:
+            before=identity(dest)
+            if sha(dest)!=f['sha256'] or identity(dest)!=before:
+                raise ValueError(f'Archive hash changed: {dest}')
+            verified[f['path']]=before
+        elif previous.get(f['path'])!=identity(dest):
+            raise ValueError(f'Archive changed after hash audit: {dest}')
     patch = subprocess.check_output(['git','-C',str(root),'diff','--binary','HEAD'])
     if patch != (RECOVERY/'worktree-manifests'/(root.name+'.patch')).read_bytes():
         raise ValueError(f'Tracked changes appeared: {root}')
+    if check_hashes:write_json(audit_path,verified)
     return {'root':str(root),'files':len(files),'verified':True,'at':time.time()}
 
 
@@ -319,9 +392,9 @@ def verify_sources():
 
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('operation', choices=['migrate','account-backup','verify-sources','verify-links'])
+    parser.add_argument('operation', choices=['migrate','account-backup','verify-sources','verify-links','audit-backup'])
     args=parser.parse_args()
-    {'migrate':migrate,'account-backup':account_backup,'verify-sources':verify_sources,'verify-links':verify_links}[args.operation]()
+    {'migrate':migrate,'account-backup':account_backup,'verify-sources':verify_sources,'verify-links':verify_links,'audit-backup':audit_external_backup}[args.operation]()
 
 
 if __name__ == '__main__': main()

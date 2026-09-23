@@ -64,3 +64,32 @@ class ConsolidationSafetyTests(unittest.TestCase):
 
 
 if __name__=='__main__':unittest.main()
+
+class DeletionBoundaryTests(unittest.TestCase):
+    def test_optimized_python_keeps_guard(self):
+        import subprocess,sys
+        result=subprocess.run([sys.executable,'-O','-c','from experiments.remove_archived_worktrees import require; require(False)'],capture_output=True)
+        self.assertNotEqual(result.returncode,0)
+
+    def test_backup_addition_and_destination_mutation_block_deletion(self):
+        from experiments import remove_archived_worktrees as r
+        with tempfile.TemporaryDirectory() as d:
+            root=Path(d);backup=root/'backup';backup.mkdir();source=backup/'x';source.write_text('data');dest=root/'saved';dest.write_text('data')
+            audit={'passed':True,'files':[{'path':'x','identity':c.identity(source),'destination':'saved','destination_identity':c.identity(dest)}],'links':[]}
+            with patch.object(r,'load',return_value=audit),patch.object(c,'ROOT',root):
+                r.verify_backup_snapshot(backup)
+                (backup/'new').write_text('unaccounted')
+                with self.assertRaises(ValueError):r.verify_backup_snapshot(backup)
+                (backup/'new').unlink();dest.write_text('tampered')
+                with self.assertRaises(ValueError):r.verify_backup_snapshot(backup)
+
+    def test_partial_backup_resume_requires_all_saved_destinations(self):
+        from experiments import remove_archived_worktrees as r
+        with tempfile.TemporaryDirectory() as d:
+            root=Path(d);backup=root/'backup';backup.mkdir();dest=root/'saved';dest.write_text('data')
+            audit={'passed':True,'files':[{'path':'already-removed','identity':[],'destination':'saved','destination_identity':c.identity(dest)}],'links':[]}
+            with patch.object(r,'load',return_value=audit),patch.object(c,'ROOT',root):
+                with self.assertRaises(ValueError):r.verify_backup_snapshot(backup)
+                r.verify_backup_snapshot(backup,partial=True)
+                dest.unlink()
+                with self.assertRaises(ValueError):r.verify_backup_snapshot(backup,partial=True)
