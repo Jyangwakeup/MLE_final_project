@@ -83,6 +83,16 @@ class ContinuousV4FeatureTests(unittest.TestCase):
             legal,
         )
 
+    def test_r12_reward_only_does_not_eliminate_cycle_actions(self):
+        item = SimpleNamespace(vector=np.zeros(126, dtype=np.float32))
+        item.vector[110] = 0.5
+        legal = np.ones(len(ACTIONS), dtype=bool)
+        np.testing.assert_array_equal(
+            repeated_cycle_mask(
+                item, legal, "r12_coin_priority_anti_loop_reward_only"),
+            legal,
+        )
+
     def test_history_records_each_observed_step_once_and_round_trips(self):
         owner = SimpleNamespace()
         init_action_history(owner)
@@ -165,6 +175,16 @@ class BoundedHistoryRewardTests(unittest.TestCase):
             [], "r12_coin_priority_anti_loop", loop_repeat_count=6)
         self.assertAlmostEqual(loop_r10 - baseline_r10, -0.12)
         self.assertAlmostEqual(loop_r12 - baseline_r12, -1.0)
+
+    def test_r12_reward_only_has_the_same_reward_contract(self):
+        for repeat_count in (0, 2, 6):
+            original = reward_from_events(
+                [], "r12_coin_priority_anti_loop",
+                loop_repeat_count=repeat_count, avoidable_wait_streak=3)
+            reward_only = reward_from_events(
+                [], "r12_coin_priority_anti_loop_reward_only",
+                loop_repeat_count=repeat_count, avoidable_wait_streak=3)
+            self.assertEqual(reward_only, original)
 
     def test_r12_suppresses_useful_bomb_bonus_when_coin_is_reachable(self):
         state = self._state((3, 3), 1)

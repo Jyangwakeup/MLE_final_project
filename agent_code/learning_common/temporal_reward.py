@@ -338,7 +338,9 @@ def temporal_reward_context(
         "conditional_loop_penalty", "avoidable_wait_penalty",
     }.intersection(reward_spec):
         conditional_loop, avoidable_wait, diagnostic = _conditional_navigation_flags(
-            owner, action, old_state, new_state)
+            owner, action, old_state, new_state,
+            useful_bomb_progress=bool(reward_spec.get(
+                "useful_bomb_counts_as_wait_progress", 0.0)))
     return {
         "repeated_oscillation": bool(oscillating),
         "idle_streak": idle_streak,

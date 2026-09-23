@@ -179,13 +179,20 @@ class ResumeProtocolTestCase(unittest.TestCase):
             ("training_device_type", "cuda"),
             ("agent_seed", 22),
             ("exploration_spec", {**EXPLORATION_SPEC, "end": 0.1}),
-            ("source_commit", "different-commit"),
         ):
             with self.subTest(field=field):
                 with self.assertRaisesRegex(ValueError, field):
                     validate_resume_transition(
                         parent, {**parent, field: value}, parent_status="completed"
                     )
+
+        # Commit IDs are provenance.  The runtime hash above is the strict
+        # compatibility contract, so a documentation-only commit may resume.
+        self.assertEqual(
+            validate_resume_transition(
+                parent, {**parent, "source_commit": "different-commit"},
+                parent_status="completed"),
+            "same_task")
 
         with self.assertRaisesRegex(ValueError, "source_hash"):
             validate_resume_transition(

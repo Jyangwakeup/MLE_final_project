@@ -26,6 +26,8 @@ from experiments.resume import (
     validate_resume_transition,
 )
 from experiments.performance_stopping import resolve_performance_stopping
+from experiments.task2_success_stopping import resolve_task2_success_stopping
+from experiments.runtime_migration import build_runtime_migration_audit
 from experiments.agent_contracts import resolve_agent_contract
 from agent_code.learning_common.training_spec import (
     resolve_retention_spec, resolve_safety_replay_spec,
@@ -216,6 +218,7 @@ def run_training_mode(
     output_directory: Callable,
     checkpoint_name: Callable[[str], str],
     run_session: Callable,
+    project_root: Path,
     source_commit: str | None,
     source_hash: str,
     source_hash_scope: str | None = None,
@@ -226,6 +229,7 @@ def run_training_mode(
     if args.checkpoint is not None:
         raise ValueError("Training writes its own checkpoint; do not pass --checkpoint")
     transfer_from = getattr(args, "transfer_task3_from", None)
+    runtime_migration_from = getattr(args, "runtime_migrate_from", None)
     resume_sources = [
         value for value in (
             args.resume_from, getattr(args, "migrate_resume_from", None), transfer_from,
@@ -233,7 +237,7 @@ def run_training_mode(
             getattr(args, "transfer_task4_from_checkpoint", None),
             getattr(args, "transfer_task4_exploration_from_checkpoint", None),
             getattr(args, "transfer_task4_frozen_opponents_from_checkpoint", None),
-            getattr(args, "transfer_task4_score_from_checkpoint", None))
+            getattr(args, "transfer_task4_score_from_checkpoint", None), runtime_migration_from)
         if value is not None
     ]
     if len(resume_sources) > 1:
@@ -264,6 +268,21 @@ def run_training_mode(
     stopping_config = early_stopping_config(training)
     performance_stopping = resolve_performance_stopping(
         training.get("performance_stopping"), task=task_name)
+    task2_success_stopping = resolve_task2_success_stopping(
+        training.get("task2_success_stopping"), task=task_name)
+    task2_success_context = None
+    if task2_success_stopping is not None:
+        if stopping_config is not None:
+            raise ValueError("Task 2 success stopping conflicts with reward early stopping")
+        values = {
+            "task1_config": getattr(args, "task2_success_task1_config", None),
+            "parent_task1": getattr(args, "task2_success_parent_task1", None),
+            "parent_task2": getattr(args, "task2_success_parent_task2", None),
+            "gate": getattr(args, "task2_success_gate", None),
+        }
+        if any(value is None for value in values.values()):
+            raise ValueError("Task 2 success stopping requires all --task2-success-* paths")
+        task2_success_context = {name: Path(value).resolve() for name, value in values.items()}
     checkpoint_snapshot_interval = training.get(
         "checkpoint_snapshot_interval_action_steps")
     if checkpoint_snapshot_interval is not None:
@@ -327,7 +346,7 @@ def run_training_mode(
     if init_checkpoint is not None:
         if algorithm not in {
             "dqn", "double_dqn", "cnn_distilled_double_dqn", "rainbow_lite",
-            "expected_sarsa_lambda",
+            "expected_sarsa_lambda", "double_q_lambda",
         }:
             raise ValueError(
                 "--init-from-checkpoint only supports neural agents and "
@@ -346,7 +365,7 @@ def run_training_mode(
     )
     migration_from = getattr(args, "migrate_resume_from", None)
     safety_transfer_from = getattr(args, "transfer_task3_safety_from", None)
-    if args.resume_from is None and migration_from is None and transfer_from is None and safety_transfer_from is None:
+    if args.resume_from is None and migration_from is None and transfer_from is None and safety_transfer_from is None and runtime_migration_from is None:
         if getattr(args, "distillation_dataset", None) is not None:
             raise ValueError("--distillation-dataset requires --transfer-task3-from")
         return run_session(
@@ -366,13 +385,16 @@ def run_training_mode(
             reward_id_override=getattr(args, "reward_id", None),
             performance_stopping=performance_stopping,
             checkpoint_snapshot_interval=checkpoint_snapshot_interval,
+            task2_success_stopping=task2_success_stopping,
+            task2_success_context=task2_success_context,
         )
 
     migrating = migration_from is not None
     safety_transferring = safety_transfer_from is not None
     transferring = transfer_from is not None
+    runtime_migrating = runtime_migration_from is not None
     parent_run = Path(
-        safety_transfer_from if safety_transferring else transfer_from if transferring else migration_from if migrating else args.resume_from)
+        runtime_migration_from if runtime_migrating else safety_transfer_from if safety_transferring else transfer_from if transferring else migration_from if migrating else args.resume_from)
     if not parent_run.is_absolute():
         parent_run = Path.cwd() / parent_run
     parent_run = parent_run.resolve()
@@ -435,7 +457,15 @@ def run_training_mode(
         ),
     }
     parent_status = parent_metadata.get("status", "unknown")
-    if safety_transferring:
+    runtime_migration_audit = None
+    if runtime_migrating:
+        runtime_migration_audit = build_runtime_migration_audit(
+            project_root=project_root, parent_run=parent_run,
+            parent_contract=snapshot.contract, child_contract=child_contract,
+            parent_status=parent_status,
+        )
+        resume_kind = "runtime_migration"
+    elif safety_transferring:
         validate_task3_safety_transfer(
             snapshot.contract, child_contract, parent_status=parent_status)
         resume_kind = "task3_safety_transfer"
@@ -477,6 +507,9 @@ def run_training_mode(
         reward_id_override=getattr(args, "reward_id", None),
         performance_stopping=performance_stopping,
         checkpoint_snapshot_interval=checkpoint_snapshot_interval,
+        task2_success_stopping=task2_success_stopping,
+        task2_success_context=task2_success_context,
+        runtime_migration_audit=runtime_migration_audit,
         migration=migrating,
         task3_safety_transfer=safety_transferring,
         task3_transfer=transferring,

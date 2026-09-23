@@ -22,11 +22,22 @@ SUPPORTED = {
     "double_q_compact_agent", "double_dqn_continuous_agent",
     "double_dqn_continuous_v2_agent", "double_dqn_continuous_v3_agent",
     "double_dqn_phase_agent",
-    "cnn_double_dqn_agent", "hybrid_dueling_double_dqn_agent",
-    "cnn_path_double_dqn_agent", "cnn_distilled_double_dqn_agent",
+    "hybrid_dueling_double_dqn_agent", "cnn_distilled_double_dqn_agent",
     "double_dqn_continuous_v4_agent",
     "rainbow_lite_agent", "expected_sarsa_lambda_agent", "double_q_lambda_agent",
     "optimized_double_q_lambda_agent",
+}
+
+# These implementations are historical variants.  They intentionally leave the
+# runnable agent namespace when archived, but can still be packaged after an
+# explicit restore via scripts/restore_archived_q_cnn_agent.sh.
+ARCHIVED_RESTORABLE = {
+    "cnn_double_dqn_agent", "cnn_path_double_dqn_agent",
+    "optimized_double_q_lambda_v4_agent",
+    "optimized_double_q_lambda_crate_agent",
+    "optimized_double_q_lambda_history_agent",
+    "optimized_double_q_lambda_grouped_agent",
+    "optimized_double_q_lambda_demo_agent",
 }
 
 
@@ -47,7 +58,13 @@ def _rewrite_imports(path: Path, replacements: dict[str, str]) -> None:
 
 def build_submission(agent: str, checkpoint: Path, output: Path) -> Path:
     if agent not in SUPPORTED:
-        raise ValueError(f"self-contained packaging is not supported for {agent!r}")
+        if agent not in ARCHIVED_RESTORABLE:
+            raise ValueError(f"self-contained packaging is not supported for {agent!r}")
+        restored = PROJECT_ROOT / "agent_code" / agent
+        if not restored.is_dir() or restored.is_symlink():
+            raise ValueError(
+                f"{agent!r} is archived; restore it with "
+                "scripts/restore_archived_q_cnn_agent.sh before packaging")
     contract = resolve_agent_contract(agent)
     checkpoint = Path(checkpoint).expanduser().resolve()
     output = Path(output).expanduser().resolve()
@@ -135,7 +152,10 @@ def build_submission(agent: str, checkpoint: Path, output: Path) -> Path:
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--agent", required=True, choices=sorted(SUPPORTED))
+    parser.add_argument(
+        "--agent", required=True,
+        choices=sorted(SUPPORTED | ARCHIVED_RESTORABLE),
+    )
     parser.add_argument("--checkpoint", required=True, type=Path)
     parser.add_argument("--output", required=True, type=Path)
     args = parser.parse_args(argv)

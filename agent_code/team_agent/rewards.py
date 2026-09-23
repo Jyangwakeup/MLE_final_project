@@ -178,6 +178,43 @@ REWARD_SPECS = {
         "useful_bomb_per_crate": 0.2,
         "useful_bomb_crate_cap": 3,
     },
+    "r20_safe_credit_targeted_wait": {
+        "step": -0.01,
+        "coin_collected": 3.0,
+        "killed_opponent": 5.0,
+        "crate_destroyed": 0.2,
+        "killed_self": -20.0,
+        "got_killed": -10.0,
+        "invalid_action": -0.1,
+        "potential_gamma": 0.95,
+        "potential_coin_weight": 0.5,
+        "potential_crate_weight": 0.25,
+        "potential_danger_weight": 1.0,
+        "unsafe_bomb_penalty": -20.0,
+        "useful_bomb_per_crate": 0.2,
+        "useful_bomb_crate_cap": 3,
+        "avoidable_wait_penalty": -0.04,
+        "useful_bomb_counts_as_wait_progress": 1.0,
+    },
+    "r21_safe_credit_targeted_reverse": {
+        "step": -0.01,
+        "coin_collected": 3.0,
+        "killed_opponent": 5.0,
+        "crate_destroyed": 0.2,
+        "killed_self": -20.0,
+        "got_killed": -10.0,
+        "invalid_action": -0.1,
+        "potential_gamma": 0.95,
+        "potential_coin_weight": 0.5,
+        "potential_crate_weight": 0.25,
+        "potential_danger_weight": 1.0,
+        "unsafe_bomb_penalty": -20.0,
+        "useful_bomb_per_crate": 0.2,
+        "useful_bomb_crate_cap": 3,
+        "avoidable_wait_penalty": -0.04,
+        "useful_bomb_counts_as_wait_progress": 1.0,
+        "conditional_loop_penalty": -0.08,
+    },
     "r8_safe_constrained": {
         "step": -0.01,
         "coin_collected": 3.0,
@@ -441,6 +478,10 @@ REWARD_SPECS["r18_wait_attractor_escape"] = {
     "history_wait_penalty_cap": 5,
     "useful_bomb_counts_as_wait_progress": 1.0,
 }
+# Same learned reward signal as r12, with a distinct ID so the shared linear
+# runtime does not apply r12's rule-based repeated-cycle action elimination.
+REWARD_SPECS["r12_coin_priority_anti_loop_reward_only"] = dict(
+    REWARD_SPECS["r12_coin_priority_anti_loop"])
 REWARD_SPECS['r9_task3_score_aligned'] = {
     **REWARD_SPECS['r7_safe_credit_sparse'], 'killed_opponent': 15.0,
 }

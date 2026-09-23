@@ -67,6 +67,85 @@ checkpoint SHA-256 与最终指标。
 **正式通过 Task 1 的开发集与独立确认集验收**。后续迁移至 Task 2 时保留此文件
 作为可回退的 Task 1 checkpoint，不再以训练 reward 或单局结果替代冻结验收。
 
+## 正式 Task 1 → Task 2 训练链
+
+此前的 `T1-E01` 使用 safety `off`，因此虽已在开发集和独立确认集达到 96%，但不能作为
+使用 safety `all` 的正式 Task 2 `--resume-from` 父 run。本链从零重建 seed 11 的相同模型、
+`continuous-v2` 和 `r7_safe_credit_potential` 合同，只将 safety 固定为
+`survival-mask-v1/all`。
+
+| 实验 ID | 阶段 | 状态 | 固定合同 | 验收 |
+|---|---|---|---|---|
+| T2-L01 | Task 1 正式父链，seed 11 | 已完成并晋级：Slurm `472900` | Double Q(lambda)、`continuous-v2`、`r7_safe_credit_potential`、safety-all | `9000--9019` 三次连续 mean score ≥48；随后 `10000--10019` 独立 stage gate。 |
+| T2-P01 | Task 2 pilot，seed 11 | 训练完成，未通过质量门槛：Slurm `472902` | 同一合同，`classic`、BOMB enabled、150k actions / 至少500局 | 保留安全放弹和 Task 1 能力；未达到金币、炸箱与循环门槛。 |
+
+T2-L01 的冻结性能评估从第 200 局开始，每 50 个新增训练回合执行一次；只有连续三次
+通过后才停止。其 `promotion_audit.json` 同时核验 checkpoint reload、独立打包文件、
+20-seed stage gate、无效动作率及 CPU 时延。T2-P01 仅在该审计文件为 `passed=true` 后执行。
+
+### T2-L01 正式父链结果（已完成）
+
+训练于 300 局、99,845 个 action steps 停止；停止原因是正式的
+`task1_score_converged`，并非 reward early stopping。`9000--9019` 上第 200、250、300 局
+的三次能力评估均为平均得分 **50.0 / 50**，连续通过次数为 1、2、3。随后固定最终
+checkpoint 在独立 `10000--10019` 上完成 20 局 stage gate，平均得分 **50.0 / 50**，
+无效动作率 0%，`act` P95 / max 为 **11.35 ms / 14.44 ms**。
+
+- 父 checkpoint：`runs/qlambda_formal_t1_s11_j472900/checkpoints/final.pkl`
+- SHA-256：`28f9e723d644da3568fc5e60fbb560b60abdc3a469f9ada264c8f915237894b4`
+- 审计：`runs/qlambda_formal_t1_s11_j472900/promotion_audit.json`，`passed=true`
+
+因此该 run 是 T2-P01 的唯一 `--resume-from` 父模型。此前 safety-off 的 96% checkpoint
+仍保留为 Task 1 对照与回退证据，但不参与此正式迁移链。
+
+Task 2 每 25k action steps 冻结一次候选；每个候选同时在 Task 1 和 Task 2 的
+`10000--10019` 上评估。选模必须满足 Task 2 quality gate（平均金币 ≥6、平均炸箱 ≥60、
+自杀率 ≤5%、放弹存活率 ≥95%、每弹炸箱 ≥1.5 等）以及 Task 1 分数保留率 ≥90%。
+若 T2-P01 未通过，只根据少放弹、自杀、空放、循环或 tile/Q 值诊断修改一个因素，随后从
+T2-L01 父 run 重新开始 Task 2，不同时修改特征、奖励和超参数。
+
+### T2-P01 seed 11 结果（训练完成，未晋级）
+
+`472902` 从 T2-L01 的已审计父 checkpoint 以 `--resume-from` 正式进入 Task 2，完成
+500 局、200,000 个 Task 2 action steps（超过预注册的 150k 目标）。训练正常结束；随后
+8 个不可变快照均完成 Task 1 / Task 2 各 20 局冻结评估。作业状态显示 failed 的唯一原因是
+选模脚本对迁移父 run 错拼了 stage-gate 目录；训练、checkpoint 和全部评估均已生成，修复后
+已在本地重跑选模，未进行额外训练。
+
+| checkpoint | Task 2 平均金币 | 平均炸箱 | 0 放弹局 | 自杀率 | 每弹炸箱 | 长 WAIT / 往返 | Task 1 保留 | 结论 |
+|---|---:|---:|---:|---:|---:|---:|---:|---|
+| `step_0175200.pkl`（最佳） | 3.60 / 9 | 54.2 | 0% | 0% | 3.78 | 70% / 60% | 100% | 未通过：平均金币 <6、平均炸箱 <60、跑满 400 步和循环率超限。 |
+| `step_0200000.pkl`（最终快照） | 3.45 / 9 | 50.2 | 0% | 0% | — | — | 100% | 后期未超过最佳快照。 |
+
+最佳 checkpoint 为 `runs/qlambda_t2_pilot_s11_j472902/checkpoints/snapshots/step_0175200.pkl`，
+
+### T2-R20：安全目标内无效 WAIT 信号（已提交）
+
+配对冻结诊断 `473125` 显示，旧v2的2,436个WAIT与crate变体的2,344个WAIT均无贪心Q值并列；安全mask只否决2.39%/1.25%的raw argmax。旧v2的WAIT中48.2%存在安全有效BOMB，crate变体为30.9%，故不进行tie-break或关闭safety。
+
+`r20_safe_credit_targeted_wait` 是唯一变更：复制 `r7_safe_credit_potential`，只在当前位置与下一步安全、存在可达金币或箱子frontier，且有安全向目标移动或安全有效BOMB时，对WAIT额外给 `-0.04`。危险等待、无目标等待和无安全推进动作的等待不罚；不修改feature、tile、λ、学习率或mask。
+
+seed11先从零建立新的正式Task1父链，再以相同reward合同进入固定100k Task2筛选；每25k在seeds10000–10019冻结评估。Task1与Task2配置分别为 `optimized_double_q_lambda_r20_task1.json` 与 `optimized_double_q_lambda_r20_task2_100k.json`。若Task1审计失败，Task2不会启动；若100k没有在循环和金币指标上优于旧v2，不延长至200k。
+
+100k结果为平均金币3.70、平均炸箱50.25、长WAIT 45%、长往返70%、自杀0%、放弹存活100%。它优于旧v2的同预算结果，且25k至100k的金币/炸箱曲线持续上升，因此从100k checkpoint正常续训到最多200k；仅新增成功式早停（从100k后每25k检查，连续两次通过全部19项门槛才停止），不改变训练合同。
+SHA-256 为 `14d67cd834e8b0be68a2aac39ab27ca3867028cec433219c3a3dfeb52f9fc581`。它满足
+安全、无效动作、放弹存活、Task 1 保留及 CPU 时延门槛，但 19 个 Task 2 门槛仅通过 12 个，
+因此**不得**作为 Task 2 晋级模型，也不启动 seeds 22/33。
+
+### T2-R21：最后一次窄条件折返奖励实验
+
+状态：submitted。恢复原 `optimized_double_q_lambda_agent` 的联合tile编码，以r20为唯一基线，
+仅加入 `conditional_loop_penalty=-0.08`。该信号只在当前位置安全、导航目标不变、移动
+成功且返回上一位置时触发；危险逃生、目标切换、必要WAIT和有效BOMB不罚。seed11从零
+建立相同奖励合同的正式Task1父链，再进入Task2 100k筛选。若未改善到平均金币>3.70、
+平均炸箱≥50.25且长往返<70%，本Q-learning奖励搜索结束并冻结旧r20最佳模型。
+
+- 稳定训练源码：`8c125e8`。
+- 预检：30项奖励测试、3局smoke、checkpoint冻结重载和打包通过；CPU act
+  p95 14.36 ms、max 18.35 ms。
+- Task 1 job `473168`，预计50–80分钟；Task 2 job `473169`，依赖
+  `afterok:473168`，100k预计45–70分钟，满足预注册条件时自动延长200k。
+
 重试使用本地且被 Git 忽略的 `.venv-compute` 环境：由
 `/home/students/ji/.local/bin/python3.10` 创建，并安装 CPU 训练依赖。
 
