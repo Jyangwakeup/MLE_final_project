@@ -17,6 +17,8 @@
 
 ## 常用资料
 
+- [Task3 v3/v4/v5 实验统一索引](../docs/research/task3-experiment-index.md)：旧分支身份、实际结果、配置与原始产物路径映射。
+
 - 原 B33 包：`worktrees/MLE_final_project_task4_score/.scratch/task4-diagnosis/b33-submission-check/candidate-not-approved/final-project-agent-code.zip`
 - 1,000 局结果：`worktrees/MLE_final_project_task4_score/.scratch/task4-diagnosis/b33-random1000/`
 - 诊断地图与反例：`worktrees/MLE_final_project_task4_score/.scratch/task4-diagnosis/`
