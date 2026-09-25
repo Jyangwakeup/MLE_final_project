@@ -1,0 +1,17 @@
+# Table2 Task1 Task2
+
+由同名 CSV 自动生成；修改 CSV 后运行 python3 render_tables.py。
+
+| candidate | model_family | task | protocol_id | episodes_or_worlds | mean_coins | all_coins_rate | mean_crates | long_wait_rate | long_ping_pong_rate | suicide_rate | bomb_survival_rate | act_p95_ms | act_max_ms | result_status | evidence_status | source_path |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| path CNN r3 | CNN Double DQN | 1 | feature-v2 r3 frozen best | 100 | 13.35 | 0.00 | not_applicable | not_reported | not_reported | not_reported | not_applicable | not_reported | not_reported | failed | verified_summary | experiments/agent_variants/cnn_path_double_dqn_agent/EXPERIMENT_LOG.md |
+| path CNN r5 | CNN Double DQN | 1 | feature-v2 frozen best | 100 | 41.78 | 0.17 | not_applicable | not_reported | not_reported | not_reported | not_applicable | not_reported | not_reported | below target | verified_summary | docs/research/q-cnn-experiment-report.md |
+| distilled CNN global | Distilled CNN Double DQN | 1 | reserved frozen confirmation | 100 | 49.84 | 0.96 | not_applicable | not_reported | not_reported | not_reported | not_applicable | 8.39 | 15.55 | passed Task 1 | verified_summary | docs/research/q-cnn-experiment-report.md |
+| optimized Double Q(lambda) | Double Q(lambda) | 1 | independent frozen confirmation | 100 | 48.95 | 0.96 | not_applicable | not_reported | not_reported | not_reported | not_applicable | below 50 | below 500 | passed Task 1 | verified_summary | docs/research/q-cnn-experiment-report.md |
+| Q(lambda) r20 175.2k | Double Q(lambda) | 2 | frozen development checkpoint | 20 | 3.95 | not_reported | 53.45 | 0.30 | 0.75 | 0.00 | 1.00 | not_reported | not_reported | below Task 2 target | verified_summary | docs/research/q-cnn-experiment-report.md |
+| Q crate quantized | Double Q(lambda) | 2 | frozen development checkpoint | 20 | 1.35 | not_reported | not_reported | above threshold | above threshold | not_reported | not_reported | not_reported | not_reported | below Task 2 target | verified_summary | docs/research/q-cnn-experiment-report.md |
+| Q history input | Double Q(lambda) | 2 | frozen development checkpoint | 20 | 1.65 | not_reported | 29.70 | above threshold | 0.85 | not_reported | not_reported | not_reported | not_reported | below Task 2 target | verified_summary | docs/research/q-cnn-experiment-report.md |
+| Q continuous-v4 r12 | Double Q(lambda) | 2 | frozen development checkpoint | 20 | 0.95 | not_reported | 18.40 | 0.00 | 0.35 | not_reported | not_reported | not_reported | not_reported | below Task 2 target | verified_summary | docs/research/q-cnn-experiment-report.md |
+| Q grouped tiles | Double Q(lambda) | 2 | frozen development checkpoint | 20 | 0.00 | not_reported | 0.00 | 0.05 | 0.65 | not_reported | not_reported | not_reported | not_reported | below Task 2 target | verified_summary | docs/research/q-cnn-experiment-report.md |
+| Q team demo 50k | Double Q(lambda) | 2 | frozen development checkpoint | 20 | 3.75 | not_reported | 56.90 | 0.65 | 0.75 | not_reported | not_reported | not_reported | not_reported | below Task 2 target | verified_summary | docs/research/q-cnn-experiment-report.md |
+| distilled CNN D02 | Distilled CNN Double DQN | 2 | main validation | 100 | 2.60 | 0.00 | 44.15 | not_reported | not_reported | 0.00 | not_reported | not_reported | not_reported | below Task 2 target | verified_summary | docs/research/q-cnn-experiment-report.md |

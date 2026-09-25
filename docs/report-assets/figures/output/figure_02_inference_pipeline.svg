@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="900" viewBox="0 0 1500 900">
+<style>text{font-family:Arial,sans-serif;fill:#172033}.title{font-size:30px;font-weight:bold}.label{font-size:18px}.small{font-size:14px}.note{font-size:13px;fill:#4d5c70}.axis{stroke:#45576d;stroke-width:2}.grid{stroke:#d5dce5;stroke-width:1}</style>
+<rect width="1500" height="900" fill="white"/>
+<defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#31445f"/></marker></defs>
+<text x="70" y="70" class="title">Figure 2. Inference and safety-action admission pipeline</text>
+<text x="70" y="100" class="note">Safety masks filter inadmissible actions; they do not rank a preferred action.</text>
+<rect x="70" y="330" width="180" height="100" rx="10" fill="#e8f0fb" stroke="#31445f" stroke-width="2"/>
+<text x="160.0" y="372.0" text-anchor="middle" class="label">Game state</text>
+<rect x="300" y="330" width="200" height="100" rx="10" fill="#e8f0fb" stroke="#31445f" stroke-width="2"/>
+<text x="400.0" y="372.0" text-anchor="middle" class="label">continuous-v2 — 84 features</text>
+<rect x="550" y="330" width="190" height="100" rx="10" fill="#e8f0fb" stroke="#31445f" stroke-width="2"/>
+<text x="645.0" y="372.0" text-anchor="middle" class="label">Double DQN — Q values</text>
+<rect x="790" y="230" width="210" height="100" rx="10" fill="#fff1c9" stroke="#31445f" stroke-width="2"/>
+<text x="895.0" y="272.0" text-anchor="middle" class="label">physical legal action mask</text>
+<rect x="790" y="450" width="210" height="100" rx="10" fill="#fff1c9" stroke="#31445f" stroke-width="2"/>
+<text x="895.0" y="492.0" text-anchor="middle" class="label">survival admission mask</text>
+<rect x="1050" y="330" width="220" height="100" rx="10" fill="#fff1c9" stroke="#31445f" stroke-width="2"/>
+<text x="1160.0" y="372.0" text-anchor="middle" class="label">argmax over admissible actions</text>
+<rect x="1320" y="330" width="120" height="100" rx="10" fill="#fff1c9" stroke="#31445f" stroke-width="2"/>
+<text x="1380.0" y="372.0" text-anchor="middle" class="label">Action</text>
+<path d="M 250 380 L 300 380" stroke="#31445f" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+<path d="M 500 380 L 550 380" stroke="#31445f" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+<path d="M 740 380 L 790 280" stroke="#31445f" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+<path d="M 740 380 L 790 500" stroke="#31445f" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+<path d="M 1000 280 L 1050 380" stroke="#31445f" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+<path d="M 1000 500 L 1050 380" stroke="#31445f" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+<path d="M 1270 380 L 1320 380" stroke="#31445f" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+<text x="70" y="700" class="label">Boundary:</text>
+<text x="170" y="700" class="small">The learner ranks Q values; legality and survival modules veto only actions outside their admissible sets.</text>
+<text x="170" y="735" class="note">Package validation confirms source/renamed behavioural equivalence, not a new competition evaluation or complete safety proof.</text>
+</svg>

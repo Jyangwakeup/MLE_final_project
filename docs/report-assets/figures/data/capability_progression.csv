@@ -1,0 +1,9 @@
+task,candidate,value,axis_max,unit,evidence_status,source_path
+Task 1 mean coins / 50,Double Q(lambda),48.95,50,independent confirmation; n=100,verified_summary,docs/research/q-cnn-experiment-report.md
+Task 1 mean coins / 50,Distilled CNN,49.84,50,reserved confirmation; n=100,verified_summary,docs/research/q-cnn-experiment-report.md
+Task 2 mean coins / 9,Q(lambda) r20,3.95,9,frozen development; n=20,verified_summary,docs/research/q-cnn-experiment-report.md
+Task 2 mean coins / 9,Distilled CNN D02,2.60,9,main validation; n=100,verified_summary,docs/research/q-cnn-experiment-report.md
+Task 3 mean score,Parent seed22,5.91,8,paired main validation; n=100,verified_raw,docs/research/task3-counter-validation-results.md
+Task 3 mean score,Child seed22/c150,7.14,8,paired main validation; n=100,verified_raw,docs/research/task3-counter-validation-results.md
+Task 4 mean score,E1 seed11 endpoint,4.06,5,specialist frozen endpoint; n=100,verified_raw,experiments/results/task4_exploration_20260919/report.md
+Task 4 mean score,B33 historical,4.231,5,historical benchmark; n=1000,verified_summary,agent_code/die_hardest/README.md
