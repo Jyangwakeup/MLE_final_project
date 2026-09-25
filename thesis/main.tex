@@ -1,0 +1,289 @@
+% !TeX program = xelatex
+% Overleaf: Menu -> Compiler -> XeLaTeX
+% fontset=none 避免依赖部分 Overleaf/TeX Live 镜像中缺失的 Fandol 字体。
+\documentclass[UTF8,11pt,a4paper,fontset=none]{ctexart}
+
+% 必须使用 XeLaTeX。显式加载字体宏，避免 \IfFontExistsTF 未定义。
+\usepackage{fontspec}
+\usepackage{xeCJK}
+
+% Overleaf 的 XeLaTeX 环境提供 Noto CJK 字体；不再依赖 Fandol。
+\setCJKmainfont{Noto Serif CJK SC}
+\setCJKsansfont{Noto Sans CJK SC}
+\setCJKmonofont{Noto Sans CJK SC}
+
+\usepackage[a4paper,margin=2.5cm]{geometry}
+\usepackage{amsmath,amssymb,bm}
+\usepackage{booktabs,tabularx,array,multirow}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{caption,subcaption}
+\usepackage{float}
+\usepackage{microtype}
+\usepackage{hyperref}
+\usepackage[nameinlink,noabbrev]{cleveref}
+\usepackage[numbers,sort&compress]{natbib}
+
+\definecolor{linkblue}{HTML}{175A9C}
+\definecolor{todored}{HTML}{A51C30}
+\hypersetup{
+  colorlinks=true,
+  linkcolor=linkblue,
+  citecolor=linkblue,
+  urlcolor=linkblue,
+  pdftitle={平衡得分、安全性与运行时：基于强化学习的 Bomberman Agent},
+  pdfauthor={作者姓名}
+}
+
+\setlength{\parindent}{2em}
+\setlength{\parskip}{0.25em}
+\setlist{nosep,leftmargin=2em}
+\captionsetup{font=small,labelfont=bf}
+
+% 每个章节和小节都必须标注主要作者。填写真实姓名后再提交。
+\newcommand{\primaryauthor}[1]{\texorpdfstring{\enspace\normalfont\small[主要作者：#1]}{ [主要作者：#1]}}
+\newcommand{\authorsection}[2]{\section{#1\primaryauthor{#2}}}
+\newcommand{\authorsubsection}[2]{\subsection{#1\primaryauthor{#2}}}
+\newcommand{\authorsubsubsection}[2]{\subsubsection{#1\primaryauthor{#2}}}
+\newcommand{\todo}[1]{\textcolor{todored}{[待完成：#1]}}
+\newcommand{\placeholder}[1]{\par\noindent\textcolor{todored}{\textbf{写作提示：}#1}\par}
+
+\title{平衡得分、安全性与运行时：\\基于强化学习的 Bomberman Agent}
+\author{
+  姓名一 \quad 姓名二 \quad 姓名三\\
+  \small Machine Learning Essentials, Summer Semester 2026
+}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\begin{center}
+  \textbf{公开代码仓库：}\url{https://github.com/Jyangwakeup/MLE_final_project}\\
+  \todo{提交前确认仓库公开可访问；不要把最终报告 PDF 上传到公开仓库。}
+\end{center}
+
+\begin{abstract}
+\placeholder{用约 150--250 字概述研究问题、方法、最重要的定量结果与结论。所有数值必须由冻结评估记录核验。}
+本文研究如何通过分阶段课程、价值学习与生存动作过滤，构建可在 CPU 时间约束下运行的 Bomberman Agent。我们比较表格型与神经网络方法，并使用冻结、多随机种子的协议评估任务能力保留、安全性和正式游戏得分。\todo{用团队自行核验并改写的最终摘要替换本段。}
+\end{abstract}
+
+\noindent\textbf{关键词：}强化学习；Bomberman；课程学习；奖励塑形；安全动作过滤
+
+\tableofcontents
+\clearpage
+
+\authorsection{引言}{待定}
+
+\authorsubsection{问题与研究动机}{待定}
+\placeholder{约 250 words。介绍稀疏与延迟奖励、探索、导航、炸弹时序、对手占位、长期信用分配和 0.5 秒 CPU 推理约束。避免把训练奖励等同于正式表现。}
+
+\authorsubsubsection{游戏特有挑战}{待定}
+\placeholder{介绍定时爆炸、阻挡、六种离散动作、400 步上限及对手动作的不确定性。若使用 POMDP 一词，须明确定义未观测信息。}
+
+\authorsubsection{项目目标与研究问题}{待定}
+\placeholder{约 300 words。说明模型比较、Task 1--4 课程、表示、奖励、生存约束和冻结评估。}
+本文围绕以下研究问题展开：
+\begin{enumerate}[label=RQ\arabic*：]
+  \item 哪些模型能够学习 Task 1 的金币导航？
+  \item 奖励设计与动作历史是否减少等待和循环？
+  \item Q-learning 与 CNN 路线如何迁移到 Task 2？
+  \item 生存约束改善了什么，又带来了何种运行时成本？
+  \item Task 3 是否在保留旧能力的同时改善竞争表现？
+  \item Task 4 尝试为何失败或没有显示稳定收益？
+  \item 为什么最终选择 B33 / Die Hardest？
+\end{enumerate}
+
+\authorsubsubsection{范围与成功标准}{待定}
+\placeholder{定义正式得分、生存率、能力保留、第一名率和 CPU 推理时间。明确本地结果不是官方锦标赛结果。}
+
+\authorsubsection{贡献与全文结构}{待定}
+\placeholder{约 250 words。总结模型系统比较、四阶段开发、生存否决机制和包含负面结果的最终选模；不要宣称提出了新的 RL 算法。}
+
+\authorsection{背景}{待定}
+
+\authorsubsection{Bomberman 任务与环境}{待定}
+\placeholder{约 350 words。说明 game\_state、动作、障碍、金币、箱子、炸弹、爆炸、对手、计分与终止条件；提交前对照最终课程框架复核数值。}
+
+\begin{figure}[H]
+  \centering
+  \fbox{\parbox[c][4.2cm][c]{0.82\linewidth}{\centering 在此插入带标注的游戏棋盘或状态--动作示意图}}
+  \caption{Bomberman 环境与 Agent 可观测信息示意。}
+  \label{fig:environment}
+\end{figure}
+
+\authorsubsubsection{Task 1--4 课程任务}{待定}
+\placeholder{概述金币导航、炸箱与隐藏金币、弱对手交互和强对手竞争。说明这些阶段是课程建议的递进路线。}
+
+\authorsubsection{强化学习形式化}{待定}
+\placeholder{约 250 words。定义 $s_t,a_t,r_t$、转移、终止标记、折扣回报和动作价值函数，并说明 Markov 近似的局限。}
+折扣回报和动作价值函数可写为
+\begin{equation}
+  G_t=\sum_{k=0}^{T-t-1}\gamma^k r_{t+k+1},\qquad
+  Q^\pi(s,a)=\mathbb{E}_\pi[G_t\mid S_t=s,A_t=a].
+\end{equation}
+
+\authorsubsection{价值学习算法}{待定}
+\placeholder{约 450 words。介绍 Q-learning、Double Q-learning、Watkins Double Q($\lambda$)、DQN、Double DQN、经验回放、目标网络、n-step、dueling 与 Rainbow-lite。正文只保留核心算法。}
+
+\authorsubsubsection{结构化与空间表示}{待定}
+\placeholder{对比离散键、tile-coded 连续向量、84 维连续表示、117 维阶段表示、棋盘 CNN 与混合输入；逐项从源码核验维度。}
+
+\authorsubsection{奖励、课程与安全概念}{待定}
+\placeholder{约 350 words。区分物理合法动作、生存准入动作和学习模型的最终排序；有限时域准入不能称为全局安全保证。}
+
+\authorsection{项目规划}{待定}
+
+\authorsubsection{团队结构与协作}{待定}
+\placeholder{约 300 words。用真实成员姓名和实际贡献替换原计划中的 A/B/C，描述共享接口、交叉复核和共同选模。}
+
+\authorsubsubsection{报告写作分工}{待定}
+\placeholder{列出各成员负责的章节，并确保本文每个标题都保留“主要作者”标注。}
+
+\authorsubsection{里程碑与决策门槛}{待定}
+\placeholder{约 250 words。写实际时间线、Task 晋级、独立确认、主验证和打包缓冲；区分原计划和实际执行。}
+
+\authorsubsection{可复现性、计算资源与证据管理}{待定}
+\placeholder{约 350 words。报告配置/模型哈希、run ID、环境与对手 seed、JSONL、冻结评估、bootstrap 和 CPU timing；核验硬件与墙钟时间。}
+
+\authorsection{方法}{待定}
+
+\authorsubsection{状态、动作与特征演进}{待定}
+\placeholder{约 350 words。描述离散表示、compact state、70/78/84 维连续特征、阶段特征、CNN 通道和动作历史。}
+
+\authorsubsubsection{物理合法动作与生存准入}{待定}
+\placeholder{依据项目术语分别定义 physical legal action、horizon-survivable action、survival mask 与 learned action choice。}
+
+\authorsubsection{模型族}{待定}
+\placeholder{约 600 words。覆盖所有开发模型，并在表中标明训练状态、有效证据和是否进入最终比较。}
+
+\begin{table}[H]
+  \centering
+  \caption{模型族及其实验状态（示例结构）。}
+  \label{tab:model-families}
+  \begin{tabularx}{\linewidth}{@{}lXll@{}}
+    \toprule
+    模型族 & 表示与学习方法 & 主要任务 & 证据状态 \\
+    \midrule
+    表格型方法 & \todo{填写} & Task 1--2 & \todo{填写} \\
+    MLP 方法 & \todo{填写} & Task 1--4 & \todo{填写} \\
+    CNN 方法 & \todo{填写} & Task 1--2 & \todo{填写} \\
+    最终 B33 & 84 维 continuous-v2 + Double DQN & Task 4 & \todo{核验} \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+\authorsubsubsection{表格型与 Tile-Coded 学习器}{待定}
+\placeholder{介绍 Q-learning、Double Q-learning、Watkins Double Q($\lambda$) 与 trace 截断，并强调特征不直接决定动作。}
+
+\authorsubsubsection{神经网络价值学习器}{待定}
+\placeholder{介绍 MLP Double DQN、CNN、蒸馏 CNN、Hybrid Dueling 和 Rainbow-lite，以及目标网络、经验回放和动作 mask。}
+
+\authorsubsubsection{最终 B33 架构}{待定}
+\placeholder{从冻结配置与 SUBMISSION\_MANIFEST.json 核验并描述架构、84 维特征、奖励版本、n-step 与 survival-mask-v9。}
+
+\authorsubsection{学习与探索}{待定}
+\placeholder{约 300 words。说明 replay、目标网络、Huber loss、Adam、$\epsilon$-greedy、终止屏蔽、n-step 和冻结推理。}
+
+\authorsubsection{奖励设计与课程迁移}{待定}
+\placeholder{约 350 words。区分正式得分与 shaped reward，描述金币势函数、炸箱奖励、循环惩罚、安全信用和跨 Task 迁移；标出真正的单变量实验。}
+
+\authorsubsection{Survival Mask 演进}{待定}
+\placeholder{约 400 words。说明 v1 至 v9 的演进、具体反例和安全--延迟权衡；保留 27155 未解决限制。}
+
+\authorsubsection{评估与统计协议}{待定}
+\placeholder{约 200 words。说明开发/确认/主验证集合、固定 seeds、父子配对、10,000 次 bootstrap、正式得分、第一名定义及安全/延迟门槛。}
+
+\authorsection{训练}{待定}
+
+\authorsubsection{分阶段训练课程}{待定}
+\placeholder{约 350 words。描述 Task 1--4 的实际训练过程，区分课程建议与团队自定晋级门槛。}
+
+\authorsubsection{Checkpoint、Resume 与 Transfer}{待定}
+\placeholder{约 250 words。说明原子快照、policy-only 初始化、严格 resume、显式迁移、replay 与 RNG 状态。}
+
+\authorsubsection{计算资源与训练效率}{待定}
+\placeholder{约 250 words。逐实验核验 CPU/GPU、墙钟时间和峰值内存；正式评估为 CPU-only。}
+
+\authorsubsection{蒸馏与 Replay 策略}{待定}
+\placeholder{约 200 words。介绍冻结 teacher、masked Q-value distillation、按任务划分 replay、历史 replay 和 specialist transfer；不要宣称保证能力保留。}
+
+\authorsubsection{训练失败与纠正决策}{待定}
+\placeholder{约 250 words。选取能回答研究问题的输入 bug、无效评估、循环、自杀、生命周期缺陷、搜索超时与中断实验，避免写成流水账。}
+
+\authorsection{实验与结果}{待定}
+\label{sec:results}
+
+\authorsubsection{RQ1：哪些模型学会了 Task 1 导航？}{待定}
+\placeholder{约 600 words。分别报告不同协议下的结果，不合并 48.95、49.51 与 49.58；说明表示、奖励和预算混杂。}
+
+\authorsubsubsection{失败或无效的 Task 1 证据}{待定}
+\placeholder{把 Hybrid 低性能、无效评估启动和 CNN 输入 bug 与有效模型比较分开。}
+
+\authorsubsection{RQ2：奖励与历史信息是否减少等待和循环？}{待定}
+\placeholder{约 500 words。报告全金币率、长等待和乒乓循环；存在多因素同时变化时，不写成严格因果消融。}
+
+\authorsubsection{RQ3：Q 与 CNN 路线如何迁移到 Task 2？}{待定}
+\placeholder{约 650 words。报告金币、炸箱、零放弹、生存、自杀、WAIT 和循环；强调即时生存不等于长期目标重选成功。}
+
+\authorsubsubsection{蒸馏成功与 TD Fine-Tuning 退化}{待定}
+\placeholder{只在对应实验范围内报告能力保留与后续退化，不外推到其他设置。}
+
+\authorsubsection{RQ4：生存约束改善了什么，又付出了什么代价？}{待定}
+\placeholder{约 650 words。报告自杀率、炸弹存活、保证丢失、逃生塌缩、搜索超时和 act 延迟。零观察失败不等于普适安全证明。}
+
+\authorsubsection{RQ5：Task 3 是否在保留旧能力的同时改善竞争表现？}{待定}
+\placeholder{约 700 words。给出父子模型、确认集与主验证、配对 bootstrap 区间；不得把得分改善写成击杀率改善。}
+
+\authorsubsection{RQ6：Task 4 尝试为何失败或未显示收益？}{待定}
+\placeholder{约 700 words。分别报告 shared-parent、E1/E2/E3、历史对手和 score campaign，不把有限失败概括为方法永远无效。}
+
+\authorsubsection{RQ7：为什么选择 B33 / Die Hardest？}{待定}
+\placeholder{约 700 words。核验 1,000 世界 benchmark、得分、名次、生存、延迟、内存、打包等价性及未解决限制。}
+
+\authorsubsubsection{打包与行为等价性}{待定}
+\placeholder{区分 180 条历史观察与六局配对验证，以及此前 1,000 世界 benchmark；不要声称重命名后重新跑了 1,000 局。}
+
+\authorsubsubsection{剩余安全与外部有效性限制}{待定}
+\placeholder{明确本地硬件、本地对手、27155 未解决，以及缺少官方锦标赛硬件证据。}
+
+\begin{table}[H]
+  \centering
+  \caption{主要实验结果汇总（提交前以冻结证据替换占位符）。}
+  \label{tab:main-results}
+  \begin{tabularx}{\linewidth}{@{}lXrrr@{}}
+    \toprule
+    实验 & 比较对象/协议 & 主要指标 & 点估计 & 置信区间 \\
+    \midrule
+    RQ1 & \todo{填写} & \todo{填写} & \todo{填写} & \todo{填写} \\
+    RQ3 & \todo{填写} & \todo{填写} & \todo{填写} & \todo{填写} \\
+    RQ5 & \todo{填写} & \todo{填写} & \todo{填写} & \todo{填写} \\
+    RQ7 & \todo{填写} & \todo{填写} & \todo{填写} & \todo{填写} \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+\authorsection{结论}{待定}
+
+\authorsubsection{对研究问题的回答}{待定}
+\placeholder{约 400 words。逐项回答 RQ1--RQ7，结论强度必须与证据强度一致，并交叉引用\cref{tab:main-results}。}
+
+\authorsubsection{局限}{待定}
+\placeholder{约 250 words。覆盖协议不统一、训练 seeds 有限、本地评估、Task 2 未完成、奖励信用分配、安全语料有限、27155 和官方硬件未验证。}
+
+\authorsubsection{未来工作}{待定}
+\placeholder{约 250 words。讨论反例修复、长期目标重选、延迟信用分配、统一协议、更多独立 seeds、held-out opponents 和官方近似硬件 profiling。}
+
+\clearpage
+\bibliographystyle{plainnat}
+\bibliography{references}
+
+\appendix
+\authorsection{模型清单与证据索引}{待定}
+\placeholder{列出所有开发过的 Agent 目录、算法、特征版本、奖励版本、训练状态、checkpoint 和对应实验报告，满足“覆盖全部模型”的可审计要求。}
+
+\authorsection{补充实验与复现信息}{待定}
+\placeholder{记录完整超参数、随机种子、命令、软件版本、硬件、运行时间、配置哈希和 checkpoint 哈希。正文中过长的表格可移至此处。}
+
+\end{document}

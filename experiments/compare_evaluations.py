@@ -18,8 +18,9 @@ TASK_METRICS = {
     "crate_navigation": (
         "score", "coins", "crates", "suicides", "survived", "survival_steps"),
     "weak_opponents": (
-        "score", "coins", "crates", "kills", "suicides", "survived",
-        "survival_steps", "exclusive_win", "tied_first"),
+        "score", "coins", "coin_score", "kill_score", "crates", "kills",
+        "kill_round", "suicides", "killed_by_opponent", "survived",
+        "survival_steps", "exclusive_win", "tied_first", "first_place"),
     "full_match": (
         "score", "coins", "crates", "kills", "suicides", "survived",
         "survival_steps", "exclusive_win", "tied_first"),
@@ -59,6 +60,10 @@ def _load_group(directories: Iterable[Path]) -> tuple[str, str, dict[tuple[int, 
                 for name in ("score", "coins", "crates", "kills", "suicides", "invalid")
             }
             row.update({
+                "coin_score": float(target["coins"]),
+                "kill_score": 5.0 * float(target["kills"]),
+                "kill_round": float(float(target["kills"]) > 0),
+                "killed_by_opponent": float(bool(target.get("killed_by_opponent", False))),
                 "round_steps": float(episode["round_steps"]),
                 "survived": float(survived),
                 "survival_steps": float(
@@ -66,6 +71,7 @@ def _load_group(directories: Iterable[Path]) -> tuple[str, str, dict[tuple[int, 
                     else target.get("death_step") or episode["round_steps"]),
                 "exclusive_win": float(float(target["score"]) == top and leaders == 1),
                 "tied_first": float(float(target["score"]) == top and leaders > 1),
+                "first_place": float(float(target["score"]) == top),
             })
             key = (int(episode["environment_seed"]), int(episode["round_index"]))
             if key in samples:

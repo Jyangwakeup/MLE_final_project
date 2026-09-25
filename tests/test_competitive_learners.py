@@ -56,6 +56,16 @@ class CompetitiveLearnerTests(unittest.TestCase):
         replay=PrioritizedReplay(4,3,.6)
         for reward in range(4): replay.append(Transition(np.zeros(3),0,float(reward),None,True,None,np.ones(2,dtype=bool),"x",1))
         batch,indices,weights=replay.sample(3,.4); self.assertEqual(len(batch),3); self.assertEqual(weights.shape,(3,))
+    def test_prioritized_replay_preserves_high_value_quota(self):
+        replay=PrioritizedReplay(4,3,.6,protected_capacity=1,
+                                 protected_reward_threshold=4.)
+        replay.append(Transition(np.zeros(3),0,5.,None,True,None,
+                                 np.ones(2,dtype=bool),"x",1))
+        for reward in range(10):
+            replay.append(Transition(np.zeros(3),0,float(reward%2),None,True,None,
+                                     np.ones(2,dtype=bool),"x",1))
+        self.assertEqual(sum(replay.protected),1)
+        self.assertTrue(any(item.reward==5. for item in replay.memory))
     def test_rainbow_learns_and_round_trips(self):
         hp={"gamma":.95,"learning_rate":1e-3,"batch_size":2,"replay_capacity":8,"warmup":2,"target_sync_interval":2,"per_alpha":.6,"per_beta_start":.4,"per_beta_steps":10,"per_epsilon":1e-5}
         model=RainbowLite(3,2,seed=4,hyperparameters=hp)
@@ -63,5 +73,21 @@ class CompetitiveLearnerTests(unittest.TestCase):
         model.observe(transition); self.assertIsNotNone(model.observe(transition))
         restored=RainbowLite(3,2,seed=9,hyperparameters=hp); restored.load_checkpoint(model.checkpoint(),training=True)
         np.testing.assert_allclose(model.q_values(np.zeros(3)),restored.q_values(np.zeros(3)))
+    def test_rainbow_train_interval_reduces_update_frequency(self):
+        hp={"gamma":.95,"learning_rate":1e-3,"batch_size":1,
+            "replay_capacity":8,"warmup":1,"target_sync_interval":10,
+            "per_alpha":.6,"per_beta_start":.4,"per_beta_steps":100,
+            "per_epsilon":1e-5,"train_interval":4}
+        model=RainbowLite(3,2,seed=4,hyperparameters=hp)
+        transition=Transition(np.zeros(3,dtype=np.float32),0,1.,None,True,None,
+                              np.ones(2,dtype=bool),"x",1)
+        for _ in range(8): model.observe(transition)
+        self.assertEqual(model.observations,8)
+        self.assertEqual(model.updates,2)
+    def test_stable_v6_rebinds_runtime_hyperparameters(self):
+        from agent_code.rainbow_lite_agent import callbacks as base_callbacks
+        from agent_code.rainbow_lite_v6_stable_agent import callbacks as stable
+        self.assertIs(base_callbacks.HYPERPARAMETERS,stable.HYPERPARAMETERS)
+        self.assertEqual(base_callbacks.HYPERPARAMETERS["train_interval"],4)
 
 if __name__ == "__main__": unittest.main()

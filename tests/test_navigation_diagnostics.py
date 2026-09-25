@@ -58,6 +58,21 @@ class NavigationDiagnosticTestCase(unittest.TestCase):
         self.assertTrue(waited["avoidable_wait"])
         self.assertEqual(waited["wait_disposition"], "penalized")
 
+    def test_reports_survivable_useful_crate_bomb_opportunity(self):
+        state = make_game_state(position=(3, 3))
+        state["field"][5, 3] = 1
+
+        selected, _ = navigation_diagnostic(state, "BOMB")
+        declined, _ = navigation_diagnostic(state, "WAIT")
+
+        self.assertEqual(selected["crates_in_blast_if_bomb"], 1)
+        self.assertTrue(selected["useful_crate_bomb_available"])
+        self.assertTrue(selected["survivable_useful_crate_bomb_available"])
+        self.assertTrue(selected["selected_useful_crate_bomb"])
+        self.assertTrue(selected["selected_survivable_useful_crate_bomb"])
+        self.assertFalse(declined["selected_useful_crate_bomb"])
+        self.assertFalse(declined["selected_survivable_useful_crate_bomb"])
+
 
 if __name__ == "__main__":
     unittest.main()

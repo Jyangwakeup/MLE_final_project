@@ -532,5 +532,6 @@ class SharedRewardTestCase(unittest.TestCase):
         safety = 1.0 if earliest > HORIZON else max(0.0, earliest - 1) / HORIZON
         expected += spec["potential_safety_weight"] * safety
         self.assertAlmostEqual(_state_potential(state, spec), expected)
+
 if __name__ == "__main__":
     unittest.main()

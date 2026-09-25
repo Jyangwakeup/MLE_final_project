@@ -307,6 +307,51 @@ class ConstrainedRewardTests(unittest.TestCase):
 
 
 class SafetyPreregistrationTests(unittest.TestCase):
+    def test_task3_quality_gate_defines_combat_and_score_decomposition(self):
+        gate = json.loads(Path(
+            "experiments/task3_quality_gate.json").read_text(encoding="utf-8"))
+        self.assertEqual(gate["status"], "prospective")
+        self.assertEqual(gate["evaluation"]["total_rounds_per_checkpoint"], 100)
+        self.assertEqual(gate["scoring"]["coin_points_each"], 1)
+        self.assertEqual(gate["scoring"]["kill_points_each"], 5)
+        self.assertGreaterEqual(gate["absolute_gates"]["mean_kills_min"], 0.10)
+        self.assertGreaterEqual(
+            gate["absolute_gates"]["kill_round_rate_min"], 0.10)
+        self.assertGreaterEqual(
+            gate["absolute_gates"]["mean_coin_score_min"], 3.0)
+        self.assertGreaterEqual(
+            gate["absolute_gates"]["mean_total_score_min"], 5.0)
+        self.assertLessEqual(
+            gate["absolute_gates"]["killed_by_opponent_rate_max"], 0.15)
+
+    def test_task4_quality_gate_is_strict_and_prospective(self):
+        gate = json.loads(Path(
+            "experiments/task4_quality_gate.json").read_text(encoding="utf-8"))
+        self.assertEqual(gate["status"], "prospective")
+        self.assertEqual(gate["registered_after_checkpoint_round"], 100)
+        self.assertEqual(gate["development_screen"]["total_rounds"], 10)
+        self.assertEqual(gate["formal_gate"]["total_rounds_per_checkpoint"], 100)
+        self.assertGreaterEqual(gate["absolute_gates"]["mean_total_score_min"], 3.0)
+        self.assertGreaterEqual(gate["absolute_gates"]["mean_kills_min"], 0.10)
+        self.assertGreaterEqual(gate["absolute_gates"]["first_place_rate_min"], 0.20)
+        self.assertLessEqual(gate["absolute_gates"]["suicide_rate_max"], 0.10)
+        self.assertLessEqual(
+            gate["absolute_gates"]["long_wait_loop_rate_max"], 0.10)
+        self.assertLessEqual(gate["absolute_gates"]["score_std_max"], 2.5)
+        self.assertLessEqual(gate["absolute_gates"]["score_cv_max"], 0.75)
+        self.assertLessEqual(gate["absolute_gates"]["score_iqr_max"], 3.0)
+        self.assertGreaterEqual(gate["absolute_gates"]["score_p10_min"], 1.0)
+        self.assertGreaterEqual(gate["absolute_gates"]["min_score_min"], 1.0)
+        self.assertLessEqual(gate["absolute_gates"]["mean_rank_max"], 2.5)
+        self.assertGreaterEqual(gate["absolute_gates"]["top_two_rate_min"], 0.60)
+        self.assertLessEqual(gate["absolute_gates"]["last_place_rate_max"], 0.10)
+        self.assertGreaterEqual(
+            gate["absolute_gates"]["mean_best_opponent_margin_min"], -1.0)
+        self.assertGreaterEqual(
+            gate["absolute_gates"]["best_opponent_margin_p10_min"], -5.0)
+        self.assertTrue(
+            gate["checkpoint_selection"]["eligible_only_if_all_absolute_gates_pass"])
+
     def test_new_task2_quality_gate_is_strict_and_prospective(self):
         gate = json.loads(Path(
             "experiments/task2_quality_gate.json").read_text(encoding="utf-8"))

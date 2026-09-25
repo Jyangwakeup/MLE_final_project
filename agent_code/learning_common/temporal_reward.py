@@ -29,6 +29,7 @@ def init_temporal_reward_state(owner) -> None:
     owner.reward_avoidable_wait_streak = 0
     owner.reward_bomb_pending = False
     owner.reward_bomb_crates = 0
+    owner.reward_own_kills = 0
 
 
 def prepare_frozen_temporal_state(owner, game_state) -> None:
@@ -257,6 +258,9 @@ def temporal_reward_context(
     if not hasattr(owner, "move_history"):
         init_temporal_reward_state(owner)
     history = owner.move_history
+    own_kills_before = int(getattr(owner, "reward_own_kills", 0))
+    own_kills_after = own_kills_before + events.count(e.KILLED_OPPONENT)
+    owner.reward_own_kills = own_kills_after
     oscillating = (
         action in OPPOSITE and len(history) >= 2
         and history[-1] == OPPOSITE[action] and history[-2] == action
@@ -353,6 +357,8 @@ def temporal_reward_context(
         "temporal_adjustment": temporal_adjustment,
         "bomb_resolved_alive": bomb_resolved_alive,
         "resolved_bomb_crates": resolved_bomb_crates,
+        "own_kills_before": own_kills_before,
+        "own_kills_after": own_kills_after,
     }
 
 

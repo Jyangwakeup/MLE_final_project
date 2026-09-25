@@ -7,7 +7,9 @@ import torch
 import events as e
 
 from .model import Transition
-from agent_code.learning_common.action_history import action_history_state, init_action_history
+from agent_code.learning_common.action_history import (
+    action_history_state, init_action_history, own_bomb_history_for_state,
+)
 from agent_code.learning_common.n_step import NStepAccumulator
 from agent_code.learning_common.runtime import CHECKPOINT_SCHEMA, effective_legal_mask
 from agent_code.learning_common.temporal_reward import (
@@ -16,7 +18,7 @@ from agent_code.learning_common.temporal_reward import (
 )
 from agent_code.team_agent.exploration import epsilon_at
 from agent_code.team_agent.rewards import reward_from_events
-from agent_code.team_agent.safety import avoidable_fatal_action, mask_for_decision
+from agent_code.team_agent.safety import avoidable_fatal_action, safety_decision
 from .callbacks import (
     ACTIONS, ALGORITHM, FEATURE_ID, FEATURE_SCHEMA, HYPERPARAMETERS,
     NETWORK_SPEC, _features_for,
@@ -39,30 +41,49 @@ def setup_training(self):
     self.accumulator = NStepAccumulator(self.n_step, HYPERPARAMETERS["gamma"])
     self.accumulator.load_state_dict(getattr(self, "_resume_n_step_state", None))
     self.causal_bomb_transition = None
+    self._rainbow_decision_snapshot = None
     reset_temporal_reward_state(self)
 
 
-def _transition(self, old_state, action, reward, new_state, done):
-    old = _features_for(self, old_state)
-    old_legal = effective_legal_mask(
-        old.legal_mask, ACTIONS, self.curriculum_allows_bomb)
-    old_legal, _ = mask_for_decision(
-        old_state, old_legal, self.safety_spec,
+def _decision_snapshot(self, state, action):
+    key = (state.get("round"), state.get("step"))
+    snapshot = getattr(self, "_rainbow_decision_snapshot", None)
+    if snapshot is not None and snapshot["key"] == key and snapshot["action"] == action:
+        return snapshot
+    features = _features_for(self, state)
+    physical = effective_legal_mask(
+        features.legal_mask, ACTIONS, self.curriculum_allows_bomb)
+    own_bomb = own_bomb_history_for_state(self, state)
+    legal = safety_decision(
+        state, physical, self.safety_spec,
         allow_bomb=self.curriculum_allows_bomb, exploring=False,
-        context=old.context)
+        own_bomb_pending=bool(own_bomb["pending"]),
+        own_bomb_state=own_bomb, context=features.context).mask
+    return {
+        "key": key, "action": action, "vector": features.vector.copy(),
+        "context": features.context, "physical": physical, "legal": legal,
+    }
+
+
+def _transition(self, old_state, action, reward, new_state, done):
+    snapshot = _decision_snapshot(self, old_state, action)
+    old_legal = snapshot["legal"].copy()
     if done:
         return Transition(
-            old.vector.copy(), ACTIONS.index(action), reward, None, True, None,
+            snapshot["vector"].copy(), ACTIONS.index(action), reward, None, True, None,
             old_legal, self.training_task, 1)
     new = _features_for(self, new_state)
-    next_legal = effective_legal_mask(
+    next_physical = effective_legal_mask(
         new.legal_mask, ACTIONS, self.curriculum_allows_bomb)
-    next_legal, _ = mask_for_decision(
-        new_state, next_legal, self.safety_spec,
+    new_own_bomb = own_bomb_history_for_state(self, new_state)
+    next_decision = safety_decision(
+        new_state, next_physical, self.safety_spec,
         allow_bomb=self.curriculum_allows_bomb, exploring=False,
-        context=new.context)
+        own_bomb_pending=bool(new_own_bomb["pending"]),
+        own_bomb_state=new_own_bomb, context=new.context)
+    next_legal = next_decision.mask
     return Transition(
-        old.vector.copy(), ACTIONS.index(action), reward, new.vector.copy(),
+        snapshot["vector"].copy(), ACTIONS.index(action), reward, new.vector.copy(),
         False, next_legal, old_legal, self.training_task, 1)
 
 
@@ -90,15 +111,14 @@ def game_events_occurred(self, old_game_state, self_action, new_game_state, even
     key = (old_game_state.get("round"), old_game_state.get("step"))
     if self.pending is not None and self.pending[0] != key:
         _submit(self, self.pending[1])
-    old = _features_for(self, old_game_state)
+    snapshot = _decision_snapshot(self, old_game_state, self_action)
     context = temporal_reward_context(
         self, self_action, old_game_state, new_game_state, events,
         reward_id=self.reward_id)
-    physical = effective_legal_mask(
-        old.legal_mask, ACTIONS, self.curriculum_allows_bomb)
+    physical = snapshot["physical"]
     context["avoidable_fatal"] = avoidable_fatal_action(
         old_game_state, self_action, physical,
-        allow_bomb=self.curriculum_allows_bomb, context=old.context)
+        allow_bomb=self.curriculum_allows_bomb, context=snapshot["context"])
     reward = reward_from_events(
         events, self.reward_id, old_game_state=old_game_state,
         new_game_state=new_game_state, action=self_action, **context)
@@ -155,6 +175,7 @@ def end_of_round(self, last_game_state, last_action, events):
         _submit(self, self.pending[1])
     self.pending = None
     self.causal_bomb_transition = None
+    self._rainbow_decision_snapshot = None
     reset_temporal_reward_state(self)
     init_action_history(self)
     checkpoint = self.model.checkpoint()
@@ -183,10 +204,40 @@ def end_of_round(self, last_game_state, last_action, events):
         "safety_decisions": self.safety_decisions,
         "safety_interventions": self.safety_interventions,
         "safety_fallbacks": self.safety_fallbacks,
+        "robust_safety_interventions": int(getattr(
+            self, "robust_safety_interventions", 0)),
+        "robust_to_v1_fallbacks": int(getattr(
+            self, "robust_to_v1_fallbacks", 0)),
+        "opponent_robust_interventions": int(getattr(
+            self, "opponent_robust_interventions", 0)),
+        "opponent_to_v3_fallbacks": int(getattr(
+            self, "opponent_to_v3_fallbacks", 0)),
+        "opponent_scenarios_evaluated": int(getattr(
+            self, "opponent_scenarios_evaluated", 0)),
+        "robust_guarantee_losses": int(getattr(
+            self, "robust_guarantee_losses", 0)),
+        "robust_search_timeouts": int(getattr(
+            self, "robust_search_timeouts", 0)),
+        "robust_states_evaluated": int(getattr(
+            self, "robust_states_evaluated", 0)),
+        "v1_to_physical_fallbacks": int(getattr(
+            self, "v1_to_physical_fallbacks", 0)),
+        "avoidable_escape_collapses": int(getattr(
+            self, "avoidable_escape_collapses", 0)),
+        "own_bomb_cycles": int(getattr(self, "own_bomb_cycles", 0)),
+        "own_bomb_escape_state": {
+            "had_safe_alternative": bool(getattr(
+                self, "_own_bomb_cycle_had_safe_alternative", False)),
+            "collapse_recorded": bool(getattr(
+                self, "_own_bomb_cycle_collapse_recorded", False)),
+            "placement_certificate": getattr(
+                self, "_own_bomb_placement_certificate", None),
+        },
         "action_history_state": action_history_state(self),
         "n_step": self.n_step,
         "n_step_state": self.accumulator.state_dict(),
         "retention_spec": self.retention_spec,
+        "safety_replay_spec": self.safety_replay_spec,
         "training_budget": self.training_budget,
         "training_task": self.training_task,
     })

@@ -30,9 +30,13 @@ SUMMARY_FIELDS = (
     "rank_by_total_score",
     "mean_score",
     "median_score",
+    "min_score",
+    "max_score",
     "score_std",
     "mean_score_ci95_low",
     "mean_score_ci95_high",
+    "zero_score_round_count",
+    "zero_score_round_rate",
     "total_round_steps",
     "coins",
     "mean_coins",
@@ -54,10 +58,19 @@ SUMMARY_FIELDS = (
     "exploration_disabled",
     "kills",
     "mean_kills",
+    "kill_round_count",
+    "kill_round_rate",
+    "coin_score",
+    "mean_coin_score",
+    "kill_score",
+    "mean_kill_score",
+    "score_residual",
     "suicides",
     "suicide_rate",
     "killed_by_opponent",
     "killed_by_opponent_rate",
+    "total_deaths",
+    "total_death_rate",
     "crates",
     "mean_crates",
     "mean_bombs",
@@ -77,6 +90,7 @@ SUMMARY_FIELDS = (
     "exclusive_win_rate",
     "tied_first",
     "tied_first_rate",
+    "first_place_rate",
     "zero_score_ties",
     "zero_score_tie_rate",
     "act_count",
@@ -132,6 +146,12 @@ SUMMARY_FIELDS = (
     "wait_exempt_next_danger_count",
     "wait_exempt_no_reachable_coin_count",
     "wait_exempt_no_safe_progress_move_count",
+    "useful_crate_bomb_opportunity_count",
+    "survivable_useful_crate_bomb_opportunity_count",
+    "selected_useful_crate_bomb_count",
+    "selected_survivable_useful_crate_bomb_count",
+    "useful_crate_bomb_selection_rate",
+    "survivable_useful_crate_bomb_selection_rate",
     "unseen_q_states",
     "q_decisions",
     "unseen_q_state_rate",
@@ -430,9 +450,13 @@ def _summary_row(
         "rank_by_total_score": None,
         "mean_score": mean(scores),
         "median_score": median(scores),
+        "min_score": min(scores),
+        "max_score": max(scores),
         "score_std": pstdev(scores),
         "mean_score_ci95_low": score_ci_low,
         "mean_score_ci95_high": score_ci_high,
+        "zero_score_round_count": sum(score == 0 for score in scores),
+        "zero_score_round_rate": mean(score == 0 for score in scores),
         "total_round_steps": total_round_steps,
         "coins": total_coins,
         "mean_coins": total_coins / episode_count,
@@ -458,10 +482,20 @@ def _summary_row(
             sample["exploration_disabled"] for sample in samples),
         "kills": sum(sample["kills"] for sample in samples),
         "mean_kills": sum(sample["kills"] for sample in samples) / episode_count,
+        "kill_round_count": sum(sample["kills"] > 0 for sample in samples),
+        "kill_round_rate": mean(sample["kills"] > 0 for sample in samples),
+        "coin_score": total_coins,
+        "mean_coin_score": total_coins / episode_count,
+        "kill_score": 5.0 * sum(sample["kills"] for sample in samples),
+        "mean_kill_score": 5.0 * sum(sample["kills"] for sample in samples) / episode_count,
+        "score_residual": sum(scores) - total_coins - 5.0 * sum(
+            sample["kills"] for sample in samples),
         "suicides": sum(sample["suicides"] for sample in samples),
         "suicide_rate": sum(sample["suicides"] for sample in samples) / episode_count,
         "killed_by_opponent": sum(sample["killed_by_opponent"] for sample in samples),
         "killed_by_opponent_rate": sum(sample["killed_by_opponent"] for sample in samples) / episode_count,
+        "total_deaths": sum(not sample["survived"] for sample in samples),
+        "total_death_rate": mean(not sample["survived"] for sample in samples),
         "crates": total_crates,
         "mean_crates": total_crates / episode_count,
         "mean_bombs": total_bombs / episode_count,
@@ -491,6 +525,9 @@ def _summary_row(
         "exclusive_win_rate": sum(sample["exclusive_win"] for sample in samples) / episode_count,
         "tied_first": sum(sample["tied_first"] for sample in samples),
         "tied_first_rate": sum(sample["tied_first"] for sample in samples) / episode_count,
+        "first_place_rate": sum(
+            sample["exclusive_win"] + sample["tied_first"] for sample in samples
+        ) / episode_count,
         "zero_score_ties": sum(sample["zero_score_tie"] for sample in samples),
         "zero_score_tie_rate": sum(sample["zero_score_tie"] for sample in samples) / episode_count,
         "act_count": timing.get("act_count", 0),
@@ -566,6 +603,23 @@ def _summary_row(
         "wait_exempt_next_danger_count": timing.get("wait_next_danger", 0),
         "wait_exempt_no_reachable_coin_count": timing.get("wait_no_reachable_coin", 0),
         "wait_exempt_no_safe_progress_move_count": timing.get("wait_no_safe_progress_move", 0),
+        "useful_crate_bomb_opportunity_count": timing.get(
+            "useful_crate_bomb_opportunities", 0),
+        "survivable_useful_crate_bomb_opportunity_count": timing.get(
+            "survivable_useful_crate_bomb_opportunities", 0),
+        "selected_useful_crate_bomb_count": timing.get(
+            "selected_useful_crate_bombs", 0),
+        "selected_survivable_useful_crate_bomb_count": timing.get(
+            "selected_survivable_useful_crate_bombs", 0),
+        "useful_crate_bomb_selection_rate": (
+            timing.get("selected_useful_crate_bombs", 0)
+            / timing.get("useful_crate_bomb_opportunities", 0)
+            if timing.get("useful_crate_bomb_opportunities", 0) else None),
+        "survivable_useful_crate_bomb_selection_rate": (
+            timing.get("selected_survivable_useful_crate_bombs", 0)
+            / timing.get("survivable_useful_crate_bomb_opportunities", 0)
+            if timing.get("survivable_useful_crate_bomb_opportunities", 0)
+            else None),
         "unseen_q_states": unseen_q_states,
         "q_decisions": q_decisions,
         "unseen_q_state_rate": unseen_q_states / q_decisions if q_decisions else None,
@@ -589,6 +643,10 @@ def summarize_runs(run_directories: Iterable[Path]) -> list[dict[str, Any]]:
             "wait_penalized": 0, "wait_current_danger": 0,
             "wait_next_danger": 0, "wait_no_reachable_coin": 0,
             "wait_no_safe_progress_move": 0,
+            "useful_crate_bomb_opportunities": 0,
+            "survivable_useful_crate_bomb_opportunities": 0,
+            "selected_useful_crate_bombs": 0,
+            "selected_survivable_useful_crate_bombs": 0,
             "action_counts": defaultdict(int),
             "actions_by_round": defaultdict(list),
             "longest_wait_streaks": [],
@@ -717,6 +775,16 @@ def summarize_runs(run_directories: Iterable[Path]) -> list[dict[str, Any]]:
                 disposition = navigation.get("wait_disposition", "not_wait")
                 if disposition != "not_wait":
                     bucket[f"wait_{disposition}"] += 1
+                bucket["useful_crate_bomb_opportunities"] += int(
+                    navigation.get("useful_crate_bomb_available", False))
+                bucket["survivable_useful_crate_bomb_opportunities"] += int(
+                    navigation.get(
+                        "survivable_useful_crate_bomb_available", False))
+                bucket["selected_useful_crate_bombs"] += int(
+                    navigation.get("selected_useful_crate_bomb", False))
+                bucket["selected_survivable_useful_crate_bombs"] += int(
+                    navigation.get(
+                        "selected_survivable_useful_crate_bomb", False))
 
         for (run_id, agent_name), bucket in timing_by_agent.items():
             if run_id != run_directory.name:
@@ -799,9 +867,15 @@ def _average_rows(
                 "rank_by_total_score": mean(float(row["rank_by_total_score"]) for row in agent_rows),
                 "mean_score": _weighted_mean(agent_rows, "mean_score"),
                 "median_score": median(mean_scores),
+                "min_score": min(float(row["min_score"]) for row in agent_rows),
+                "max_score": max(float(row["max_score"]) for row in agent_rows),
                 "score_std": pstdev(mean_scores) if len(mean_scores) > 1 else 0.0,
                 "mean_score_ci95_low": score_ci_low,
                 "mean_score_ci95_high": score_ci_high,
+                "zero_score_round_count": sum(
+                    float(row["zero_score_round_count"]) for row in agent_rows),
+                "zero_score_round_rate": _weighted_mean(
+                    agent_rows, "zero_score_round_rate"),
                 "total_round_steps": total_round_steps,
                 "coins": total_coins,
                 "mean_coins": _weighted_mean(agent_rows, "mean_coins"),
@@ -836,10 +910,21 @@ def _average_rows(
                     bool(row["exploration_disabled"]) for row in agent_rows),
                 "kills": sum(float(row["kills"]) for row in agent_rows),
                 "mean_kills": _weighted_mean(agent_rows, "mean_kills"),
+                "kill_round_count": sum(
+                    float(row["kill_round_count"]) for row in agent_rows),
+                "kill_round_rate": _weighted_mean(agent_rows, "kill_round_rate"),
+                "coin_score": sum(float(row["coin_score"]) for row in agent_rows),
+                "mean_coin_score": _weighted_mean(agent_rows, "mean_coin_score"),
+                "kill_score": sum(float(row["kill_score"]) for row in agent_rows),
+                "mean_kill_score": _weighted_mean(agent_rows, "mean_kill_score"),
+                "score_residual": sum(
+                    float(row["score_residual"]) for row in agent_rows),
                 "suicides": sum(float(row["suicides"]) for row in agent_rows),
                 "suicide_rate": _weighted_mean(agent_rows, "suicide_rate"),
                 "killed_by_opponent": sum(float(row["killed_by_opponent"]) for row in agent_rows),
                 "killed_by_opponent_rate": _weighted_mean(agent_rows, "killed_by_opponent_rate"),
+                "total_deaths": sum(float(row["total_deaths"]) for row in agent_rows),
+                "total_death_rate": _weighted_mean(agent_rows, "total_death_rate"),
                 "crates": total_crates,
                 "mean_crates": _weighted_mean(agent_rows, "mean_crates"),
                 "mean_bombs": (
@@ -871,6 +956,7 @@ def _average_rows(
                 "exclusive_win_rate": _weighted_mean(agent_rows, "exclusive_win_rate"),
                 "tied_first": sum(float(row["tied_first"]) for row in agent_rows),
                 "tied_first_rate": _weighted_mean(agent_rows, "tied_first_rate"),
+                "first_place_rate": _weighted_mean(agent_rows, "first_place_rate"),
                 "zero_score_ties": sum(float(row["zero_score_ties"]) for row in agent_rows),
                 "zero_score_tie_rate": _weighted_mean(agent_rows, "zero_score_tie_rate"),
                 "act_count": sum(int(row["act_count"]) for row in agent_rows),
@@ -956,6 +1042,24 @@ def _average_rows(
                     int(row["wait_exempt_no_reachable_coin_count"]) for row in agent_rows),
                 "wait_exempt_no_safe_progress_move_count": sum(
                     int(row["wait_exempt_no_safe_progress_move_count"]) for row in agent_rows),
+                "useful_crate_bomb_opportunity_count": sum(
+                    int(row["useful_crate_bomb_opportunity_count"])
+                    for row in agent_rows),
+                "survivable_useful_crate_bomb_opportunity_count": sum(
+                    int(row["survivable_useful_crate_bomb_opportunity_count"])
+                    for row in agent_rows),
+                "selected_useful_crate_bomb_count": sum(
+                    int(row["selected_useful_crate_bomb_count"])
+                    for row in agent_rows),
+                "selected_survivable_useful_crate_bomb_count": sum(
+                    int(row["selected_survivable_useful_crate_bomb_count"])
+                    for row in agent_rows),
+                "useful_crate_bomb_selection_rate": _weighted_mean(
+                    agent_rows, "useful_crate_bomb_selection_rate",
+                    "useful_crate_bomb_opportunity_count"),
+                "survivable_useful_crate_bomb_selection_rate": _weighted_mean(
+                    agent_rows, "survivable_useful_crate_bomb_selection_rate",
+                    "survivable_useful_crate_bomb_opportunity_count"),
                 "unseen_q_states": unseen_q_states,
                 "q_decisions": q_decisions,
                 "unseen_q_state_rate": unseen_q_states / q_decisions if q_decisions else None,

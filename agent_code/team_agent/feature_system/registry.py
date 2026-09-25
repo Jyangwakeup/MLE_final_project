@@ -7,8 +7,10 @@ from typing import Callable, Optional
 from . import (
     board_v1, continuous_v1, continuous_v2, continuous_v2_legacy78,
     continuous_v3, continuous_v4, continuous_v5, continuous_phase_v1,
+    continuous_v6, continuous_v7,
+    continuous_v8, continuous_v9, continuous_v10, continuous_v11,
     discrete_compact_v1,
-    discrete_objective_v1, discrete_q_v2, discrete_v1, hybrid_v1,
+    discrete_objective_v1, discrete_q_v2, discrete_v1, hybrid_v1, spatial_v6,
 )
 from .types import FeatureSchema
 
@@ -27,8 +29,15 @@ _MODULES = {
     continuous_phase_v1.FEATURE_ID: continuous_phase_v1,
     continuous_v4.FEATURE_ID: continuous_v4,
     continuous_v5.FEATURE_ID: continuous_v5,
+    continuous_v6.FEATURE_ID: continuous_v6,
+    continuous_v7.FEATURE_ID: continuous_v7,
+    continuous_v8.FEATURE_ID: continuous_v8,
+    continuous_v9.FEATURE_ID: continuous_v9,
+    continuous_v10.FEATURE_ID: continuous_v10,
+    continuous_v11.FEATURE_ID: continuous_v11,
     board_v1.FEATURE_ID: board_v1,
     hybrid_v1.FEATURE_ID: hybrid_v1,
+    spatial_v6.FEATURE_ID: spatial_v6,
 }
 
 

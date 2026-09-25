@@ -485,6 +485,52 @@ REWARD_SPECS["r12_coin_priority_anti_loop_reward_only"] = dict(
 REWARD_SPECS['r9_task3_score_aligned'] = {
     **REWARD_SPECS['r7_safe_credit_sparse'], 'killed_opponent': 15.0,
 }
+REWARD_SPECS["r19_opponent_pressure"] = {
+    **REWARD_SPECS["r18_wait_attractor_escape"],
+    "potential_opponent_weight": 0.5,
+    "safe_opponent_bomb_reward": 0.5,
+}
+REWARD_SPECS["r19a_opponent_pressure_weak"] = {
+    **REWARD_SPECS["r18_wait_attractor_escape"],
+    "potential_opponent_weight": 0.2,
+    "safe_opponent_bomb_reward": 0.1,
+}
+REWARD_SPECS["r19b_opponent_potential_only"] = {
+    **REWARD_SPECS["r18_wait_attractor_escape"],
+    "potential_opponent_weight": 0.2,
+    "safe_opponent_bomb_reward": 0.0,
+}
+REWARD_SPECS["r20_outcome_credit"] = {
+    **REWARD_SPECS["r18_wait_attractor_escape"],
+    # Opponent pressure remains potential-based.  BOMB receives no positive
+    # predicted crate/opponent credit; utility is rewarded only by observed
+    # CRATE_DESTROYED and KILLED_OPPONENT events.
+    "potential_opponent_weight": 0.5,
+    "useful_bomb_per_crate": 0.0,
+    "safe_opponent_bomb_reward": 0.0,
+}
+REWARD_SPECS["r21_phase_potential"] = {
+    **REWARD_SPECS["r20_outcome_credit"],
+    "phase_crate_low": 8.0,
+    "phase_crate_high": 28.0,
+    "phase_coin_weight_before_kill": 0.5,
+    "phase_coin_weight_after_kill": 0.9,
+    "phase_crate_weight_dense": 0.75,
+    "phase_crate_weight_sparse": 0.1,
+    "phase_opponent_weight_dense": 0.15,
+    "phase_opponent_weight_sparse": 0.6,
+    "phase_opponent_weight_after_kill": 0.15,
+    "phase_danger_weight_after_kill": 1.5,
+}
+REWARD_SPECS["r22_two_phase_potential"] = {
+    **REWARD_SPECS["r20_outcome_credit"],
+    # Before the first kill, retain R20's fixed balanced potential weights.
+    # Afterwards, protect the lead by favoring coins and safety over pursuit.
+    "phase_coin_weight_after_kill": 0.9,
+    "phase_crate_weight_after_kill": 0.1,
+    "phase_opponent_weight_after_kill": 0.15,
+    "phase_danger_weight_after_kill": 1.5,
+}
 DEATH_EVENTS = frozenset((e.KILLED_SELF, e.GOT_KILLED))
 
 
@@ -582,7 +628,9 @@ def _phase_event_reward(
     return float(reward)
 
 
-def _state_potential(game_state: dict, spec: dict[str, float]) -> float:
+def _state_potential(
+    game_state: dict, spec: dict[str, float], *, own_kills: int = 0,
+) -> float:
     """Return a bounded, state-only progress and safety potential."""
     from agent_code.team_agent.danger import HORIZON, predict_danger
     from agent_code.team_agent.feature_system.common import (
@@ -592,26 +640,61 @@ def _state_potential(game_state: dict, spec: dict[str, float]) -> float:
     position = game_state["self"][3]
     blocked = navigation_blocked(game_state)
     value = 0.0
+    coin_weight = spec.get("potential_coin_weight", 0.0)
+    crate_weight = spec.get("potential_crate_weight", 0.0)
+    opponent_weight = spec.get("potential_opponent_weight", 0.0)
+    danger_weight = spec.get("potential_danger_weight")
+    if "phase_crate_low" in spec:
+        crate_count = int(np.count_nonzero(game_state["field"] == 1))
+        low, high = spec["phase_crate_low"], spec["phase_crate_high"]
+        dense = float(np.clip((crate_count - low) / max(1.0, high - low), 0.0, 1.0))
+        killed = int(own_kills) >= 1
+        coin_weight = spec[
+            "phase_coin_weight_after_kill" if killed
+            else "phase_coin_weight_before_kill"]
+        crate_weight = (
+            spec["phase_crate_weight_sparse"] * (1.0 - dense)
+            + spec["phase_crate_weight_dense"] * dense)
+        opponent_weight = (
+            spec["phase_opponent_weight_after_kill"] if killed else
+            spec["phase_opponent_weight_sparse"] * (1.0 - dense)
+            + spec["phase_opponent_weight_dense"] * dense)
+        if killed:
+            danger_weight = spec["phase_danger_weight_after_kill"]
+    elif "phase_coin_weight_after_kill" in spec and int(own_kills) >= 1:
+        coin_weight = spec["phase_coin_weight_after_kill"]
+        crate_weight = spec["phase_crate_weight_after_kill"]
+        opponent_weight = spec["phase_opponent_weight_after_kill"]
+        danger_weight = spec["phase_danger_weight_after_kill"]
     coin_distances = distance_to_targets(blocked, tuple(game_state["coins"]))
     coin_distance = float(coin_distances[position])
     if np.isfinite(coin_distance):
-        value += spec.get("potential_coin_weight", 0.0) * exp(-coin_distance / 4.0)
+        value += coin_weight * exp(-coin_distance / 4.0)
     else:
         crate_distances = distance_to_targets(
             blocked, crate_frontiers(game_state, blocked))
         crate_distance = float(crate_distances[position])
         if np.isfinite(crate_distance):
-            value += spec.get("potential_crate_weight", 0.0) * exp(-crate_distance / 4.0)
+            value += crate_weight * exp(-crate_distance / 4.0)
+
+    if opponent_weight and game_state["others"]:
+        opponent_distances = distance_to_targets(
+            blocked, tuple(other[3] for other in game_state["others"]),
+            allow_blocked_targets=True,
+        )
+        opponent_distance = float(opponent_distances[position])
+        if np.isfinite(opponent_distance):
+            value += opponent_weight * exp(-opponent_distance / 4.0)
 
     danger = predict_danger(game_state, horizon=HORIZON).danger
     dangerous_steps = np.flatnonzero(danger[1:, position[0], position[1]])
     earliest = HORIZON + 1 if dangerous_steps.size == 0 else int(dangerous_steps[0]) + 1
-    if "potential_danger_weight" in spec:
+    if danger_weight is not None:
         danger_value = (
             0.0 if earliest > HORIZON
             else -(HORIZON + 1 - earliest) / HORIZON
         )
-        value += spec["potential_danger_weight"] * danger_value
+        value += danger_weight * danger_value
     elif "potential_safety_weight" in spec:
         safety = 1.0 if earliest > HORIZON else max(0.0, earliest - 1) / HORIZON
         value += spec["potential_safety_weight"] * safety
@@ -688,10 +771,16 @@ def _bomb_action_reward(game_state: dict, action: str | None, spec: dict[str, fl
     ):
         return 0.0
     if "useful_bomb_per_crate" not in spec:
-        return 0.0
-    useful_crates = min(
-        int(context.crates_in_blast), int(spec["useful_bomb_crate_cap"]))
-    return float(spec["useful_bomb_per_crate"] * useful_crates)
+        crate_reward = 0.0
+    else:
+        useful_crates = min(
+            int(context.crates_in_blast), int(spec["useful_bomb_crate_cap"]))
+        crate_reward = spec["useful_bomb_per_crate"] * useful_crates
+    opponent_reward = (
+        spec.get("safe_opponent_bomb_reward", 0.0)
+        * int(context.opponents_in_blast)
+    )
+    return float(crate_reward + opponent_reward)
 
 
 def reward_from_events(
@@ -716,6 +805,8 @@ def reward_from_events(
     temporal_adjustment: float = 0.0,
     bomb_resolved_alive: bool = False,
     resolved_bomb_crates: int = 0,
+    own_kills_before: int = 0,
+    own_kills_after: int = 0,
 ) -> float:
     """Convert framework events and optional temporal context into a scalar."""
     spec = resolve_reward_spec(version)
@@ -734,13 +825,15 @@ def reward_from_events(
     if "potential_gamma" in spec and old_game_state is not None:
         old_potential = (
             _phase_potential(old_game_state, spec, old_phase_facts)
-            if phase_reward else _state_potential(old_game_state, spec)
+            if phase_reward else _state_potential(
+                old_game_state, spec, own_kills=own_kills_before)
         )
         next_potential = (
             0.0 if terminal or new_game_state is None
             else (
                 _phase_potential(new_game_state, spec, new_phase_facts)
-                if phase_reward else _state_potential(new_game_state, spec)
+                if phase_reward else _state_potential(
+                    new_game_state, spec, own_kills=own_kills_after)
             )
         )
         reward += spec["potential_gamma"] * next_potential - old_potential

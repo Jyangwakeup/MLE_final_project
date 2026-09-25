@@ -100,6 +100,14 @@ def navigation_diagnostic(
     )
     danger = predict_danger(game_state).danger
     current_safe = not bool(danger[1, position[0], position[1]])
+    context = build_context(game_state)
+    bomb_index = 5
+    useful_bomb_available = bool(
+        context.legal_mask[bomb_index] and context.crates_in_blast > 0)
+    survivable_useful_bomb_available = bool(
+        useful_bomb_available
+        and context.bomb_reachability is not None
+        and context.bomb_reachability.survives_horizon)
     target_continues = target is not None and target == previous_target
     conditional_loop = bool(
         action in MOVE_DELTAS and actual_position is not None
@@ -117,7 +125,6 @@ def navigation_diagnostic(
         elif target is None:
             wait_disposition = "no_reachable_coin"
         else:
-            context = build_context(game_state)
             target_distances = distance_to_targets(blocked, (target,))
             current_distance = float(target_distances[position])
             safe_progress = any(
@@ -154,5 +161,13 @@ def navigation_diagnostic(
         "conditional_loop": conditional_loop,
         "avoidable_wait": avoidable_wait,
         "wait_disposition": wait_disposition,
+        "useful_crate_bomb_available": useful_bomb_available,
+        "survivable_useful_crate_bomb_available": (
+            survivable_useful_bomb_available),
+        "selected_useful_crate_bomb": bool(
+            action == "BOMB" and useful_bomb_available),
+        "selected_survivable_useful_crate_bomb": bool(
+            action == "BOMB" and survivable_useful_bomb_available),
+        "crates_in_blast_if_bomb": int(context.crates_in_blast),
     }
     return record, target

@@ -1,0 +1,108 @@
+{
+  "schema_version": "task4-quality-gate-v1",
+  "status": "prospective",
+  "registered_after_checkpoint_round": 100,
+  "applies_to": "Task 4 checkpoints at rounds 200 and later",
+  "scenario": "classic",
+  "opponents": ["rule_based_agent", "rule_based_agent", "rule_based_agent"],
+  "scoring": {
+    "coin_points_each": 1,
+    "kill_points_each": 5,
+    "coin_score_formula": "coins * 1",
+    "kill_score_formula": "kills * 5",
+    "total_score_formula": "coin_score + kill_score",
+    "required_score_residual": 0
+  },
+  "development_screen": {
+    "environment_seeds": [12020, 12021, 12022, 12023, 12024, 12025, 12026, 12027, 12028, 12029],
+    "rounds_per_seed": 1,
+    "total_rounds": 10,
+    "purpose": "checkpoint screening only; never sufficient for final acceptance"
+  },
+  "formal_gate": {
+    "environment_seeds": [10000, 10001, 10002, 10003, 10004],
+    "rounds_per_seed": 20,
+    "total_rounds_per_checkpoint": 100,
+    "exploration_disabled": true,
+    "learning_disabled": true,
+    "device": "cpu",
+    "paired_parent_comparison": true
+  },
+  "absolute_gates": {
+    "mean_total_score_min": 3.0,
+    "median_total_score_min": 2.0,
+    "score_std_max": 2.5,
+    "score_cv_max": 0.75,
+    "score_iqr_max": 3.0,
+    "score_p10_min": 1.0,
+    "min_score_min": 1.0,
+    "mean_coin_score_min": 2.0,
+    "mean_kills_min": 0.10,
+    "kill_round_rate_min": 0.10,
+    "first_place_rate_min": 0.20,
+    "exclusive_win_rate_min": 0.10,
+    "mean_rank_max": 2.5,
+    "top_two_rate_min": 0.60,
+    "last_place_rate_max": 0.10,
+    "mean_best_opponent_margin_min": -1.0,
+    "best_opponent_margin_p10_min": -5.0,
+    "zero_score_round_rate_max": 0.10,
+    "suicide_rate_max": 0.10,
+    "killed_by_opponent_rate_max": 0.40,
+    "total_death_rate_max": 0.50,
+    "long_wait_loop_rate_max": 0.10,
+    "long_ping_pong_loop_rate_max": 0.05,
+    "max_steps_rate_max": 0.70,
+    "invalid_action_rate_max": 0.001,
+    "act_p95_seconds_max": 0.05,
+    "act_max_seconds_max": 0.5,
+    "act_timeout_count_max": 0,
+    "act_skipped_count_max": 0,
+    "score_residual_absolute_max": 0
+  },
+  "relative_gates": {
+    "reference": "the frozen Task 3 parent evaluated in the identical Task 4 environment",
+    "require_at_least_one": [
+      {"metric": "mean_total_score", "minimum_child_minus_parent": 0.50},
+      {"metric": "mean_kills", "minimum_child_minus_parent": 0.05},
+      {"metric": "first_place_rate", "minimum_child_minus_parent": 0.05}
+    ],
+    "suicide_rate_maximum_child_minus_parent": 0.05,
+    "task1_mean_score_retention_min": 0.90,
+    "task2_mean_score_retention_min": 0.90,
+    "task3_mean_score_retention_min": 0.90,
+    "task3_mean_kills_retention_min": 0.90
+  },
+  "checkpoint_selection": {
+    "eligible_only_if_all_absolute_gates_pass": true,
+    "order": [
+      "suicide_rate_ascending",
+      "mean_kills_descending",
+      "first_place_rate_descending",
+      "mean_total_score_descending",
+      "long_wait_loop_rate_ascending",
+      "act_p95_seconds_ascending",
+      "checkpoint_round_ascending"
+    ],
+    "no_eligible_checkpoint_action": "retain the Task 3 fallback; do not label any Task 4 checkpoint qualified"
+  },
+  "distribution_metric_definitions": {
+    "score_std": "population standard deviation across complete evaluation rounds",
+    "score_cv": "score_std / mean_total_score; undefined when mean_total_score is zero",
+    "score_iqr": "score Q3 minus Q1 using linear percentile interpolation",
+    "score_p10": "10th score percentile using linear percentile interpolation",
+    "min_score": "minimum target-agent score across complete evaluation rounds",
+    "rank": "1 plus the number of agents with a strictly higher score; tied leaders all have rank 1",
+    "top_two_rate": "fraction of rounds with rank <= 2",
+    "last_place_rate": "fraction of rounds whose rank equals the number of participating agents",
+    "best_opponent_margin": "target-agent score minus the maximum score among opponents",
+    "best_opponent_margin_p10": "10th percentile of best_opponent_margin using linear interpolation"
+  },
+  "notes": [
+    "Every training-seed checkpoint must pass independently before model-family aggregation.",
+    "The 10-seed development screen may rank checkpoints but cannot prove that a gate passed.",
+    "All absolute, engineering, and retention gates are mandatory, plus at least one relative improvement.",
+    "A death with simultaneous self and opponent bomb causes may contribute to both cause-specific rates; total_death_rate counts the round once.",
+    "Thresholds were registered after observing the round-100 diagnostic, so that checkpoint is historical evidence and is not prospective validation evidence."
+  ]
+}

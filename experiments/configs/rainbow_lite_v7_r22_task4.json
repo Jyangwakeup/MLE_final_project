@@ -1,0 +1,16 @@
+{
+  "algorithm": "rainbow_lite",
+  "feature_id": "continuous-v7-phase-aware",
+  "reward_id": "r22_two_phase_potential",
+  "seed": 11,
+  "checkpoint": null,
+  "safety": {"version": "survival-mask-v1", "mode": "all", "horizon": 7, "fallback": "physical_q"},
+  "evaluation": {"device": "cpu", "seeds": [12120,12121,12122,12123,12124,12125,12126,12127,12128,12129], "n_rounds": 1, "navigation_diagnostics": true},
+  "training": {
+    "device": "cpu", "n_rounds": 100, "target_stage_action_steps": 999999999,
+    "min_rounds": 100, "n_step": 4,
+    "exploration": {"version": "linear-v1", "start": 0.3, "end": 0.05, "decay_action_steps": 120000},
+    "retention": {"parent_fraction": 0.0, "distillation_weight": 0.0, "temperature": 1.0, "per_task_capacity": 20000, "current_warmup": 2000},
+    "early_stopping": {"enabled": false}
+  }
+}

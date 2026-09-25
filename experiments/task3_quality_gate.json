@@ -1,0 +1,100 @@
+{
+  "schema_version": "task3-quality-gate-v1",
+  "status": "prospective",
+  "applies_to": "new Task 3 candidates frozen-evaluated after 2026-09-16",
+  "scenario": "classic",
+  "target_agent_count": 1,
+  "opponents": ["peaceful_agent", "coin_collector_agent"],
+  "scoring": {
+    "coin_points_each": 1,
+    "kill_points_each": 5,
+    "coin_score_formula": "coins * 1",
+    "kill_score_formula": "kills * 5",
+    "total_score_formula": "coin_score + kill_score",
+    "score_residual_formula": "reported_total_score - coin_score - kill_score",
+    "required_score_residual": 0
+  },
+  "evaluation": {
+    "exploration_disabled": true,
+    "learning_disabled": true,
+    "environment_seeds": [10000, 10001, 10002, 10003, 10004],
+    "rounds_per_seed": 20,
+    "total_rounds_per_checkpoint": 100,
+    "device": "cpu",
+    "paired_parent_comparison": true
+  },
+  "absolute_gates": {
+    "mean_kills_min": 0.10,
+    "kill_round_rate_min": 0.10,
+    "first_place_rate_min": 0.40,
+    "mean_coin_score_min": 3.0,
+    "mean_total_score_min": 5.0,
+    "suicide_rate_max": 0.10,
+    "killed_by_opponent_rate_max": 0.15,
+    "total_death_rate_max": 0.20,
+    "invalid_action_rate_max": 0.001,
+    "long_wait_loop_rate_max": 0.10,
+    "long_ping_pong_loop_rate_max": 0.05,
+    "max_steps_rate_max": 0.80,
+    "act_p95_seconds_max": 0.05,
+    "act_max_seconds_max": 0.5,
+    "act_timeout_count_max": 0,
+    "act_skipped_count_max": 0,
+    "score_residual_absolute_max": 0
+  },
+  "relative_gates": {
+    "require_at_least_one": [
+      {"metric": "mean_kills", "minimum_child_minus_parent": 0.05},
+      {"metric": "first_place_rate", "minimum_child_minus_parent": 0.05}
+    ],
+    "suicide_rate_maximum_child_minus_parent": 0.05,
+    "task1_mean_score_retention_min": 0.90,
+    "task2_mean_score_retention_min": 0.90,
+    "task2_mean_coins_retention_min": 0.90,
+    "task2_mean_crates_retention_min": 0.90
+  },
+  "reported_kill_metrics": [
+    "kills",
+    "mean_kills",
+    "kill_round_count",
+    "kill_round_rate",
+    "kill_score",
+    "mean_kill_score"
+  ],
+  "reported_death_metrics": [
+    "suicides",
+    "suicide_rate",
+    "killed_by_opponent",
+    "killed_by_opponent_rate",
+    "total_deaths",
+    "total_death_rate",
+    "survival_rate",
+    "mean_survival_steps"
+  ],
+  "reported_score_metrics": [
+    "coins",
+    "mean_coins",
+    "coin_score",
+    "mean_coin_score",
+    "kill_score",
+    "mean_kill_score",
+    "total_score",
+    "mean_score",
+    "median_score",
+    "min_score",
+    "max_score",
+    "score_std",
+    "mean_score_ci95_low",
+    "mean_score_ci95_high",
+    "score_residual"
+  ],
+  "notes": [
+    "Every training-seed checkpoint must pass independently before aggregation.",
+    "A kill round is a round in which the target agent records one or more kills.",
+    "Killed by opponent means the target death has at least one opponent_bomb cause; it is distinct from suicide and may overlap only on a simultaneous multi-source death.",
+    "First-place rate is exclusive_win_rate plus tied_first_rate.",
+    "All absolute gates and retention gates are mandatory; at least one listed relative capability improvement is also mandatory.",
+    "Training trajectories never satisfy this gate; only frozen evaluation does.",
+    "Thresholds were registered before examining the designated 100-round frozen Task 3 gate evaluation."
+  ]
+}

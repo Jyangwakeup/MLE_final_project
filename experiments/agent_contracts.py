@@ -51,7 +51,11 @@ _NEW_AGENTS = {
     "rainbow_lite_agent", "expected_sarsa_lambda_agent", "double_q_lambda_agent",
     "optimized_double_q_lambda_agent", "optimized_double_q_lambda_v4_agent",
     "rainbow_lite_no_safety_agent", "expected_sarsa_lambda_no_safety_agent",
-    "rainbow_lite_v5_agent",
+    "rainbow_lite_v5_agent", "rainbow_lite_v6_agent", "rainbow_lite_v7_agent",
+    "rainbow_lite_v8_agent", "rainbow_lite_v10_agent",
+    "rainbow_lite_v11_agent", "rainbow_lite_continuous_v2_agent",
+    "rainbow_lite_v6_stable_agent",
+    "rainbow_lite_spatial_v6_agent",
     "expected_sarsa_lambda_v5_agent",
 }
 _ARCHIVED_Q_CNN_AGENTS = {

@@ -1,0 +1,45 @@
+{
+  "algorithm": "rainbow_lite",
+  "feature_id": "continuous-v5",
+  "reward_id": "r18_wait_attractor_escape",
+  "seed": 11,
+  "checkpoint": null,
+  "safety": {
+    "version": "survival-mask-v5",
+    "mode": "all",
+    "horizon": 7,
+    "opponent_action_space": "all_physical",
+    "include_opponent_bombs": true,
+    "execution_orders": "all",
+    "danger_interval": "own_bomb_and_lingering",
+    "search_budget_ms": 400,
+    "robust_fallback": "survival-mask-v1",
+    "fallback": "physical_q"
+  },
+  "evaluation": {
+    "device": "cpu",
+    "seeds": [12000, 12001, 12002, 12003, 12004, 12005, 12006, 12007, 12008, 12009],
+    "n_rounds": 1,
+    "navigation_diagnostics": true
+  },
+  "training": {
+    "device": "cpu",
+    "n_rounds": 1500,
+    "min_rounds": 50,
+    "n_step": 4,
+    "exploration": {
+      "version": "linear-v1",
+      "start": 0.30,
+      "end": 0.05,
+      "decay_action_steps": 120000
+    },
+    "retention": {
+      "parent_fraction": 0.0,
+      "distillation_weight": 0.0,
+      "temperature": 1.0,
+      "per_task_capacity": 20000,
+      "current_warmup": 2000
+    },
+    "early_stopping": {"enabled": false}
+  }
+}

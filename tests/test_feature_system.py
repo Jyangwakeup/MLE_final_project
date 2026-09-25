@@ -42,6 +42,11 @@ class RegistryAndBaselineTestCase(unittest.TestCase):
             "discrete-compact-v1", "continuous-v1", "continuous-v2",
             "continuous-v2-legacy78", "continuous-v3", "continuous-phase-v1",
             "continuous-v4", "continuous-v5",
+            "continuous-v6-opponent-tracking", "continuous-v7-phase-aware",
+            "continuous-v8-safe-crate-opportunity",
+            "continuous-v9-compact",
+            "continuous-v10-agent-quadrant-density",
+            "continuous-v11-agent-quadrant-crate-objectives",
             "board-v1", "hybrid-v1",
         ))
         self.assertEqual(normalize_feature_id(legacy_version="v1"), "discrete-v1")

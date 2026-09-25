@@ -808,15 +808,30 @@ def validate_task3_safety_transfer(
     ):
         if parent.get(field) != child.get(field):
             raise ValueError(f"Task 3 safety transfer {field} must match the parent")
-    if parent.get("algorithm") != "double_dqn":
-        raise ValueError("Task 3 safety transfer requires Double DQN")
-    if parent.get("feature_id") != "continuous-v2":
-        raise ValueError("Task 3 safety transfer requires 84-dimensional continuous-v2")
-    if parent.get("reward_id") != "r7_safe_credit_sparse":
-        raise ValueError("Task 3 safety transfer reward_id requires r7_safe_credit_sparse")
+    parent_algorithm = parent.get("algorithm")
+    parent_feature = parent.get("feature_id")
+    parent_reward = parent.get("reward_id")
+    if parent_algorithm not in {"double_dqn", "rainbow_lite"}:
+        raise ValueError("Task 3 safety transfer requires Double DQN or Rainbow-lite")
+    expected_feature = {
+        "double_dqn": "continuous-v2", "rainbow_lite": "continuous-v5",
+    }[parent_algorithm]
+    if parent_feature != expected_feature:
+        raise ValueError(
+            f"Task 3 safety transfer feature_id requires {expected_feature}")
+    expected_reward = {
+        "double_dqn": "r7_safe_credit_sparse",
+        "rainbow_lite": "r18_wait_attractor_escape",
+    }[parent_algorithm]
+    if parent_reward != expected_reward:
+        raise ValueError(
+            f"Task 3 safety transfer reward_id requires {expected_reward}")
     from agent_code.team_agent.rewards import resolve_reward_spec
     child_reward = child.get('reward_id')
-    if child_reward not in {'r7_safe_credit_sparse', 'r9_task3_score_aligned'}:
+    if child_reward not in {
+        'r7_safe_credit_sparse', 'r9_task3_score_aligned',
+        'r18_wait_attractor_escape',
+    }:
         raise ValueError('Unsupported Task 3 reward transfer')
     if child.get('reward_spec') != resolve_reward_spec(child_reward):
         raise ValueError('Task 3 reward specification mismatch')
