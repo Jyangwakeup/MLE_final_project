@@ -14,4 +14,4 @@
 - **Figure 3.** 按任务分面的冻结能力观测。每个面板使用不同任务指标和协议，因此不应跨面板解释柱高差为同一效应量。
 - **Figure 4.** Task 4 专项评估记录的分数、P95 推理延迟与安全注记。历史 B33 benchmark 与 rename/package equivalence 不被作为同一次性能评估。
 
-生成命令：`python3 docs/report-assets/figures/scripts/render_figures.py`。脚本只读取同目录 CSV 和内置流程文本；PNG 由 ImageMagick `convert` 从 SVG 导出。
+生成命令：`python3 thesis/report-assets/figures/scripts/render_figures.py`。脚本只读取同目录 CSV 和内置流程文本；PNG 由 ImageMagick `convert` 从 SVG 导出。
