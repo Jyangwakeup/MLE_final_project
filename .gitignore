@@ -126,6 +126,9 @@ runs/
 
 checkpoints/
 
+# PyTorch model weights and replay tensors
+*.pt
+
 # Local Agent configuration and in-progress Agent artifacts
 /AGENTS.md
 /Agent/
