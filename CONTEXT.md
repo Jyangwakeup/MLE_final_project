@@ -2,6 +2,31 @@
 
 This context defines the project-specific language used to separate game legality, predicted survival, and learned action choice.
 
+## Research artifact lifecycle
+
+**Active surface**:
+The small set of documented entry points intended for routine project review,
+execution, testing, and continued development. Historical evidence can remain
+in the repository without belonging to the active surface.
+_Avoid_: Every tracked file, all local data
+
+**Versioned experiment evidence**:
+Tracked configurations, results, and failure records that support research
+claims and whose existing paths remain stable for manifests and tests.
+_Avoid_: Generated cache, disposable log
+
+**Recovery archive**:
+Locally retained historical material whose manifests and recovery instructions
+make prior experiments reconstructable. It is durable evidence, not free space
+or a cache.
+_Avoid_: Quarantine, backup to delete
+
+**Quarantined artifact**:
+An ignored local artifact moved out of the active surface with a verified,
+reversible manifest while its eventual retention is undecided. It is neither
+versioned evidence nor a recovery archive.
+_Avoid_: Archived evidence, deleted output
+
 **Decision history snapshot**:
 The immutable action history and admitted action set associated with one actual
 decision. Reconstructing its learning transition cannot advance or rewind the

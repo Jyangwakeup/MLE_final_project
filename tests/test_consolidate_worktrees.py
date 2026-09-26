@@ -48,7 +48,8 @@ class ConsolidationSafetyTests(unittest.TestCase):
         with self.assertRaises(ValueError):c.map_path('/old/twosome/runs/x',registry)
 
     def test_broken_archived_link_blocks_validation(self):
-        with tempfile.TemporaryDirectory(dir=c.ROOT/'.scratch/archive-consolidation') as d:
+        # The completed consolidation scratch directory may be quarantined.
+        with tempfile.TemporaryDirectory() as d:
             root=Path(d);(root/'link').symlink_to('missing')
             m=[{'archive':d,'links':[{'path':'link','destination_target':str(root/'missing')}]}]
             with patch.object(c,'manifests',return_value=m):

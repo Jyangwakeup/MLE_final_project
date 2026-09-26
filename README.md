@@ -41,10 +41,12 @@ For an optional GUI, install `pygame` and remove `--no-gui` in an environment wi
 
 ## Repository Guide
 
+- [Repository layout](docs/repository-layout.md): the shortest path through the active project, versioned evidence, local recovery data, and generated artifacts.
 - [Die Hardest](agent_code/die_hardest/README.md): frozen Agent, usage, provenance, and limitations.
 - [Experiment runner](experiments/README.md): configuration and execution of research workflows.
 - [Task3 experiment index](docs/research/task3-experiment-index.md): historical safety experiments, outcomes, and source references.
 - [Q-learning and CNN model index](agent_code/Q_CNN_AGENT_INDEX.md): model variants and their experiment records.
 - [Archive and recovery guide](archive/README.md): artifact locations and instructions for recovering historical experiments.
+- [Repository cleanup audit](docs/research/repository-cleanup-audit.md): the preservation boundaries and measured local-artifact inventory used for the current cleanup.
 
 Large raw logs and some experimental artifacts are stored only in the local archive. An ordinary clone does not contain the complete archive; the linked documentation distinguishes public repository records from local artifact locations.
