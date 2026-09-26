@@ -3,7 +3,7 @@ import unittest
 
 import numpy as np
 
-from agent_code.rainbow_lite_v11_agent.features import (
+from all_other_agent_code.rainbow_lite_v11_agent.features import (
     features_for_state, init_action_history,
 )
 from agent_code.team_agent.feature_system.continuous_v11 import (

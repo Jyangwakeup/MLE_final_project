@@ -2,7 +2,7 @@ from types import SimpleNamespace
 import unittest
 import events as e
 
-from agent_code.rainbow_lite_v7_agent.features import features_for_state, init_action_history
+from all_other_agent_code.rainbow_lite_v7_agent.features import features_for_state, init_action_history
 from agent_code.learning_common.temporal_reward import init_temporal_reward_state, temporal_reward_context
 from agent_code.team_agent.rewards import resolve_reward_spec, reward_from_events
 from tests.test_danger import make_game_state

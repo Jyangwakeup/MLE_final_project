@@ -13,7 +13,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from agent_code.rainbow_lite_v8_agent.callbacks import (  # noqa: E402
+from all_other_agent_code.rainbow_lite_v8_agent.callbacks import (  # noqa: E402
     ACTIONS, ALGORITHM, FEATURE_ID, FEATURE_SCHEMA, HYPERPARAMETERS, NETWORK_SPEC,
 )
 

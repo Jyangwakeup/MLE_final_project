@@ -7,4 +7,4 @@ Continuous Double DQN,70/78/84-D continuous,Double DQN,r7 family + survival-mask
 Phase Double DQN,117-D phase features,Double DQN,Task 3 phase contracts,3,retention/safety gate failures,verified_summary,thesis/REPORT_OUTLINE.md
 Rainbow-lite,continuous features + selected Rainbow modules,Double DQN variant,experiment-specific,1-2,implemented; admissible aggregate result not audited,evidence_gap,thesis/REPORT_OUTLINE.md
 Task 4 specialists,84-D continuous,Double DQN,E1/E2/E3 and frozen C/S contracts,4,bounded experiments; no stable score gain,verified_raw,experiments/results/task4_exploration_20260919/report.md
-Die Hardest,continuous-v2,Double DQN,r7_safe_credit_sparse + survival-mask-v9,4,frozen submission candidate,verified_summary,agent_code/die_hardest/README.md
+Die Hardest,continuous-v2,Double DQN,r7_safe_credit_sparse + survival-mask-v9,4,frozen submission candidate,verified_summary,all_other_agent_code/die_hardest/README.md

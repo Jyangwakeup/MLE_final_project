@@ -7,12 +7,12 @@ import numpy as np
 import torch
 
 from agent_code.rainbow_lite_agent.model import RainbowLite
-from agent_code.rainbow_lite_v7_agent.features import (
+from all_other_agent_code.rainbow_lite_v7_agent.features import (
     features_for_state as v7_features_for_state,
     init_action_history as init_v7_history,
 )
-from agent_code.rainbow_lite_v8_agent.callbacks import HYPERPARAMETERS
-from agent_code.rainbow_lite_v8_agent.features import (
+from all_other_agent_code.rainbow_lite_v8_agent.callbacks import HYPERPARAMETERS
+from all_other_agent_code.rainbow_lite_v8_agent.features import (
     features_for_state as v8_features_for_state,
     init_action_history as init_v8_history,
 )

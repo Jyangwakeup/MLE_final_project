@@ -3,7 +3,7 @@
 import numpy as np
 import settings as s
 
-from agent_code.rainbow_lite_v6_agent import features as base
+from all_other_agent_code.rainbow_lite_v6_agent import features as base
 from agent_code.team_agent.feature_system import ACTIONS, feature_schema_contract
 from agent_code.team_agent.feature_system import board_v1
 from agent_code.team_agent.feature_system.spatial_v6 import FEATURE_ID

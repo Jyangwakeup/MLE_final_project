@@ -2,13 +2,13 @@
 
 本目录是公开仓库中的**报告数据源**，而不是最终 PDF。所有数值必须能追溯到 `tables/*.csv` 或 `figures/data/*.csv` 中的行、其 `source_path` 和相应的冻结结果/核验报告。中文说明配合英文列名，便于直接导入论文表格工具。
 
-完整阅读入口：[Task 1–4 结果 Notebook](task1_to_task4_results.ipynb)。它读取下方五张 CSV 的所有已整理记录，逐项解释指标并展示四张图；运行全部单元格可刷新表格。历史逐局训练曲线仍见 [`notebooks/task1_results.ipynb`](../../notebooks/task1_results.ipynb)。
+正文的第一阅读入口是 `tables/table6_model_task_progression.csv`：它把四个主要模型族在 Task 1--4 的代表性冻结结果、停止点和证据限制放在同一矩阵中。完整审计入口仍是 [Task 1–4 结果 Notebook](task1_to_task4_results.ipynb)，用于读取明细 CSV、解释指标并展示四张图；历史逐局训练曲线见 [`notebooks/task1_results.ipynb`](../../notebooks/task1_results.ipynb)。
 
 ## 目录
 
 - `plan/`：统一协议、阶段门槛和主张—证据追溯。
 - `tables/`：五张报告表的契约、CSV 数据与 Markdown 渲染版。
-- `figures/`：数据清单、绘图脚本与 PNG/SVG 成品。
+- `figures/`：数据清单、绘图脚本与 PDF 成品。
 
 ## 证据状态
 

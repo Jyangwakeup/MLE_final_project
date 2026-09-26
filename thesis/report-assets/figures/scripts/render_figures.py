@@ -15,10 +15,20 @@ def wrap(parts):
 
 def write(name, parts):
     OUT.mkdir(parents=True, exist_ok=True)
-    svg_path = OUT / f"{name}.svg"
+    svg_path = OUT / f".{name}.tmp.svg"
+    pdf_path = OUT / f"{name}.pdf"
     svg_path.write_text(wrap(parts), encoding="utf-8")
-    if shutil.which("convert"):
-        subprocess.run(["convert", str(svg_path), str(OUT / f"{name}.png")], check=True)
+    inkscape = shutil.which("inkscape")
+    if not inkscape:
+        svg_path.unlink()
+        raise RuntimeError("Inkscape is required to render report figures as PDF")
+    try:
+        subprocess.run(
+            [inkscape, str(svg_path), "--export-type=pdf", f"--export-filename={pdf_path}"],
+            check=True,
+        )
+    finally:
+        svg_path.unlink(missing_ok=True)
 
 def box(x, y, w, h, label, fill="#e8f0fb", dashed=False):
     dash = ' stroke-dasharray="8 6"' if dashed else ""

@@ -22,7 +22,7 @@ class CompetitiveLearnerTests(unittest.TestCase):
         np.testing.assert_array_equal(away,coder.encode(np.array([-.9],dtype=np.float32)))
         self.assertFalse(np.array_equal(toward,away))
     def test_action_projection_preserves_local_coin_direction_slot(self):
-        from agent_code.expected_sarsa_lambda_agent.callbacks import HYPERPARAMETERS
+        from all_other_agent_code.expected_sarsa_lambda_agent.callbacks import HYPERPARAMETERS
         learner=TraceControl(126,6,seed=1,hyperparameters=HYPERPARAMETERS,
                              algorithm="expected_sarsa_lambda")
         self.assertEqual(learner.coder.dimensions,41)
@@ -86,7 +86,7 @@ class CompetitiveLearnerTests(unittest.TestCase):
         self.assertEqual(model.updates,2)
     def test_stable_v6_rebinds_runtime_hyperparameters(self):
         from agent_code.rainbow_lite_agent import callbacks as base_callbacks
-        from agent_code.rainbow_lite_v6_stable_agent import callbacks as stable
+        from all_other_agent_code.rainbow_lite_v6_stable_agent import callbacks as stable
         self.assertIs(base_callbacks.HYPERPARAMETERS,stable.HYPERPARAMETERS)
         self.assertEqual(base_callbacks.HYPERPARAMETERS["train_interval"],4)
 

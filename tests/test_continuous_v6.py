@@ -3,7 +3,7 @@ import unittest
 
 import torch
 
-from agent_code.rainbow_lite_v6_agent.features import features_for_state, init_action_history
+from all_other_agent_code.rainbow_lite_v6_agent.features import features_for_state, init_action_history
 from agent_code.team_agent.feature_system import ACTIONS, get_feature_schema
 from agent_code.team_agent.rewards import reward_from_events
 from experiments.migrate_rainbow_v5_to_v6 import migrate
