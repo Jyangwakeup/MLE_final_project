@@ -264,7 +264,7 @@ B33 的历史 1,000-world 汇总为 score 4.231、first-place 50.2%、exclusive-
 
 ## 5. Rainbow Lite 路线的准确叙事
 
-本节优先依据祝雨嫣确认的 \`Rainbow-Lite-Experiment-Timeline.md\`。其中关于分支关系、研究目的和最终组合的描述，优先于较早的综合清单；\`MODEL_EXPERIMENTS.md\` 中的数字可作为历史开发证据，但在回查原始结果前不能反过来改写已确认的实验逻辑。尤其需要区分两件事：
+本节优先依据祝雨嫣确认的 \`members/祝雨嫣/Rainbow-Lite-Experiment-Timeline.md\`。其中关于分支关系、研究目的和最终组合的描述，优先于较早的综合清单；\`MODEL_EXPERIMENTS.md\` 中的数字可作为历史开发证据，但在回查原始结果前不能反过来改写已确认的实验逻辑。尤其需要区分两件事：
 
 - 已经存在的开发评估、局部测试和 1,000 局诊断；
 - “最终形成的 V5/r18/mask-v5 模型在 Task 1–4 上完成统一测试”这一待补实验。
@@ -589,7 +589,7 @@ Mask 的职责是拒绝明显物理非法或在有限危险视野 $H$ 内不可�
 | 冲突字段 | 来源 A | 来源 B | 当前推荐写法 | 需回查材料 | 核对前禁止的结论 |
 |---|---|---|---|---|---|
 | Q Task 1 mean coins | \`table2_task1_task2.csv\`: 48.95 | \`MODEL_EXPERIMENTS.md\`: 49.58 | 约 49/50，all-coins 96% | 原始逐局结果、checkpoint 选择、聚合脚本 | 精确报告任一数值 |
-| Rainbow 完成阶段 | 旧清单：Task 1–2/evidence gap | 新记录：有 Task 1–4 开发证据 | 路线有完整开发链，最终统一测试 pending | \`Rainbow-Lite-Experiment-Timeline.md\` 与原始 runs | 宣称已正式通过或只做到 Task 2 |
+| Rainbow 完成阶段 | 旧清单：Task 1–2/evidence gap | 新记录：有 Task 1–4 开发证据 | 路线有完整开发链，最终统一测试 pending | \`members/祝雨嫣/Rainbow-Lite-Experiment-Timeline.md\` 与原始 runs | 宣称已正式通过或只做到 Task 2 |
 | Rainbow 最终组合效果 | MODEL 汇总含阶段数字 | 新时间线写最终 Task 1–4 测试待补 | 数字标 development/diagnostic，final-test pending | V5 结果目录和协议文件 | 把开发数字升级为最终横评 |
 | B33 性能与包验证 | 1,000-world historical summary | 6 游戏、180 traces package equivalence | 分成 performance summary 与 packaging evidence | benchmark summary、trace comparison | 声称提交包重跑并复现 4.231 |
 | Task 1/2 样本量 | 正文草稿可能写“100 次实验” | 表中实际为 100 worlds/games | 写 N=100 evaluation worlds/games | 协议与 run manifest | 写成 100 次独立训练 |
@@ -755,8 +755,8 @@ all-coins、suicide、survival、first-place 和 long WAIT 都必须给出分母
 | E1/E2/E3 | specialist 合同见模型记录 | 协议块分别报告 | 状态按原始结果核对 | \`MODEL_EXPERIMENTS.md\` | 新方案未稳定胜出 |
 | B33 historical | Task4 B seed33/c200 | 1,000-world historical | \`verified_summary\` | \`MODEL_EXPERIMENTS.md\`、打包记录 | 历史表现支持候选选择 |
 | Die Hardest package | B33 打包等价 | 6 games、180 traces | \`packaging_verified\` | package equivalence 记录 | 包与源模型动作一致；不代表性能复跑 |
-| Rainbow 分支逻辑 | V6–V11、Spatial V6 | 协议不统一 | \`not_comparable\` | \`Rainbow-Lite-Experiment-Timeline.md\` | 复杂扩展未形成稳定增益证据 |
-| Rainbow 最终 Task 1–4 | V5/r18/mask-v5 | 统一协议待定义 | \`pending\` | \`Rainbow-Lite-Experiment-Timeline.md\` | 最终合同已固定，统一测试待补 |
+| Rainbow 分支逻辑 | V6–V11、Spatial V6 | 协议不统一 | \`not_comparable\` | \`members/祝雨嫣/Rainbow-Lite-Experiment-Timeline.md\` | 复杂扩展未形成稳定增益证据 |
+| Rainbow 最终 Task 1–4 | V5/r18/mask-v5 | 统一协议待定义 | \`pending\` | \`members/祝雨嫣/Rainbow-Lite-Experiment-Timeline.md\` | 最终合同已固定，统一测试待补 |
 
 ## 14. 最终写作与静态核对清单
 

@@ -122,6 +122,8 @@ MLE_project_bomberman/
 notes/
 tmp/pdfs/
 output
+!thesis/report-assets/figures/output/
+!thesis/report-assets/figures/output/*.pdf
 runs/
 /.local-artifacts/
 

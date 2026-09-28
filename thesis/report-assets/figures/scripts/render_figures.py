@@ -1,115 +1,113 @@
 #!/usr/bin/env python3
-"""Render the four report figures from curated real-evidence CSV data."""
+"""Render four report figures as vector PDFs from curated evidence CSVs."""
 from __future__ import annotations
 import csv
-import html
-import shutil
-import subprocess
 from pathlib import Path
+import matplotlib.pyplot as plt
+from matplotlib import font_manager
+from matplotlib.patches import FancyArrowPatch, FancyBboxPatch
+
 HERE = Path(__file__).resolve().parent
-FIGURES = HERE.parent
-DATA, OUT = FIGURES / "data", FIGURES / "output"
+DATA, OUT = HERE.parent / "data", HERE.parent / "output"
+AVAILABLE_FONTS = {font.name for font in font_manager.fontManager.ttflist}
+CJK_FONT = next((font for font in ("Noto Sans CJK SC", "Source Han Sans CN", "Droid Sans Fallback")
+                 if font in AVAILABLE_FONTS), "DejaVu Sans")
+plt.rcParams.update({"font.size": 9, "font.family": ["DejaVu Sans", CJK_FONT],
+                     "pdf.fonttype": 42, "axes.unicode_minus": False,
+                     "axes.spines.top": False, "axes.spines.right": False,
+                     "figure.facecolor": "white"})
 
-def wrap(parts):
-    return "\n".join(['<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="900" viewBox="0 0 1500 900">', '<style>text{font-family:Arial,sans-serif;fill:#172033}.title{font-size:30px;font-weight:bold}.label{font-size:18px}.small{font-size:14px}.note{font-size:13px;fill:#4d5c70}.axis{stroke:#45576d;stroke-width:2}.grid{stroke:#d5dce5;stroke-width:1}</style>', '<rect width="1500" height="900" fill="white"/>', *parts, '</svg>'])
-
-def write(name, parts):
+def save(fig, name):
     OUT.mkdir(parents=True, exist_ok=True)
-    svg_path = OUT / f".{name}.tmp.svg"
-    pdf_path = OUT / f"{name}.pdf"
-    svg_path.write_text(wrap(parts), encoding="utf-8")
-    inkscape = shutil.which("inkscape")
-    if not inkscape:
-        svg_path.unlink()
-        raise RuntimeError("Inkscape is required to render report figures as PDF")
-    try:
-        subprocess.run(
-            [inkscape, str(svg_path), "--export-type=pdf", f"--export-filename={pdf_path}"],
-            check=True,
-        )
-    finally:
-        svg_path.unlink(missing_ok=True)
+    fig.savefig(OUT / f"{name}.pdf", bbox_inches="tight")
+    plt.close(fig)
 
-def box(x, y, w, h, label, fill="#e8f0fb", dashed=False):
-    dash = ' stroke-dasharray="8 6"' if dashed else ""
-    return [f'<rect x="{x}" y="{y}" width="{w}" height="{h}" rx="10" fill="{fill}" stroke="#31445f" stroke-width="2"{dash}/>', f'<text x="{x+w/2}" y="{y+h/2-8}" text-anchor="middle" class="label">{html.escape(label)}</text>']
+def node(ax, xy, label, color="#e8f0fb", dashed=False, width=.15, height=.13):
+    x, y = xy
+    ax.add_patch(FancyBboxPatch((x, y), width, height, boxstyle="round,pad=0.012",
+        facecolor=color, edgecolor="#26384f", linewidth=1.2, linestyle="--" if dashed else "-"))
+    ax.text(x + width / 2, y + height / 2, label, ha="center", va="center", fontsize=8)
 
-def arrow(x1, y1, x2, y2, dashed=False):
-    dash = ' stroke-dasharray="8 6"' if dashed else ""
-    return f'<path d="M {x1} {y1} L {x2} {y2}" stroke="#31445f" stroke-width="3" fill="none" marker-end="url(#arrow)"{dash}/>'
-MARKER = '<defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#31445f"/></marker></defs>'
+def arrow(ax, start, end, dashed=False):
+    ax.add_patch(FancyArrowPatch(start, end, arrowstyle="-|>", mutation_scale=12,
+        color="#26384f", linewidth=1.2, linestyle="--" if dashed else "-"))
 
 def figure_01():
-    p = [MARKER, '<text x="70" y="70" class="title">Figure 1. Curriculum, frozen selection, and package verification</text>', '<text x="70" y="100" class="note">Solid: recorded evidence. Dashed: planned or incomplete stage. Model families remain separate in Tasks 1 and 2.</text>']
-    xs = [80, 360, 640, 920, 1200]
-    for x, label, fill in zip(xs, ["Task 1 — Cold start", "Task 2 — Warm start", "Task 3 — Paired validation", "Task 4 — Strong opponents", "Package / submission check"], ["#dcecff", "#e4f5e8", "#fff1c9", "#f9dce0", "#e9e2ff"]): p += box(x, 250, 210, 110, label, fill)
-    for x in xs[:-1]: p.append(arrow(x + 210, 305, x + 280, 305))
-    p += box(360, 530, 210, 110, "Development checkpoint selection", "#fff", True)
-    p += box(640, 530, 210, 110, "Confirmation / main validation", "#fff", True)
-    p += [arrow(465, 360, 465, 530, True), arrow(745, 360, 745, 530, True), '<text x="80" y="740" class="label">Observed evidence:</text>', '<text x="110" y="780" class="small">Q-learning and distilled CNN: Task 1 independent confirmations recorded.</text>', '<text x="110" y="810" class="small">Task 3 seed22/c150: 100-world paired main validation. Task 4: bounded attempts and historical B33 benchmark are separate protocols.</text>', '<text x="110" y="850" class="note">No line asserts every planned Task 4 stage or reserved final-test set was run.</text>']
-    write("figure_01_curriculum_pipeline", p)
+    fig, ax = plt.subplots(figsize=(10.5, 5.2)); ax.set_axis_off(); ax.set_xlim(0, 1); ax.set_ylim(0, 1)
+    ax.set_title("四阶段训练与模型选择流程", loc="left", weight="bold")
+    ax.text(0, .94, "任务逐步增加导航、炸箱、对战与工程运行要求。", color="#4d5c70")
+    labels = ["Task 1\n从零训练", "Task 2\n继续训练", "Task 3\n配对测试",
+              "Task 4\n强对手", "打包与\n提交检查"]
+    colors = ["#dcecff", "#e4f5e8", "#fff1c9", "#f9dce0", "#e9e2ff"]
+    xs = [.01, .215, .42, .625, .83]
+    for x, label, color in zip(xs, labels, colors): node(ax, (x, .60), label, color, width=.16)
+    for x in xs[:-1]: arrow(ax, (x + .16, .665), (x + .205, .665))
+    ax.text(.01, .30, "评估采用独立确认、配对比较、强对手测试与打包行为检查。", fontsize=8)
+    ax.text(.01, .20, "来源 checkpoint 的历史基准和打包等价性检查分别描述比赛表现与封装行为。", fontsize=8)
+    save(fig, "figure_01_curriculum_pipeline")
 
 def figure_02():
-    p = [MARKER, '<text x="70" y="70" class="title">Figure 2. Inference and safety-action admission pipeline</text>', '<text x="70" y="100" class="note">Safety masks filter inadmissible actions; they do not rank a preferred action.</text>']
-    nodes = [(70,330,180,100,"Game state"),(300,330,200,100,"continuous-v2 — 84 features"),(550,330,190,100,"Double DQN — Q values"),(790,230,210,100,"physical legal action mask"),(790,450,210,100,"survival admission mask"),(1050,330,220,100,"argmax over admissible actions"),(1320,330,120,100,"Action")]
-    for x,y,w,h,label in nodes: p += box(x,y,w,h,label,"#e8f0fb" if x < 790 else "#fff1c9")
-    p += [arrow(250,380,300,380),arrow(500,380,550,380),arrow(740,380,790,280),arrow(740,380,790,500),arrow(1000,280,1050,380),arrow(1000,500,1050,380),arrow(1270,380,1320,380),'<text x="70" y="700" class="label">Boundary:</text>','<text x="170" y="700" class="small">The learner ranks Q values; legality and survival modules veto only actions outside their admissible sets.</text>','<text x="170" y="735" class="note">Package validation confirms source/renamed behavioural equivalence, not a new competition evaluation or complete safety proof.</text>']
-    write("figure_02_inference_pipeline", p)
+    fig, ax = plt.subplots(figsize=(10.5, 4.6)); ax.set_axis_off(); ax.set_xlim(0, 1); ax.set_ylim(0, 1)
+    ax.set_title("模型推理与安全动作筛选流程", loc="left", weight="bold")
+    ax.text(0, .93, "动作掩码排除不合适的动作，Q 网络对剩余动作排序。", color="#4d5c70")
+    nodes = [(.01,.48,.11,"游戏状态"),(.17,.48,.15,"continuous-v2\n84 维特征"),(.37,.48,.13,"Double DQN\nQ 值"),
+             (.56,.67,.15,"物理合法\n动作掩码"),(.56,.29,.15,"Survival Mask\n生存筛选"),
+             (.76,.48,.16,"在剩余动作中\n选择最大 Q 值"),(.95,.48,.045,"动作")]
+    for x,y,w,label in nodes: node(ax,(x,y),label,"#fff1c9" if x >= .56 else "#e8f0fb",width=w)
+    arrow(ax,(.12,.545),(.17,.545)); arrow(ax,(.32,.545),(.37,.545)); arrow(ax,(.50,.545),(.56,.735))
+    arrow(ax,(.50,.545),(.56,.355)); arrow(ax,(.71,.735),(.76,.545)); arrow(ax,(.71,.355),(.76,.545)); arrow(ax,(.92,.545),(.95,.545))
+    ax.text(.01,.12,"合法动作和生存模块排除不满足条件的动作，Q 网络对剩余动作排序。",fontsize=8)
+    ax.text(.01,.05,"打包检查验证重命名前后的行为一致性；比赛性能与安全性需要独立测试。",fontsize=8,color="#4d5c70")
+    save(fig, "figure_02_inference_pipeline")
 
 def read_csv(name):
     with (DATA / name).open(encoding="utf-8", newline="") as f: return list(csv.DictReader(f))
 
-def bars(p, x, y, width, height, title, entries, maximum, unit):
-    p += [f'<text x="{x}" y="{y-25}" class="label">{html.escape(title)}</text>', f'<line x1="{x}" y1="{y+height}" x2="{x+width}" y2="{y+height}" class="axis"/>']
-    for n in range(5):
-        gy = y + height - n * height / 4
-        p += [f'<line x1="{x}" y1="{gy}" x2="{x+width}" y2="{gy}" class="grid"/>', f'<text x="{x-8}" y="{gy+5}" text-anchor="end" class="small">{maximum*n/4:.0f}</text>']
-    gap = width / len(entries)
-    for i, (label, value) in enumerate(entries):
-        bh, bx = value / maximum * height, x + i * gap + 20
-        p += [f'<rect x="{bx}" y="{y+height-bh}" width="{gap-40}" height="{bh}" fill="#4c78a8"/>', f'<text x="{bx+(gap-40)/2}" y="{y+height-bh-8}" text-anchor="middle" class="small">{value:.2f}</text>', f'<text x="{bx+(gap-40)/2}" y="{y+height+28}" text-anchor="middle" class="small">{html.escape(label)}</text>']
-    p.append(f'<text x="{x+width}" y="{y-25}" text-anchor="end" class="note">{html.escape(unit)}</text>')
-
 def figure_03():
-    rows = read_csv("capability_progression.csv")
-    by_task = {}
-    for row in rows: by_task.setdefault(row["task"], []).append((row["candidate"], float(row["value"])))
-    p = ['<text x="70" y="55" class="title">Figure 3. Frozen capability evidence by task</text>', '<text x="70" y="85" class="note">Panels use different metrics and protocols; bars are not a continuous learning curve or cross-panel effect-size comparison.</text>']
-    for (task, entries), (x,y) in zip(by_task.items(), [(90,180),(820,180),(90,570),(820,570)]):
-        row = next(r for r in rows if r["task"] == task)
-        bars(p, x, y, 560, 190, task, entries, float(row["axis_max"]), row["unit"])
-    p.append('<text x="70" y="875" class="note">Task 3 uses parent/child scores from a paired 100-world main validation; Task 4 B33 is a separate historical 1,000-world benchmark.</text>')
-    write("figure_03_capability_progression", p)
+    rows = read_csv("capability_progression.csv"); tasks = []
+    for row in rows:
+        if row["task"] not in tasks: tasks.append(row["task"])
+    task_labels = {"Task 1 mean coins / 50": "Task 1：平均金币（满分 50）",
+                   "Task 2 mean coins / 9": "Task 2：平均金币（满分 9）",
+                   "Task 3 mean score": "Task 3：平均得分",
+                   "Task 4 mean score": "Task 4：平均得分"}
+    candidate_labels = {"Distilled CNN": "蒸馏 CNN", "Q(lambda) r20": "Q(lambda) r20",
+                        "Distilled CNN D02": "蒸馏 CNN D02", "Parent seed22": "父模型 seed22",
+                        "Child seed22/c150": "子模型 seed22/c150", "E1 seed11 endpoint": "E1 seed11 最终点",
+                        "Die Hardest historical source checkpoint": "Die Hardest 来源 checkpoint 历史测试"}
+    unit_labels = {"independent confirmation; n=100": "独立确认；n=100",
+                   "frozen development; n=20": "开发测试；n=20",
+                   "paired main validation; n=100": "配对主测试；n=100",
+                   "specialist frozen endpoint; n=100": "专项模型最终点；n=100"}
+    fig, axes = plt.subplots(2, 2, figsize=(10.5, 6.3)); fig.suptitle("各 Task 的代表性能力结果", x=.07, ha="left", weight="bold")
+    fig.text(.07,.92,"各面板使用不同指标和测试设置，柱高仅表示对应面板内的结果。",color="#4d5c70")
+    for ax, task in zip(axes.flat, tasks):
+        rs = [r for r in rows if r["task"] == task]; labels=[candidate_labels.get(r["candidate"], r["candidate"]) for r in rs]; vals=[float(r["value"]) for r in rs]
+        bars = ax.bar(range(len(vals)), vals, color="#4c78a8", edgecolor="#26384f", linewidth=.5)
+        if task.startswith("Task 4"):
+            bars[1].set_facecolor("#b9b9b9"); bars[1].set_hatch("///")
+        ax.set_xticks(range(len(vals)), labels, rotation=15, ha="right", fontsize=7); ax.set_title(task_labels.get(task, task), loc="left", fontsize=10)
+        ax.set_ylim(0,float(rs[0]["axis_max"])); ax.set_ylabel(unit_labels.get(rs[0]["unit"], rs[0]["unit"]), fontsize=8); ax.grid(axis="y",alpha=.25)
+        for i,v in enumerate(vals): ax.text(i,v,f"{v:g}",ha="center",va="bottom",fontsize=7)
+    fig.text(.07,.01,"Task 3 使用 100-world 配对主测试；Task 4 的 Die Hardest 来源 checkpoint 数值来自另一套历史 1,000-world 基准测试。",fontsize=8,color="#4d5c70")
+    fig.tight_layout(rect=[.04,.05,1,.89]); save(fig,"figure_03_capability_progression")
 
 def figure_04():
-    rows = read_csv("task4_tradeoff.csv")
-    p = ['<text x="70" y="60" class="title">Figure 4. Task 4 score, safety, and latency records</text>', '<text x="70" y="90" class="note">Circles: frozen specialist evaluations. B33 historical benchmark has no P95; package check has no score. Neither is plotted as a point.</text>', '<line x1="150" y1="760" x2="1350" y2="760" class="axis"/><line x1="150" y1="150" x2="150" y2="760" class="axis"/>']
-    for n in range(6):
-        xx, yy = 150+n*240, 760-n*110
-        p += [f'<line x1="{xx}" y1="150" x2="{xx}" y2="760" class="grid"/><text x="{xx}" y="790" text-anchor="middle" class="small">{n*5} ms P95</text>', f'<line x1="150" y1="{yy}" x2="1350" y2="{yy}" class="grid"/><text x="140" y="{yy+5}" text-anchor="end" class="small">{n}</text>']
-    p += ['<text x="700" y="835" text-anchor="middle" class="label">act P95 latency (ms)</text>','<text x="48" y="480" transform="rotate(-90 48 480)" text-anchor="middle" class="label">mean score</text>']
-    label_offsets = {
-        "E1 seed11 endpoint": (-110, -32, "E1-11"),
-        "E1 seed22 endpoint": (15, -50, "E1-22"),
-        "E1 seed33 endpoint": (15, 24, "E1-33"),
-        "Frozen C seed22": (-115, 22, "C-22"),
-        "Frozen S seed22": (15, 45, "S-22"),
-        "B33 historical 1000-world": (18, -12, "B33 historical"),
-    }
-    for r in rows:
-        if r["mean_score"] == "not_reported":
-            p.append(f'<rect x="70" y="852" width="18" height="18" fill="#999"/><text x="100" y="866" class="small">{html.escape(r["candidate"])}: score not measured</text>')
-            continue
-        if r["act_p95_ms"] == "not_reported":
-            p.append('<text x="760" y="866" class="small">B33 historical: score 4.231, P95 not reported</text>')
-            continue
-        x, y = 150+float(r["act_p95_ms"])/25*1200, 760-float(r["mean_score"])/5*550
-        color = "#e45756" if r["record_type"] == "historical_benchmark" else "#4c78a8"
-        mark = f'<polygon points="{x},{y-13} {x+13},{y} {x},{y+13} {x-13},{y}" fill="{color}"/>' if r["record_type"] == "historical_benchmark" else f'<circle cx="{x}" cy="{y}" r="11" fill="{color}"/>'
-        dx, dy, label = label_offsets[r["candidate"]]
-        p += [mark, f'<text x="{x+dx}" y="{y+dy}" class="small">{label}</text>']
-    p.append('<text x="160" y="125" class="note">Safety note: plotted evaluated attempts report 0 observed suicide; B33 retains an unresolved historical safety-contract counterexample.</text>')
-    write("figure_04_task4_tradeoff", p)
+    rows=read_csv("task4_tradeoff.csv"); fig,ax=plt.subplots(figsize=(9.5,5.5))
+    fig.suptitle("Task 4 得分、安全与推理延迟",x=.07,y=.98,ha="left",weight="bold")
+    fig.text(.07,.92,"散点比较专项模型的 Task 4 得分与完整动作 P95 延迟。",color="#4d5c70")
+    plot_rows = [r for r in rows if r["mean_score"] not in {"", "not_reported"}
+                 and r["act_p95_ms"] not in {"", "not_reported"}]
+    for r in plot_rows:
+        x,y=float(r["act_p95_ms"]),float(r["mean_score"])
+        ax.scatter(x,y,s=55,color="#4c78a8",edgecolor="#26384f")
+        offsets={"E1 seed11 endpoint":(5,8),"E1 seed22 endpoint":(-60,15),"E1 seed33 endpoint":(5,5),
+                 "Frozen C seed22":(5,5),"Frozen S seed22":(5,-13)}
+        label = r["candidate"].replace(" endpoint", " 最终点")
+        ax.annotate(label,(x,y),xytext=offsets.get(r["candidate"],(4,5)),textcoords="offset points",fontsize=7)
+    ax.set_xlabel("完整 act 的 P95 延迟（ms）"); ax.set_ylabel("平均得分"); ax.grid(alpha=.25)
+    fig.text(.07,.87,"图中专项实验均记录 0 自杀；安全轨迹在 step 77 复现反例 27155。",fontsize=7)
+    fig.tight_layout(rect=[.03,.04,1,.84]); save(fig,"figure_04_task4_tradeoff")
 
 if __name__ == "__main__":
     figure_01(); figure_02(); figure_03(); figure_04()

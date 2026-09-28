@@ -486,10 +486,10 @@ V6 c0150 的 3.50 接近 V5 c0100 的 3.65，但击杀和第一率仍低，后�
 
 ### 版本定义
 
-- Feature：[`../docs/version-comparison-v-features.md`](../docs/version-comparison-v-features.md)
-- Reward：[`../docs/version-comparison-r-rewards.md`](../docs/version-comparison-r-rewards.md)
-- Mask：[`../docs/version-comparison-survival-masks.md`](../docs/version-comparison-survival-masks.md)
-- 综合实验边界：[`MODEL_EXPERIMENTS.md`](MODEL_EXPERIMENTS.md)
+- Feature：[`../../../docs/version-comparison-v-features.md`](../../../docs/version-comparison-v-features.md)
+- Reward：[`../../../docs/version-comparison-r-rewards.md`](../../../docs/version-comparison-r-rewards.md)
+- Mask：[`../../../docs/version-comparison-survival-masks.md`](../../../docs/version-comparison-survival-masks.md)
+- 综合实验边界：[`MODEL_EXPERIMENTS.md`](../../MODEL_EXPERIMENTS.md)
 
 ## 8. 尚缺的严格实验
 
