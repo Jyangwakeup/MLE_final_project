@@ -16,10 +16,12 @@
 
 ## 本地编译
 
-在 `thesis/` 目录运行：
+`main_zh.tex` 保留在 `thesis/` 根目录，便于 Overleaf 直接将它设为中文主文档。VS Code 的 LaTeX Workshop 已配置为使用 XeLaTeX 和 `latexmk`，并将 PDF、日志及辅助文件输出到 `thesis/build/`。
+
+也可以在 `thesis/` 目录手动运行：
 
 ```sh
 latexmk -xelatex -outdir=build main_zh.tex
 ```
 
-编译辅助文件、日志和本地 PDF 输出到被 Git 忽略的 `build/`。论文图片仍从 `report-assets/figures/output/` 读取。Overleaf 入口和设置见 [`docs/writing/OVERLEAF_README.md`](docs/writing/OVERLEAF_README.md)。
+`build/` 被 Git 忽略。论文图片仍从 `report-assets/figures/output/` 读取。Overleaf 入口和设置见 [`docs/writing/OVERLEAF_README.md`](docs/writing/OVERLEAF_README.md)。
