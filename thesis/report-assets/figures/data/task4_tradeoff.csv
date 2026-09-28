@@ -1,8 +1,0 @@
-candidate,record_type,mean_score,act_p95_ms,suicide_rate,protocol,evidence_status,source_path
-E1 seed11 endpoint,frozen_attempt,4.06,19.98,0.00,task4_exploration_E1,verified_raw,experiments/results/task4_exploration_20260919/report.md
-E1 seed22 endpoint,frozen_attempt,4.10,19.12,0.00,task4_exploration_E1,verified_raw,experiments/results/task4_exploration_20260919/report.md
-E1 seed33 endpoint,frozen_attempt,3.27,22.25,0.00,task4_exploration_E1,verified_raw,experiments/results/task4_exploration_20260919/report.md
-Frozen C seed22,frozen_attempt,4.055,19.44,0.00,task4_frozen_C,not_comparable,experiments/results/task4_frozen_20260919/report.md
-Frozen S seed22,frozen_attempt,4.035,19.30,0.00,task4_frozen_S,not_comparable,experiments/results/task4_frozen_20260919/report.md
-Die Hardest historical source checkpoint 1000-world,historical_benchmark,4.231,not_reported,not_reported,source benchmark,verified_summary,agent_code/die_hardest/README.md
-Die Hardest package check,packaging_equivalence,not_reported,14.826,not_reported,rename equivalence,packaging_verified,docs/research/die-hardest-submission/verification.json

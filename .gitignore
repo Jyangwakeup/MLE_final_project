@@ -122,8 +122,6 @@ MLE_project_bomberman/
 notes/
 tmp/pdfs/
 output
-!thesis/report-assets/figures/output/
-!thesis/report-assets/figures/output/*.pdf
 runs/
 /.local-artifacts/
 
@@ -142,6 +140,11 @@ checkpoints/
 # Local Agent configuration and in-progress Agent artifacts
 /AGENTS.md
 /Agent/
+
+# Local-only thesis and report planning documents
+/thesis/
+/IMPLEMENTATION_GUIDE.md
+/REPORT_OUTLINE.md
 
 # Consolidated local experimental artifacts
 /archive/*
