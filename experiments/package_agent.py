@@ -19,12 +19,11 @@ from experiments.agent_contracts import resolve_agent_contract
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 SUPPORTED = {
-    "double_q_compact_agent", "double_dqn_continuous_agent",
-    "double_dqn_continuous_v2_agent", "double_dqn_continuous_v3_agent",
+    "expected_sarsa", "rainbow_lite",
+    "double_q_compact_agent", "double_dqn_continuous_v2_agent",
     "double_dqn_phase_agent",
     "hybrid_dueling_double_dqn_agent", "cnn_distilled_double_dqn_agent",
-    "double_dqn_continuous_v4_agent",
-    "rainbow_lite_agent", "expected_sarsa_lambda_agent", "double_q_lambda_agent",
+    "double_q_lambda_agent",
     "optimized_double_q_lambda_agent",
 }
 
@@ -94,41 +93,54 @@ def build_submission(agent: str, checkpoint: Path, output: Path) -> Path:
             ignore=shutil.ignore_patterns(
                 "__pycache__", "*.pyc", "*.pkl", "*.pt", "logs"),
         )
-        vendor = stage / "_vendor"
-        vendor.mkdir()
-        (vendor / "__init__.py").write_text("\"\"\"Vendored runtime dependencies.\"\"\"\n")
-        shutil.copytree(
-            PROJECT_ROOT / "agent_code" / "learning_common", vendor / "learning_common",
-            ignore=shutil.ignore_patterns("__pycache__", "*.pyc"),
-        )
-        shutil.copy2(
-            PROJECT_ROOT / "agent_code" / "dqn_agent" / "model.py",
-            vendor / "dqn_model.py",
-        )
-        team = vendor / "team_agent"
-        team.mkdir()
-        for name in (
-            "__init__.py", "controllable_survival.py", "danger.py",
-            "distillation_capture.py", "exploration.py", "features.py",
-            "phase.py", "rewards.py", "opponent_transitions.py",
-            "safety.py", "temporal_safety_features.py",
-        ):
-            shutil.copy2(PROJECT_ROOT / "agent_code" / "team_agent" / name, team / name)
-        shutil.copytree(
-            PROJECT_ROOT / "agent_code" / "team_agent" / "feature_system",
-            team / "feature_system", ignore=shutil.ignore_patterns("__pycache__", "*.pyc"),
-        )
+        if agent not in {"expected_sarsa", "rainbow_lite"}:
+            vendor = stage / "_vendor"
+            vendor.mkdir()
+            (vendor / "__init__.py").write_text(
+                "\"\"\"Vendored runtime dependencies.\"\"\"\n"
+            )
+            shutil.copytree(
+                PROJECT_ROOT / "agent_code" / "learning_common",
+                vendor / "learning_common",
+                ignore=shutil.ignore_patterns("__pycache__", "*.pyc"),
+            )
+            shutil.copy2(
+                PROJECT_ROOT / "agent_code" / "dqn_agent" / "model.py",
+                vendor / "dqn_model.py",
+            )
+            team = vendor / "team_agent"
+            team.mkdir()
+            for name in (
+                "__init__.py", "controllable_survival.py", "danger.py",
+                "distillation_capture.py", "exploration.py", "features.py",
+                "phase.py", "rewards.py", "opponent_transitions.py",
+                "safety.py", "temporal_safety_features.py",
+            ):
+                shutil.copy2(
+                    PROJECT_ROOT / "agent_code" / "team_agent" / name,
+                    team / name,
+                )
+            shutil.copytree(
+                PROJECT_ROOT / "agent_code" / "team_agent" / "feature_system",
+                team / "feature_system",
+                ignore=shutil.ignore_patterns("__pycache__", "*.pyc"),
+            )
         shutil.copy2(checkpoint, stage / contract.checkpoint_name)
-        _rewrite_imports(stage, {
-            "from agent_code.dqn_agent.model": (
-                f"from agent_code.{agent}._vendor.dqn_model"
-            ),
-            "from agent_code.learning_common": f"from agent_code.{agent}._vendor.learning_common",
-            "from agent_code.team_agent": f"from agent_code.{agent}._vendor.team_agent",
-        })
-        _rewrite_imports(vendor / "learning_common", {
-            f"from agent_code.{agent}._vendor.team_agent": "from ..team_agent",
-        })
+        if agent not in {"expected_sarsa", "rainbow_lite"}:
+            _rewrite_imports(stage, {
+                "from agent_code.dqn_agent.model": (
+                    f"from agent_code.{agent}._vendor.dqn_model"
+                ),
+                "from agent_code.learning_common": (
+                    f"from agent_code.{agent}._vendor.learning_common"
+                ),
+                "from agent_code.team_agent": (
+                    f"from agent_code.{agent}._vendor.team_agent"
+                ),
+            })
+            _rewrite_imports(vendor / "learning_common", {
+                f"from agent_code.{agent}._vendor.team_agent": "from ..team_agent",
+            })
         manifest = {
             "agent": agent, "algorithm": contract.algorithm,
             "feature_id": contract.feature_id, "reward_id": payload["reward_id"],

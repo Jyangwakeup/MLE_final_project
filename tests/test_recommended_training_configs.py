@@ -4,7 +4,9 @@ import sys
 import unittest
 from pathlib import Path
 
-from agent_code.rainbow_lite_agent import callbacks as rainbow_callbacks
+from agent_code.expected_sarsa import callbacks as expected_sarsa_callbacks
+from agent_code.rainbow_lite import callbacks as active_rainbow_callbacks
+from all_other_agent_code.rainbow_lite_agent import callbacks as rainbow_callbacks
 from experiments.agent_contracts import resolve_agent_contract
 from experiments.performance_stopping import resolve_performance_stopping
 
@@ -108,14 +110,48 @@ class RecommendedTrainingConfigTests(unittest.TestCase):
         self.assertEqual(contract.feature_schema["vector_shape"], [126])
         self.assertEqual(rainbow_callbacks.NETWORK_SPEC["input_shape"], [126])
 
+    def test_expected_sarsa_and_rainbow_lite_bases_are_active_contracts(self):
+        expected = resolve_agent_contract("expected_sarsa")
+        self.assertEqual(expected.feature_id, "continuous-v4")
+        self.assertEqual(expected_sarsa_callbacks.AGENT_METADATA["algorithm"],
+                         expected.algorithm)
+
+        rainbow = resolve_agent_contract("rainbow_lite")
+        self.assertEqual(rainbow.feature_id, "continuous-v5")
+        self.assertEqual(rainbow.feature_schema["vector_shape"], [140])
+        self.assertEqual(
+            active_rainbow_callbacks.NETWORK_SPEC["input_shape"], [140])
+
     def test_archived_rainbow_contracts_resolve_from_historical_tree(self):
         code = """
 from experiments.agent_contracts import resolve_agent_contract
 names = (
-    'rainbow_lite_v6_agent', 'rainbow_lite_v6_stable_agent',
+    'rainbow_lite_agent', 'rainbow_lite_no_safety_agent',
+    'rainbow_lite_v5_agent', 'rainbow_lite_v6_agent',
+    'rainbow_lite_v6_stable_agent',
     'rainbow_lite_v7_agent', 'rainbow_lite_v8_agent',
     'rainbow_lite_v9_agent', 'rainbow_lite_v10_agent',
-    'rainbow_lite_v11_agent',
+    'rainbow_lite_v11_agent', 'rainbow_lite_continuous_v2_agent',
+    'rainbow_lite_spatial_v6_agent',
+    'expected_sarsa_lambda_agent',
+    'expected_sarsa_lambda_no_safety_agent',
+    'expected_sarsa_lambda_v5_agent',
+)
+for name in names:
+    assert resolve_agent_contract(name).agent == name
+"""
+        result = subprocess.run(
+            [sys.executable, "-c", code], capture_output=True, text=True,
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_archived_continuous_double_dqn_contracts_resolve_from_other_agents(self):
+        code = """
+from experiments.agent_contracts import resolve_agent_contract
+names = (
+    'double_dqn_continuous_agent',
+    'double_dqn_continuous_v3_agent',
+    'double_dqn_continuous_v4_agent',
 )
 for name in names:
     assert resolve_agent_contract(name).agent == name

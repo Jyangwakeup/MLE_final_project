@@ -1,4 +1,4 @@
-# 六个学习型 Agent 训练命令
+# 活动学习型 Agent 训练命令
 
 本文档集中记录当前推荐训练入口。新训练使用 `r2_balanced`、`r3_potential`、
 `r4_anti_oscillation` 或 `r5_conditional_loop`；`r1` 和
@@ -30,7 +30,9 @@
 | `q_learning_agent` | `discrete-q-v2` | `r4_anti_oscillation` | `final.pkl` |
 | `double_q_compact_agent` | `discrete-compact-v1` | `r3_potential` | `final.pkl` |
 | `dqn_agent` | `discrete-q-v2` vector | `r4_anti_oscillation` | `final.pt` |
-| `double_dqn_continuous_agent` | `continuous-v2` | `r2_balanced` | `final.pt` |
+| `expected_sarsa` | `continuous-v4` | `r10_bounded_history_anti_loop` | `final.pkl` |
+| `rainbow_lite` | `continuous-v5` | `r18_wait_attractor_escape` | `final.pt` |
+| `double_dqn_continuous_v2_agent` | `continuous-v2` | `r2_balanced` | `final.pt` |
 | `cnn_double_dqn_agent` | `board-v1` | `r3_potential` | `final.pt` |
 | `hybrid_dueling_double_dqn_agent` | `hybrid-v1` | `r2_balanced` | `final.pt` |
 
@@ -40,6 +42,9 @@
 所有学习 Agent 都可通过 `experiments/configs/reward_r5_conditional_loop.json` 使用条件式
 reward；各模型保留自己的 Feature。`continuous-v2` 对历史条件的可观测性最完整，但不是
 启用 `r5` 的硬性要求。
+
+Expected SARSA 的 lambda 变体和 Rainbow Lite 的版本化实验实现保存在
+`all_other_agent_code/` 中，供历史契约解析与研究查阅；当前训练和打包入口使用上表中的两个本体。
 
 ## Agent 1：Q-learning
 
@@ -79,7 +84,7 @@ python3 -m experiments.run \
 ```bash
 python3 -m experiments.run \
   --config experiments/configs/reward_r2_balanced.json --mode train --task 1 \
-  --agent double_dqn_continuous_agent --seed 11 --n-rounds 1000 \
+  --agent double_dqn_continuous_v2_agent --seed 11 --n-rounds 1000 \
   --run-id continuous_ddqn_r2_t1_train
 ```
 
@@ -91,15 +96,18 @@ python3 -m experiments.run \
 训练 seed 11、1000 局、相同探索计划、CPU 初始化与评估 seeds/局数，并关闭早停，避免实际
 训练轮数不同。两个 run 都必须从零训练，不能相互恢复 checkpoint。
 
+下列命令使用当前活动的 v2 实现。早期由未带版本号基线产生的结果仍是历史证据；重新运行
+这些配置不会重现原实现的代码身份。
+
 ```bash
 .venv/bin/python -m experiments.run \
   --config experiments/configs/task1_ddqn_continuous_r3_baseline.json \
-  --mode train --task 1 --agent double_dqn_continuous_agent \
+  --mode train --task 1 --agent double_dqn_continuous_v2_agent \
   --run-id task1_ddqn_continuous_r3_baseline
 
 .venv/bin/python -m experiments.run \
   --config experiments/configs/task1_ddqn_continuous_r5_conditional_loop.json \
-  --mode train --task 1 --agent double_dqn_continuous_agent \
+  --mode train --task 1 --agent double_dqn_continuous_v2_agent \
   --run-id task1_ddqn_continuous_r5_conditional_loop
 ```
 

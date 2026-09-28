@@ -1,7 +1,7 @@
 """Training callbacks for the continuous-v2 Rainbow-lite specialization."""
 
 from . import callbacks as _callbacks  # noqa: F401
-from agent_code.rainbow_lite_agent import train as _impl
+from all_other_agent_code.rainbow_lite_agent import train as _impl
 from .features import action_history_state, init_action_history
 import torch
 
@@ -9,7 +9,7 @@ import torch
 _impl.action_history_state = action_history_state
 _impl.init_action_history = init_action_history
 
-from agent_code.rainbow_lite_agent.train import (  # noqa: E402
+from all_other_agent_code.rainbow_lite_agent.train import (  # noqa: E402
     end_of_round as _base_end_of_round,
     game_events_occurred,
     setup_training,

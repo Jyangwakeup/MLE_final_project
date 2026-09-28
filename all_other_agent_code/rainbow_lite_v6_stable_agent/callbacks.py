@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-from agent_code.rainbow_lite_agent import callbacks as _base_impl
+from all_other_agent_code.rainbow_lite_agent import callbacks as _base_impl
 from all_other_agent_code.rainbow_lite_v6_agent import callbacks as _impl
 from .features import (
     ACTIONS, FEATURE_ID, FEATURE_SCHEMA, features_for_state,

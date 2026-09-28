@@ -11,6 +11,7 @@ import zipfile
 from agent_code.double_q_compact_agent.callbacks import (
     ACTIONS, ALGORITHM, FEATURE_ID, FEATURE_SCHEMA, HYPERPARAMETERS,
 )
+from experiments.agent_contracts import resolve_agent_contract
 from experiments.package_agent import build_submission
 
 
@@ -106,6 +107,42 @@ class SubmissionPackageTest(unittest.TestCase):
                 dependencies = zipped.read(f"{agent}/requirements.txt").decode()
                 self.assertIn("numpy==", dependencies)
                 self.assertIn("torch==", dependencies)
+
+    def test_standalone_sarsa_and_rainbow_packages_reuse_their_vendor(self):
+        for agent in ("expected_sarsa", "rainbow_lite"):
+            with self.subTest(agent=agent), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                contract = resolve_agent_contract(agent)
+                checkpoint = (
+                    PROJECT_ROOT / "agent_code" / agent
+                    / contract.checkpoint_name
+                )
+                archive = build_submission(
+                    agent, checkpoint, root / "submission.zip")
+                with zipfile.ZipFile(archive) as zipped:
+                    names = zipped.namelist()
+                    prefix = f"{agent}/"
+                    self.assertIn(prefix + contract.checkpoint_name, names)
+                    self.assertIn(prefix + "_vendor/__init__.py", names)
+                    self.assertIn(
+                        prefix + "_vendor/learning_common/__init__.py", names)
+                    self.assertEqual(
+                        sum(name.endswith("_vendor/learning_common/__init__.py")
+                            for name in names),
+                        1,
+                    )
+                    zipped.extractall(root / "unpacked")
+
+                isolated, environment = self._prepare_isolated_root(
+                    root, root / "unpacked", agent, contract.feature_id, "r1")
+                result = subprocess.run(
+                    [sys.executable, "-c",
+                     "from agent_code.%s import callbacks; "
+                     "assert callbacks.AGENT_METADATA['algorithm']" % agent],
+                    cwd=isolated, env=environment,
+                    capture_output=True, text=True, timeout=30,
+                )
+                self.assertEqual(result.returncode, 0, result.stderr)
 
     def test_cnn_submission_runs_without_teacher_dataset_or_repository_packages(self):
         agent = "cnn_distilled_double_dqn_agent"

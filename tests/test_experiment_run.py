@@ -60,10 +60,15 @@ class ExperimentRunTest(unittest.TestCase):
     def test_source_dependencies_exclude_unrelated_agents(self):
         dependencies = _local_python_dependencies([
             PROJECT_ROOT / "experiments" / "run.py",
-            *(PROJECT_ROOT / "agent_code" / "rainbow_lite_agent").glob("*.py"),
+            *(
+                PROJECT_ROOT / "all_other_agent_code" / "rainbow_lite_agent"
+            ).glob("*.py"),
         ])
         self.assertIn(
-            (PROJECT_ROOT / "agent_code/rainbow_lite_agent/callbacks.py").resolve(),
+            (
+                PROJECT_ROOT
+                / "all_other_agent_code/rainbow_lite_agent/callbacks.py"
+            ).resolve(),
             dependencies,
         )
         self.assertIn(
@@ -342,12 +347,12 @@ class ExperimentRunTest(unittest.TestCase):
         with patch.object(s, "MAX_STEPS", 3):
             run_agent_session(
                 BASE_CONFIG, "train", 11, parent,
-                "double_dqn_continuous_agent", (), "coin-heaven", 1,
+                "double_dqn_continuous_v2_agent", (), "coin-heaven", 1,
                 source_checkpoint, "coin_navigation", "none", 1,
             )
             result = experiment_main([
                 "--config", str(WARM_START_CONFIG), "--mode", "train",
-                "--task", "2", "--agent", "double_dqn_continuous_agent",
+                "--task", "2", "--agent", "double_dqn_continuous_v2_agent",
                 "--n-rounds", "1", "--seed", "11",
                 "--init-from-checkpoint", str(source_checkpoint),
                 "--output", str(child), "--replay-policy", "none",

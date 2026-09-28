@@ -5,7 +5,7 @@
 本目录是实验编排层。其接口来自 `PROJECT_REQUIREMENTS.md` 与
 `IMPLEMENTATION_GUIDE.md`；特征和学习模块的实现细节仍分别由 A 与 B 负责。
 
-六个 Agent 当前推荐的完整训练、续训和冻结评估命令集中记录在
+当前活动 Agent 推荐的完整训练、续训和冻结评估命令集中记录在
 [`docs/training-commands.md`](../docs/training-commands.md)。本轮冻结特征 coin3 课程使用
 `formal_training_coin3.json`；其他新模型实验可选择 `r2_balanced`、`r3_potential` 等独立配置。
 Task 1 的最终 reward 对照使用
@@ -22,14 +22,18 @@ Task 1 的最终 reward 对照使用
 | `q_learning_agent` | `q_learning` | 默认 `discrete-q-v2`，可显式选 `discrete-v1` | `final.pkl` |
 | `double_q_compact_agent` | `double_q_learning` | `discrete-compact-v1` | `final.pkl` |
 | `dqn_agent` | `dqn` | 默认 `discrete-q-v2`，可选 `discrete-v1` / `discrete-objective-v1` | `final.pt` |
-| `double_dqn_continuous_agent` | `double_dqn` | `continuous-v2`，84 维安全消融基线 | `final.pt` |
+| `expected_sarsa` | `expected_sarsa_lambda` | `continuous-v4` | `final.pkl` |
+| `rainbow_lite` | `rainbow_lite` | `continuous-v5` | `final.pt` |
 | `double_dqn_continuous_v2_agent` | `double_dqn` | 新训练使用 84 维 `continuous-v2`；自动只读兼容旧 78 维 checkpoint | `final.pt` |
-| `double_dqn_continuous_v3_agent` | `double_dqn` | `continuous-v3`，显式安全余量消融 | `final.pt` |
 | `double_dqn_phase_agent` | `double_dqn` | `continuous-phase-v1`，117维Task 3/4局面阶段模型 | `final.pt` |
-| `double_dqn_continuous_v4_agent` | `double_dqn` | `continuous-v4`，连续 WAIT 与 2–8 步周期历史 | `final.pt` |
-| `rainbow_lite_v5_agent` | `rainbow_lite` | `continuous-v5`，全局箱区密度与放弹后目标恢复 | `final.pt` |
 | `cnn_double_dqn_agent` | `cnn_double_dqn` | `board-v1` | `final.pt` |
 | `hybrid_dueling_double_dqn_agent` | `hybrid_dueling_double_dqn` | `hybrid-v1` | `final.pt` |
+
+Continuous Double DQN 的未带版本号基线及 v3/v4 源码保存在
+`all_other_agent_code/` 供历史查阅；当前运行器和打包器仅将 v2 作为活动连续版本。
+Expected SARSA 与 Rainbow Lite 当前分别使用独立完整包 `expected_sarsa` 和
+`rainbow_lite`。lambda 研究变体以及 Rainbow Lite 的实验版本保存在
+`all_other_agent_code/`；它们仍可解析历史契约元数据，但不属于当前打包目标。
 
 `reward_r2_balanced.json` 的 algorithm/feature 留空时由所选 Agent 契约填充；显式填写但不一致会在
 启动 World 前失败。Task 1 的禁炸弹是单独记录的 curriculum action mask，Feature 返回的
@@ -44,8 +48,8 @@ python3 -m experiments.package_agent \
   --output dist/final-project-agent-code.zip
 ```
 
-构建器校验算法、Feature schema、动作顺序、网络和超参数，并在生成目录中 vendor 公共
-Feature/reward/学习运行时；不会在四个开发目录中维护四份公共源码，也不会覆盖已有 zip。
+构建器校验算法、Feature schema、动作顺序、网络和超参数。两个独立完整包沿用自己的
+`_vendor/` 依赖；其他可打包 Agent 由构建器 vendor 公共 Feature/reward/学习运行时，且不会覆盖已有 zip。
 
 ## 代码结构与协作边界
 
@@ -483,7 +487,7 @@ checkpoint 仍可评估，但不能替代 `--resume-from`。
 .venv/bin/python -m experiments.run \
   --config experiments/configs/reward_r5_conditional_loop.json \
   --mode train --device cpu --task 2 \
-  --agent double_dqn_continuous_agent --seed 11 --n-rounds 500 \
+  --agent double_dqn_continuous_v2_agent --seed 11 --n-rounds 500 \
   --init-from-checkpoint runs/ddqn_continuous_v2_r5_s11_t1_train/checkpoints/final.pt \
   --run-id dev_ddqn_continuous_v2_r5_s11_t2_warm
 ```

@@ -6,7 +6,7 @@
 
 完整 Bomberman 要求导航、炸箱、从炸弹逃生和对抗，单一总分无法诊断失败原因。我们按课程建议由 Task 1（金币导航，无箱子和对手、禁 BOMB）推进到 Task 2（炸箱与金币）、Task 3（弱对手）和 Task 4（三名 `rule_based_agent`）。每次训练后冻结权重、关闭探索，以正式游戏得分和行为指标评估；训练 reward 只用于优化和诊断。Task 1 主要看 50 枚金币的平均收集量、全收集率和完成步数；Task 2 增加炸箱、放弹、自杀和旧任务保留；Task 3/4 增加击杀、第一名率和对手压力下的安全性。完整 `act` 必须满足 0.5 秒正式预算。[依据：`PROJECT_REQUIREMENTS.md`、`experiments/CURRENT_TRAINING_EVALUATION_PARAMETERS.md`]
 
-三条主要路线分别是：(1) 离散状态单表 Q-learning，及后续作为同一表格家族改进的 tile-coded Watkins Double Q(λ)；(2) 连续特征 MLP Double DQN；(3) Rainbow Lite，即 dueling Double DQN、比例优先经验回放及固定四步回报的组合。Rainbow Lite 是项目内的“lite”实现，不能写成包含全部原版 Rainbow 组件。所有路线由学习器对动作估值；特征和安全掩码不直接给出最佳动作。[依据：`agent_code/rainbow_lite_agent/model.py`、`agent_code/rainbow_lite_agent/README.md`、各 Agent 实现]
+三条主要路线分别是：(1) 离散状态单表 Q-learning，及后续作为同一表格家族改进的 tile-coded Watkins Double Q(λ)；(2) 连续特征 MLP Double DQN；(3) Rainbow Lite，即 dueling Double DQN、比例优先经验回放及固定四步回报的组合。Rainbow Lite 是项目内的“lite”实现，不能写成包含全部原版 Rainbow 组件。所有路线由学习器对动作估值；特征和安全掩码不直接给出最佳动作。[依据：`all_other_agent_code/rainbow_lite_agent/model.py`、`all_other_agent_code/rainbow_lite_agent/README.md`、各 Agent 实现]
 
 以下历史实验首先用于**筛选模型、特征、奖励和训练方案的组合**。当多个因素或训练预算同时变化时，结果不能归因为算法本身。只有固定其余条件的配对实验才支持对单项改动的因果解释。最终三模型排序需要在同一 Task 4 设置下另做冻结横向评估。
 

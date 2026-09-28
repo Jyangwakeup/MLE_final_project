@@ -2,11 +2,11 @@ import os
 from pathlib import Path
 import torch
 
-from agent_code.rainbow_lite_agent.callbacks import (
+from all_other_agent_code.rainbow_lite_agent.callbacks import (
     ACTIONS, ALGORITHM, FEATURE_ID, FEATURE_SCHEMA, HYPERPARAMETERS, NETWORK_SPEC,
     _features_for, act, legal_actions, state_to_features,
 )
-from agent_code.rainbow_lite_agent.model import RainbowLite
+from all_other_agent_code.rainbow_lite_agent.model import RainbowLite
 from agent_code.learning_common.runtime import (
     INIT_CHECKPOINT_ENV, adopt_checkpoint_reward, adopt_checkpoint_safety,
     load_common_configuration, validate_checkpoint,

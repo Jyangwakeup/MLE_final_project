@@ -4,7 +4,7 @@ from pathlib import Path
 
 import torch
 
-from agent_code.rainbow_lite_agent import callbacks as _impl
+from all_other_agent_code.rainbow_lite_agent import callbacks as _impl
 from .features import (
     ACTIONS,
     FEATURE_ID,

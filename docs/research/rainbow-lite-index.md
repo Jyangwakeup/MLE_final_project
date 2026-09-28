@@ -13,10 +13,11 @@ qualified or selected competition model.
 
 | Agent | Location | Feature contract | Reward and safety contracts | Role |
 |---|---|---|---|---|
-| `rainbow_lite_agent` | `agent_code/rainbow_lite_agent/` | `continuous-v4` | r7/r9/r10; survival-mask-v1 | Shared model, replay, training, and callback implementation |
-| `rainbow_lite_continuous_v2_agent` | `agent_code/rainbow_lite_continuous_v2_agent/` | `continuous-v2` | r7; survival-mask-v5 | Compact-feature Task 1 experiment |
-| `rainbow_lite_no_safety_agent` | `agent_code/rainbow_lite_no_safety_agent/` | `continuous-v4` | r10/r13-r16; safety off | Safety-ablation family |
-| `rainbow_lite_v5_agent` | `agent_code/rainbow_lite_v5_agent/` | `continuous-v5` | r17/r18; survival-mask-v1 or v5 | Crate-discipline and WAIT-attractor experiments |
+| `rainbow_lite` | `agent_code/rainbow_lite/` | `continuous-v5` | r18; survival-mask-v5 | Active standalone full-retraining package |
+| `rainbow_lite_agent` | `all_other_agent_code/rainbow_lite_agent/` | `continuous-v4` | r7/r9/r10; survival-mask-v1 | Historical shared model, replay, training, and callback implementation |
+| `rainbow_lite_continuous_v2_agent` | `all_other_agent_code/rainbow_lite_continuous_v2_agent/` | `continuous-v2` | r7; survival-mask-v5 | Compact-feature Task 1 experiment |
+| `rainbow_lite_no_safety_agent` | `all_other_agent_code/rainbow_lite_no_safety_agent/` | `continuous-v4` | r10/r13-r16; safety off | Safety-ablation family |
+| `rainbow_lite_v5_agent` | `all_other_agent_code/rainbow_lite_v5_agent/` | `continuous-v5` | r17/r18; survival-mask-v1 or v5 | Crate-discipline and WAIT-attractor experiments |
 | `rainbow_lite_v6_agent` | `all_other_agent_code/rainbow_lite_v6_agent/` | `continuous-v6-opponent-tracking` | r19/r20; survival-mask-v1 or v5 | Historical opponent-tracking Task 4 variant |
 | `rainbow_lite_v6_stable_agent` | `all_other_agent_code/rainbow_lite_v6_stable_agent/` | `continuous-v6-opponent-tracking` | r19/r19a/r19b; survival-mask-v1 | Historical stability ablations |
 | `rainbow_lite_v7_agent` | `all_other_agent_code/rainbow_lite_v7_agent/` | `continuous-v7-phase-aware` | r20-r22; survival-mask-v1 | Historical phase-aware variant |
@@ -24,7 +25,7 @@ qualified or selected competition model.
 | `rainbow_lite_v9_agent` | `all_other_agent_code/rainbow_lite_v9_agent/` | `continuous-v9-compact` | r22; survival-mask-v1 | Historical compact variant |
 | `rainbow_lite_v10_agent` | `all_other_agent_code/rainbow_lite_v10_agent/` | `continuous-v10-agent-quadrant-density` | r21; survival-mask-v1 | Historical quadrant-density Task 3 variant |
 | `rainbow_lite_v11_agent` | `all_other_agent_code/rainbow_lite_v11_agent/` | `continuous-v11-agent-quadrant-crate-objectives` | r20; survival-mask-v1 | Historical quadrant-objective Task 3 variant |
-| `rainbow_lite_spatial_v6_agent` | `agent_code/rainbow_lite_spatial_v6_agent/` | `spatial-v6-board12` | r20; survival-mask-v5 | Experimental vector-plus-board CNN; no shipped final checkpoint |
+| `rainbow_lite_spatial_v6_agent` | `all_other_agent_code/rainbow_lite_spatial_v6_agent/` | `spatial-v6-board12` | r20; survival-mask-v5 | Experimental vector-plus-board CNN; no shipped final checkpoint |
 
 All configurations are kept flat under `experiments/configs/` so recorded
 commands and manifests retain their original paths. Search for

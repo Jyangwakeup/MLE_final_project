@@ -3,7 +3,7 @@ import numpy as np
 import torch
 from agent_code.dqn_agent.model import Transition
 from agent_code.learning_common.tile_coding import TileCoder, TraceControl
-from agent_code.rainbow_lite_agent.model import DuelingNetwork, PrioritizedReplay, RainbowLite
+from all_other_agent_code.rainbow_lite_agent.model import DuelingNetwork, PrioritizedReplay, RainbowLite
 
 HP={"gamma":.95,"learning_rate":.1,"lambda":.8,"tilings":4,"bins":8,"memory_size":128}
 
@@ -85,7 +85,7 @@ class CompetitiveLearnerTests(unittest.TestCase):
         self.assertEqual(model.observations,8)
         self.assertEqual(model.updates,2)
     def test_stable_v6_rebinds_runtime_hyperparameters(self):
-        from agent_code.rainbow_lite_agent import callbacks as base_callbacks
+        from all_other_agent_code.rainbow_lite_agent import callbacks as base_callbacks
         from all_other_agent_code.rainbow_lite_v6_stable_agent import callbacks as stable
         self.assertIs(base_callbacks.HYPERPARAMETERS,stable.HYPERPARAMETERS)
         self.assertEqual(base_callbacks.HYPERPARAMETERS["train_interval"],4)

@@ -6,7 +6,7 @@ import unittest
 import numpy as np
 import torch
 
-from agent_code.rainbow_lite_agent.model import RainbowLite
+from all_other_agent_code.rainbow_lite_agent.model import RainbowLite
 from all_other_agent_code.rainbow_lite_v7_agent.features import (
     features_for_state as v7_features_for_state,
     init_action_history as init_v7_history,

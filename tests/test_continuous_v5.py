@@ -1,7 +1,7 @@
 from types import SimpleNamespace
 import unittest
 
-from agent_code.rainbow_lite_v5_agent.features import (
+from agent_code.rainbow_lite.features import (
     features_for_state, init_action_history, record_selected_action,
 )
 from agent_code.learning_common.temporal_reward import (

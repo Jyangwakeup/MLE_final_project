@@ -12,10 +12,10 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from agent_code.rainbow_lite_spatial_v6_agent.callbacks import (  # noqa: E402
+from all_other_agent_code.rainbow_lite_spatial_v6_agent.callbacks import (  # noqa: E402
     ACTIONS, ALGORITHM, FEATURE_ID, FEATURE_SCHEMA, HYPERPARAMETERS, NETWORK_SPEC,
 )
-from agent_code.rainbow_lite_spatial_v6_agent.model import SpatialDuelingNetwork  # noqa: E402
+from all_other_agent_code.rainbow_lite_spatial_v6_agent.model import SpatialDuelingNetwork  # noqa: E402
 
 
 def migrate(source: Path, output: Path) -> None:

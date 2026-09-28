@@ -24,9 +24,9 @@ from agent_code.team_agent.rewards import resolve_reward_spec
 from agent_code.double_q_compact_agent import callbacks as dq_callbacks
 from agent_code.double_q_compact_agent import train as dq_train
 from agent_code.double_q_compact_agent.features import canonical_legal_mask
-from agent_code.double_dqn_continuous_agent import features as continuous_features
-from agent_code.double_dqn_continuous_agent import callbacks as continuous_callbacks
-from agent_code.double_dqn_continuous_agent import train as continuous_train
+from all_other_agent_code.double_dqn_continuous_agent import features as continuous_features
+from all_other_agent_code.double_dqn_continuous_agent import callbacks as continuous_callbacks
+from all_other_agent_code.double_dqn_continuous_agent import train as continuous_train
 from experiments.agent_variants.cnn_double_dqn_agent import features as board_features
 from experiments.agent_variants.cnn_double_dqn_agent import callbacks as cnn_callbacks
 from experiments.agent_variants.cnn_double_dqn_agent import train as cnn_train
@@ -243,7 +243,7 @@ class AlgorithmTests(unittest.TestCase):
             return ("RIGHT", "DOWN", "LEFT")[len(observed) - 1]
 
         with patch(
-            "agent_code.double_dqn_continuous_agent.callbacks.act_neural",
+            "all_other_agent_code.double_dqn_continuous_agent.callbacks.act_neural",
             side_effect=choose,
         ):
             continuous_callbacks.act(owner, first)

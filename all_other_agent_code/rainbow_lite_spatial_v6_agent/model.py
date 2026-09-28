@@ -4,7 +4,7 @@ import numpy as np
 import torch
 from torch import nn
 
-from agent_code.rainbow_lite_agent.model import RainbowLite, PrioritizedReplay, Transition
+from all_other_agent_code.rainbow_lite_agent.model import RainbowLite, PrioritizedReplay, Transition
 
 VECTOR_DIM = 160
 BOARD_SHAPE = (12, 17, 17)

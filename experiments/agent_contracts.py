@@ -68,6 +68,9 @@ _ARCHIVED_Q_CNN_AGENTS = {
     "optimized_double_q_lambda_v4_agent",
 }
 _ARCHIVED_RAINBOW_AGENTS = {
+    "rainbow_lite_agent",
+    "rainbow_lite_no_safety_agent",
+    "rainbow_lite_v5_agent",
     "rainbow_lite_v6_agent",
     "rainbow_lite_v6_stable_agent",
     "rainbow_lite_v7_agent",
@@ -75,6 +78,18 @@ _ARCHIVED_RAINBOW_AGENTS = {
     "rainbow_lite_v9_agent",
     "rainbow_lite_v10_agent",
     "rainbow_lite_v11_agent",
+    "rainbow_lite_continuous_v2_agent",
+    "rainbow_lite_spatial_v6_agent",
+}
+_ARCHIVED_EXPECTED_SARSA_AGENTS = {
+    "expected_sarsa_lambda_agent",
+    "expected_sarsa_lambda_no_safety_agent",
+    "expected_sarsa_lambda_v5_agent",
+}
+_ARCHIVED_CONTINUOUS_DDQN_AGENTS = {
+    "double_dqn_continuous_agent",
+    "double_dqn_continuous_v3_agent",
+    "double_dqn_continuous_v4_agent",
 }
 _PROJECT_ROOT = Path(__file__).resolve().parents[1]
 _BASELINE_FEATURE_IDS = {
@@ -132,12 +147,20 @@ def resolve_agent_contract(
         raise ValueError(f"experiments do not define a learning contract for {agent!r}")
     module_name = f"agent_code.{agent}.callbacks"
     if agent in _ARCHIVED_Q_CNN_AGENTS and not (
-        _PROJECT_ROOT / "agent_code" / agent
-    ).exists():
+        _PROJECT_ROOT / "agent_code" / agent / "callbacks.py"
+    ).is_file():
         module_name = f"experiments.agent_variants.{agent}.callbacks"
     elif agent in _ARCHIVED_RAINBOW_AGENTS and not (
-        _PROJECT_ROOT / "agent_code" / agent
-    ).exists():
+        _PROJECT_ROOT / "agent_code" / agent / "callbacks.py"
+    ).is_file():
+        module_name = f"all_other_agent_code.{agent}.callbacks"
+    elif agent in _ARCHIVED_CONTINUOUS_DDQN_AGENTS and not (
+        _PROJECT_ROOT / "agent_code" / agent / "callbacks.py"
+    ).is_file():
+        module_name = f"all_other_agent_code.{agent}.callbacks"
+    elif agent in _ARCHIVED_EXPECTED_SARSA_AGENTS and not (
+        _PROJECT_ROOT / "agent_code" / agent / "callbacks.py"
+    ).is_file():
         module_name = f"all_other_agent_code.{agent}.callbacks"
     module = import_module(module_name)
     metadata = module.AGENT_METADATA

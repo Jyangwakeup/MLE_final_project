@@ -25,9 +25,15 @@ course assessment requires the development history and model-selection basis
 to remain visible. Existing paths in this tree are frozen; it is not a cache or
 a general output directory.
 
-The Agent directories other than `die_hardest` preserve developed models and
-baselines. The [Q-learning and CNN index](../agent_code/Q_CNN_AGENT_INDEX.md)
-and [Rainbow Lite index](research/rainbow-lite-index.md) provide narrower entry
+`agent_code/` keeps the frozen competition Agent and the active model families;
+Expected SARSA and Rainbow Lite use their standalone `expected_sarsa/` and
+`rainbow_lite/` packages. The continuous Double DQN development line uses
+`double_dqn_continuous_v2_agent`. Older Expected SARSA and Rainbow Lite variants,
+along with the unversioned Double DQN baseline and v3/v4 variants, are retained
+under `all_other_agent_code/` as historical source; only their metadata is
+resolved by the experiment registry. The
+[Q-learning and CNN index](../agent_code/Q_CNN_AGENT_INDEX.md) and
+[Rainbow Lite index](research/rainbow-lite-index.md) provide narrower entry
 points than browsing every variant.
 
 ## Recovery archive
