@@ -67,6 +67,14 @@ _ARCHIVED_Q_CNN_AGENTS = {
     "optimized_double_q_lambda_history_agent",
     "optimized_double_q_lambda_v4_agent",
 }
+_ARCHIVED_DOUBLE_Q_AGENTS = {
+    "double_q_agent",
+    "double_q_compact_agent",
+    "double_q_lambda_agent",
+    "optimized_double_q_lambda_agent",
+}
+_ARCHIVED_PHASE_DDQN_AGENTS = {"double_dqn_phase_agent"}
+_ARCHIVED_HYBRID_AGENTS = {"hybrid_dueling_double_dqn_agent"}
 _ARCHIVED_RAINBOW_AGENTS = {
     "rainbow_lite_agent",
     "rainbow_lite_no_safety_agent",
@@ -150,6 +158,18 @@ def resolve_agent_contract(
         _PROJECT_ROOT / "agent_code" / agent / "callbacks.py"
     ).is_file():
         module_name = f"experiments.agent_variants.{agent}.callbacks"
+    elif agent in _ARCHIVED_DOUBLE_Q_AGENTS and not (
+        _PROJECT_ROOT / "agent_code" / agent / "callbacks.py"
+    ).is_file():
+        module_name = f"all_other_agent_code.{agent}.callbacks"
+    elif agent in _ARCHIVED_PHASE_DDQN_AGENTS and not (
+        _PROJECT_ROOT / "agent_code" / agent / "callbacks.py"
+    ).is_file():
+        module_name = f"all_other_agent_code.{agent}.callbacks"
+    elif agent in _ARCHIVED_HYBRID_AGENTS and not (
+        _PROJECT_ROOT / "agent_code" / agent / "callbacks.py"
+    ).is_file():
+        module_name = f"all_other_agent_code.{agent}.callbacks"
     elif agent in _ARCHIVED_RAINBOW_AGENTS and not (
         _PROJECT_ROOT / "agent_code" / agent / "callbacks.py"
     ).is_file():

@@ -20,17 +20,18 @@ Task 1 的最终 reward 对照使用
 | Agent | Algorithm | Feature | Checkpoint |
 | --- | --- | --- | --- |
 | `q_learning_agent` | `q_learning` | 默认 `discrete-q-v2`，可显式选 `discrete-v1` | `final.pkl` |
-| `double_q_compact_agent` | `double_q_learning` | `discrete-compact-v1` | `final.pkl` |
 | `dqn_agent` | `dqn` | 默认 `discrete-q-v2`，可选 `discrete-v1` / `discrete-objective-v1` | `final.pt` |
 | `expected_sarsa` | `expected_sarsa_lambda` | `continuous-v4` | `final.pkl` |
 | `rainbow_lite` | `rainbow_lite` | `continuous-v5` | `final.pt` |
 | `double_dqn_continuous_v2_agent` | `double_dqn` | 新训练使用 84 维 `continuous-v2`；自动只读兼容旧 78 维 checkpoint | `final.pt` |
-| `double_dqn_phase_agent` | `double_dqn` | `continuous-phase-v1`，117维Task 3/4局面阶段模型 | `final.pt` |
 | `cnn_double_dqn_agent` | `cnn_double_dqn` | `board-v1` | `final.pt` |
-| `hybrid_dueling_double_dqn_agent` | `hybrid_dueling_double_dqn` | `hybrid-v1` | `final.pt` |
 
 Continuous Double DQN 的未带版本号基线及 v3/v4 源码保存在
 `all_other_agent_code/` 供历史查阅；当前运行器和打包器仅将 v2 作为活动连续版本。
+Double Q 与 Double Q(λ) 的实现也已归档。历史契约仍可解析，但当前运行器和打包器
+不再把这些版本作为活动或可打包 Agent。
+Phase-aware Double DQN 也已归档，保留历史契约元数据解析能力。
+Hybrid Dueling Double DQN 的实现也已归档，保留历史契约元数据解析能力。
 Expected SARSA 与 Rainbow Lite 当前分别使用独立完整包 `expected_sarsa` 和
 `rainbow_lite`。lambda 研究变体以及 Rainbow Lite 的实验版本保存在
 `all_other_agent_code/`；它们仍可解析历史契约元数据，但不属于当前打包目标。
@@ -43,7 +44,7 @@ Expected SARSA 与 Rainbow Lite 当前分别使用独立完整包 `expected_sars
 
 ```bash
 python3 -m experiments.package_agent \
-  --agent hybrid_dueling_double_dqn_agent \
+  --agent double_dqn_continuous_v2_agent \
   --checkpoint runs/<run>/checkpoints/final.pt \
   --output dist/final-project-agent-code.zip
 ```
@@ -723,20 +724,4 @@ Reward ID 和完整 spec 都是 checkpoint 与 resume 契约的一部分。更�
 [`agent_code/team_agent/README.md`](../agent_code/team_agent/README.md#公共奖励)。不同 Reward 的
 训练 reward 尺度不同，不能仅按曲线高低选模型，应统一做冻结评估。
 
-使用默认 `r2_balanced`：
-
-```bash
-python3 -m experiments.run \
-  --config experiments/configs/reward_r2_balanced.json --mode train --task 1 \
-  --agent double_q_compact_agent --seed 11 --n-rounds 2000 \
-  --run-id double_q_r2_t1
-```
-
-使用 `r3_potential` 时换用对应配置，并使用新的 run ID：
-
-```bash
-python3 -m experiments.run \
-  --config experiments/configs/reward_r3_potential.json --mode train --task 1 \
-  --agent double_q_compact_agent --seed 11 --n-rounds 2000 \
-  --run-id double_q_r3_t1
-```
+Double Q 系列的旧配置、结果和 run IDs 仍供历史审计；新训练入口不再选择这些归档 Agent。

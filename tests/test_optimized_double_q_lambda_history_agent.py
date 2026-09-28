@@ -14,7 +14,7 @@ from agent_code.learning_common.action_history import (
     init_action_history,
     record_selected_action,
 )
-from agent_code.optimized_double_q_lambda_agent.callbacks import (
+from all_other_agent_code.optimized_double_q_lambda_agent.callbacks import (
     HYPERPARAMETERS as LEGACY_HYPERPARAMETERS,
 )
 from experiments.agent_variants.optimized_double_q_lambda_history_agent import callbacks

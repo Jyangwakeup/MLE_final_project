@@ -13,7 +13,7 @@ from experiments.resume import validate_resume_transition
 class OptimizedDoubleQLambdaTests(unittest.TestCase):
     def test_contract_uses_the_isolated_agent_and_watkins_cut(self):
         from experiments.agent_contracts import resolve_agent_contract
-        from agent_code.optimized_double_q_lambda_agent.callbacks import (
+        from all_other_agent_code.optimized_double_q_lambda_agent.callbacks import (
             HYPERPARAMETERS,
         )
 

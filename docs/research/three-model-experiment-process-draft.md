@@ -20,7 +20,7 @@
 | 弱对手：Task 2 能力能否迁移 | 初次 Task 3 pilot 维持 r7，三训练种子中 seed 22 失败，未晋级；phase reward、炸弹逃生义务及后续历史快照修复逐一针对失败现象。相关提交 `9da58527`、`1c480466`、`b42bec79`、`15d4721d`。 | [已提交] pilot 和 phase 失败见 `experiments/task3_pilot_results.json`、`experiments/task3_phase_results.json`。生命周期原主验证因逃生塌缩计数失败；修正计数后按登记协议重验，seed 22/c150 主验证得分 5.91→7.14、第一名率 41%→53%，击杀 0.45→0.44，不能声称击杀改善。见 `docs/research/task3-counter-validation-results.md`。 |
 | Rainbow Lite：扩展资源与对抗表示 | v1→v5 逐步加入历史、安全余量、循环与箱子目标；r17/r18 调整资源与延迟炸弹信用；mask 单独版本化。v5/r18 集成提交 `bea0b74f`、`f9a056b9`。 | [已提交/工作区] 版本关系见 `docs/version-comparison-v-features.md`、`docs/version-comparison-r-rewards.md`、`docs/version-comparison-survival-masks.md`。版本号是特征、奖励和 mask 的独立轴，不能写成一条单变量递进曲线。 |
 | Rainbow Lite 后续 Task 3/4 | v6 加对手跟踪，v7 加击杀阶段；v8/v9 研究可安全炸箱与压缩表示，v10/v11 从 v7 分叉测试象限密度和可达箱目标；r19–r22 与 mask-v5 等另行组合。 | [工作区] v6–v11 的 Agent、配置和多数 `runs/` 尚未提交。v10/v11 不是 v9 的后继；训练与评估轮数不同。现有短诊断只能决定补测优先级，不能证明最终最优。 |
-| 表格路线重测 | 在单表 Q-learning 后加入两套 tile-coded Q 估计器和 Watkins trace 截断；继续尝试 Task 2 的历史、WAIT、箱距量化等针对性特征。相关提交 `548136bc`、`3004d869`、`23bf2c75`、`99887a3b`、`7cc6c78c`、`8b9a5b88`。 | [已提交] Task 1 改进已确认；Task 2 日志仍写有运行中和后续启动记录，不能在缺少完整冻结评估时称其已晋级。见 `agent_code/optimized_double_q_lambda_agent/EXPERIMENT_LOG.md`。 |
+| 表格路线重测 | 在单表 Q-learning 后加入两套 tile-coded Q 估计器和 Watkins trace 截断；继续尝试 Task 2 的历史、WAIT、箱距量化等针对性特征。相关提交 `548136bc`、`3004d869`、`23bf2c75`、`99887a3b`、`7cc6c78c`、`8b9a5b88`。 | [已提交] Task 1 改进已确认；Task 2 日志仍写有运行中和后续启动记录，不能在缺少完整冻结评估时称其已晋级。见 `all_other_agent_code/optimized_double_q_lambda_agent/EXPERIMENT_LOG.md`。 |
 
 这种排列是**研究问题的逻辑顺序**。多名成员的分支曾并行开发，表格路线的正式重测发生于 Double DQN 的 Task 2/3 工作之后，不应在最终报告中伪写为一条严格串行的实验时间线。
 
@@ -32,7 +32,7 @@
 
 该批 Q-learning 的旧 R4 与含 idle R4 共用 reward ID，但实际 reward spec 不同；含 idle 版本全收集率由 31% 升到 60%，同时长乒乓率由 11% 升到 21%。两个 R2 评估因 `discrete-v1` 与 `discrete-q-v2` 的特征契约不匹配而报错，**无有效性能数据**。Hybrid 的 100 局坏结果有效，但训练流程还出现绘图库错误，不能把训练状态写成完全正常。[已提交：同上]
 
-在较新的、同为 100k action steps 量级的 Task 1 表格对照中，单表 Q-learning 的最佳冻结快照为 71% 全收集、47.98 金币；Double Q(λ) 为 96%、49.51。后者在独立的 100 局确认集仍为 96%、49.58，因而可说明**该表格改进组合通过 Task 1 门槛**，不能说明其在对战中胜出。两种实现还涉及特征和奖励差异，不是纯算法消融。单表中途在 50k/75k 快照全收集率跌至 0%；Double Q(λ) 在 50k 快照也跌至 40%，故选模必须依据冻结快照，不能只看训练步数增加。[已提交：`agent_code/optimized_double_q_lambda_agent/EXPERIMENT_LOG.md`]
+在较新的、同为 100k action steps 量级的 Task 1 表格对照中，单表 Q-learning 的最佳冻结快照为 71% 全收集、47.98 金币；Double Q(λ) 为 96%、49.51。后者在独立的 100 局确认集仍为 96%、49.58，因而可说明**该表格改进组合通过 Task 1 门槛**，不能说明其在对战中胜出。两种实现还涉及特征和奖励差异，不是纯算法消融。单表中途在 50k/75k 快照全收集率跌至 0%；Double Q(λ) 在 50k 快照也跌至 40%，故选模必须依据冻结快照，不能只看训练步数增加。[已提交：`all_other_agent_code/optimized_double_q_lambda_agent/EXPERIMENT_LOG.md`]
 
 ### 阶段晋级与 Rainbow Lite 诊断
 
@@ -69,7 +69,7 @@ Task 4 短诊断中多次出现得分下降和较高自杀率，因此“版本�
 |---|---|
 | 课程约束和四阶段定义 | `PROJECT_REQUIREMENTS.md`；`experiments/CURRENT_TRAINING_EVALUATION_PARAMETERS.md` |
 | 初期 Task 1 七候选与失败 | `docs/experiment-log-runs-1-2.md`；`runs/1/`、`runs/1.2/` |
-| 表格改进与确认 | `agent_code/optimized_double_q_lambda_agent/EXPERIMENT_LOG.md`；`docs/research/q-learning-task1-optimization.md` |
+| 表格改进与确认 | `all_other_agent_code/optimized_double_q_lambda_agent/EXPERIMENT_LOG.md`；`docs/research/q-learning-task1-optimization.md` |
 | Double DQN Task 2 与 Task 3 | `experiments/task2_winner.json`、`experiments/task2_winner_evaluations.csv`；`experiments/task3_validated_release.json`；`experiments/results/task3_counter_validation_20260917.json` |
 | Rainbow Lite 版本契约 | `docs/version-comparison-v-features.md`、`docs/version-comparison-r-rewards.md`、`docs/version-comparison-survival-masks.md`；Agent 配置和 checkpoint metadata |
 | Rainbow Lite 本地诊断 | `runs/v2_r7/eval10_rainbow_lite_v5_r18_s11_task2_full500/`；`runs/rainbow_lite_v5_r18_maskv5_s11_task3_c100_anchor_c0250_eval20/`；`runs/rainbow_lite_v5_r18_maskv5_s11_task4_c350_anchor_c0100_task4_eval20/`；`runs/rainbow_lite_v6_r20_maskv5_s11_task4_c350_anchor_c0100_task4_eval20/`；`runs/1.3/rainbow_lite_v11_r20_s11_task3_from_task2_c0500_eval10/` |

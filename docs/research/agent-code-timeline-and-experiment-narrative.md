@@ -244,7 +244,7 @@ c1200 随后完成 1000 局扩展冻结评估（50 seeds × 20 rounds）：平�
 | 特征、reward、mask 版本 | `docs/version-comparison-v-features.md`、`docs/version-comparison-r-rewards.md`、`docs/version-comparison-survival-masks.md` |
 | Double DQN Task 2 winner | `experiments/task2_winner.json`、`experiments/task2_winner_evaluations.csv` |
 | Double DQN Task 3 验证 | `experiments/task3_validated_release.json`、`docs/research/task3-counter-validation-results.md` |
-| 表格路线 | `agent_code/optimized_double_q_lambda_agent/EXPERIMENT_LOG.md` |
+| 表格路线 | `all_other_agent_code/optimized_double_q_lambda_agent/EXPERIMENT_LOG.md` |
 | CNN 路线 | `agent_code/cnn_path_double_dqn_agent/EXPERIMENT_LOG.md`、`agent_code/cnn_distilled_double_dqn_agent/EXPERIMENT_LOG.md` |
 | V5 最终本地链 | `runs/final_rainbow_v5_r18_maskv5_s11_*` |
 | c1200 扩展评估 | `runs/final_rainbow_v5_r18_maskv5_s11_t4_c1200_formal1000/` |

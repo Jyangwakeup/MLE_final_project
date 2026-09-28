@@ -20,11 +20,8 @@ from experiments.agent_contracts import resolve_agent_contract
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 SUPPORTED = {
     "expected_sarsa", "rainbow_lite",
-    "double_q_compact_agent", "double_dqn_continuous_v2_agent",
-    "double_dqn_phase_agent",
-    "hybrid_dueling_double_dqn_agent", "cnn_distilled_double_dqn_agent",
-    "double_q_lambda_agent",
-    "optimized_double_q_lambda_agent",
+    "double_dqn_continuous_v2_agent",
+    "cnn_distilled_double_dqn_agent",
 }
 
 # These implementations are historical variants.  They intentionally leave the

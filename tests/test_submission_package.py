@@ -8,9 +8,6 @@ import tempfile
 import unittest
 import zipfile
 
-from agent_code.double_q_compact_agent.callbacks import (
-    ACTIONS, ALGORITHM, FEATURE_ID, FEATURE_SCHEMA, HYPERPARAMETERS,
-)
 from experiments.agent_contracts import resolve_agent_contract
 from experiments.package_agent import build_submission
 
@@ -41,53 +38,57 @@ class SubmissionPackageTest(unittest.TestCase):
         environment["BOMBERMAN_REWARD_ID"] = reward_id
         return isolated, environment
 
-    def test_generated_agent_runs_without_repository_shared_packages(self):
+    def test_expected_sarsa_package_runs_without_repository_shared_packages(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            checkpoint = root / "smoke.pkl"
-            payload = {
-                "checkpoint_schema": "training-resume-v1", "algorithm": ALGORITHM,
-                "actions": list(ACTIONS), "feature_id": FEATURE_ID,
-                "feature_schema": FEATURE_SCHEMA, "reward_id": "r1",
-                "reward_version": "r1", "reward_spec": {},
-                "hyperparameters": HYPERPARAMETERS, "network_spec": None,
-                "q_table_a": {}, "q_table_b": {}, "training_steps": 0,
-                "action_steps": 0, "training_task": "coin_navigation",
-                "rng_state": __import__("random").Random(0).getstate(),
-                "agent_rng_state": __import__("random").Random(0).getstate(),
-            }
-            with checkpoint.open("wb") as file:
-                pickle.dump(payload, file)
-            archive = build_submission(
-                "double_q_compact_agent", checkpoint, root / "submission.zip")
+            agent = "expected_sarsa"
+            checkpoint = PROJECT_ROOT / "agent_code" / agent / "final.pkl"
+            with checkpoint.open("rb") as file:
+                payload = pickle.load(file)
+            contract = resolve_agent_contract(agent)
+            archive = build_submission(agent, checkpoint, root / "submission.zip")
             with zipfile.ZipFile(archive) as zipped:
                 names = zipped.namelist()
-                self.assertIn("double_q_compact_agent/final.pkl", names)
+                self.assertIn(f"{agent}/final.pkl", names)
                 self.assertIn(
-                    "double_q_compact_agent/_vendor/team_agent/opponent_transitions.py",
+                    f"{agent}/_vendor/team_agent/opponent_transitions.py",
                     names,
                 )
                 self.assertIn(
-                    "double_q_compact_agent/_vendor/team_agent/controllable_survival.py",
+                    f"{agent}/_vendor/team_agent/controllable_survival.py",
                     names,
                 )
                 self.assertIn(
-                    "double_q_compact_agent/_vendor/dqn_model.py", names,
+                    f"{agent}/_vendor/dqn_model.py", names,
                 )
                 self.assertTrue(any("/_vendor/team_agent/feature_system/" in n for n in names))
                 self.assertFalse(any("/logs/" in n for n in names))
                 zipped.extractall(root / "unpacked")
 
             isolated, environment = self._prepare_isolated_root(
-                root, root / "unpacked", "double_q_compact_agent", FEATURE_ID, "r1")
+                root, root / "unpacked", agent,
+                contract.feature_id, payload["reward_id"])
             result = subprocess.run(
                 [sys.executable, "main.py", "play", "--agents",
-                 "double_q_compact_agent", "--scenario", "coin-heaven",
+                 agent, "--scenario", "coin-heaven",
                  "--n-rounds", "1", "--no-gui"],
                 cwd=isolated, env=environment, capture_output=True, text=True,
                 timeout=30,
             )
             self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_archived_agents_are_not_package_targets(self):
+        with tempfile.TemporaryDirectory() as directory:
+            for agent in (
+                "double_q_agent", "double_q_compact_agent",
+                "double_q_lambda_agent", "optimized_double_q_lambda_agent",
+                "double_dqn_phase_agent", "hybrid_dueling_double_dqn_agent",
+            ):
+                with self.subTest(agent=agent):
+                    with self.assertRaisesRegex(ValueError, "not supported"):
+                        build_submission(
+                            agent, Path("unused.pkl"),
+                            Path(directory) / f"{agent}.zip")
 
     def test_task3_archive_contains_only_selected_weights_and_dependencies(self):
         import hashlib

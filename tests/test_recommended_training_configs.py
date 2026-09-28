@@ -161,5 +161,22 @@ for name in names:
         )
         self.assertEqual(result.returncode, 0, result.stderr)
 
+    def test_archived_contracts_resolve_from_other_agents(self):
+        code = """
+from experiments.agent_contracts import resolve_agent_contract
+names = (
+    'double_q_agent', 'double_q_compact_agent',
+    'double_q_lambda_agent', 'optimized_double_q_lambda_agent',
+    'double_dqn_phase_agent',
+    'hybrid_dueling_double_dqn_agent',
+)
+for name in names:
+    assert resolve_agent_contract(name).agent == name
+"""
+        result = subprocess.run(
+            [sys.executable, "-c", code], capture_output=True, text=True,
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+
 if __name__ == "__main__":
     unittest.main()

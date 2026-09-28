@@ -2,14 +2,15 @@
 
 主要作者：Ji（提交前确认）
 
-## 当前主运行目录
+## 主运行目录与最近的验证结果
 
 | Agent | 路线 | 当前最强已验证能力 | 实验记录 |
 |---|---|---|---|
-| `optimized_double_q_lambda_agent` | Watkins Double Q(lambda)，per-action tile coding，`continuous-v2` | Task 1 开发集与 100 局独立确认均通过（96% 捡满、48.95 平均金币）；Task 2 r20 最佳为 3.95 coins、53.45 crates，未达标。 | [`EXPERIMENT_LOG.md`](optimized_double_q_lambda_agent/EXPERIMENT_LOG.md) |
+| `optimized_double_q_lambda_agent`（已归档） | Watkins Double Q(lambda)，per-action tile coding，`continuous-v2` | Task 1 开发集与 100 局独立确认均通过（96% 捡满、48.95 平均金币）；Task 2 r20 最佳为 3.95 coins、53.45 crates，未达标。 | [`EXPERIMENT_LOG.md`](../all_other_agent_code/optimized_double_q_lambda_agent/EXPERIMENT_LOG.md) |
 | `cnn_distilled_double_dqn_agent` | 17通道残差 CNN、Double DQN、动作 mask、团队 teacher 蒸馏 | Task 1 reserved 集 96% 捡满、49.84 平均金币；Task 2 主验证 2.60 coins、44.15 crates，安全/炸箱迁移通过但未捡满全部金币。 | [`EXPERIMENT_LOG.md`](cnn_distilled_double_dqn_agent/EXPERIMENT_LOG.md) |
 
-这两个目录是后续打包候选；它们不是团队最终比赛 ZIP 的自动选择。
+`cnn_distilled_double_dqn_agent` 是后续打包候选，但不是团队最终比赛 ZIP 的自动选择。
+Double Q 与 Double Q(λ) 系列已归档到 `all_other_agent_code/`，不再是活动运行或打包目标。
 
 ## 历史变体
 

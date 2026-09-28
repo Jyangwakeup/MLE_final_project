@@ -28,13 +28,11 @@
 | Agent | Feature | Reward | Checkpoint |
 |---|---|---|---|
 | `q_learning_agent` | `discrete-q-v2` | `r4_anti_oscillation` | `final.pkl` |
-| `double_q_compact_agent` | `discrete-compact-v1` | `r3_potential` | `final.pkl` |
 | `dqn_agent` | `discrete-q-v2` vector | `r4_anti_oscillation` | `final.pt` |
 | `expected_sarsa` | `continuous-v4` | `r10_bounded_history_anti_loop` | `final.pkl` |
 | `rainbow_lite` | `continuous-v5` | `r18_wait_attractor_escape` | `final.pt` |
 | `double_dqn_continuous_v2_agent` | `continuous-v2` | `r2_balanced` | `final.pt` |
 | `cnn_double_dqn_agent` | `board-v1` | `r3_potential` | `final.pt` |
-| `hybrid_dueling_double_dqn_agent` | `hybrid-v1` | `r2_balanced` | `final.pt` |
 
 `experiments/configs/reward_r2_balanced.json` 选择 `r2_balanced`；需要 `r3_potential` 时使用
 `experiments/configs/reward_r3_potential.json`。
@@ -45,6 +43,8 @@ reward；各模型保留自己的 Feature。`continuous-v2` 对历史条件的�
 
 Expected SARSA 的 lambda 变体和 Rainbow Lite 的版本化实验实现保存在
 `all_other_agent_code/` 中，供历史契约解析与研究查阅；当前训练和打包入口使用上表中的两个本体。
+Double Q、Double Q(λ) 及其优化变体也已归档到 `all_other_agent_code/`；历史契约仍可解析，
+但当前运行器和打包器不再把它们作为活动目标。
 
 ## Agent 1：Q-learning
 
@@ -57,18 +57,7 @@ python3 -m experiments.run \
 
 输出：`runs/q_learning_r4_t1_train/checkpoints/final.pkl`
 
-## Agent 2：Compact Double Q-learning
-
-```bash
-python3 -m experiments.run \
-  --config experiments/configs/reward_r3_potential.json \
-  --mode train --task 1 --agent double_q_compact_agent \
-  --seed 11 --n-rounds 10000 --run-id double_q_r3_t1_train
-```
-
-输出：`runs/double_q_r3_t1_train/checkpoints/final.pkl`
-
-## Agent 3：DQN
+## Agent 2：DQN
 
 ```bash
 python3 -m experiments.run \
@@ -79,7 +68,7 @@ python3 -m experiments.run \
 
 输出：`runs/dqn_r4_t1_train/checkpoints/final.pt`
 
-## Agent 4：Continuous Double DQN
+## Agent 3：Continuous Double DQN
 
 ```bash
 python3 -m experiments.run \
@@ -117,7 +106,7 @@ python3 -m experiments.run \
 豁免原因以及两项惩罚各自贡献的累计 reward；官方得分/金币是选模依据，训练 reward 不跨方案
 直接比较。
 
-## Agent 5：CNN Double DQN
+## Agent 4：CNN Double DQN
 
 ```bash
 python3 -m experiments.run \
@@ -128,47 +117,36 @@ python3 -m experiments.run \
 
 输出：`runs/cnn_ddqn_r3_t1_train/checkpoints/final.pt`
 
-## Agent 6：Hybrid Dueling Double DQN
-
-```bash
-python3 -m experiments.run \
-  --config experiments/configs/reward_r2_balanced.json --mode train --task 1 \
-  --agent hybrid_dueling_double_dqn_agent --seed 11 --n-rounds 1000 \
-  --run-id hybrid_dueling_r2_t1_train
-```
-
-输出：`runs/hybrid_dueling_r2_t1_train/checkpoints/final.pt`
-
 ## 从 Task 1 继续到 Task 2
 
 课程阶段之间必须保持 Agent、Feature 和 Reward 一致，并通过 `--resume-from` 指向父 run。
-例如继续训练 Double Q：
+例如继续训练 Q-learning：
 
 ```bash
 python3 -m experiments.run \
-  --config experiments/configs/reward_r3_potential.json \
-  --mode train --task 2 --agent double_q_compact_agent \
-  --seed 11 --n-rounds 10000 \
-  --resume-from runs/double_q_r3_t1_train \
-  --run-id double_q_r3_t2_train
+  --config experiments/configs/reward_r4_anti_oscillation.json \
+  --mode train --task 2 --agent q_learning_agent \
+  --seed 11 --n-rounds 1000 \
+  --resume-from runs/q_learning_r4_t1_train \
+  --run-id q_learning_r4_t2_train
 ```
 
-Task 2 输出：`runs/double_q_r3_t2_train/checkpoints/final.pkl`
+Task 2 输出：`runs/q_learning_r4_t2_train/checkpoints/final.pkl`
 
 其他 Agent 按同样方式替换 Agent 名、配置、父 run 和新 run ID。不能从 `r1` checkpoint
 切换到 `r2_balanced` 或 `r3_potential` 后继续训练；Reward 不同必须建立全新的训练链。
 
 ## 冻结评估
 
-评估必须使用与 checkpoint 相同的 Reward 配置。以 Double Q 为例：
+评估必须使用与 checkpoint 相同的 Reward 配置。以 Q-learning 为例：
 
 ```bash
 python3 -m experiments.run \
-  --config experiments/configs/reward_r3_potential.json \
-  --mode evaluate --task 1 --agent double_q_compact_agent \
-  --checkpoint runs/double_q_r3_t1_train/checkpoints/final.pkl \
+  --config experiments/configs/reward_r4_anti_oscillation.json \
+  --mode evaluate --task 1 --agent q_learning_agent \
+  --checkpoint runs/q_learning_r4_t1_train/checkpoints/final.pkl \
   --seeds 10001 10002 10003 10004 10005 --n-rounds 20 \
-  --run-id double_q_r3_t1_eval
+  --run-id q_learning_r4_t1_eval
 ```
 
 不要用不同 Reward 的训练 reward 数值直接排名。最终比较应使用冻结评估中的官方得分、

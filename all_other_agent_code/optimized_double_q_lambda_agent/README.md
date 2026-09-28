@@ -1,5 +1,8 @@
 # Optimized Double Q(lambda) Agent
 
+> 已归档源码。当前 runner 与 submission builder 不会从 `all_other_agent_code/` 加载该 Agent；
+> 实验契约仍保留用于解析历史 metadata。
+
 本 agent 是独立的表格/线性 Q-learning 家族实验：共享 `continuous-v2` 的 84 维客观特征，
 以每动作 tile coding 泛化，并用两个估计器降低最大化偏差。训练时启用 Watkins trace cut：
 非贪心探索动作不会把旧 eligibility trace 的回报向前传播。

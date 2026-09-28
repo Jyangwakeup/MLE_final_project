@@ -29,9 +29,10 @@ a general output directory.
 Expected SARSA and Rainbow Lite use their standalone `expected_sarsa/` and
 `rainbow_lite/` packages. The continuous Double DQN development line uses
 `double_dqn_continuous_v2_agent`. Older Expected SARSA and Rainbow Lite variants,
-along with the unversioned Double DQN baseline and v3/v4 variants, are retained
-under `all_other_agent_code/` as historical source; only their metadata is
-resolved by the experiment registry. The
+the Double Q and Double Q(λ) implementations, the phase-aware and Hybrid Dueling
+Double DQN agents, and the unversioned Double DQN baseline and v3/v4 variants are
+retained under `all_other_agent_code/` as historical source; only their metadata
+is resolved by the experiment registry. The
 [Q-learning and CNN index](../agent_code/Q_CNN_AGENT_INDEX.md) and
 [Rainbow Lite index](research/rainbow-lite-index.md) provide narrower entry
 points than browsing every variant.

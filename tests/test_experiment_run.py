@@ -76,7 +76,10 @@ class ExperimentRunTest(unittest.TestCase):
             dependencies,
         )
         self.assertNotIn(
-            (PROJECT_ROOT / "agent_code/double_q_lambda_agent/callbacks.py").resolve(),
+            (
+                PROJECT_ROOT
+                / "all_other_agent_code/double_q_lambda_agent/callbacks.py"
+            ).resolve(),
             dependencies,
         )
         self.assertNotIn(

@@ -29,6 +29,6 @@ SHA-256 是提交前重新定位或复制权重的依据。
 | `cnn_double_dqn_agent` | 早期 board CNN Double DQN | 历史 Task 1 基线 | 无发布候选 | 由 path/distilled CNN 迭代替代。 |
 | `cnn_path_double_dqn_agent` | 17通道 path CNN Double DQN | r5 最佳 Task 1：17% 捡满、41.78 coins | `runs/cnn_path_v2_r5_s11_j471439/checkpoints/best_task1.pt` / `a2fa243b…f4b584` | 被蒸馏 CNN 的 Task 1 结果替代。 |
 
-主运行 agent 保留在 `agent_code/`：`optimized_double_q_lambda_agent` 与
-`cnn_distilled_double_dqn_agent`。详细方法和结果见
+`optimized_double_q_lambda_agent` 已归档到 `all_other_agent_code/`；`cnn_distilled_double_dqn_agent`
+仍保留在 `agent_code/`。详细方法和结果见
 [`docs/research/q-cnn-experiment-report.md`](../../docs/research/q-cnn-experiment-report.md)。

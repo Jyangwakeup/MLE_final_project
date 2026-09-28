@@ -1,5 +1,9 @@
 # Hybrid Dueling Double DQN Agent
 
+> Archived source. The runner and submission builder do not load this agent
+> from `all_other_agent_code/`; its experiment contract remains available for
+> historical metadata resolution.
+
 ## 中文说明
 
 该 Agent 一次调用 `hybrid-v1`，同时获得 `board-v1` 棋盘和 `continuous-v1` 向量，避免

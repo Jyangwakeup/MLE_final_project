@@ -21,9 +21,9 @@ from agent_code.learning_common.replay import (
 from agent_code.learning_common.runtime import effective_legal_mask, epsilon_at
 from agent_code.learning_common.neural_agent import act_neural
 from agent_code.team_agent.rewards import resolve_reward_spec
-from agent_code.double_q_compact_agent import callbacks as dq_callbacks
-from agent_code.double_q_compact_agent import train as dq_train
-from agent_code.double_q_compact_agent.features import canonical_legal_mask
+from all_other_agent_code.double_q_compact_agent import callbacks as dq_callbacks
+from all_other_agent_code.double_q_compact_agent import train as dq_train
+from all_other_agent_code.double_q_compact_agent.features import canonical_legal_mask
 from all_other_agent_code.double_dqn_continuous_agent import features as continuous_features
 from all_other_agent_code.double_dqn_continuous_agent import callbacks as continuous_callbacks
 from all_other_agent_code.double_dqn_continuous_agent import train as continuous_train
@@ -38,10 +38,10 @@ from experiments.agent_variants.cnn_path_double_dqn_agent.callbacks import cache
 from experiments.agent_variants.cnn_path_double_dqn_agent.learner import PathReplay, PathTransition
 from agent_code.learning_common.n_step import NStepAccumulator
 from experiments.agent_variants.cnn_path_double_dqn_agent.model import PathBoardQNetwork
-from agent_code.hybrid_dueling_double_dqn_agent import features as hybrid_features
-from agent_code.hybrid_dueling_double_dqn_agent import callbacks as hybrid_callbacks
-from agent_code.hybrid_dueling_double_dqn_agent import train as hybrid_train
-from agent_code.hybrid_dueling_double_dqn_agent.model import HybridDuelingQNetwork
+from all_other_agent_code.hybrid_dueling_double_dqn_agent import features as hybrid_features
+from all_other_agent_code.hybrid_dueling_double_dqn_agent import callbacks as hybrid_callbacks
+from all_other_agent_code.hybrid_dueling_double_dqn_agent import train as hybrid_train
+from all_other_agent_code.hybrid_dueling_double_dqn_agent.model import HybridDuelingQNetwork
 from experiments.resume import (
     commit_training_snapshot, load_training_snapshot, materialize_learner_checkpoint,
 )
