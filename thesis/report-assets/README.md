@@ -18,4 +18,4 @@
 - `not_comparable`：真实结果，但协议/模型合同不同，不能作效应量比较。
 - `unrun`：计划阶段没有运行；不是零值。
 
-所有表图都不得把不同任务、不同对手、不同 checkpoint 或不同评估集合的均值汇成一个统计估计。写作时以本目录的 CSV 和 Notebook 为准；[`thesis/REPORT_OUTLINE.md`](../../thesis/REPORT_OUTLINE.md) 是团队现有的写作大纲。
+所有表图都不得把不同任务、不同对手、不同 checkpoint 或不同评估集合的均值汇成一个统计估计。写作时以本目录的 CSV 和 Notebook 为准；[报告大纲](../docs/planning/REPORT_OUTLINE.md) 是团队现有的写作大纲。

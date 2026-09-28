@@ -1,6 +1,6 @@
 # MLE Bomberman Final Report Outline
 
-> 本大纲与 `main_zh.tex` 和 `report-assets/plan/experiment-protocol.md` 同步。实验采用“问题—证据—诊断—解决—验证—结论—决策”的叙事。中文内容冻结前不分配主笔，主要作者栏保留为空白占位；冻结后、英文翻译前必须统一填写真实姓名。
+> 本大纲与 `../../main_zh.tex` 和 `../../report-assets/plan/experiment-protocol.md` 同步。实验采用“问题—证据—诊断—解决—验证—结论—决策”的叙事。中文内容冻结前不分配主笔，主要作者栏保留为空白占位；冻结后、英文翻译前必须统一填写真实姓名。
 
 ## 1. Introduction `[主要作者：____]`
 
@@ -58,7 +58,7 @@
 - 表格 Q/Double Q/Watkins Double Q(λ)。
 - Continuous/CNN Double DQN 与蒸馏 CNN。
 - Rainbow Lite = dueling + proportional PER + fixed 4-step，不称完整 Rainbow。
-- 指标和可比性遵循 `report-assets/plan/experiment-protocol.md`。
+- 指标和可比性遵循 `../../report-assets/plan/experiment-protocol.md`。
 
 ## 5. Training `[主要作者：____]`
 
@@ -147,14 +147,14 @@
 3. **Chinese content frozen**：摘要、七章、图表、引用、主张边界和局限完整，不保留实质性 TODO。
 4. **Authorship assigned**：按技术匹配和约 4,000 English words/人填写所有主笔栏及 Project Planning 贡献表。
 5. **English reviewed**：完成学术化翻译、分章节主笔复核和全局一致性编辑。
-6. **Submission synchronized**：审核通过的 `main_en.tex` 与最终 `main.tex` 完全一致。
+6. **Submission synchronized**：审核通过的 `../../main_en.tex` 与最终 `../../main.tex` 完全一致。
 
 ## Submission Checks
 
 - 摘要和 Background 使用完整正文，不保留写作提示或示意图占位。
 - 报告开头列明最终 Agent 的 NumPy 与 PyTorch 版本。
 - 中文冻结前所有主笔栏保持空白；冻结后、英文翻译前为所有章节和小节填写真实主要作者。
-- 所有数字可追溯到 `report-assets/tables/*.csv` 或其 `source_path`。
+- 所有数字可追溯到 `../../report-assets/tables/*.csv` 或其 `source_path`。
 - `not_reported`、`unrun` 不转换为 0。
 - 报告 PDF 不上传公开仓库。
 - 团队成员理解、核验并以自己的表达修订 AI 辅助初稿。

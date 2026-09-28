@@ -1,6 +1,6 @@
 % !TeX program = xelatex
 % Overleaf: Menu -> Compiler -> XeLaTeX
-% 本文件严格映射 REPORT_OUTLINE.md：只保留报告大纲与写作提示。
+% 本文件严格映射 docs/planning/REPORT_OUTLINE.md：只保留报告大纲与写作提示。
 \documentclass[UTF8,11pt,a4paper,fontset=none]{ctexart}
 
 \usepackage{fontspec}
@@ -143,7 +143,7 @@
 \label{sec:results}
 \writingnote{本章是报告重点。每个实验段落必须回答：问题、证据、诊断、解决方案、验证、结果、有限答案和下一决策。}
 
-% REPORT_OUTLINE.md 明确将总体逻辑编号为 6.0。
+% docs/planning/REPORT_OUTLINE.md 明确将总体逻辑编号为 6.0。
 \setcounter{subsection}{-1}
 \authorsubsection{总体实验逻辑与比较边界}{\pendingauthor}
 \writingnote{Task 1--4 依次隔离导航、炸箱逃生、弱对手竞争和强对手压力，后续任务必须回测早期能力；三条路线共享 Feature、Reward、Survival Mask 与冻结评估，但针对表示、信用和安全提出不同假设；课程 agents 作为兼容性、课程或压力测试对象，缺少同协议冻结结果时不建立 baseline 数值排名；verified\_raw 支持正式差值，verified\_summary 描述历史结果，not\_comparable 仅作诊断，unrun 明确为未运行。}

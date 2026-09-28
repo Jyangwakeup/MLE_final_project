@@ -1,8 +1,8 @@
 # 实验故事与证据缺口写作蓝图
 
 > 文档定位：团队内部的论文写作蓝图，不是可直接提交的报告正文。  
-> 适用材料：\`MODEL_EXPERIMENTS.md\`、\`DESIGN_EVOLUTION_AND_GAPS.md\`、\`REPORT_OUTLINE.md\`、\`Writing_Instruction.md\`、\`main.tex\`、\`report-assets/\`、Git 时间线和已有研究记录。  
-> 权威约束：课程公告与 MaMPF 高于原始 \`notes/final_project.pdf\`，原始 PDF 高于项目内摘要。本文已直接核对原始 PDF 的 12 页内容，并用 \`PROJECT_REQUIREMENTS.md\` 和 \`Writing_Instruction.md\` 交叉检查。  
+> 适用材料：\`MODEL_EXPERIMENTS.md\`、\`DESIGN_EVOLUTION_AND_GAPS.md\`、\`thesis/docs/planning/REPORT_OUTLINE.md\`、\`thesis/docs/writing/Writing_Instruction.md\`、\`thesis/main.tex\`、\`thesis/report-assets/\`、Git 时间线和已有研究记录。
+> 权威约束：课程公告与 MaMPF 高于原始 \`notes/final_project.pdf\`，原始 PDF 高于项目内摘要。本文已直接核对原始 PDF 的 12 页内容，并用 \`PROJECT_REQUIREMENTS.md\` 和 \`thesis/docs/writing/Writing_Instruction.md\` 交叉检查。
 > 使用原则：时间线解释问题如何出现，Task 结构回答科学问题；不得把并行开发伪写成严格串行实验。
 
 ## 1. 文档目的与使用方式
@@ -264,7 +264,7 @@ B33 的历史 1,000-world 汇总为 score 4.231、first-place 50.2%、exclusive-
 
 ## 5. Rainbow Lite 路线的准确叙事
 
-本节优先依据祝雨嫣确认的 \`members/祝雨嫣/Rainbow-Lite-Experiment-Timeline.md\`。其中关于分支关系、研究目的和最终组合的描述，优先于较早的综合清单；\`MODEL_EXPERIMENTS.md\` 中的数字可作为历史开发证据，但在回查原始结果前不能反过来改写已确认的实验逻辑。尤其需要区分两件事：
+本节优先依据祝雨嫣确认的 \`thesis/members/祝雨嫣/Rainbow-Lite-Experiment-Timeline.md\`。其中关于分支关系、研究目的和最终组合的描述，优先于较早的综合清单；\`MODEL_EXPERIMENTS.md\` 中的数字可作为历史开发证据，但在回查原始结果前不能反过来改写已确认的实验逻辑。尤其需要区分两件事：
 
 - 已经存在的开发评估、局部测试和 1,000 局诊断；
 - “最终形成的 V5/r18/mask-v5 模型在 Task 1–4 上完成统一测试”这一待补实验。
@@ -589,7 +589,7 @@ Mask 的职责是拒绝明显物理非法或在有限危险视野 $H$ 内不可�
 | 冲突字段 | 来源 A | 来源 B | 当前推荐写法 | 需回查材料 | 核对前禁止的结论 |
 |---|---|---|---|---|---|
 | Q Task 1 mean coins | \`table2_task1_task2.csv\`: 48.95 | \`MODEL_EXPERIMENTS.md\`: 49.58 | 约 49/50，all-coins 96% | 原始逐局结果、checkpoint 选择、聚合脚本 | 精确报告任一数值 |
-| Rainbow 完成阶段 | 旧清单：Task 1–2/evidence gap | 新记录：有 Task 1–4 开发证据 | 路线有完整开发链，最终统一测试 pending | \`members/祝雨嫣/Rainbow-Lite-Experiment-Timeline.md\` 与原始 runs | 宣称已正式通过或只做到 Task 2 |
+| Rainbow 完成阶段 | 旧清单：Task 1–2/evidence gap | 新记录：有 Task 1–4 开发证据 | 路线有完整开发链，最终统一测试 pending | \`thesis/members/祝雨嫣/Rainbow-Lite-Experiment-Timeline.md\` 与原始 runs | 宣称已正式通过或只做到 Task 2 |
 | Rainbow 最终组合效果 | MODEL 汇总含阶段数字 | 新时间线写最终 Task 1–4 测试待补 | 数字标 development/diagnostic，final-test pending | V5 结果目录和协议文件 | 把开发数字升级为最终横评 |
 | B33 性能与包验证 | 1,000-world historical summary | 6 游戏、180 traces package equivalence | 分成 performance summary 与 packaging evidence | benchmark summary、trace comparison | 声称提交包重跑并复现 4.231 |
 | Task 1/2 样本量 | 正文草稿可能写“100 次实验” | 表中实际为 100 worlds/games | 写 N=100 evaluation worlds/games | 协议与 run manifest | 写成 100 次独立训练 |
@@ -742,21 +742,21 @@ all-coins、suicide、survival、first-place 和 long WAIT 都必须给出分母
 
 | 重要证据 | checkpoint/合同 | protocol 与 N | evidence | 当前 source | 允许使用的表述 |
 |---|---|---|---|---|---|
-| Q Task 1 | 具体 checkpoint 待核对 | Task 1，样本量见源表 | 冲突待核对 | \`MODEL_EXPERIMENTS.md\`、\`report-assets/tables/table2_task1_task2.csv\` | 约 49/50、96% all-coins |
+| Q Task 1 | 具体 checkpoint 待核对 | Task 1，样本量见源表 | 冲突待核对 | \`MODEL_EXPERIMENTS.md\`、\`thesis/report-assets/tables/table2_task1_task2.csv\` | 约 49/50、96% all-coins |
 | Distilled CNN Task 1 | teacher/student 合同见模型记录 | Task 1，N 待表内核对 | \`verified_summary\` | \`MODEL_EXPERIMENTS.md\` | 蒸馏迁移 Task 1；TD 微调后退化 |
 | Continuous Task 2 winner | continuous-v2 完整合同 | N=100 | \`verified_raw\` | \`MODEL_EXPERIMENTS.md\`、结果表 | 7.25/9、100.26 crates、0% suicide；all-coins 未报告 |
 | Q r20 Task 2 | 175.2k 附近链路待核对 | N=20 | \`verified_summary\` | \`MODEL_EXPERIMENTS.md\` | 安全但 long WAIT/ping-pong 严重 |
 | CNN D02 Task 2 | D02 | N=100 | \`verified_summary\` | \`MODEL_EXPERIMENTS.md\` | 安全炸箱迁移，未完成 Task 2 |
 | CNN mask on/off | 同一 D01 权重 | 反事实样本量见源记录 | \`verified_summary\` | \`MODEL_EXPERIMENTS.md\` | 运行时安全依赖 Mask，不是训练消融 |
-| Task 3 parent/child | seed22/c150 child 及 parent | 相同 100 worlds | \`verified_raw\` | \`report-assets/\` traceability 与模型记录 | score/coins/crates 提升；kills 未显著提升 |
+| Task 3 parent/child | seed22/c150 child 及 parent | 相同 100 worlds | \`verified_raw\` | \`thesis/report-assets/\` traceability 与模型记录 | score/coins/crates 提升；kills 未显著提升 |
 | Rainbow Task 2 development | V5/r18/mask-v5 c0800 | 20 局 development | \`verified_summary\` | \`MODEL_EXPERIMENTS.md\` | 开发集 8.45/9、60% all-coins；非最终冻结横评 |
 | Rainbow Task 3 development | V5/r18/mask-v5 c0300 | development，单训练 seed | \`verified_summary\` | \`MODEL_EXPERIMENTS.md\` | checkpoint 选择证据，不作跨模型排名 |
 | Rainbow Task 4 diagnostic | V5/r18/mask-v5 c1200 | 50 env seeds ×20 | \`verified_summary\` | \`MODEL_EXPERIMENTS.md\` | 长 WAIT 是主要残余失败；非最终质量门 |
 | E1/E2/E3 | specialist 合同见模型记录 | 协议块分别报告 | 状态按原始结果核对 | \`MODEL_EXPERIMENTS.md\` | 新方案未稳定胜出 |
 | B33 historical | Task4 B seed33/c200 | 1,000-world historical | \`verified_summary\` | \`MODEL_EXPERIMENTS.md\`、打包记录 | 历史表现支持候选选择 |
 | Die Hardest package | B33 打包等价 | 6 games、180 traces | \`packaging_verified\` | package equivalence 记录 | 包与源模型动作一致；不代表性能复跑 |
-| Rainbow 分支逻辑 | V6–V11、Spatial V6 | 协议不统一 | \`not_comparable\` | \`members/祝雨嫣/Rainbow-Lite-Experiment-Timeline.md\` | 复杂扩展未形成稳定增益证据 |
-| Rainbow 最终 Task 1–4 | V5/r18/mask-v5 | 统一协议待定义 | \`pending\` | \`members/祝雨嫣/Rainbow-Lite-Experiment-Timeline.md\` | 最终合同已固定，统一测试待补 |
+| Rainbow 分支逻辑 | V6–V11、Spatial V6 | 协议不统一 | \`not_comparable\` | \`thesis/members/祝雨嫣/Rainbow-Lite-Experiment-Timeline.md\` | 复杂扩展未形成稳定增益证据 |
+| Rainbow 最终 Task 1–4 | V5/r18/mask-v5 | 统一协议待定义 | \`pending\` | \`thesis/members/祝雨嫣/Rainbow-Lite-Experiment-Timeline.md\` | 最终合同已固定，统一测试待补 |
 
 ## 14. 最终写作与静态核对清单
 

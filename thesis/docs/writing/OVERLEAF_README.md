@@ -2,7 +2,7 @@
 
 > 写作顺序：`main_zh.tex` 完整中文稿 → 内容冻结与主笔分配 → `main_en.tex` 英文审校稿 → `main.tex` 最终英文提交入口。三个证据输入包已经满足中文写作入口，当前处于中文初稿团队核验阶段。
 
-1. 上传整个外层 `thesis/` 目录的内容，不要只上传原来的内层源码目录。项目根目录应包含当前阶段使用的 TeX 入口、`references.bib` 和 `report-assets/`。
+1. 上传论文需要的 TeX 文件、`references.bib` 和 `report-assets/`。`main_zh.tex`、`main.tex` 与 `references.bib` 保持在项目根目录，`report-assets/` 也保留原路径；`docs/` 和 `members/` 是支持材料，不是编译依赖。
 2. 在中文写作与事实核验阶段，将 **Menu → Main document** 设为 `main_zh.tex`。中文冻结并创建英文稿后，改为 `main_en.tex`。只有最终提交检查时才选择 `main.tex`。
 3. 在 **Menu → Compiler** 中选择 **XeLaTeX**；不要使用 pdfLaTeX 或 LuaLaTeX。
 4. 保持图片路径为 `report-assets/figures/output/*.pdf`。论文图片由 Matplotlib 直接输出矢量 PDF；如果没有上传 `report-assets/`，文档会因缺图而停止编译。
@@ -22,12 +22,12 @@ references.bib
 report-assets/
   figures/output/*.pdf
   tables/*.csv
-OVERLEAF_README.md
+docs/writing/OVERLEAF_README.md  # 使用说明，可不上传
 ```
 
-本地遗留的 `thesis/build/` 仅包含旧辅助文件，不需要上传，也不要把其中任何文件设置为 Main document。
+本地运行 `latexmk -xelatex -outdir=build main_zh.tex` 时，辅助文件、日志和 PDF 会写入 `build/`。该目录仅供本地编译并被 Git 忽略，不需要上传，也不要把其中任何文件设置为 Main document。
 
-模板正文严格采用 `REPORT_OUTLINE.md` 中的七个课程必需章节，并保留其全部三级小节。附录用于模型清单和复现信息，不计入主体结构。
+模板正文严格采用 [`docs/planning/REPORT_OUTLINE.md`](../planning/REPORT_OUTLINE.md) 中的七个课程必需章节，并保留其全部三级小节。附录用于模型清单和复现信息，不计入主体结构。
 
 ## 阶段切换规则
 

@@ -39,8 +39,8 @@ Feature、Reward 和 Mask 的编号彼此独立。`continuous-v5 + r18 + mask-v5
 - **空间表示**：`board-v1`、`spatial-v6` 和 CNN 的 17 通道 `board-path-history-v2`。
 - **Hybrid 表示**：棋盘张量与连续向量融合，用于早期 Hybrid Dueling 筛选。
 
-完整字段定义见 [`version-comparison-v-features.md`](../docs/version-comparison-v-features.md) 和
-[`feature-principles-guide.md`](../docs/research/feature-principles-guide.md)。
+完整字段定义见 [`version-comparison-v-features.md`](../../../docs/version-comparison-v-features.md) 和
+[`feature-principles-guide.md`](../../../docs/research/feature-principles-guide.md)。
 
 ### 2.2 continuous-v1--v11
 
@@ -70,8 +70,8 @@ Feature、Reward 和 Mask 的编号彼此独立。`continuous-v5 + r18 + mask-v5
 
 ## 3. Reward 演进
 
-完整参数表见 [`version-comparison-r-rewards.md`](../docs/version-comparison-r-rewards.md)，实现见
-[`rewards.py`](../agent_code/team_agent/rewards.py)。下表按设计亲缘整理，不把编号解释为严格单链。
+完整参数表见 [`version-comparison-r-rewards.md`](../../../docs/version-comparison-r-rewards.md)，实现见
+[`rewards.py`](../../../agent_code/team_agent/rewards.py)。下表按设计亲缘整理，不把编号解释为严格单链。
 
 | Reward | 来源与主要变化 | 目标问题 | 主要模型/实验 | 结果状态与限制 |
 |---|---|---|---|---|
@@ -124,7 +124,7 @@ Feature、Reward 和 Mask 的编号彼此独立。`continuous-v5 + r18 + mask-v5
 回到 physical Q，并记录 no-safe-action fallback；这不代表回退动作安全。
 
 v1--v5 的正式对照见
-[`version-comparison-survival-masks.md`](../docs/version-comparison-survival-masks.md)；v6--v9 是后续安全工程线，
+[`version-comparison-survival-masks.md`](../../../docs/version-comparison-survival-masks.md)；v6--v9 是后续安全工程线，
 其版本含义由 ADR 和研究报告补充。
 
 ### 4.2 v1--v9
@@ -168,23 +168,23 @@ v1--v5 的正式对照见
 
 | 模型 | Task/阶段 | Feature | Reward | Mask | 状态 | 主要结果 | 主要证据 |
 |---|---|---|---|---|---|---|---|
-| Q-learning | T1 最小基线 | discrete variants | early r1 family | off | `verified_summary` | 能收集大量金币，稳定性不足 | [`experiment-log-runs-1-2.md`](../docs/experiment-log-runs-1-2.md) |
-| Q Double Q($\lambda$) | T1 T1-E01 | continuous-v2 tile coding | r7 potential | v1/off | `verified_summary` | 96% 全收集，49.58 金币 | [实验日志](../agent_code/optimized_double_q_lambda_agent/EXPERIMENT_LOG.md) |
+| Q-learning | T1 最小基线 | discrete variants | early r1 family | off | `verified_summary` | 能收集大量金币，稳定性不足 | [`experiment-log-runs-1-2.md`](../../../docs/experiment-log-runs-1-2.md) |
+| Q Double Q($\lambda$) | T1 T1-E01 | continuous-v2 tile coding | r7 potential | v1/off | `verified_summary` | 96% 全收集，49.58 金币 | [实验日志](../../../agent_code/optimized_double_q_lambda_agent/EXPERIMENT_LOG.md) |
 | Q Double Q($\lambda$) | T2 正式父链/pilot | continuous-v2 | r7 potential | v1/all | `verified_summary` | 安全炸箱但长 WAIT/往返，未晋级 | 同上 |
 | Q Double Q($\lambda$) | T2 R20 | continuous-v2 | targeted-WAIT r20 | v1/all | `verified_summary` | WAIT 减少，往返仍高 | 同上 |
-| Q 失败分支 | T2 | crate/history/v4/grouped | r12/r20 等 | v1/all | `not_comparable` | 0--3.75 金币，均未晋级 | [`q-cnn-experiment-report.md`](../docs/research/q-cnn-experiment-report.md) |
-| Continuous DDQN | T1 探索 | continuous-v1/v2 | r3/r5 family | off/early safety | `verified_summary` | 约 49.52/50，筛出强导航载体 | [`agent-code-timeline...`](../docs/research/agent-code-timeline-and-experiment-narrative.md) |
-| Continuous DDQN | T2 winner | continuous-v2 | r7 family | v1/all | `verified_raw` | 7.25/9、100.26 箱、0% 自杀 | [`task2_winner.json`](../experiments/task2_winner.json) |
-| Continuous DDQN | T3 validated | continuous-v2 | r7/生命周期合同 | v5 family | `verified_raw` | 5.91→7.14；击杀无提升证据 | [`task3-counter-validation-results.md`](../docs/research/task3-counter-validation-results.md) |
-| Phase DDQN | T3 phase | continuous-phase-v1 | r9 phase | v2/v5 experiments | `verified_summary` | retention/safety 不稳定，停止 | [`task3-phase-iteration-results.md`](../docs/research/task3-phase-iteration-results.md) |
-| Continuous DDQN | T4 specialist | continuous-v2 | E1/E2/E3 contracts | v5 | `verified_raw` | 安全保持，无稳定得分增益 | [`table4_task4_attempts.csv`](report-assets/tables/table4_task4_attempts.csv) |
-| B33/Die Hardest | T4 历史候选 | continuous-v2 | r7 sparse | v9 | `verified_summary` | 4.231 分/1000 worlds；包等价通过 | [`table5_die_hardest.csv`](report-assets/tables/table5_die_hardest.csv) |
-| CNN path | T1 | 17-channel v2 | r3/r5 | off | `verified_summary` | 最佳 41.78 金币、17% 全收集 | [CNN 报告](../docs/research/cnn-task1-task2-experiment-report.md) |
-| CNN distilled | T1 | 17-channel v2 | teacher KL | off | `verified_summary` | reserved 96%、49.84 | [CNN 日志](../agent_code/cnn_distilled_double_dqn_agent/EXPERIMENT_LOG.md) |
+| Q 失败分支 | T2 | crate/history/v4/grouped | r12/r20 等 | v1/all | `not_comparable` | 0--3.75 金币，均未晋级 | [`q-cnn-experiment-report.md`](../../../docs/research/q-cnn-experiment-report.md) |
+| Continuous DDQN | T1 探索 | continuous-v1/v2 | r3/r5 family | off/early safety | `verified_summary` | 约 49.52/50，筛出强导航载体 | [`agent-code-timeline...`](../../../docs/research/agent-code-timeline-and-experiment-narrative.md) |
+| Continuous DDQN | T2 winner | continuous-v2 | r7 family | v1/all | `verified_raw` | 7.25/9、100.26 箱、0% 自杀 | [`task2_winner.json`](../../../experiments/task2_winner.json) |
+| Continuous DDQN | T3 validated | continuous-v2 | r7/生命周期合同 | v5 family | `verified_raw` | 5.91→7.14；击杀无提升证据 | [`task3-counter-validation-results.md`](../../../docs/research/task3-counter-validation-results.md) |
+| Phase DDQN | T3 phase | continuous-phase-v1 | r9 phase | v2/v5 experiments | `verified_summary` | retention/safety 不稳定，停止 | [`task3-phase-iteration-results.md`](../../../docs/research/task3-phase-iteration-results.md) |
+| Continuous DDQN | T4 specialist | continuous-v2 | E1/E2/E3 contracts | v5 | `verified_raw` | 安全保持，无稳定得分增益 | [`table4_task4_attempts.csv`](../../report-assets/tables/table4_task4_attempts.csv) |
+| B33/Die Hardest | T4 历史候选 | continuous-v2 | r7 sparse | v9 | `verified_summary` | 4.231 分/1000 worlds；包等价通过 | [`table5_die_hardest.csv`](../../report-assets/tables/table5_die_hardest.csv) |
+| CNN path | T1 | 17-channel v2 | r3/r5 | off | `verified_summary` | 最佳 41.78 金币、17% 全收集 | [CNN 报告](../../../docs/research/cnn-task1-task2-experiment-report.md) |
+| CNN distilled | T1 | 17-channel v2 | teacher KL | off | `verified_summary` | reserved 96%、49.84 | [CNN 日志](../../../agent_code/cnn_distilled_double_dqn_agent/EXPERIMENT_LOG.md) |
 | CNN D01 | T2 | 17-channel v2 | r7 sparse + KL | v1/all | `verified_summary` | 安全但 WAIT 55.2%，未通过 | 同上 |
 | CNN D02 | T2 | 同 D01 | D01 + avoidable-WAIT -0.04 | v1/all | `verified_summary` | 炸箱/WAIT 改善；全金币仍 0% | 同上 |
 | CNN S01 | T2 反事实 | 同 D01 冻结权重 | 不变 | v1 all→off | `verified_summary` | off 自杀 90%，炸箱更差 | 同上 |
-| Rainbow Lite | T1--T4 固定链 | continuous-v5 | r18 | v5 | `verified_summary` | 单 seed 完成课程；T4 长 WAIT 57.1% | [`agent-code-timeline...`](../docs/research/agent-code-timeline-and-experiment-narrative.md) |
+| Rainbow Lite | T1--T4 固定链 | continuous-v5 | r18 | v5 | `verified_summary` | 单 seed 完成课程；T4 长 WAIT 57.1% | [`agent-code-timeline...`](../../../docs/research/agent-code-timeline-and-experiment-narrative.md) |
 | Rainbow 分支 | T3/T4 | v6--v11/spatial-v6 | r19--r22 | 多为 v5 | `not_comparable` | 局部筛选/中断，未形成统一胜者 | 同上 |
 
 ### 5.2 组合演进解释

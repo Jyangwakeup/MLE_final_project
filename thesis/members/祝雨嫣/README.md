@@ -9,6 +9,6 @@
 
 ## 共享报告资料
 
-- [实验故事蓝图](../../EXPERIMENT_STORY_BLUEPRINT.md)
-- [模型实验汇总](../../MODEL_EXPERIMENTS.md)
+- [实验故事蓝图](../../docs/research/EXPERIMENT_STORY_BLUEPRINT.md)
+- [模型实验汇总](../../docs/research/MODEL_EXPERIMENTS.md)
 - [共享表格与图表数据](../../report-assets/)

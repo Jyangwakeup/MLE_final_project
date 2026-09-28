@@ -49,8 +49,8 @@
 
 主要依据：
 
-- [`thesis/MODEL_EXPERIMENTS.md`](../../MODEL_EXPERIMENTS.md)
-- [`thesis/EXPERIMENT_STORY_BLUEPRINT.md`](../../EXPERIMENT_STORY_BLUEPRINT.md)
+- [`thesis/docs/research/MODEL_EXPERIMENTS.md`](../../docs/research/MODEL_EXPERIMENTS.md)
+- [`thesis/docs/research/EXPERIMENT_STORY_BLUEPRINT.md`](../../docs/research/EXPERIMENT_STORY_BLUEPRINT.md)
 - [`docs/research/agent-code-timeline-and-experiment-narrative.md`](../../../docs/research/agent-code-timeline-and-experiment-narrative.md)
 
 ## 3. 责任范围与团队协作
@@ -63,7 +63,7 @@
 
 来源：
 
-- [`thesis/EXPERIMENT_STORY_BLUEPRINT.md`](../../EXPERIMENT_STORY_BLUEPRINT.md)，第 3 节与第 8 节
+- [`thesis/docs/research/EXPERIMENT_STORY_BLUEPRINT.md`](../../docs/research/EXPERIMENT_STORY_BLUEPRINT.md)，第 3 节与第 8 节
 - [`PROJECT_REQUIREMENTS.md`](../../../PROJECT_REQUIREMENTS.md)，团队协作要求
 
 贡献声明仍应把“访谈确认的职责”与“机器可验证的提交、配置和实验结果”分开；Git 作者、提交者或文件所有者本身不能替代设计贡献证明。
@@ -106,7 +106,7 @@
 来源：
 
 - [`docs/research/feature-principles-guide.md`](../../../docs/research/feature-principles-guide.md)
-- [`thesis/DESIGN_EVOLUTION_AND_GAPS.md`](../../DESIGN_EVOLUTION_AND_GAPS.md)，第 2 节
+- [`thesis/docs/research/DESIGN_EVOLUTION_AND_GAPS.md`](../../docs/research/DESIGN_EVOLUTION_AND_GAPS.md)，第 2 节
 
 `[EVIDENCE GAP]` 现有结果没有提供只改变 `continuous-v1 → continuous-v2`、同时固定 learner、reward、训练预算、seed 和评估世界的完整单变量消融。因此不能把后续全部提升独立归因于新增 14 维。
 
@@ -222,7 +222,7 @@
 - **Decision**：保留已验证的局部修复和失败证据；不宣称获得全局安全或 Task 4 qualification。
 - **Stopping principle**：`[AUTHOR CONFIRMED]` 失败分支服从预注册门槛：结果出现后不放宽阈值、不挑选未登记的中间 checkpoint，也不临时增加新因素来延长实验。
 - **Limitation**：安全版本大多冻结 Q 权重，只能回答运行时准入语义变化，不能回答 learner 重新训练后如何适应。
-- **Evidence**：[`thesis/DESIGN_EVOLUTION_AND_GAPS.md`](../../DESIGN_EVOLUTION_AND_GAPS.md)、[`docs/version-comparison-survival-masks.md`](../../../docs/version-comparison-survival-masks.md) 及对应 v6–v9 研究报告。
+- **Evidence**：[`thesis/docs/research/DESIGN_EVOLUTION_AND_GAPS.md`](../../docs/research/DESIGN_EVOLUTION_AND_GAPS.md)、[`docs/version-comparison-survival-masks.md`](../../../docs/version-comparison-survival-masks.md) 及对应 v6–v9 研究报告。
 
 ### E8：Task 4 reference B 与 B33
 
@@ -340,7 +340,7 @@
 | v8 | placement 时固定证明终点 | 保持历史反例和计算成本风险 |
 | v9 | 有证明移动时优先 proven movements | 仍有尾延迟与 27155 合同缺口 |
 
-来源：[`docs/version-comparison-survival-masks.md`](../../../docs/version-comparison-survival-masks.md) 与 [`thesis/DESIGN_EVOLUTION_AND_GAPS.md`](../../DESIGN_EVOLUTION_AND_GAPS.md)。
+来源：[`docs/version-comparison-survival-masks.md`](../../../docs/version-comparison-survival-masks.md) 与 [`thesis/docs/research/DESIGN_EVOLUTION_AND_GAPS.md`](../../docs/research/DESIGN_EVOLUTION_AND_GAPS.md)。
 
 ## 9. 负结果与停止分支
 

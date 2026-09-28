@@ -1,6 +1,6 @@
 # 论文写作风格指南
 
-本指南适用于本论文的中文稿、英文稿，以及队员提供的相关报告段落。它只统一表达方式，不替代课程要求、项目事实基线或证据规则。遇到冲突时，以 [`Writing_Instruction.md`](Writing_Instruction.md)、[`PROJECT_REQUIREMENTS.md`](../PROJECT_REQUIREMENTS.md) 和可追溯的项目证据为准。
+本指南适用于本论文的中文稿、英文稿，以及队员提供的相关报告段落。它只统一表达方式，不替代课程要求、项目事实基线或证据规则。遇到冲突时，以 [`Writing_Instruction.md`](Writing_Instruction.md)、[`PROJECT_REQUIREMENTS.md`](../../../PROJECT_REQUIREMENTS.md) 和可追溯的项目证据为准。
 
 ## 写作目标
 

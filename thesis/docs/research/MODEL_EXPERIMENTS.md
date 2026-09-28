@@ -2,8 +2,7 @@
 
 > 用途：为论文的 Methods、Training、Experiments and Results 提供可核验素材。
 > 本文只记录仓库中已经实现或已有明确实验记录的内容；配置文件存在不等于实验已经完成。
-> 课程原始要求见 [`notes/final_project.pdf`](../notes/final_project.pdf)，静态中文摘要见
-> [`PROJECT_REQUIREMENTS.md`](../PROJECT_REQUIREMENTS.md)。
+> 课程要求的仓库内摘要见 [`PROJECT_REQUIREMENTS.md`](../../../PROJECT_REQUIREMENTS.md)。原始课程文件由课程平台提供。
 
 ## 1. 证据口径与共同评价原则
 
@@ -61,9 +60,9 @@ Agent = Feature + Learner/Network + Reward + Survival Mask + Training/Evaluation
 
 主要来源：
 
-- [`optimized_double_q_lambda_agent/EXPERIMENT_LOG.md`](../agent_code/optimized_double_q_lambda_agent/EXPERIMENT_LOG.md)
-- [`q-cnn-experiment-report.md`](../docs/research/q-cnn-experiment-report.md)
-- [`q-learning-task1-optimization.md`](../docs/research/q-learning-task1-optimization.md)
+- [`optimized_double_q_lambda_agent/EXPERIMENT_LOG.md`](../../../agent_code/optimized_double_q_lambda_agent/EXPERIMENT_LOG.md)
+- [`q-cnn-experiment-report.md`](../../../docs/research/q-cnn-experiment-report.md)
+- [`q-learning-task1-optimization.md`](../../../docs/research/q-learning-task1-optimization.md)
 
 ### 2.2 Task 1：单表 Q-learning 与 Watkins Double Q($\lambda$)
 
@@ -80,7 +79,7 @@ Agent = Feature + Learner/Network + Reward + Survival Mask + Training/Evaluation
   这不能证明 Double Q($\lambda$) 在所有表示或任务上普遍优于 Q-learning。
 - **状态**：`verified_summary`；实验日志给出 checkpoint SHA-256 和作业号。
 
-注意：[`table2_task1_task2.csv`](report-assets/tables/table2_task1_task2.csv) 当前把该独立确认均值写为
+注意：[`table2_task1_task2.csv`](../../report-assets/tables/table2_task1_task2.csv) 当前把该独立确认均值写为
 48.95，而模型实验日志写 49.58。本文采用更接近原实验的模型日志口径；正式论文应在引用前从
 原始 `selection.json`/逐局结果再核对并统一这两个数字。
 
@@ -151,12 +150,12 @@ Q-learning 路线证明了表格型方法在适当表示和 trace 下可成为�
 
 主要来源：
 
-- [`task2_winner.json`](../experiments/task2_winner.json)
-- [`task2_winner_evaluations.csv`](../experiments/task2_winner_evaluations.csv)
-- [`task3-counter-validation-results.md`](../docs/research/task3-counter-validation-results.md)
-- [`task4-frozen-results.md`](../docs/research/task4-frozen-results.md)
-- [`table4_task4_attempts.csv`](report-assets/tables/table4_task4_attempts.csv)
-- [`die-hardest-submission/REPORT.md`](../docs/research/die-hardest-submission/REPORT.md)
+- [`task2_winner.json`](../../../experiments/task2_winner.json)
+- [`task2_winner_evaluations.csv`](../../../experiments/task2_winner_evaluations.csv)
+- [`task3-counter-validation-results.md`](../../../docs/research/task3-counter-validation-results.md)
+- [`task4-frozen-results.md`](../../../docs/research/task4-frozen-results.md)
+- [`table4_task4_attempts.csv`](../../report-assets/tables/table4_task4_attempts.csv)
+- [`die-hardest-submission/REPORT.md`](../../../docs/research/die-hardest-submission/REPORT.md)
 
 ### 3.2 Task 1：连续表示基线筛选
 
@@ -164,7 +163,7 @@ Q-learning 路线证明了表格型方法在适当表示和 trace 下可成为�
 Continuous Double DQN 历史 Task 1 结果达到约 49.52/50 和 86% 全收集率；Hybrid Dueling 分支
 仅约 2.05/50，说明增加网络复杂度并不自动改善学习。由于这些不是严格单变量实验，不能把全部差异
 归因于 Double DQN 或连续表示。状态为 `verified_summary`，来源为
-[`agent-code-timeline-and-experiment-narrative.md`](../docs/research/agent-code-timeline-and-experiment-narrative.md)。
+[`agent-code-timeline-and-experiment-narrative.md`](../../../docs/research/agent-code-timeline-and-experiment-narrative.md)。
 
 ### 3.3 Task 2：正式 winner 与 survival mask
 
@@ -247,8 +246,8 @@ CNN 路线使用 17 通道 `board-path-history-v2`，通道包括棋盘对象、
 
 主要来源：
 
-- [`cnn-task1-task2-experiment-report.md`](../docs/research/cnn-task1-task2-experiment-report.md)
-- [`cnn_distilled_double_dqn_agent/EXPERIMENT_LOG.md`](../agent_code/cnn_distilled_double_dqn_agent/EXPERIMENT_LOG.md)
+- [`cnn-task1-task2-experiment-report.md`](../../../docs/research/cnn-task1-task2-experiment-report.md)
+- [`cnn_distilled_double_dqn_agent/EXPERIMENT_LOG.md`](../../../agent_code/cnn_distilled_double_dqn_agent/EXPERIMENT_LOG.md)
 
 ### 4.2 Task 1：输入修复、结构筛选与蒸馏
 
@@ -321,8 +320,8 @@ Rainbow，因此必须保留 “Lite” 名称。相关分支包括基础/无 sa
 
 主要来源：
 
-- [`agent-code-timeline-and-experiment-narrative.md`](../docs/research/agent-code-timeline-and-experiment-narrative.md)
-- [`three-model-experiment-process-draft.md`](../docs/research/three-model-experiment-process-draft.md)
+- [`agent-code-timeline-and-experiment-narrative.md`](../../../docs/research/agent-code-timeline-and-experiment-narrative.md)
+- [`three-model-experiment-process-draft.md`](../../../docs/research/three-model-experiment-process-draft.md)
 - `runs/final_rainbow_v5_r18_maskv5_s11_*`
 
 ### 5.2 Task 1--2：固定 V5/R18/Mask-v5 课程链
@@ -397,4 +396,3 @@ Rainbow Lite 展示了完整的本地 Task 1--4 课程链，但只有一个训�
 - 不能把 Q-learning/CNN 的 Task 2 停止写成 Task 3/4 得分为零。
 - 不能把 0% 自杀写成全局安全保证。
 - 不能把训练 reward、短开发集最高分或单局回放当作最终选模依据。
-

@@ -9,7 +9,7 @@
 
 ## 共享报告资料
 
-- [实验故事蓝图](../../EXPERIMENT_STORY_BLUEPRINT.md)
-- [模型实验汇总](../../MODEL_EXPERIMENTS.md)
-- [设计演进与证据缺口](../../DESIGN_EVOLUTION_AND_GAPS.md)
+- [实验故事蓝图](../../docs/research/EXPERIMENT_STORY_BLUEPRINT.md)
+- [模型实验汇总](../../docs/research/MODEL_EXPERIMENTS.md)
+- [设计演进与证据缺口](../../docs/research/DESIGN_EVOLUTION_AND_GAPS.md)
 - [实验协议](../../report-assets/plan/experiment-protocol.md)
