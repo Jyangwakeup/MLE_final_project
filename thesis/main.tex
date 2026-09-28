@@ -1,6 +1,6 @@
 % !TeX program = xelatex
 % Overleaf: Menu -> Compiler -> XeLaTeX
-% 本文件由 main.tex 精简而来：只保留报告大纲与写作提示，不含现有报告结论或实验数据。
+% 本文件严格映射 REPORT_OUTLINE.md：只保留报告大纲与写作提示。
 \documentclass[UTF8,11pt,a4paper,fontset=none]{ctexart}
 
 \usepackage{fontspec}
@@ -83,7 +83,7 @@
 \end{center}
 
 \begin{abstract}
-\writingnote{用一段自洽文字概括：研究问题、比较的模型、统一评估方法、最重要的定量结果、最终模型及选择依据。摘要最后写清结论的适用边界；不要引用文献，也不要加入正文未报告的结果。}
+\writingnote{用一段自洽文字概括大纲中的研究问题、三条模型路线、统一冻结评估方法、最重要的定量结果，以及为什么最终选择 B33。最后写清结论只适用于已运行协议；不要引用文献，也不要加入正文未报告的结果。}
 \todoitem{摘要正文}
 \end{abstract}
 
@@ -92,168 +92,277 @@
 \tableofcontents
 \clearpage
 
-\writingnote{全文必须覆盖团队开发的所有模型，并说明最终模型的选择依据。建议把最多篇幅留给“实验与结果”；扩写应来自实验假设、协议、结果、失败解释和决策依据，而不是重复算法定义。}
+\writingnote{提交检查：摘要和 Background 使用完整正文，不保留提示或示意图占位；报告开头列出最终 Agent 的 NumPy 与 PyTorch 版本；所有标题填写真实主要作者；所有数字可追溯到 report-assets/tables/*.csv 或其 source\_path；not\_reported 和 unrun 不转换为 0；报告 PDF 不上传公开仓库；团队成员须理解、核验并以自己的表达修订 AI 辅助初稿。}
 
 \authorsection{引言}{\pendingauthor}
-\writingnote{简要说明问题、研究价值和主要挑战；提出全文研究问题并概括贡献。避免在此堆叠所有实验数字。}
 
 \authorsubsection{问题与研究动机}{\pendingauthor}
-\writingnote{说明 Bomberman 中导航、稀疏奖励、延迟爆炸、多智能体竞争与 CPU 推理时限为何构成机器学习问题。}
+\writingnote{说明稀疏反馈、延迟炸弹信用、目标重选和对手不确定性；强调训练 reward 不等于冻结游戏表现，得分、安全和 0.5 秒 CPU 时限共同决定选模。}
 \todoitem{正文}
 
-\authorsubsection{研究问题与成功标准}{\pendingauthor}
-\writingnote{列出 2--4 个可由实验回答的研究问题。为每个问题定义可观测指标和判断标准，例如得分、金币、击杀、生存率、全收集率、WAIT/循环和完整 act 延迟。}
-\todoitem{正文}
-
-\authorsubsection{贡献与全文结构}{\pendingauthor}
-\writingnote{只概括有证据支持的贡献，并用一小段介绍后续章节。不要把计划或未验证功能写成贡献。}
+\authorsubsection{研究问题}{\pendingauthor}
+\writingnote{依次回答：不同价值学习方法能否学会金币导航并迁移到炸箱和对战；等待、循环、自杀和目标丢失分别能由哪些特征、奖励和生存约束改善；三条路线的主要瓶颈及哪些改进有效、无效或证据不足；在得分、生存、推理时间和可复现性之间为什么最终选择 B33。}
 \todoitem{正文}
 
 \authorsection{背景}{\pendingauthor}
-\writingnote{比引言更具体地描述任务，并概述团队考虑过的强化学习方法。引用原始或权威文献，避免写成通用教材摘录。}
-
-\authorsubsection{Bomberman 任务与环境}{\pendingauthor}
-\writingnote{交代状态、六个动作、奖励目标、炸弹时序、障碍、回合长度和正式 CPU/内存/决策时间约束。所有数值应回查课程材料与源码。}
-\todoitem{正文}
-
-\authorsubsection{Task 1--4 课程任务}{\pendingauthor}
-\writingnote{解释从金币导航、炸箱逃生、弱对手到强对手的难度递进，以及每阶段测试的能力。区分课程建议和团队自定门槛。}
-\todoitem{正文}
-
-\authorsubsection{强化学习形式化与候选方法}{\pendingauthor}
-\writingnote{定义状态、动作、奖励、策略和价值函数；概述实际考虑的 Q-learning、DQN、Double DQN、n-step、PER、蒸馏或其他方法。只写与项目决策相关的理论。}
-\todoitem{正文与必要公式}
-
-\authorsubsection{奖励塑形、课程学习与安全约束}{\pendingauthor}
-\writingnote{说明这些概念为什么适合本任务、可能引入什么偏差，以及之后将如何用消融或冻结评估验证。}
+\writingnote{描述 Bomberman 环境与 Task 1--4；概述 Q-learning、Double Q、DQN、Double DQN、dueling、PER、n-step 与蒸馏；介绍离散、tile-coded 连续、MLP 连续和 17 通道空间表示；说明奖励塑形、课程学习与安全动作准入。}
 \todoitem{正文}
 
 \authorsection{项目规划}{\pendingauthor}
-\writingnote{说明真实的团队组织、时间规划、子任务分配和协作方式。不能把项目描述成成员各自独立完成一个模型；应展示共同设计、评审、工具或实验决策。}
 
-\authorsubsection{团队组织与共同目标}{\pendingauthor}
-\writingnote{说明成员角色、共同会议/评审方式、共享代码和实验协议，以及关键决定如何形成。}
+\authorsubsection{团队结构与协作}{\pendingauthor}
+\writingnote{路线一为 Continuous Double DQN Task 1--4 与 survival mask；路线二为 Rainbow Lite Task 1--4、feature/reward 与延迟信用；路线三为 Q-learning/CNN Task 1--2 与跨学习器迁移。说明三条路线共享代码、指标、失败案例和选模规则，不得描述为三个独立项目。}
 \todoitem{正文}
 
-\authorsubsection{分工与共享成果}{\pendingauthor}
-\writingnote{用表格列责任人、工作包、协作者、输出和证据路径。明确哪些特征、奖励、安全层或评估工具被多条模型路线共同使用。}
-\todoitem{正文或分工表}
-
-\authorsubsection{里程碑、晋级与停止规则}{\pendingauthor}
-\writingnote{给出真实时间线和 Task 1--4 的进入/退出条件。停止某条路线时写清门槛、证据、资源权衡与信息增益，不要只说“效果不好”。}
-\todoitem{正文或时间线}
-
-\authorsubsection{计算资源与证据管理}{\pendingauthor}
-\writingnote{记录训练硬件、预算、随机种子、checkpoint、run ID、逐局输出、证据状态和复现路径。使用深度学习时必须说明训练硬件资源。}
+\authorsubsection{门槛与证据管理}{\pendingauthor}
+\writingnote{说明“训练→开发选模→独立确认→主验证→打包”的流程；区分 training seed 与 environment seed，未运行记为 unrun，不可记为零；冻结 checkpoint、关闭探索、使用单线程 CPU，并记录配置/checkpoint 哈希和 paired bootstrap。}
 \todoitem{正文}
 
 \authorsection{方法}{\pendingauthor}
-\writingnote{解释并论证关键设计选择、待比较变体、性能指标和系统测试方法，并引用相关文献。方法章写“怎么做、为什么”，结果章写“发生了什么”。}
 
-\authorsubsection{状态表示与特征}{\pendingauthor}
-\writingnote{逐模型说明输入形状、归一化、历史信息、空间通道或离散编码。解释每组特征对应的失败假设，避免把版本号直接当成性能顺序。}
-\todoitem{正文与特征表}
-
-\authorsubsection{模型与学习目标}{\pendingauthor}
-\writingnote{团队必须开发并比较至少两个不同模型。对每个模型说明结构、输出、损失/更新公式、目标网络或估计器、关键超参数、相对基线的变化和预期风险。}
-\todoitem{正文、公式与架构图}
-
-\authorsubsection{奖励设计}{\pendingauthor}
-\writingnote{区分正式游戏得分和训练辅助奖励；给出数值、触发条件、信用归因及防止刷分/循环的设计。多因素版本不能被描述成单因素因果结论。}
-\todoitem{正文与奖励表}
-
-\authorsubsection{动作合法性与安全机制}{\pendingauthor}
-\writingnote{区分物理合法、危险预测、动作过滤和学习器排序。说明 fallback、规划时域、计算代价与已知反例；若使用规则层，论证它没有直接替代模型决定“最佳动作”。}
+\authorsubsection{共享状态与特征}{\pendingauthor}
+\writingnote{说明离散键、84 维 tile coding、70/78/84 维连续表示、117 维 phase 表示和 17 通道 CNN；将 Feature v1--v11 按导航、历史/循环、危险、资源、对手和目标可达性归类；明确版本号仅作复现标识，不代表单调性能顺序。}
 \todoitem{正文}
 
-\authorsubsection{探索、迁移与推理流程}{\pendingauthor}
-\writingnote{描述探索策略、replay、target 更新、checkpoint resume、policy-only transfer 和推理阶段。给出一张从 game state 到动作输出的流程图会更清楚。}
+\authorsubsection{共享奖励与生存准入}{\pendingauthor}
+\writingnote{将 Reward r1--r22 按正式事件、势函数、WAIT/循环、炸弹信用、生存和对手事件归类；Feature、reward、mask 是独立版本轴；区分 physical legal action、finite-horizon survivable action、veto-only mask 和 fallback；说明 Survival-mask v1--v9 由具体反例驱动，并保留 world 27155 限制。}
 \todoitem{正文}
 
-\authorsubsection{评估指标与统计协议}{\pendingauthor}
-\writingnote{预先定义不同 Task 的主/次指标、基线、对手、场景、局数、环境种子、独立训练种子、冻结条件和统计方法。说明何时采用配对比较、置信区间或 bootstrap。}
-\todoitem{正文与协议表}
+\authorsubsection{模型与统一评估}{\pendingauthor}
+\writingnote{介绍表格 Q/Double Q/Watkins Double Q($\lambda$)、Continuous/CNN Double DQN 与蒸馏 CNN；Rainbow Lite 定义为 dueling + proportional PER + fixed 4-step，不称完整 Rainbow；指标和可比性严格遵循 report-assets/plan/experiment-protocol.md。}
+\todoitem{正文}
+
+\writingnote{图表占位：Figure 1 为课程训练与证据流程；Figure 2 为 Die Hardest 推理和动作准入；Table 1 为模型族及证据状态。插入正式图表时使用 report-assets 中的可追溯资产。}
+\todoitem{Figure 1、Figure 2 与 Table 1}
 
 \authorsection{训练}{\pendingauthor}
-\writingnote{描述训练过程和用于加速或改善训练的技巧。按阶段说明初始化、训练预算、checkpoint 选择、迁移方式、旧任务保持和失败纠正。}
-
-\authorsubsection{分阶段训练课程}{\pendingauthor}
-\writingnote{逐 Task 说明场景、对手、允许动作、训练目标、晋级门槛和实际到达阶段。未运行的阶段明确标为未运行，不能填成零。}
-\todoitem{正文或课程表}
-
-\authorsubsection{超参数与训练配置}{\pendingauthor}
-\writingnote{提供足以复现的参数表：优化器、学习率、折扣率、batch、replay、探索计划、目标同步、训练局数/步数、种子与设备。注明模型间哪些参数不同。}
-\todoitem{配置表}
-
-\authorsubsection{Checkpoint、Resume 与 Transfer}{\pendingauthor}
-\writingnote{解释 checkpoint 保存内容、严格恢复与仅策略迁移的区别，以及特征/奖励/安全合同变化时如何避免误加载旧状态。}
-\todoitem{正文}
-
-\authorsubsection{训练效率与加速技巧}{\pendingauthor}
-\writingnote{报告无 GUI、并行训练、GPU、缓存或数据复用等做法及其实际收益。最终提交 Agent 不得使用 multiprocessing；训练可使用。}
-\todoitem{正文与测量结果}
-
-\authorsubsection{训练失败与纠正}{\pendingauthor}
-\writingnote{保留未收敛、遗忘、循环、自杀、指标缺陷或实现错误。说明诊断证据、修改内容，以及修改是否改变策略本身或只修复测量。}
+\writingnote{说明 Task 1 导航、Task 2 炸箱与隐藏金币、Task 3 弱对手、Task 4 三个规则对手；当前任务、旧任务保留、安全和运行时共同决定晋级；严格 resume 与 policy-only transfer 分开，合同变化时显式迁移或重训；表格/MLP 主要使用 CPU，CNN 训练使用 GPU，最终评估为 CPU-only；保留 CNN 输入 bug、WAIT/循环、Task 2 自杀、Task 3 计数缺陷及 Task 4 超时/中断等失败记录。}
 \todoitem{正文}
 
 \authorsection{实验与结果}{\pendingauthor}
 \label{sec:results}
-\writingnote{本章是报告重点。每组实验按“问题/假设—协议—结果—解释—决策”书写。用冻结策略和正式游戏指标，不用训练奖励代替评估。必须报告没有改善或失败的结果。}
+\writingnote{本章是报告重点。每个实验段落必须回答：问题、证据、诊断、解决方案、验证、结果、有限答案和下一决策。}
 
+% REPORT_OUTLINE.md 明确将总体逻辑编号为 6.0。
+\setcounter{subsection}{-1}
 \authorsubsection{总体实验逻辑与比较边界}{\pendingauthor}
-\writingnote{说明哪些实验可直接比较，哪些因场景、对手、seed、checkpoint 或统计单位不同只能诊断。训练 seed 和同一模型的环境重复不能混为独立训练。}
+\writingnote{Task 1--4 依次隔离导航、炸箱逃生、弱对手竞争和强对手压力，后续任务必须回测早期能力；三条路线共享 Feature、Reward、Survival Mask 与冻结评估，但针对表示、信用和安全提出不同假设；课程 agents 作为兼容性、课程或压力测试对象，缺少同协议冻结结果时不建立 baseline 数值排名；verified\_raw 支持正式差值，verified\_summary 描述历史结果，not\_comparable 仅作诊断，unrun 明确为未运行。}
 \todoitem{正文}
 
-\authorsubsection{基线与 Task 1：导航能力}{\pendingauthor}
-\writingnote{比较课程基线和各学习模型。报告金币、全收集率、步数、非法动作、WAIT/循环及不确定性；说明晋级决定。}
-\todoitem{协议、表/图、结果解释与决定}
+\authorsubsection{Continuous Double DQN：从导航到可控生存}{\pendingauthor}
 
-\authorsubsection{Task 2：炸箱、逃生与目标重选}{\pendingauthor}
-\writingnote{报告金币、炸箱、炸弹存活、自杀、全收集、停滞和旧任务保持。把安全改善与长期规划改善分开讨论。}
-\todoitem{协议、表/图、结果解释与决定}
+\authorsubsubsection{Task 1 $\rightarrow$ Task 2：为什么会炸箱仍会自杀？}{\pendingauthor}
+\writingnote{按“问题—证据—诊断—解决—验证—结论—决策”写作。早期候选为 5.45 coins、76.65 crates、30\% suicide；解决方案是将 survival mask 用于行为、推理和 bootstrap；主验证为 7.25 coins、100.26 crates、0\% suicide、100\% Task 1 retention；结论限定为安全准入解决晋级阻塞，但不等于学会全部长期规划。}
+\todoitem{正文}
 
-\authorsubsection{Task 3：弱对手下的竞争}{\pendingauthor}
-\writingnote{报告得分、金币、击杀、名次、生存及旧任务回归。若比较父子 checkpoint，优先在相同世界/seed 上做配对分析。}
-\todoitem{协议、表/图、结果解释与决定}
+\authorsubsubsection{Task 3：能否改善竞争并保留旧能力？}{\pendingauthor}
+\writingnote{按统一七步叙事写作。报告三 seed confirmation 与 seed22/c150 main validation；三条独立训练链得分增量为 +1.92、+1.23、+2.56，均值 +1.90，样本标准差 0.67；每条链的 100 个世界是环境重复，不写成 300 次独立训练；得分 5.91 $\rightarrow$ 7.14，差值 1.23，CI [0.27, 2.14]；第一名率 41\% $\rightarrow$ 53\%；击杀 0.45 $\rightarrow$ 0.44，不称击杀改善。}
+\todoitem{正文与 Table 2：Task 3 父子配对}
 
-\authorsubsection{Task 4：强对手与最终候选}{\pendingauthor}
-\writingnote{区分开发筛选、独立确认、历史 benchmark 和专项测试。报告策略稳定性、失败模式和计算成本；不要把不同协议合并成统一排行榜。}
-\todoitem{协议、表/图、结果解释与决定}
+\authorsubsubsection{Task 4：专项训练为何没有稳定收益？}{\pendingauthor}
+\writingnote{按统一七步叙事写作。说明 Shared-parent admission failure；将 E1/E2/E3、Frozen C/S 和 score campaign 分开呈现；结论只限定于已运行协议。}
+\todoitem{正文}
 
-\authorsubsection{消融、失败结果与误差分析}{\pendingauthor}
-\writingnote{至少覆盖关键特征、奖励、安全机制或训练技巧的对照。展示代表性失败轨迹，并判断瓶颈来自表示、奖励、学习、动作过滤还是评估。}
-\todoitem{消融表、失败案例与解释}
+\authorsubsection{Rainbow Lite：特征、奖励与延迟信用}{祝雨嫣}
 
-\authorsubsection{最终跨模型比较与选择}{\pendingauthor}
-\writingnote{在完全一致的场景、对手、seed、局数和冻结条件下比较最终候选与课程基线。说明主指标、置信区间、旧任务保持、CPU 完整 act 延迟、内存、超时和打包等价性。}
-\todoitem{最终比较表与选择依据}
+在 Bomberman 中，动作的结果经常延迟出现。放置炸弹后还要等待数步，箱子被炸毁、金币出现或
+对手被击杀才会形成可观察结果；同一次移动也可能是在接近金币或躲避爆炸。普通 Double DQN
+能够降低价值高估，却不能自动解决延迟信用和样本利用效率问题。因此，本路线先检验几项轻量学习
+机制，再根据实际失败决定是否增加状态信息或辅助奖励。
+
+Rainbow Lite 由此形成。Dueling network 分开估计局面价值与动作优势；比例优先经验回放
+（proportional PER）让时间差分误差较大的样本更常被学习；固定四步回报把随后数步内出现的
+箱子、金币或死亡结果更早传回当前动作。这些组件不直接规定 Agent 应该往哪里移动。
+本实现没有加入完整 Rainbow 中的 distributional reinforcement learning、noisy network 等组件，
+因此只称为 Rainbow Lite。
+
+算法组件确定以后，实验重点转向一个更具体的问题：如果策略仍然停住、循环或错误放弹，原因究竟
+是状态中缺少必要信息，还是辅助奖励把学习器推向了不理想的行为？为回答这个问题，团队将设计拆成
+三个版本轴。Feature 决定模型能够看到什么，reward 决定训练期间如何分配信用，survival mask
+只负责否决在有限时域内无法证明可生存的动作。三个轴的功能不同，但实际开发中曾被同时修改。
+所以下文先描述行为问题，再报告结果和停止决定；只有实验条件足够接近时，才解释单个组件的信号。
+
+\authorsubsubsection{导航停滞来自历史缺失还是奖励诱导？}{祝雨嫣}
+
+最早需要处理的并不是得分低，而是策略会在尚有任务可做时停止推进。长 WAIT 指 Agent 连续多步
+等待，长往返则指在少数位置之间反复移动而不接近新目标。二者都会消耗 400 步的回合预算，但
+成因不同：WAIT 可能来自网络认为移动价值更低，往返则可能表示走出一步后又失去目标。Task 2
+中炸弹会改变箱子与金币布局，策略尤其需要重新选择长期目标。
+
+V4/R10 首先尝试让短期停滞变得可观察。V4 提供 WAIT 与动作循环历史，r10 根据真实历史施加
+有界惩罚，这使模型至少能够区分“第一次等待”和“已经重复多次的等待”。实际运行却表明，知道
+自己正在循环仍不足以决定下一步去哪里。Agent 有时能够完成一次安全炸箱，但箱子消失后便失去
+原来的资源方向；如果此时只继续提高循环惩罚，模型可能被迫离开当前位置，却不一定朝有价值的
+区域移动。这个观察将问题从“缺少动作历史”推进为“缺少跨越地图变化的目标持续性”。
+
+因此，下一步没有继续扩大历史窗口，而是构造 140 维的 V5 表示。它增加箱子在不同区域的方向
+与密度、适合放弹的目标距离、跨步保留的炸箱目标以及剩余箱子比例。直观地说，V5 不只告诉模型
+眼前最近的格子，还尽量保留“这颗炸弹原本是为哪个资源目标服务”的线索。与其配合的 r17 恢复
+较稳健的全局炸箱纪律：无用炸弹受到惩罚，实际产生用途的炸弹才获得相应信用。该组合在 Task 2
+的 10 局冻结诊断中平均收集 7.10/9 枚金币、炸毁 95.9 个箱子且自杀率为 0\%。这说明 Agent
+已经能够安全地执行大量炸箱行为，但 40\% 的游戏仍出现长 WAIT，资源信息本身没有消除停滞。
+
+这一结果给出了一个较清楚的下一步：暂时保留 V5，只修改直接针对 WAIT 的奖励。r18 将 WAIT
+历史惩罚从较弱的三步累计提高为更强的五步累计，同时把确实推动任务进展的 BOMB 计入进展，
+避免 Agent 通过频繁放弹重置停滞判断。相同规模的 10 局局部诊断中，平均金币由 7.10 增至
+7.80，炸箱由 95.9 增至 115.4，长 WAIT 由 40\% 降至 0\%，自杀仍为 0\%。然而，长往返
+由 0\% 上升至 10\%。因此，这次修改的合理解读不是“停滞已经解决”，而是 WAIT 行为明显减少，
+同时少量失败转移成了移动循环。两次运行是否拥有完全相同的父权重和训练预算仍需进一步核对，
+所以该结果只作为采用 r18 的局部证据，不作为大样本纯 reward 消融。
+
+此后，团队停止同时更换多个版本，将课程固定为 V5、r18 和 survival-mask-v5/all，并使用
+训练 seed 11。训练 seed 控制网络初始化、采样与探索；本路线只有一条完整训练链。checkpoint
+只是这条训练链在不同时刻的快照，并非相互独立的模型复现。
+
+固定主线首先重新检查最基础的导航能力。Task 1 的 c0100 已能在 20 个冻结开发世界中收齐
+50 枚金币，但平均需要 173.5 步。继续到 c0300 后，平均得分仍为 50.00/50，全收集率仍为
+100\%，平均步数降至 136.0，且没有长 WAIT 或长往返。因此，c0300 被保留为更高效的 Task 1
+快照。值得注意的是，之后的 c0400 短暂下降到 49.95 枚金币和 95\% 全收集率，这已经说明
+checkpoint 表现不会随着训练轮数自动单调提高。
+
+进入 Task 2 后，选择标准不能只看平均金币。c0200、c0300 和 c0500 都达到 8.60/9 枚金币，
+但分别伴随长往返或长 WAIT。c0800 的平均金币略低，为 8.45/9，全收集率为 60\%，平均炸箱
+113.4 个；它同时保持 0\% 自杀、0\% 长 WAIT 和 0\% 长往返。团队因此牺牲少量开发集均分，
+选择行为更干净的 c0800 作为 Task 3 父模型。这是一次多指标的开发选模，而不是独立确认。
+
+V5、r18 与 mask-v5 必须作为同一个实验合同理解：它们分别改变目标信息、训练信用和动作准入，
+却在主线中共同变化。即使最终得分提高，也无法判断哪一项贡献最大。因此，本文只说固定组合形成
+了可继续训练的资源主线，不把结果拆成三个独立因果结论。
+
+\authorsubsubsection{对手与阶段信息是否改善 Task 3？}{祝雨嫣}
+
+Task 3 加入 peaceful agent 后，任务不再只是寻找资源。即使对手不会主动攻击，它也会占据格子、
+收集金币并改变可用路线；到了 Task 4，三个 rule-based opponents 还会主动放弹。此时，Agent
+既要知道资源在哪里，也要判断正在接近哪个对手、一次放弹是否真正形成威胁、攻击后是否仍有退路。
+V5 对这些信息描述较弱，因此团队首先提出“对手状态不足”的假设，随后又检验“同一套奖励不适合
+整局不同阶段”的假设。
+
+V6 在 V5 上增加 20 维对手信息，包括命名目标、相对运动、动作后的距离变化、火力线和对手逃逸
+空间。r19 同时提高攻击压力：接近对手获得势能变化，预测能形成安全威胁的 BOMB 立即得到正
+奖励。这个设计希望让 Agent 更主动，但结果首先暴露了信用过早的问题。Task 4 的十局诊断中，
+V6/r19 c0100 一度得到 3.50 分和 0.40 次击杀，看起来比资源主线更具攻击性；同一 checkpoint
+扩大到 20 局后，得分降到 3.00，自杀率由 40\% 升至 55\%。继续训练到 c0200 后，均分又降到
+1.20，且没有击杀。短期高分与严重自杀同时出现，不能证明对手特征带来了稳定改善。
+
+r20 随后取消预测性 BOMB 正奖励，只在真实炸箱或击杀后结算信用，但相邻 checkpoint 仍大幅
+波动。V6 Stable 又降低学习率、更新频率和攻击权重，并扩大 PER 容量。r19b 的两次诊断分别为
+1.75 和 3.15 分，较高结果未能复现，各配置仍出现 35\%--55\% 自杀。由于优化设置与奖励同时
+变化，这不是单变量消融，但说明单纯减弱攻击压力没有形成可靠胜者。
+
+第二条思路关注奖励阶段是否可观察。资源丰富时，炸箱和收集金币较重要；获得首次击杀后，继续
+冒险追击可能不如保住已有优势。如果 reward 会根据局势改变，而状态却没有说明当前处于哪个阶段，
+相似输入就可能对应不同训练信号。V7 因而增加本局击杀比例和是否已经首杀，r21 再根据箱子数量
+和首杀状态改变资源、对手与危险势能。工程上，这使阶段变化对网络可见；性能上却仍不稳定。
+Task 3 的十局诊断中，c0100 和 c0400 都达到 7.40 分，c0200 降到 5.50，c0500 又降到
+4.90。长 WAIT 也在相邻 checkpoint 间从 0\% 波动到 50\%。因此，局部高点不足以确认阶段
+奖励的收益。
+
+团队最后尝试给策略更长距离的方向。V10 使用 Agent 周围四个象限的箱子与对手密度，但这种统计
+会把墙后不可达的箱子也当作目标。V11 改为可达箱份额和最近可达箱前沿距离，希望告诉 Agent
+“哪一片区域实际可以推进”。这个表示更符合任务语义，却没有带来稳定曲线：十局诊断的局部最高
+c0450 为 6.30 分，同时自杀率达到 50\%；继续到 c0500 后均分降为 3.20。旧笔记曾把 c0500
+写成 9.9 分，但当前原始汇总中目标 Agent 对应行是 3.20，本文采用后者。V8、V9、r22 和
+Spatial V6 等分支只有局部测试、工程验证或未完成评估，也没有被包装成性能失败或成功。
+
+在复杂分支没有形成稳定胜者的情况下，Task 3 的晋级仍回到证据较完整的固定主线。由 Task 2
+c0800 继续训练后，c0200 的 20 局开发均分为 7.90，第一名率 75\%，但 35\% 的游戏出现长
+WAIT。c0300 的均分略低，为 7.80；其平均击杀提高到 0.65，第一名率为 65\%，存活率为
+100\%，长 WAIT 降到 0\%。如果只按均分选择，c0200 会胜出；如果同时要求策略能够持续行动，
+c0300 更适合作为下一阶段父模型。团队因此接受 0.10 分的开发均分损失，选择 c0300。
+
+继续训练后，c0600 和 c0800
+的长 WAIT 分别达到 80\% 和 85\%，c0900 虽恢复到 7.70 分，仍有 70\% 长 WAIT。由此可见，
+checkpoint 是同一训练轨迹上的不同快照，较晚快照不必然更成熟。V6--V11 与 r19--r22 的父模型、
+训练预算和评估世界又没有全部固定，因此不能把所有短实验排列成公平排行榜。本阶段能支持的结论
+只是：对手跟踪、阶段状态和可达目标都能够实现，也产生过局部积极信号，但现有证据没有确认它们
+稳定优于 V5/r18/mask-v5 主线。
+
+\begin{table}[H]
+  \centering
+  \small
+  \caption{固定 V5/r18/mask-v5 单训练 seed 课程链的关键 checkpoint。开发评估用于选模；
+  Task 4 的扩展评估仅用于稳定性与失败诊断。}
+  \label{tab:rainbow-lite-checkpoints}
+  \begin{tabularx}{\textwidth}{@{}l l l X X@{}}
+    \toprule
+    Task & Checkpoint & 评估规模与性质 & 主要冻结结果 & 选择或诊断结论 \\
+    \midrule
+    1 & c0300 & 20 worlds，开发评估 & 50.00/50 金币；100\% 全收集；136.0 步 & 选择较快的满收集快照 \\
+    2 & c0800 & 20 worlds，开发评估 & 8.45/9 金币；60\% 全收集；0\% 自杀、长 WAIT 与长往返 & 选作 Task 3 父模型 \\
+    3 & c0300 & 20 worlds，开发评估 & 7.80 分；0.65 击杀；65\% 第一；0\% 长 WAIT & 选作 Task 4 父模型 \\
+    4 & c1200 & 20 worlds，开发评估 & 3.25 分；85\% 存活；65\% 长 WAIT & 开发候选，需扩大评估 \\
+    4 & c1200 & 1,000 games，扩展诊断 & 2.938 分；83.8\% 存活；0.7\% 自杀；57.1\% 长 WAIT & 主要残余失败为长期停滞 \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+\authorsubsubsection{Task 4 的残余失败是什么？}{祝雨嫣}
+
+Task 4 同时面对三个 rule-based opponents。与 Task 3 相比，棋盘更拥挤，炸弹来源更多，安全
+路线也会随其他 Agent 的动作快速变化。这里存在一个直接的权衡：更主动地抢金币或攻击可能提高
+得分，却增加被困和死亡风险；更保守地等待可以提高存活，却可能在 400 步结束前没有完成任何
+有效竞争。因此，Task 4 的 checkpoint 不能只按得分或存活率中的一个指标选择。
+
+以 Task 3 c0300 为父模型继续训练时，checkpoint 不断在这些目标间摆动：c0600 的存活率为
+80\%，长 WAIT 却升至 65\%；c0900 的存活率达到 90\%，均分只有 2.65。survival mask
+能够否决部分致命动作，却不会替学习器选择有收益的方向；通过生存证明不等于会带来更高得分。
+
+开发筛选最终把注意力放在 c1200、c1400 和 c1500。前两个 checkpoint 在各 20 个开发世界中
+均得到 3.25 分。c1200 的第一名率和独占第一名率分别为 40\% 和 35\%，高于 c1400 的 30\%
+和 20\%，所以 c1200 被暂选为开发候选。然而，它已有 65\% 长 WAIT，显示高分与明显停滞可以
+同时存在。c1500 则呈现相反取舍：存活率达到 95\%，长 WAIT 为 0\%，行为看起来更干净，但
+均分降至 2.75。团队没有用“最晚 checkpoint”替代开发候选，也没有把更高存活自动解释为更强
+策略，而是决定扩大 c1200 的冻结评估规模。
+
+扩展评估保持 c1200 权重不变，在 50 个环境 seed 上各运行 20 局，共得到 1,000 局。环境 seed
+控制游戏世界的随机性，不会重新初始化网络或产生新的训练链。该设计能更稳定地估计冻结策略，
+却不能回答换一个训练 seed 是否还能学到同样结果。因此，50 个环境 seed 不是 50 次独立训练，
+1,000 局也不是 1,000 个独立模型。
+
+样本扩大后，开发集上的乐观估计被明显修正。平均正式得分由 3.25 降到 2.938，平均金币为
+2.098，平均击杀为 0.168；第一名率从 40.0\% 降到 26.7\%，独占第一名率从 35.0\% 降到
+20.1\%。另一方面，存活率仍有 83.8\%，自杀率仅为 0.7\%，被对手击杀率为 15.5\%。最突出
+的诊断指标是长 WAIT：它在 57.1\% 的游戏中出现，而长往返只有 1.0\%。扩展评估不是预注册的
+Task 4 正式质量门，但它足以说明 20 局开发高点没有代表整体表现。
+
+从行为角度看，Rainbow Lite 的失败模式发生了转移。早期攻击分支会因过度放弹直接自杀；固定
+V5/r18/mask-v5 主线把大样本自杀率降到了较低水平，却经常在仍可安全行动时选择长期等待。换言之，
+安全准入解决的是“哪些动作不应执行”，没有回答“剩余安全动作中哪一个最值得执行”。更复杂的
+对手、阶段和区域特征也没有在现有协议中稳定修复这一点。后续工作若要改善 Task 4，应优先验证
+目标持续性、过度保守和长期信用，而不是仅继续增加即时危险规则或短期攻击奖励。
+
+综合来看，固定主线在单一训练 seed 下形成了 Task 1--4 的完整本地课程链，并提供了可追溯的
+checkpoint 决策过程；它并未完成多训练 seed 复现，也不能证明某个 feature、reward 或 mask
+单独带来了全部变化。Rainbow c1200 的 1,000 局扩展诊断与 B33 的历史 benchmark 也不属于
+同一协议，双方缺少相同世界、对手和冻结条件下的配对比较。因此，本研究不据此声称 B33 在公平
+实验中优于 Rainbow Lite。最终提交选择仍需结合各路线的历史证据完整度、CPU 推理开销和打包
+可复现性，而 Rainbow 路线最明确的研究贡献，是揭示了低自杀并不等于有效竞争，以及短开发集
+高点必须通过更大规模冻结评估重新检验。
+
+\authorsubsection{Q-learning 与 CNN：共享成果能否跨模型迁移}{\pendingauthor}
+
+\authorsubsubsection{Task 1：两种替代学习器能否导航？}{\pendingauthor}
+\writingnote{按统一七步叙事写作。Double Q($\lambda$) 为 48.95 coins、96\% all-coins；Distilled CNN 为 49.84 coins、96\% all-coins；额外 TD fine-tuning 退化到 37.21 coins、55\% all-coins。}
+\todoitem{正文}
+
+\authorsubsubsection{Task 2：安全炸箱为何仍不能完成金币目标？}{\pendingauthor}
+\writingnote{按统一七步叙事写作。Q r20 为 3.95/9 coins、53.45 crates、0\% suicide、75\% long ping-pong；CNN D02 为 2.60/9 coins、44.15 crates、0\% suicide、0\% all-coins；共同瓶颈是箱后长期目标重选；两者未通过 Task 2，因此停止进入 Task 3/4。}
+\todoitem{正文与 Table 3：Q/CNN Task 1--2 代表结果}
+
+\authorsubsection{跨路线综合与最终选择}{\pendingauthor}
+\writingnote{按统一七步叙事写作。用表格总结三条路线的原始问题、方案、证据、结论和决策；不建立跨协议统一排行榜；将 B33 的 1,000-world benchmark 与 Die Hardest 的六局 package equivalence 分开；最终选择依据为完整 Task 1--4 谱系、4.231 历史均分、50.2\% 含并列第一、94.7\% survival 和可复现打包；明确 world 27155、Docker/官方硬件未验证以及该选择不是普遍最优证明。}
+\todoitem{正文与 Table 4：三条路线问题—解决—结论综合}
 
 \authorsection{结论}{\pendingauthor}
-\writingnote{总结发现并直接回答研究问题；解释最终选择的证据与适用边界。不要在结论引入新实验。}
-
-\authorsubsection{主要发现与研究问题回答}{\pendingauthor}
-\writingnote{逐条对应引言中的研究问题，给出最关键的定量证据和最终模型选择。}
-\todoitem{正文}
-
-\authorsubsection{局限}{\pendingauthor}
-\writingnote{讨论样本量、训练 seed、协议缺口、计算资源、未覆盖对手、测量范围、语言/篇幅确认和无法证明的安全性质。}
-\todoitem{正文}
-
-\authorsubsection{未来工作}{\pendingauthor}
-\writingnote{说明如果有更多时间，最值得执行的 Agent 改进、实验和游戏设置变化；把建议与已观察失败对应起来。}
+\writingnote{总结：多种价值学习器可完成 Task 1，但迁移深度不同；历史/reward 改变停滞，mask 减少自杀，二者都不自动解决长期规划；Task 3 得分改善，而 Task 4 增量方案缺少稳定收益；B33 是证据完整性与工程约束下的最终选择。不得引入正文未报告的新实验。}
 \todoitem{正文}
 
 \bibliographystyle{plainnat}
 \bibliography{references}
 
 \appendix
-\authorsection{模型清单与证据索引}{\pendingauthor}
-\writingnote{列出所有开发模型、配置、checkpoint、哈希、训练终点、证据状态和路径。附录不能替代正文中的核心方法与结果。}
-\todoitem{清单表}
-
-\authorsection{补充实验与复现信息}{\pendingauthor}
-\writingnote{放置正文容纳不下但复现所需的命令、完整超参数、额外结果、数据契约和打包检查。注意最终公开仓库不能包含报告本身。}
+\authorsection{证据索引与复现信息}{\pendingauthor}
+\writingnote{仅放置正文容纳不下的证据索引和复现信息；附录不得替代正文中的核心方法、实验结果与最终选择依据。}
 \todoitem{补充内容}
 
 \end{document}
