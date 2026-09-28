@@ -53,11 +53,33 @@ class QuarantineLocalArtifactsTests(unittest.TestCase):
         self.assertFalse(q.local_root(self.root).exists())
         self.assertEqual(result["state"], "planned")
 
+    def test_regular_file_target_can_be_quarantined_and_restored(self):
+        target = self.root / "agent_code/rainbow_lite_agent/.DS_Store"
+        target.parent.mkdir(parents=True)
+        target.write_bytes(b"finder metadata")
+        result = self.quarantine(
+            targets=("agent_code/rainbow_lite_agent/.DS_Store",),
+            execute=True,
+        )
+        self.assertFalse(target.exists())
+        q.restore(
+            self.root,
+            self.root / result["manifest"],
+            execute=True,
+            activity_checker=lambda paths: [],
+        )
+        self.assertEqual(target.read_bytes(), b"finder metadata")
+
     def test_only_exact_whitelisted_targets_are_accepted(self):
         for target in ("../output", "runs", ".scratch/branch-integration/extra"):
             with self.assertRaises(ValueError):
                 q.validate_target(self.root, target)
         self.assertEqual(q.validate_target(self.root, "output"), self.root / "output")
+        rainbow_target = ".scratch/interrupted-v5-r18-maskv5-task3-c0050-20260917"
+        self.assertEqual(
+            q.validate_target(self.root, rainbow_target),
+            self.root / rainbow_target,
+        )
 
     def test_symlinked_store_and_parent_escape_are_refused(self):
         outside = self.root.parent / f"{self.root.name}-outside"

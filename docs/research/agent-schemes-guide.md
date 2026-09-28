@@ -1,7 +1,8 @@
 # Bomberman Agent 方案与原理导读
 
-> 更新日期：2026-09-15。本文覆盖当前实验合同、主工作区学习 Agent、归档候选和官方基线。
-> 当前训练与评估参数以 `experiments/CURRENT_TRAINING_EVALUATION_PARAMETERS.md` 为准。
+> 历史快照日期：2026-09-15。本文保留当时的实验合同、学习 Agent 和官方基线，
+> 不再表示当前推荐入口。Rainbow Lite 后续版本与最终状态见
+> [`rainbow-lite-index.md`](rainbow-lite-index.md)。
 
 ## 1. 一套 Agent 方案包含什么
 
@@ -32,7 +33,7 @@ $$Q(s,a)=\mathbb E\left[\sum_{k=0}^{\infty}\gamma^k r_{t+k}\mid s_t=s,a_t=a\righ
 | `hybrid_dueling_double_dqn_agent` | Dueling Double DQN | `hybrid-v1` | 融合研究，已实现并归档 |
 | `double_q_lambda_agent` | 线性 Double Q(λ) + tile coding | `continuous-v2` | 当前竞争候选，已实现 |
 | `expected_sarsa_lambda_agent` | 线性 Expected SARSA(λ) + tile coding | `continuous-v2` | 当前竞争候选，已实现 |
-| `rainbow_lite_agent` | Dueling Double DQN + PER + 4-step | `continuous-v3` | 当前推荐神经候选，已实现 |
+| `rainbow_lite_agent` | Dueling Double DQN + PER + 4-step | `continuous-v4` | Rainbow Lite 共享基础实现；完整历史版本见独立索引 |
 
 `legal_random_agent` 是项目自建的物理合法随机基线，现归档于 `all_other_agent_code`。官方 `random_agent`、`rule_based_agent`、`peaceful_agent`、`coin_collector_agent` 是不可训练对照或课程对手，不属于候选学习方案。
 
@@ -66,7 +67,7 @@ Rainbow Lite 在 Dueling Double DQN 上加入 proportional prioritized replay，
 
 Double Q(λ) 使用两个独立 tile-coded 线性估计器及各自 eligibility trace，兼顾连续特征的泛化、Double Q 的偏差控制和延迟信用传播。Expected SARSA(λ) 的 bootstrap 是当前 epsilon-greedy 行为策略下的期望，并遵守存储的生存掩码。两者无需大型 replay，提供与深度网络不同的样本效率/稳定性对照。
 
-## 4. 当前主线方案
+## 4. 2026-09-15 时的主线方案
 
 当前 Task 1/2 推荐配置形成三类竞争者：
 
@@ -115,4 +116,3 @@ Task 2 每个训练 seed 至少 500 回合且达到 150,000 个阶段动作，�
 5. `experiments/configs/*task1.json`、`*task2.json`：当前主线完整配置；
 6. `experiments/CURRENT_TRAINING_EVALUATION_PARAMETERS.md`：统一实验协议；
 7. `docs/adr/0001-0003`：安全、Task 1 收敛、Task 2 单次验证决策。
-

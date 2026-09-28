@@ -139,3 +139,4 @@ checkpoints/
 # Consolidated local experimental artifacts
 /archive/*
 !/archive/README.md
+/deliverables/

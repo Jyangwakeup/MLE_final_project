@@ -46,6 +46,7 @@ For an optional GUI, install `pygame` and remove `--no-gui` in an environment wi
 - [Experiment runner](experiments/README.md): configuration and execution of research workflows.
 - [Task3 experiment index](docs/research/task3-experiment-index.md): historical safety experiments, outcomes, and source references.
 - [Q-learning and CNN model index](agent_code/Q_CNN_AGENT_INDEX.md): model variants and their experiment records.
+- [Rainbow Lite model index](docs/research/rainbow-lite-index.md): the shared implementation, variant lineage, contracts, migrations, tests, and archived launch scripts.
 - [Archive and recovery guide](archive/README.md): artifact locations and instructions for recovering historical experiments.
 - [Repository cleanup audit](docs/research/repository-cleanup-audit.md): the preservation boundaries and measured local-artifact inventory used for the current cleanup.
 

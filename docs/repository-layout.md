@@ -27,7 +27,8 @@ a general output directory.
 
 The Agent directories other than `die_hardest` preserve developed models and
 baselines. The [Q-learning and CNN index](../agent_code/Q_CNN_AGENT_INDEX.md)
-and research reports provide narrower entry points than browsing every variant.
+and [Rainbow Lite index](research/rainbow-lite-index.md) provide narrower entry
+points than browsing every variant.
 
 ## Recovery archive
 

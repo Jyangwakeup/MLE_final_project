@@ -1,4 +1,6 @@
 import json
+import subprocess
+import sys
 import unittest
 from pathlib import Path
 
@@ -105,6 +107,23 @@ class RecommendedTrainingConfigTests(unittest.TestCase):
         contract = resolve_agent_contract("rainbow_lite_agent", "continuous-v4")
         self.assertEqual(contract.feature_schema["vector_shape"], [126])
         self.assertEqual(rainbow_callbacks.NETWORK_SPEC["input_shape"], [126])
+
+    def test_archived_rainbow_contracts_resolve_from_historical_tree(self):
+        code = """
+from experiments.agent_contracts import resolve_agent_contract
+names = (
+    'rainbow_lite_v6_agent', 'rainbow_lite_v6_stable_agent',
+    'rainbow_lite_v7_agent', 'rainbow_lite_v8_agent',
+    'rainbow_lite_v9_agent', 'rainbow_lite_v10_agent',
+    'rainbow_lite_v11_agent',
+)
+for name in names:
+    assert resolve_agent_contract(name).agent == name
+"""
+        result = subprocess.run(
+            [sys.executable, "-c", code], capture_output=True, text=True,
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
 
 if __name__ == "__main__":
     unittest.main()

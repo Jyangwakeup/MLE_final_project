@@ -52,7 +52,7 @@ _NEW_AGENTS = {
     "optimized_double_q_lambda_agent", "optimized_double_q_lambda_v4_agent",
     "rainbow_lite_no_safety_agent", "expected_sarsa_lambda_no_safety_agent",
     "rainbow_lite_v5_agent", "rainbow_lite_v6_agent", "rainbow_lite_v7_agent",
-    "rainbow_lite_v8_agent", "rainbow_lite_v10_agent",
+    "rainbow_lite_v8_agent", "rainbow_lite_v9_agent", "rainbow_lite_v10_agent",
     "rainbow_lite_v11_agent", "rainbow_lite_continuous_v2_agent",
     "rainbow_lite_v6_stable_agent",
     "rainbow_lite_spatial_v6_agent",
@@ -65,6 +65,15 @@ _ARCHIVED_Q_CNN_AGENTS = {
     "optimized_double_q_lambda_grouped_agent",
     "optimized_double_q_lambda_history_agent",
     "optimized_double_q_lambda_v4_agent",
+}
+_ARCHIVED_RAINBOW_AGENTS = {
+    "rainbow_lite_v6_agent",
+    "rainbow_lite_v6_stable_agent",
+    "rainbow_lite_v7_agent",
+    "rainbow_lite_v8_agent",
+    "rainbow_lite_v9_agent",
+    "rainbow_lite_v10_agent",
+    "rainbow_lite_v11_agent",
 }
 _PROJECT_ROOT = Path(__file__).resolve().parents[1]
 _BASELINE_FEATURE_IDS = {
@@ -125,6 +134,10 @@ def resolve_agent_contract(
         _PROJECT_ROOT / "agent_code" / agent
     ).exists():
         module_name = f"experiments.agent_variants.{agent}.callbacks"
+    elif agent in _ARCHIVED_RAINBOW_AGENTS and not (
+        _PROJECT_ROOT / "agent_code" / agent
+    ).exists():
+        module_name = f"all_other_agent_code.{agent}.callbacks"
     module = import_module(module_name)
     metadata = module.AGENT_METADATA
     fixed_feature_id = metadata["feature_id"]

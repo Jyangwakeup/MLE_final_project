@@ -19,11 +19,54 @@ from typing import Callable, Iterable
 
 
 ROOT = Path(__file__).resolve().parents[1]
+RAINBOW_GENERATED_TARGETS = (
+    ".scratch/deleted-after-c0100-20260917-2300",
+    ".scratch/interrupted-rainbow_lite_v7-r21-control-task3-c0020-20260917",
+    ".scratch/interrupted-rainbow_lite_v7_r21-c0300-20260916",
+    ".scratch/interrupted-v5-r18-maskv5-task3-c0050-20260917",
+    ".scratch/interrupted-v5-r18-maskv5-task3-cache-benchmark-20260917",
+    ".scratch/interrupted-v5-r18-maskv5-task3-cache-key-20260917-211304",
+    ".scratch/interrupted-v5-r18-maskv5-task3-incomplete-integration-20260917",
+    ".scratch/interrupted-v5-r18-maskv5-task3-postpull-20260917-213157",
+    ".scratch/interrupted-v5-r18-maskv5-task3-precache-20260917",
+    ".scratch/interrupted-v5-r18-maskv5-task3-race-c0050-20260917",
+    ".scratch/invalid-v5-r18-maskv5-cross-step-cache-20260917-213956",
+    ".scratch/premature-c0350-eval10-20260917_050710",
+    ".scratch/restarted-c100-anchor-progress-fix-20260917-2310",
+    ".scratch/smoke-v5-r18-maskv5-nocrosscache-error-20260917",
+    "agent_code/rainbow_lite_agent/.DS_Store",
+    "agent_code/rainbow_lite_agent/__pycache__",
+    "agent_code/rainbow_lite_agent/logs",
+    "agent_code/rainbow_lite_continuous_v2_agent/__pycache__",
+    "agent_code/rainbow_lite_continuous_v2_agent/logs",
+    "agent_code/rainbow_lite_no_safety_agent/__pycache__",
+    "agent_code/rainbow_lite_no_safety_agent/logs",
+    "agent_code/rainbow_lite_spatial_v6_agent/__pycache__",
+    "agent_code/rainbow_lite_spatial_v6_agent/logs",
+    "agent_code/rainbow_lite_v3_eval_agent",
+    "agent_code/rainbow_lite_v5_agent/__pycache__",
+    "agent_code/rainbow_lite_v5_agent/logs",
+    "all_other_agent_code/rainbow_lite_v10_agent/__pycache__",
+    "all_other_agent_code/rainbow_lite_v10_agent/logs",
+    "all_other_agent_code/rainbow_lite_v11_agent/__pycache__",
+    "all_other_agent_code/rainbow_lite_v11_agent/logs",
+    "all_other_agent_code/rainbow_lite_v6_agent/__pycache__",
+    "all_other_agent_code/rainbow_lite_v6_agent/logs",
+    "all_other_agent_code/rainbow_lite_v6_stable_agent/__pycache__",
+    "all_other_agent_code/rainbow_lite_v6_stable_agent/logs",
+    "all_other_agent_code/rainbow_lite_v7_agent/__pycache__",
+    "all_other_agent_code/rainbow_lite_v7_agent/logs",
+    "all_other_agent_code/rainbow_lite_v8_agent/__pycache__",
+    "all_other_agent_code/rainbow_lite_v8_agent/logs",
+    "all_other_agent_code/rainbow_lite_v9_agent/__pycache__",
+    "scripts/archive/rainbow_lite/monitor/__pycache__",
+)
 ALLOWED_TARGETS = (
     "output",
     ".scratch/archive-consolidation",
     ".scratch/branch-integration",
     ".scratch/die-hardest-submission",
+    *RAINBOW_GENERATED_TARGETS,
 )
 AUDIT_PATHS = (
     "agent_code/die_hardest",
@@ -124,17 +167,18 @@ def _record(path: Path, base: Path) -> dict[str, object]:
 
 def scan_tree(base: Path) -> dict[str, object]:
     if not base.exists() or base.is_symlink():
-        raise ValueError(f"Expected a real directory: {base}")
+        raise ValueError(f"Expected a real file or directory: {base}")
     records = [_record(base, base)]
-    for current, directories, files in os.walk(base, followlinks=False):
-        current_path = Path(current)
-        for name in list(directories):
-            path = current_path / name
-            records.append(_record(path, base))
-            if path.is_symlink():
-                directories.remove(name)
-        for name in files:
-            records.append(_record(current_path / name, base))
+    if base.is_dir():
+        for current, directories, files in os.walk(base, followlinks=False):
+            current_path = Path(current)
+            for name in list(directories):
+                path = current_path / name
+                records.append(_record(path, base))
+                if path.is_symlink():
+                    directories.remove(name)
+            for name in files:
+                records.append(_record(current_path / name, base))
     records.sort(key=lambda row: (str(row["path"]), str(row["kind"])))
     stable_records = [
         {key: value for key, value in row.items() if key != "identity"}
@@ -392,7 +436,7 @@ def restore(
         restorable.append((entry, source, destination))
     preview = {
         "operation_id": value["operation_id"],
-        "manifest": manifest_path.relative_to(root).as_posix(),
+        "manifest": manifest_path.relative_to(root.resolve()).as_posix(),
         "state": "restore-preview",
         "targets": [str(entry["source"]) for entry, _, _ in restorable],
     }
@@ -425,6 +469,14 @@ def restore(
 def path_inventory(path: Path) -> dict[str, object]:
     if not os.path.lexists(path):
         return {"present": False, "files": 0, "logical_bytes": 0, "allocated_bytes": 0}
+    if path.is_file() or path.is_symlink():
+        stat = path.lstat()
+        return {
+            "present": True,
+            "files": 1,
+            "logical_bytes": stat.st_size,
+            "allocated_bytes": getattr(stat, "st_blocks", 0) * 512,
+        }
     files = logical = allocated = 0
     for current, directories, names in os.walk(path, followlinks=False):
         current_path = Path(current)
