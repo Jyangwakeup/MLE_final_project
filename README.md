@@ -6,6 +6,8 @@ This project develops reinforcement learning agents for Bomberman. The experimen
 
 The repository contains Q-learning, Double Q(λ), Double DQN, and CNN-based experiments. Across these approaches, we investigate state representations, reward shaping, safety constraints on available actions, and transfer between tasks. Frozen evaluations separate learned policy performance from training rewards, while experiment records preserve unsuccessful attempts and known limitations alongside improvements.
 
+Current research entry points are `q_learning_agent`, `dqn_agent`, `expected_sarsa`, `rainbow_lite`, `double_dqn_continuous_v2_agent`, and `cnn_distilled_double_dqn_agent`. Older Double Q variants, phase-aware and Hybrid Dueling Double DQN remain as historical source under `all_other_agent_code/`; other experimental variants are indexed in `experiments/agent_variants/`. See the [experiment guide](experiments/README.md) and [repository layout](docs/repository-layout.md) for the active and archived boundaries.
+
 ## Selected Competition Agent: Die Hardest
 
 **Die Hardest** is the currently selected and frozen competition model, originating from **Task4 B33 seed33/c200**. It uses Double DQN with an 84-dimensional feature representation and safety action filtering. Its framework loading name is `die_hardest`; inference loads the included checkpoint on CPU using one Torch thread.
