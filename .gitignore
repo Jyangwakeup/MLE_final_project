@@ -131,6 +131,13 @@ checkpoints/
 
 # PyTorch model weights and replay tensors
 *.pt
+!agent_code/rainbow_lite/final.pt
+!agent_code/rainbow_lite/checkpoints/
+!agent_code/rainbow_lite/checkpoints/**/
+!agent_code/rainbow_lite/checkpoints/**/*.pt
+!agent_code/expected_sarsa/checkpoints/
+!agent_code/expected_sarsa/checkpoints/**/
+!agent_code/expected_sarsa/checkpoints/**/*.pkl
 
 # Local Agent configuration and in-progress Agent artifacts
 /AGENTS.md
@@ -140,3 +147,7 @@ checkpoints/
 /archive/*
 !/archive/README.md
 /deliverables/
+
+# Local Rainbow nightly workspace and unsubmitted report draft
+/.scratch/rainbow-lite-nightly-20260927/
+/thesis/main-zyy.tex

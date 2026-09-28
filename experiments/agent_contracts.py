@@ -35,6 +35,7 @@ _OFFICIAL_BASELINES = {
     "coin_collector_agent",
 }
 _NEW_AGENTS = {
+    "rainbow_lite", "expected_sarsa",
     "optimized_double_q_lambda_demo_agent",
     "optimized_double_q_lambda_crate_agent",
     "optimized_double_q_lambda_grouped_agent",
