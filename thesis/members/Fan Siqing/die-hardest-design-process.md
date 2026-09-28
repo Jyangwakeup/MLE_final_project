@@ -28,12 +28,12 @@
 
 本文沿用 [`CONTEXT.md`](../../../CONTEXT.md) 的术语：当前 `docs/`、`experiments/` 和 `thesis/` 中的材料属于 active surface 或 versioned experiment evidence；`archive/` 中的旧工作树和结果属于 recovery archive。归档中的旧绝对路径只表示历史出处，不表示相同工作树仍处于活动状态。
 
-当前活动树中没有可直接作为来源的 `agent_code/die_hardest/`。Die Hardest 的冻结源码、权重身份和历史评估需通过以下入口恢复或核验：
+冻结参赛 Agent 的唯一活动副本位于 [`agent_code/die_hardest/`](../../../agent_code/die_hardest/)，包含回调、依赖、提交清单和冻结权重。源码及权重身份可在该目录核验；历史评估仍以对应的报告和原始实验归档为准：
 
 - [`archive/README.md`](../../../archive/README.md)
 - [`docs/research/die-hardest-submission/REPORT.md`](../../../docs/research/die-hardest-submission/REPORT.md)
 - [`docs/research/die-hardest-submission/verification.json`](../../../docs/research/die-hardest-submission/verification.json)
-- `archive/recovery/remote-merge-20260923/die-hardest-validation/official-framework/agent_code/die_hardest/`
+- `archive/recovery/remote-merge-20260923/die-hardest-validation/official-framework/agent_code/die_hardest/`（恢复前的历史副本）
 - `archive/worktrees/MLE_final_project_task4_score/.scratch/task4-diagnosis/b33-random1000/`
 
 ### 1.3 不能混合的四类结论
@@ -454,7 +454,7 @@
 
 ## 14. 证据冲突与待修正项
 
-1. [`thesis/report-assets/tables/table5_die_hardest.csv`](../../report-assets/tables/table5_die_hardest.csv) 的 historical benchmark source 仍指向已经不在 active tree 的 `all_other_agent_code/die_hardest/README.md`。最终写作应改用 recovery archive 下的原始 `b33-random1000/{protocol,report,summary}.json/md`。
+1. [`thesis/report-assets/tables/table5_die_hardest.csv`](../../report-assets/tables/table5_die_hardest.csv) 的 historical benchmark source 现在链接到活动冻结包 [`agent_code/die_hardest/README.md`](../../../agent_code/die_hardest/README.md)；历史数值仍应回到 recovery archive 下的原始 `b33-random1000/{protocol,report,summary}.json/md` 核验。
 2. 多份早期文档中的绝对 worktree 路径已经迁移。引用历史路径时应同时给出 [`archive/README.md`](../../../archive/README.md) 的恢复映射。
 3. B33 的 100-world candidate-only assessment 与 1,000-world benchmark 使用不同世界与用途，不应合并样本量或直接计算共同置信区间。
 4. Task 2 winner 的 `0% suicide` 与 B33 benchmark 的 `0 suicides` 来自不同任务和对手协议，不能写成一条跨阶段连续统计。

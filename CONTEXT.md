@@ -27,6 +27,13 @@ reversible manifest while its eventual retention is undecided. It is neither
 versioned evidence nor a recovery archive.
 _Avoid_: Archived evidence, deleted output
 
+**Frozen competition Agent**:
+A selected competition candidate stored as a complete, versioned runtime package
+under `agent_code/<agent_name>/`. The package includes its callbacks,
+dependencies, submission manifest, and trained weights required by the official
+loader. This directory is the active source of truth for running that candidate.
+_Avoid_: Model checkpoint alone, archived candidate
+
 **Decision history snapshot**:
 The immutable action history and admitted action set associated with one actual
 decision. Reconstructing its learning transition cannot advance or rewind the

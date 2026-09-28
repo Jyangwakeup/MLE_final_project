@@ -6,4 +6,4 @@ Task 2 mean coins / 9,Distilled CNN D02,2.60,9,main validation; n=100,verified_s
 Task 3 mean score,Parent seed22,5.91,8,paired main validation; n=100,verified_raw,docs/research/task3-counter-validation-results.md
 Task 3 mean score,Child seed22/c150,7.14,8,paired main validation; n=100,verified_raw,docs/research/task3-counter-validation-results.md
 Task 4 mean score,E1 seed11 endpoint,4.06,5,specialist frozen endpoint; n=100,verified_raw,experiments/results/task4_exploration_20260919/report.md
-Task 4 mean score,Die Hardest historical source checkpoint,4.231,5,historical benchmark; n=1000,verified_summary,all_other_agent_code/die_hardest/README.md
+Task 4 mean score,Die Hardest historical source checkpoint,4.231,5,historical benchmark; n=1000,verified_summary,agent_code/die_hardest/README.md
