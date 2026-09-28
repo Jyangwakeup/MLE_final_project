@@ -60,5 +60,5 @@ reconstruction, but they depend on machine-local data under the ignored
 should use `python -m experiments.run` with an explicit configuration.
 
 Detailed experiment narrative and checkpoint evidence remain in
-`thesis/members/祝雨嫣/` and the versioned research records under
+`thesis/members/Zhu Yuyan/` and the versioned research records under
 `experiments/results/`.
